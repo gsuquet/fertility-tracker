@@ -1,0 +1,19 @@
+# Mise configuration for Fertility Tracker development environment
+# https://mise.jdx.dev
+
+[settings]
+lockfile = true
+
+[tasks]
+dev = { run = "npm run dev", description = "Start Vite development server" }
+build = { run = "npm run build", description = "Type-check TypeScript and build production bundle" }
+test = { run = "npm run test", description = "Run Vitest unit and integration test suite" }
+preview = { run = "npm run preview", description = "Preview production build locally" }
+deploy = { run = "npm run deploy", description = "Build and deploy application to Cloudflare Pages" }
+install = { run = "npm install", description = "Install project dependencies" }
+
+[tools]
+gitleaks = '8.30.1'
+node = '26.5.0'
+npm = '12.0.1'
+pre-commit = '4.6.1'
