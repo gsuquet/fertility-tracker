@@ -3,7 +3,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { ActiveTab } from '../types/crms';
-import { Sun, Moon, Globe, Plus, Download, Layout, Calendar as CalendarIcon, BarChart2 } from 'lucide-react';
+import { Sun, Moon, Globe, Plus, Download, Layout, Calendar as CalendarIcon, BarChart2, Layers } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -14,7 +14,7 @@ interface HeaderProps {
 export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenExport }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
-  const { setIsDrawerOpen, setSelectedObservation } = useCycle();
+  const { setIsDrawerOpen, setSelectedObservation, cycles, selectedCycleId, setSelectedCycleId } = useCycle();
 
   const handleNewEntry = () => {
     setSelectedObservation(null);
@@ -56,6 +56,25 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
       </div>
 
       <div className="header-controls">
+        {/* Cycle Switcher Dropdown */}
+        {cycles.length > 0 && (
+          <div className="cycle-selector-wrapper" title="Filter / View Cycle History">
+            <Layers size={16} className="cycle-selector-icon" />
+            <select
+              className="cycle-select-dropdown"
+              value={selectedCycleId}
+              onChange={e => setSelectedCycleId(e.target.value)}
+            >
+              <option value="all">All Cycles ({cycles.length})</option>
+              {cycles.map((cycle, idx) => (
+                <option key={cycle.id} value={cycle.id}>
+                  Cycle {cycles.length - idx} ({cycle.startDate})
+                </option>
+              ))}
+            </select>
+          </div>
+        )}
+
         <button className="btn btn-primary new-entry-btn" onClick={handleNewEntry}>
           <Plus size={18} />
           <span>{t.actions.newEntry}</span>

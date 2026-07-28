@@ -1,11 +1,15 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Observation } from '../types/crms';
+import { Observation, Cycle } from '../types/crms';
 import { processCycleObservations } from '../domain/peakDetector';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
+import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
 
 interface CycleContextType {
   observations: Observation[];
+  cycles: Cycle[];
+  selectedCycleId: string;
+  setSelectedCycleId: (id: string) => void;
   saveObservation: (obsData: Partial<Observation>) => void;
   deleteObservation: (id: string) => void;
   toggleManualPeak: (date: string) => void;
@@ -40,7 +44,10 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
+  const [selectedCycleId, setSelectedCycleId] = useState<string>('all');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const cycles = groupObservationsIntoCycles(observations);
 
   useEffect(() => {
     try {
@@ -81,10 +88,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         updatedList.push(newObs);
       }
 
-      // Re-sort by date and assign cycleDay 1..N
       updatedList.sort((a, b) => a.date.localeCompare(b.date));
-      updatedList = updatedList.map((obs, idx) => ({ ...obs, cycleDay: idx + 1 }));
-
       return processCycleObservations(updatedList);
     });
   };
@@ -92,8 +96,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   const deleteObservation = (id: string) => {
     setObservations(prev => {
       const filtered = prev.filter(o => o.id !== id);
-      const resorted = filtered.map((obs, idx) => ({ ...obs, cycleDay: idx + 1 }));
-      return processCycleObservations(resorted);
+      return processCycleObservations(filtered);
     });
   };
 
@@ -103,7 +106,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         if (obs.date === date) {
           return { ...obs, isManualPeak: !obs.isManualPeak };
         }
-        return { ...obs, isManualPeak: false }; // Single peak day per cycle
+        return { ...obs, isManualPeak: false };
       });
       return processCycleObservations(updated);
     });
@@ -140,12 +143,14 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     const today = new Date();
     const demoObs: Observation[] = [];
 
-    // Generate 28-day realistic Creighton cycle starting 27 days ago
-    for (let i = 27; i >= 0; i--) {
+    // Generate 2 full 28-day past cycles + current cycle (56 days total history)
+    for (let i = 55; i >= 0; i--) {
       const d = new Date(today);
       d.setDate(d.getDate() - i);
       const dateStr = d.toISOString().split('T')[0];
-      const cd = 28 - i;
+
+      // Day within 28-day cycle: 1 to 28
+      const cd = ((55 - i) % 28) + 1;
 
       let bleeding: any;
       let stretch: any;
@@ -156,7 +161,6 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       if (cd <= 3) {
         bleeding = cd === 1 ? 'H' : cd === 2 ? 'M' : 'L';
-        intercourse = false;
       } else if (cd === 4) {
         bleeding = 'VL';
       } else if (cd >= 5 && cd <= 8) {
@@ -195,7 +199,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       const codeString = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse });
 
       demoObs.push({
-        id: `demo_${cd}`,
+        id: `demo_${dateStr}`,
         date: dateStr,
         cycleDay: cd,
         bleeding,
@@ -216,6 +220,9 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   return (
     <CycleContext.Provider value={{
       observations,
+      cycles,
+      selectedCycleId,
+      setSelectedCycleId,
       saveObservation,
       deleteObservation,
       toggleManualPeak,

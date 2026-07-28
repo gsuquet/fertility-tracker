@@ -69,9 +69,18 @@ export const CalendarGrid: React.FC = () => {
       </div>
 
       <div className="calendar-grid">
-        {['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'].map(d => (
-          <div key={d} className="calendar-weekday-header">
-            {d}
+        {[
+          { full: 'Sun', short: 'S' },
+          { full: 'Mon', short: 'M' },
+          { full: 'Tue', short: 'T' },
+          { full: 'Wed', short: 'W' },
+          { full: 'Thu', short: 'T' },
+          { full: 'Fri', short: 'F' },
+          { full: 'Sat', short: 'S' },
+        ].map(d => (
+          <div key={d.full} className="calendar-weekday-header">
+            <span className="weekday-full">{d.full}</span>
+            <span className="weekday-short">{d.short}</span>
           </div>
         ))}
 
