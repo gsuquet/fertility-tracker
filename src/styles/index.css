@@ -2635,7 +2635,7 @@ body {
   flex-direction: column;
   gap: 1.5rem;
   width: 100%;
-  max-width: 1140px;
+  max-width: 100%;
   margin: 0 auto;
   position: relative;
   animation: fadeInToday 0.25s ease-out;
@@ -2850,12 +2850,12 @@ body {
   outline: none;
 }
 
-/* Today Main Grid Layout */
+/* Today Main Grid Layout (3 columns on desktop: History -> Form -> Stamp Preview) */
 .today-main-grid {
   display: grid;
-  grid-template-columns: 1fr 340px;
+  grid-template-columns: minmax(270px, 1fr) minmax(0, 1.4fr) minmax(270px, 1fr);
   gap: 1.5rem;
-  align-items: start;
+  align-items: stretch;
 }
 
 /* Today Form Card */
@@ -2868,6 +2868,10 @@ body {
   flex-direction: column;
   gap: 1.35rem;
   box-shadow: var(--shadow-sm);
+}
+
+.today-form-card .button-grid {
+  grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
 }
 
 .today-card-header {
@@ -3144,7 +3148,19 @@ body {
   pointer-events: none;
 }
 
-/* Desktop vs Mobile Stamp Preview Card Display */
+/* Desktop vs Mobile Stamp Preview Card Display & Grid Breakpoints */
+@media (min-width: 1025px) {
+  .today-recent-card {
+    order: 1;
+  }
+  .today-form-card {
+    order: 2;
+  }
+  .today-status-card {
+    order: 3;
+  }
+}
+
 @media (min-width: 901px) {
   .mobile-only-stamp-banner {
     display: none !important;
@@ -3154,9 +3170,37 @@ body {
   }
 }
 
+@media (max-width: 1024px) and (min-width: 901px) {
+  .today-main-grid {
+    grid-template-columns: 1fr 320px;
+  }
+  .today-form-card {
+    grid-column: 1;
+    grid-row: 1 / span 2;
+    order: 1;
+  }
+  .today-recent-card {
+    grid-column: 2;
+    grid-row: 1;
+    order: 2;
+  }
+  .today-status-card {
+    grid-column: 2;
+    grid-row: 2;
+    order: 3;
+  }
+}
+
 @media (max-width: 900px) {
   .today-main-grid {
     grid-template-columns: 1fr;
+  }
+  .today-form-card {
+    order: 1;
+    grid-row: auto;
+  }
+  .today-recent-card {
+    order: 2;
   }
   .mobile-only-stamp-banner {
     display: flex !important;

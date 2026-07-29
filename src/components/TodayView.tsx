@@ -389,9 +389,39 @@ export const TodayView: React.FC = () => {
         </div>
       </div>
 
-      {/* Main Grid: Logger Form & Side Panel */}
+      {/* Main Grid: Option 2 Layout (History -> Form -> Stamp Preview) */}
       <div className="today-main-grid">
-        {/* Logger Form */}
+        {/* Column 1: Recent 5-day History Card */}
+        <div className="today-recent-card">
+          <h3>{t.todayView.recentHistory}</h3>
+          <div className="recent-days-list">
+            {getRecentDays().map(({ dateStr, obs }) => {
+              const isSelected = dateStr === selectedDate;
+              const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+
+              return (
+                <button
+                  key={dateStr}
+                  type="button"
+                  className={`recent-day-item ${isSelected ? 'active' : ''}`}
+                  onClick={() => setSelectedDate(dateStr)}
+                >
+                  <span className="recent-date-label">{dayLabel}</span>
+                  {obs ? (
+                    <div className="recent-badge-wrapper">
+                      <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay || obs.isManualPeak} intercourse={obs.intercourse} size="sm" />
+                      <span className="recent-code">{obs.codeString}</span>
+                    </div>
+                  ) : (
+                    <span className="recent-empty">{t.todayView.noEntryShort}</span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
+        </div>
+
+        {/* Column 2: Logger Form */}
         <form onSubmit={handleSave} className="today-form-card">
           <div className="today-card-header">
             <div>
@@ -606,54 +636,21 @@ export const TodayView: React.FC = () => {
           </div>
         </form>
 
-        {/* Side Panel: Desktop Stamp Card (Above History) & Recent History */}
-        <div className="today-side-panel">
-          {/* Real-time Stamp Preview Card (Desktop display above history) */}
-          <div className="today-status-card desktop-only-stamp-card">
-            <div className="status-card-header">
-              <Sparkles size={18} className="status-header-icon" />
-              <h3>{t.labels.stampPreview}</h3>
-            </div>
-
-            <div className="status-stamp-wrapper">
-              <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
-              <div className="status-code-text">{currentCode || '---'}</div>
-            </div>
-
-            <div className="status-guidance-box">
-              <Info size={16} className="guidance-icon" />
-              <p>{getFertilityGuidance()}</p>
-            </div>
+        {/* Column 3: Real-time Stamp Preview Card */}
+        <div className="today-status-card desktop-only-stamp-card">
+          <div className="status-card-header">
+            <Sparkles size={18} className="status-header-icon" />
+            <h3>{t.labels.stampPreview}</h3>
           </div>
 
-          {/* Recent 5-day History Strip */}
-          <div className="today-recent-card">
-            <h3>{t.todayView.recentHistory}</h3>
-            <div className="recent-days-list">
-              {getRecentDays().map(({ dateStr, obs }) => {
-                const isSelected = dateStr === selectedDate;
-                const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+          <div className="status-stamp-wrapper">
+            <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+            <div className="status-code-text">{currentCode || '---'}</div>
+          </div>
 
-                return (
-                  <button
-                    key={dateStr}
-                    type="button"
-                    className={`recent-day-item ${isSelected ? 'active' : ''}`}
-                    onClick={() => setSelectedDate(dateStr)}
-                  >
-                    <span className="recent-date-label">{dayLabel}</span>
-                    {obs ? (
-                      <div className="recent-badge-wrapper">
-                        <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay || obs.isManualPeak} intercourse={obs.intercourse} size="sm" />
-                        <span className="recent-code">{obs.codeString}</span>
-                      </div>
-                    ) : (
-                      <span className="recent-empty">{t.todayView.noEntryShort}</span>
-                    )}
-                  </button>
-                );
-              })}
-            </div>
+          <div className="status-guidance-box">
+            <Info size={16} className="guidance-icon" />
+            <p>{getFertilityGuidance()}</p>
           </div>
         </div>
       </div>
