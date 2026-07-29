@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { Observation, Cycle } from '../types/crms';
 import { processCycleObservations } from '../domain/peakDetector';
 import { calculateStamp } from '../domain/stampCalculator';
@@ -44,11 +44,23 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     return [];
   });
 
+  const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
+
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
-  const [selectedCycleId, setSelectedCycleId] = useState<string>('all');
+  const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id || 'all');
   const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
-  const cycles = groupObservationsIntoCycles(observations);
+  useEffect(() => {
+    if (cycles.length > 0) {
+      if (selectedCycleId !== 'all' && !cycles.some(c => c.id === selectedCycleId)) {
+        setSelectedCycleId(cycles[0].id);
+      }
+    } else {
+      if (selectedCycleId !== 'all') {
+        setSelectedCycleId('all');
+      }
+    }
+  }, [cycles, selectedCycleId]);
 
   useEffect(() => {
     try {
@@ -123,6 +135,12 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (Array.isArray(parsed)) {
         const processed = processCycleObservations(parsed);
         setObservations(processed);
+        const newCycles = groupObservationsIntoCycles(processed);
+        if (newCycles.length > 0) {
+          setSelectedCycleId(newCycles[0].id);
+        } else {
+          setSelectedCycleId('all');
+        }
         return true;
       }
     } catch (e) {
@@ -133,6 +151,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const clearAllData = () => {
     setObservations([]);
+    setSelectedCycleId('all');
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem(STORAGE_KEY);
@@ -214,6 +233,10 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
     const processed = processCycleObservations(demoObs);
     setObservations(processed);
+    const newCycles = groupObservationsIntoCycles(processed);
+    if (newCycles.length > 0) {
+      setSelectedCycleId(newCycles[0].id);
+    }
   };
 
   return (

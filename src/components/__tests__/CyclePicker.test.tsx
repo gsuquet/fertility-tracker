@@ -29,6 +29,12 @@ describe('CyclePicker Component', () => {
     expect(btn).toBeInTheDocument();
   });
 
+  it('defaults to current cycle selection when cycles exist', () => {
+    renderCyclePicker();
+    const btn = screen.getByRole('button', { name: /filter cycle view/i });
+    expect(btn).toHaveTextContent(/Cycle 2/i);
+  });
+
   it('opens cycle selection menu on button click and allows selecting cycles', () => {
     renderCyclePicker();
     const btn = screen.getByRole('button', { name: /filter cycle view/i });
@@ -43,5 +49,6 @@ describe('CyclePicker Component', () => {
 
     fireEvent.click(allCyclesOption);
     expect(screen.queryByRole('listbox')).not.toBeInTheDocument();
+    expect(btn).toHaveTextContent(/All Cycles/i);
   });
 });
