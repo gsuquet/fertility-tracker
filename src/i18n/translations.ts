@@ -157,6 +157,14 @@ export const translations = {
       description: 'Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.',
       printPdf: 'Print / Save as PDF',
       downloadPng: 'Download High-Res PNG',
+      pdfExportMode: 'PDF Export Scope',
+      singleCycle: 'Single Cycle',
+      multipleCycles: 'Multiple Cycles',
+      selectCycle: 'Select Cycle',
+      selectCycles: 'Select Cycles to Export',
+      selectAll: 'Select All',
+      deselectAll: 'Deselect All',
+      oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
     }
   },
   fr: {
@@ -317,6 +325,14 @@ export const translations = {
       description: 'Exportez votre graphique Creighton en PDF ou PNG pour votre instructeur FertilityCare ou médecin NaPro.',
       printPdf: 'Imprimer / Sauvegarder en PDF',
       downloadPng: 'Télécharger en PNG',
+      pdfExportMode: 'Périmètre d\'exportation PDF',
+      singleCycle: 'Cycle unique',
+      multipleCycles: 'Plusieurs cycles',
+      selectCycle: 'Sélectionner le cycle',
+      selectCycles: 'Sélectionner les cycles à exporter',
+      selectAll: 'Tout sélectionner',
+      deselectAll: 'Tout désélectionner',
+      oldestToNewestNote: 'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
     }
   }
 };

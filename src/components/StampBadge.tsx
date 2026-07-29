@@ -32,18 +32,18 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
           </div>
         )}
 
+        {/* Intercourse 'I' overlay directly on the stamp */}
+        {intercourse && (
+          <div className="intercourse-stamp-overlay" title="Intercourse (I)">
+            I
+          </div>
+        )}
+
         {/* Peak Day 'P' indicator */}
         {isPeakDay && (
           <div className="peak-indicator-badge">P</div>
         )}
       </div>
-
-      {/* Intercourse 'I' badge marker */}
-      {intercourse && (
-        <div className="intercourse-badge" title="Intercourse (I) / Rapports sexuels">
-          I
-        </div>
-      )}
     </div>
   );
 };

@@ -13,10 +13,25 @@ import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { CycleAnalyticsView } from './components/CycleAnalyticsView';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { ExportModal } from './components/ExportModal';
+import { PrintExportView } from './components/PrintExportView';
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
+  const [shouldPrint, setShouldPrint] = useState(false);
+
+  React.useEffect(() => {
+    if (shouldPrint) {
+      window.print();
+      setShouldPrint(false);
+    }
+  }, [shouldPrint, printCycleIds]);
+
+  const handlePreparePrint = (selectedCycleIds: string[]) => {
+    setPrintCycleIds(selectedCycleIds);
+    setShouldPrint(true);
+  };
 
   return (
     <div className="app-layout">
@@ -40,7 +55,10 @@ const MainApp: React.FC = () => {
       <ExportModal
         isOpen={isExportModalOpen}
         onClose={() => setIsExportModalOpen(false)}
+        onPreparePrint={handlePreparePrint}
       />
+
+      <PrintExportView selectedCycleIds={printCycleIds} />
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>
