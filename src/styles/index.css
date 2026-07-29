@@ -982,8 +982,9 @@ body {
   border-color: var(--accent-primary);
 }
 
-/* Phase Bar Timeline Above Cells */
+/* Phase Bar Timeline Above Cells - Full Width Cycle Overview Strip */
 .cycle-phase-bar-wrapper {
+  width: 100%;
   margin-top: 0.75rem;
   margin-bottom: 0.6rem;
   padding: 0 2px;
@@ -991,7 +992,8 @@ body {
 
 .cycle-phase-bar {
   display: flex;
-  height: 7px;
+  width: 100%;
+  height: 8px;
   border-radius: 4px;
   overflow: hidden;
   background-color: var(--bg-primary);
@@ -1006,21 +1008,41 @@ body {
 }
 
 .phase-segment:hover {
-  opacity: 0.8;
+  opacity: 0.85;
 }
 
-.phase-menses { background-color: #ef4444; }
-.phase-follicular { background-color: #a855f7; }
-.phase-fertile { background-color: #3b82f6; }
-.phase-peak { background-color: #f59e0b; box-shadow: 0 0 6px rgba(245, 158, 11, 0.8); }
-.phase-post-peak { background-color: #34d399; }
-.phase-luteal { background-color: #10b981; }
-.phase-infertile { background-color: #64748b; opacity: 0.35; }
-.phase-unknown { background-color: var(--bg-surface-border); opacity: 0.4; }
+.phase-menses {
+  background: linear-gradient(135deg, #f43f5e 0%, var(--stamp-red) 100%);
+}
+
+.phase-infertile,
+.phase-follicular,
+.phase-luteal {
+  background: linear-gradient(135deg, #16a34a 0%, var(--stamp-dark-green) 100%);
+}
+
+.phase-fertile {
+  background-color: var(--stamp-white);
+  border: 1px solid var(--stamp-white-border);
+}
+
+.phase-peak {
+  background-color: #f59e0b;
+  box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+}
+
+.phase-post-peak {
+  background: linear-gradient(135deg, #86efac 0%, var(--stamp-light-green) 100%);
+}
+
+.phase-unknown {
+  background-color: var(--bg-surface-border);
+  opacity: 0.35;
+}
 
 .phase-peak-dot {
   position: absolute;
-  top: -9px;
+  top: -10px;
   left: 50%;
   transform: translateX(-50%);
   font-size: 0.55rem;

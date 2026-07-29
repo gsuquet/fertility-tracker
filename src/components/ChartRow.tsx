@@ -317,7 +317,7 @@ export const ChartRow: React.FC = () => {
               </div>
             </div>
 
-            {/* Cycle Phase Bar Timeline */}
+            {/* Full-width Cycle Phase Timeline Strip */}
             {showPhaseBar && (
               <CyclePhaseTimeline cycle={cycle} totalSlots={totalGridSlots} viewMode={viewMode} t={t} />
             )}
@@ -521,10 +521,7 @@ const CyclePhaseTimeline: React.FC<{ cycle: any; totalSlots: number; viewMode: s
   viewMode,
   t,
 }) => {
-  // Determine phase segments across observations
   const obsList: Observation[] = cycle.observations;
-  const peakObs = obsList.find(o => o.isPeakDay);
-  const peakDayNum = peakObs?.cycleDay;
 
   return (
     <div className="cycle-phase-bar-wrapper">
@@ -537,25 +534,24 @@ const CyclePhaseTimeline: React.FC<{ cycle: any; totalSlots: number; viewMode: s
           let title = `Day ${dayNum}`;
 
           if (obs) {
-            if (obs.bleeding) {
+            if (obs.isPeakDay) {
+              phaseClass = 'phase-peak';
+              title = `Day ${dayNum}: ${t.chartStrip.phasePeak} (P)`;
+            } else if (obs.stamp === 'RED' || obs.bleeding) {
               phaseClass = 'phase-menses';
               title = `Day ${dayNum}: ${t.chartStrip.phaseMenses}`;
-            } else if (obs.isPeakDay) {
-              phaseClass = 'phase-peak';
-              title = `Day ${dayNum}: ${t.chartStrip.phasePeak}`;
             } else if (obs.stamp.startsWith('LIGHT_GREEN')) {
               phaseClass = 'phase-post-peak';
               title = `Day ${dayNum}: ${t.chartStrip.phasePostPeak}`;
-            } else if (peakDayNum && dayNum < peakDayNum) {
-              phaseClass = obs.stamp === 'WHITE_BABY' ? 'phase-fertile' : 'phase-follicular';
-              title = `Day ${dayNum}: ${t.chartStrip.phaseFollicular}`;
-            } else if (peakDayNum && dayNum > peakDayNum + 3) {
-              phaseClass = 'phase-luteal';
-              title = `Day ${dayNum}: ${t.chartStrip.phaseLuteal}`;
             } else if (obs.stamp === 'WHITE_BABY') {
               phaseClass = 'phase-fertile';
+              title = `Day ${dayNum}: Fertile Mucus`;
+            } else if (obs.stamp === 'DARK_GREEN') {
+              phaseClass = 'phase-infertile';
+              title = `Day ${dayNum}: Dry / Infertile`;
             } else {
               phaseClass = 'phase-infertile';
+              title = `Day ${dayNum}`;
             }
           }
 
