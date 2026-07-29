@@ -45,4 +45,4 @@ export type Language = 'en' | 'fr';
 
 export type Theme = 'dark' | 'light';
 
-export type ActiveTab = 'chart' | 'calendar' | 'analytics';
+export type ActiveTab = 'today' | 'chart' | 'calendar' | 'analytics';

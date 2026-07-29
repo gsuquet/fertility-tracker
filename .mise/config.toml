@@ -1,0 +1,16 @@
+# Mise configuration for Fertility Care development environment
+# https://mise.jdx.dev
+
+[settings]
+lockfile = true
+
+[tasks]
+dev = { run = "npm run dev", description = "Start Vite development server" }
+build = { run = "npm run build", description = "Type-check TypeScript and build production bundle" }
+test = { run = "npm run test", description = "Run Vitest unit and integration test suite" }
+preview = { run = "npm run preview", description = "Preview production build locally" }
+install = { run = "npm install", description = "Install project dependencies" }
+
+[tools]
+node = "26.5.0"
+npm = '12.0.1'

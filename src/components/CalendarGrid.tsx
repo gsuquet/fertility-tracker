@@ -48,10 +48,12 @@ export const CalendarGrid: React.FC = () => {
     daysGrid.push(day);
   }
 
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
   return (
     <div className="calendar-view">
       <div className="calendar-header">
-        <button className="icon-button" onClick={handlePrevMonth} title="Previous month">
+        <button className="icon-button" onClick={handlePrevMonth} title="Previous month" aria-label="Previous month">
           <ChevronLeft size={20} />
         </button>
         <h2 className="calendar-month-title">
@@ -62,6 +64,7 @@ export const CalendarGrid: React.FC = () => {
           onClick={handleNextMonth}
           disabled={isCurrentOrFutureMonth}
           title={isCurrentOrFutureMonth ? "Future months disabled" : "Next month"}
+          aria-label={isCurrentOrFutureMonth ? "Future months disabled" : "Next month"}
           style={{ opacity: isCurrentOrFutureMonth ? 0.4 : 1, cursor: isCurrentOrFutureMonth ? 'not-allowed' : 'pointer' }}
         >
           <ChevronRight size={20} />
@@ -95,13 +98,24 @@ export const CalendarGrid: React.FC = () => {
           // Check if future day
           const dayDate = new Date(year, month, dayNum);
           const isFutureDay = dayDate > now;
+          const isToday = dateStr === todayStr;
 
           return (
             <div
               key={dateStr}
-              className={`calendar-day ${obs ? 'has-obs' : ''} ${isFutureDay ? 'future-day' : ''}`}
+              className={`calendar-day ${obs ? 'has-obs' : ''} ${isFutureDay ? 'future-day' : ''} ${isToday ? 'is-today' : ''}`}
               onClick={() => {
                 if (!isFutureDay) {
+                  setSelectedObservation(obs || null);
+                  setIsDrawerOpen(true);
+                }
+              }}
+              tabIndex={isFutureDay ? -1 : 0}
+              role="button"
+              aria-label={`Date ${dateStr}, ${obs ? `Observation ${obs.codeString}` : 'No observation'}`}
+              onKeyDown={(e) => {
+                if (!isFutureDay && (e.key === 'Enter' || e.key === ' ')) {
+                  e.preventDefault();
                   setSelectedObservation(obs || null);
                   setIsDrawerOpen(true);
                 }
@@ -111,12 +125,17 @@ export const CalendarGrid: React.FC = () => {
               <div className="calendar-day-num">{dayNum}</div>
               {obs ? (
                 <div className="calendar-day-content">
-                  <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
+                  <div className="calendar-stamp-wrapper">
+                    <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
+                  </div>
                   <span className="calendar-code">{obs.codeString}</span>
                 </div>
               ) : !isFutureDay ? (
-                <div className="calendar-add-icon">
-                  <Plus size={14} />
+                <div className="calendar-add-slot">
+                  <div className="calendar-add-pill" title="Click to add observation">
+                    <Plus size={12} className="add-icon" />
+                    <span className="add-text">Add</span>
+                  </div>
                 </div>
               ) : null}
             </div>

@@ -50,11 +50,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose}>
+    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-title">
       <div className="modal-container" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
-          <h2>{t.exportModal.title}</h2>
-          <button className="icon-button" onClick={onClose}>
+          <h2 id="modal-title">{t.exportModal.title}</h2>
+          <button className="icon-button" onClick={onClose} aria-label="Close export dialog">
             <X size={20} />
           </button>
         </div>
@@ -63,7 +63,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           <p className="modal-description">{t.exportModal.description}</p>
 
           <div className="export-actions-grid">
-            <button className="export-card-btn" onClick={handlePrint}>
+            <button className="export-card-btn" onClick={handlePrint} aria-label={t.exportModal.printPdf}>
               <Printer size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.exportModal.printPdf}</strong>
@@ -71,7 +71,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
               </div>
             </button>
 
-            <button className="export-card-btn" onClick={handleDownloadJson}>
+            <button className="export-card-btn" onClick={handleDownloadJson} aria-label={t.actions.exportJson}>
               <Download size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.actions.exportJson}</strong>
@@ -83,7 +83,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
           <div className="modal-divider" />
 
           <div className="import-restore-section">
-            <label className="btn btn-secondary import-label">
+            <label className="btn btn-secondary import-label" style={{ cursor: 'pointer' }}>
               <FileText size={16} />
               <span>{t.actions.importJson}</span>
               <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />

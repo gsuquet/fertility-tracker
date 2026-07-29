@@ -352,6 +352,8 @@ export const ChartRow: React.FC = () => {
                         onClick={() => handleCellClick(obs)}
                         onMouseEnter={() => setHoveredCellKey(cellKey)}
                         onMouseLeave={() => setHoveredCellKey(null)}
+                        onFocus={() => setHoveredCellKey(cellKey)}
+                        onBlur={() => setHoveredCellKey(null)}
                         tabIndex={0}
                         role="button"
                         aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}`}

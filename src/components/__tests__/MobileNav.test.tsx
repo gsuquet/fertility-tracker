@@ -16,8 +16,9 @@ const renderMobileNav = (props: any) => {
 };
 
 describe('MobileNav Component (Phone Navigation)', () => {
-  it('renders mobile navigation items and center floating action button', () => {
+  it('renders mobile navigation items including Today tab', () => {
     renderMobileNav({ activeTab: 'chart', setActiveTab: vi.fn() });
+    expect(screen.getByText('Today')).toBeInTheDocument();
     expect(screen.getByText('Paper Chart Strip')).toBeInTheDocument();
     expect(screen.getByText('Monthly Calendar')).toBeInTheDocument();
     expect(screen.getByText('Cycle Analytics')).toBeInTheDocument();
@@ -27,14 +28,10 @@ describe('MobileNav Component (Phone Navigation)', () => {
     const setActiveTab = vi.fn();
     renderMobileNav({ activeTab: 'chart', setActiveTab });
 
+    fireEvent.click(screen.getByText('Today'));
+    expect(setActiveTab).toHaveBeenCalledWith('today');
+
     fireEvent.click(screen.getByText('Monthly Calendar'));
     expect(setActiveTab).toHaveBeenCalledWith('calendar');
-  });
-
-  it('triggers mobile FAB (+) button to open observation drawer', () => {
-    renderMobileNav({ activeTab: 'chart', setActiveTab: vi.fn() });
-    const fab = screen.getByTitle('Log Observation');
-    expect(fab).toBeInTheDocument();
-    fireEvent.click(fab);
   });
 });

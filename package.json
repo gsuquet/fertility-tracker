@@ -9,6 +9,9 @@
     "preview": "vite preview",
     "test": "vitest run"
   },
+  "engines": {
+    "node": ">=26.5.0"
+  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/gsuquet/fertility-care.git"

@@ -63,9 +63,10 @@ This project is intended for:
 
 Before using **Fertility Care**, ensure your development environment includes:
 
-- **Node.js:** v18.0.0 or higher (v20+ recommended)
-- **Package Manager:** `npm` v9.0.0 or higher (or `pnpm` / `yarn`)
-- **Modern Web Browser:** Google Chrome, Mozilla Firefox, Safari, or Microsoft Edge with ES2022+ support
+- **mise (Recommended):** [mise](https://mise.jdx.dev/) for managing tool versions (Node.js) and task automation.
+- **Node.js:** v26.5.0 or higher (managed automatically via `mise`).
+- **Package Manager:** `npm` v9.0.0 or higher (or `pnpm` / `yarn`).
+- **Modern Web Browser:** Google Chrome, Mozilla Firefox, Safari, or Microsoft Edge with ES2022+ support.
 
 ---
 
@@ -87,10 +88,16 @@ Get started with **Fertility Care** by cloning the repository and launching the 
    cd fertility-care
    ```
 
-3. Install project dependencies:
+3. Install tool versions using `mise` (optional but recommended):
 
    ```bash
-   npm install
+   mise install
+   ```
+
+4. Install project dependencies:
+
+   ```bash
+   mise run install  # or: npm install
    ```
 
 ### Configure Fertility Care
@@ -102,7 +109,7 @@ Get started with **Fertility Care** by cloning the repository and launching the 
    Styles and themes are configured via CSS variables and Vite. Ensure all assets compile cleanly by running a dry build:
 
    ```bash
-   npm run build
+   mise run build  # or: npm run build
    ```
 
 ### Run Fertility Care
@@ -111,7 +118,7 @@ Get started with **Fertility Care** by cloning the repository and launching the 
    Launch the local live-reload development server:
 
    ```bash
-   npm run dev
+   mise run dev  # or: npm run dev
    ```
 
    Open `http://localhost:5173` in your browser to interact with the web app.
@@ -120,21 +127,21 @@ Get started with **Fertility Care** by cloning the repository and launching the 
    Execute unit and integration tests using Vitest:
 
    ```bash
-   npm run test
+   mise run test  # or: npm run test
    ```
 
 3. **Build for Production:**
    Type-check TypeScript code and bundle production-ready static assets:
 
    ```bash
-   npm run build
+   mise run build  # or: npm run build
    ```
 
 4. **Preview Production Build:**
    Preview the generated static build locally:
 
    ```bash
-   npm run preview
+   mise run preview  # or: npm run preview
    ```
 
 ### Troubleshoot Fertility Care
@@ -169,8 +176,17 @@ To contribute:
 
 ## Additional documentation
 
-For more information regarding Creighton Model principles and underlying web technologies:
+This project uses the **[Diátaxis Framework](docs/README.md)** for developer and user documentation:
 
+* **[Diátaxis Documentation Hub](docs/README.md)**
+  * 🎓 **[Tutorials](docs/tutorials/01-getting-started.md)** – Step-by-step onboarding walkthrough.
+  * 🛠️ **[How-To Guides](docs/how-to/log-biomarkers.md)** – Actionable task-oriented guides.
+  * 📖 **[Reference](docs/reference/crms-biomarker-codes.md)** – CrMS codes, domain engine API, and project structure.
+  * 💡 **[Explanation](docs/explanation/architecture-overview.md)** – Clinical background and architecture overview.
+* 🏛️ **[Architecture Decision Records (ADR)](docs/adr/0001-domain-driven-crms-engine.md)** – Architectural design records.
+* 📋 **[Request for Comments (RFC)](docs/rfcs/0001-cloud-sync-and-pwa.md)** – Proposed feature specifications.
+
+### External References
 - [Creighton Model FertilityCare System Official Page](https://creightonmodel.com/)
 - [React 19 Documentation](https://react.dev/)
 - [Vite Guide](https://vitejs.dev/guide/)

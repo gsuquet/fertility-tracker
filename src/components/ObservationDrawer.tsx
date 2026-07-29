@@ -135,18 +135,18 @@ export const ObservationDrawer: React.FC = () => {
   };
 
   return (
-    <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)}>
+    <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
       <div className="drawer-container" onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
-          <h2>{selectedObservation ? t.actions.newEntry : t.actions.newEntry}</h2>
-          <button className="icon-button" onClick={() => setIsDrawerOpen(false)}>
+          <h2 id="drawer-title">{selectedObservation?.id ? 'Edit Observation' : t.actions.newEntry}</h2>
+          <button className="icon-button" onClick={() => setIsDrawerOpen(false)} aria-label="Close entry panel">
             <X size={20} />
           </button>
         </div>
 
         <form onSubmit={handleSave} className="drawer-body">
           {/* Live Stamp & Code Preview */}
-          <div className="preview-card">
+          <div className="preview-card" aria-live="polite">
             <div className="preview-stamp">
               <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
             </div>
@@ -158,8 +158,9 @@ export const ObservationDrawer: React.FC = () => {
 
           {/* Date Picker */}
           <div className="form-group">
-            <label>{t.labels.date}</label>
+            <label htmlFor="obs-date">{t.labels.date}</label>
             <input
+              id="obs-date"
               type="date"
               className="form-input"
               value={date}
@@ -170,8 +171,9 @@ export const ObservationDrawer: React.FC = () => {
 
           {/* Direct Code Entry Text Box */}
           <div className="form-group">
-            <label>{t.labels.directInput}</label>
+            <label htmlFor="direct-code-input">{t.labels.directInput}</label>
             <input
+              id="direct-code-input"
               type="text"
               className="form-input direct-code-input"
               placeholder={t.labels.directInputPlaceholder}
@@ -186,6 +188,7 @@ export const ObservationDrawer: React.FC = () => {
               type="button"
               className={`intercourse-toggle-btn ${intercourse ? 'active' : ''}`}
               onClick={handleIntercourseToggle}
+              aria-pressed={intercourse}
             >
               <Heart size={18} fill={intercourse ? 'currentColor' : 'none'} />
               <span>{t.codes.intercourse.I}</span>
@@ -195,13 +198,14 @@ export const ObservationDrawer: React.FC = () => {
           {/* Bleeding Selector */}
           <div className="form-group">
             <label>{t.labels.bleeding}</label>
-            <div className="button-grid">
+            <div className="button-grid" role="group" aria-label={t.labels.bleeding}>
               {(['H', 'M', 'L', 'VL', 'B'] as BleedingCode[]).map(code => (
                 <button
                   type="button"
                   key={code}
                   className={`option-btn ${bleeding === code ? 'active bleeding' : ''}`}
                   onClick={() => handleBleedingSelect(bleeding === code ? undefined : code)}
+                  aria-pressed={bleeding === code}
                 >
                   {t.codes.bleeding[code]}
                 </button>
@@ -212,13 +216,14 @@ export const ObservationDrawer: React.FC = () => {
           {/* Mucus Stretch Selector */}
           <div className="form-group">
             <label>{t.labels.stretch}</label>
-            <div className="button-grid">
+            <div className="button-grid" role="group" aria-label={t.labels.stretch}>
               {(['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]).map(code => (
                 <button
                   type="button"
                   key={code}
                   className={`option-btn ${stretch === code ? 'active stretch' : ''}`}
                   onClick={() => handleStretchSelect(stretch === code ? undefined : code)}
+                  aria-pressed={stretch === code}
                 >
                   {t.codes.stretch[code]}
                 </button>
@@ -229,13 +234,14 @@ export const ObservationDrawer: React.FC = () => {
           {/* Modifiers Multi-Select */}
           <div className="form-group">
             <label>{t.labels.modifiers}</label>
-            <div className="button-grid">
+            <div className="button-grid" role="group" aria-label={t.labels.modifiers}>
               {(['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as MucusModifier[]).map(mod => (
                 <button
                   type="button"
                   key={mod}
                   className={`option-btn ${modifiers.includes(mod) ? 'active modifier' : ''}`}
                   onClick={() => toggleModifier(mod)}
+                  aria-pressed={modifiers.includes(mod)}
                 >
                   {t.codes.modifiers[mod]}
                 </button>
@@ -246,13 +252,14 @@ export const ObservationDrawer: React.FC = () => {
           {/* Frequency Selector */}
           <div className="form-group">
             <label>{t.labels.frequency}</label>
-            <div className="button-grid">
+            <div className="button-grid" role="group" aria-label={t.labels.frequency}>
               {(['X1', 'X2', 'X3', 'AD'] as FrequencyCode[]).map(code => (
                 <button
                   type="button"
                   key={code}
                   className={`option-btn ${frequency === code ? 'active frequency' : ''}`}
                   onClick={() => handleFrequencySelect(frequency === code ? undefined : code)}
+                  aria-pressed={frequency === code}
                 >
                   {t.codes.frequency[code]}
                 </button>
@@ -263,13 +270,14 @@ export const ObservationDrawer: React.FC = () => {
           {/* Symptoms Multi-Select */}
           <div className="form-group">
             <label>{t.labels.symptoms}</label>
-            <div className="button-grid">
+            <div className="button-grid" role="group" aria-label={t.labels.symptoms}>
               {(['AP', 'RAP', 'LAP'] as SymptomCode[]).map(sym => (
                 <button
                   type="button"
                   key={sym}
                   className={`option-btn ${symptoms.includes(sym) ? 'active symptom' : ''}`}
                   onClick={() => toggleSymptom(sym)}
+                  aria-pressed={symptoms.includes(sym)}
                 >
                   {t.codes.symptoms[sym]}
                 </button>
@@ -283,6 +291,7 @@ export const ObservationDrawer: React.FC = () => {
               type="button"
               className={`peak-toggle-btn ${isManualPeak ? 'active' : ''}`}
               onClick={() => setIsManualPeak(!isManualPeak)}
+              aria-pressed={isManualPeak}
             >
               <Flag size={18} />
               <span>{isManualPeak ? t.actions.removePeak : t.actions.setPeak}</span>
@@ -291,8 +300,9 @@ export const ObservationDrawer: React.FC = () => {
 
           {/* Notes */}
           <div className="form-group">
-            <label>{t.labels.notes}</label>
+            <label htmlFor="obs-notes">{t.labels.notes}</label>
             <textarea
+              id="obs-notes"
               className="form-input form-textarea"
               rows={3}
               value={notes}
@@ -302,12 +312,12 @@ export const ObservationDrawer: React.FC = () => {
 
           {/* Footer Actions */}
           <div className="drawer-footer">
-            {selectedObservation && (
-              <button type="button" className="btn btn-danger" onClick={handleDelete}>
+            {selectedObservation?.id ? (
+              <button type="button" className="btn btn-danger" onClick={handleDelete} aria-label={t.actions.delete}>
                 <Trash2 size={16} />
                 <span>{t.actions.delete}</span>
               </button>
-            )}
+            ) : <div />}
             <div className="drawer-footer-right">
               <button type="button" className="btn btn-secondary" onClick={() => setIsDrawerOpen(false)}>
                 {t.actions.cancel}

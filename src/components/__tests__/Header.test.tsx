@@ -28,6 +28,9 @@ describe('Header Component (Desktop)', () => {
     const setActiveTab = vi.fn();
     renderHeader({ activeTab: 'chart', setActiveTab, onOpenExport: vi.fn() });
 
+    fireEvent.click(screen.getByText('Today'));
+    expect(setActiveTab).toHaveBeenCalledWith('today');
+
     fireEvent.click(screen.getByText('Monthly Calendar'));
     expect(setActiveTab).toHaveBeenCalledWith('calendar');
   });
