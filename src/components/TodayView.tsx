@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode, Observation } from '../types/crms';
@@ -58,6 +58,23 @@ export const TodayView: React.FC = () => {
   const [selectedDate, setSelectedDate] = useState<string>(() => {
     return selectedObservation?.date || getTodayStr();
   });
+
+  const datePickerRef = useRef<HTMLInputElement>(null);
+
+  const handleOpenPicker = () => {
+    const inputEl = datePickerRef.current;
+    if (inputEl) {
+      if ('showPicker' in inputEl && typeof (inputEl as any).showPicker === 'function') {
+        try {
+          inputEl.showPicker();
+        } catch (e) {
+          inputEl.focus();
+        }
+      } else {
+        inputEl.focus();
+      }
+    }
+  };
 
   // Form states
   const [bleeding, setBleeding] = useState<BleedingCode | undefined>();
@@ -299,10 +316,11 @@ export const TodayView: React.FC = () => {
             <ChevronLeft size={18} />
           </button>
 
-          <div className="today-picker-wrapper compact-picker-inline">
+          <div className="today-picker-wrapper compact-picker-inline" onClick={handleOpenPicker}>
             <CalendarIcon size={15} className="date-picker-icon" />
             <span className="today-formatted-date-text">{formatDateTitle(selectedDate)}</span>
             <input
+              ref={datePickerRef}
               type="date"
               className="today-date-picker-input compact-picker-input"
               value={selectedDate}

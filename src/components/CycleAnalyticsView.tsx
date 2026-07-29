@@ -2,13 +2,14 @@ import React, { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Activity, Calendar, Flame, CheckCircle2, TrendingUp, HelpCircle, ChevronDown, ChevronUp } from 'lucide-react';
+import { Observation } from '../types/crms';
 
 export const CycleAnalyticsView: React.FC = () => {
-  const { observations } = useCycle();
+  const { observations, cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
   const [showMcsGuide, setShowMcsGuide] = useState(false);
 
-  if (observations.length === 0) {
+  if (observations.length === 0 || cycles.length === 0) {
     return (
       <div className="analytics-empty-state">
         <Activity size={48} className="icon-muted" />
@@ -18,24 +19,28 @@ export const CycleAnalyticsView: React.FC = () => {
     );
   }
 
-  const totalDays = observations.length;
-  const peakObs = observations.find(o => o.isPeakDay);
+  const isAll = selectedCycleId === 'all';
+  const activeCycle = cycles.find(c => c.id === selectedCycleId) || cycles[0];
+  const targetObs = isAll ? observations : activeCycle.observations;
+  const targetCycles = isAll ? cycles : [activeCycle];
+
+  const totalDays = targetObs.length;
+  const peakObs = targetObs.find(o => o.isPeakDay);
 
   let lutealPhaseDays = 0;
   let follicularPhaseDays = 0;
   if (peakObs) {
     follicularPhaseDays = peakObs.cycleDay;
-    lutealPhaseDays = observations.filter(o => o.cycleDay > peakObs.cycleDay).length;
+    lutealPhaseDays = targetObs.filter(o => o.cycleDay > peakObs.cycleDay).length;
   }
 
-  const mensesDays = observations.filter(o => o.stamp === 'RED').length;
-  const dryDays = observations.filter(o => o.stamp === 'DARK_GREEN').length;
-  const fertileMucusDays = observations.filter(o => o.stamp === 'WHITE_BABY').length;
-  const postPeakDays = observations.filter(o => o.stamp.startsWith('LIGHT_GREEN')).length;
-  const intercourseCount = observations.filter(o => o.intercourse).length;
+  const mensesDays = targetObs.filter(o => o.stamp === 'RED').length;
+  const dryDays = targetObs.filter(o => o.stamp === 'DARK_GREEN').length;
+  const fertileMucusDays = targetObs.filter(o => o.stamp === 'WHITE_BABY').length;
+  const postPeakDays = targetObs.filter(o => o.stamp.startsWith('LIGHT_GREEN')).length;
+  const intercourseCount = targetObs.filter(o => o.intercourse).length;
 
-  // Calculate daily Creighton mucus score (0 to 10)
-  const getMucusScore = (obs: typeof observations[0]): number => {
+  const getMucusScore = (obs: Observation): number => {
     const mods = obs.modifiers || [];
     if (obs.stretch === '10' || obs.stretch === '10DL' || obs.stretch === '10SL' || obs.stretch === '10WL' || mods.includes('K') || mods.includes('L')) {
       return 10;
@@ -47,9 +52,9 @@ export const CycleAnalyticsView: React.FC = () => {
     return 0;
   };
 
-  const avgMucusScore = (
-    observations.reduce((acc, obs) => acc + getMucusScore(obs), 0) / totalDays
-  ).toFixed(1);
+  const avgMucusScore = totalDays > 0
+    ? (targetObs.reduce((acc, obs) => acc + getMucusScore(obs), 0) / totalDays).toFixed(1)
+    : '0.0';
 
   return (
     <div className="analytics-view">
@@ -86,7 +91,7 @@ export const CycleAnalyticsView: React.FC = () => {
         <div className="analytics-card">
           <div className="card-header">
             <Calendar size={20} className="icon-indigo" />
-            <h3>{t.analytics.phasesTitle}</h3>
+            <h3>{t.analytics.phasesTitle} {isAll ? '(All Cycles Combined)' : `(Cycle ${cycles.length - cycles.findIndex(c => c.id === activeCycle.id)})`}</h3>
           </div>
           <div className="phase-metrics">
             <div className="phase-row">
@@ -94,28 +99,28 @@ export const CycleAnalyticsView: React.FC = () => {
               <strong>{mensesDays} {t.stats.days}</strong>
             </div>
             <div className="phase-bar-wrapper">
-              <div className="phase-bar bar-menses" style={{ width: `${(mensesDays / totalDays) * 100}%` }} />
+              <div className="phase-bar bar-menses" style={{ width: `${totalDays > 0 ? (mensesDays / totalDays) * 100 : 0}%` }} />
             </div>
 
             <div className="phase-row">
               <span>{t.analytics.follicularPhase}</span>
-              <strong>{follicularPhaseDays > 0 ? `${follicularPhaseDays} ${t.stats.days}` : 'N/A'}</strong>
+              <strong>{follicularPhaseDays} {t.stats.days}</strong>
             </div>
             <div className="phase-bar-wrapper">
-              <div className="phase-bar bar-follicular" style={{ width: `${((follicularPhaseDays || 0) / totalDays) * 100}%` }} />
+              <div className="phase-bar bar-follicular" style={{ width: `${totalDays > 0 ? (follicularPhaseDays / totalDays) * 100 : 0}%` }} />
             </div>
 
             <div className="phase-row">
               <span>{t.analytics.lutealPhase}</span>
-              <strong>{lutealPhaseDays > 0 ? `${lutealPhaseDays} ${t.stats.days}` : 'N/A'}</strong>
+              <strong>{lutealPhaseDays} {t.stats.days}</strong>
             </div>
             <div className="phase-bar-wrapper">
-              <div className="phase-bar bar-luteal" style={{ width: `${((lutealPhaseDays || 0) / totalDays) * 100}%` }} />
+              <div className="phase-bar bar-luteal" style={{ width: `${totalDays > 0 ? (lutealPhaseDays / totalDays) * 100 : 0}%` }} />
             </div>
           </div>
         </div>
 
-        {/* Creighton Mucus Score Distribution */}
+        {/* Mucus & Stamp Score Distribution */}
         <div className="analytics-card">
           <div className="card-header">
             <TrendingUp size={20} className="icon-emerald" />
@@ -126,7 +131,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-badge stamp-red">Red</div>
               <div className="dist-info">
                 <span>Menses Bleeding</span>
-                <strong>{mensesDays} {t.stats.days} ({Math.round((mensesDays / totalDays) * 100)}%)</strong>
+                <strong>{mensesDays} {t.stats.days} ({totalDays > 0 ? Math.round((mensesDays / totalDays) * 100) : 0}%)</strong>
               </div>
             </div>
 
@@ -134,7 +139,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-badge stamp-dark_green">Dark Green</div>
               <div className="dist-info">
                 <span>Infertile Dry Days</span>
-                <strong>{dryDays} {t.stats.days} ({Math.round((dryDays / totalDays) * 100)}%)</strong>
+                <strong>{dryDays} {t.stats.days} ({totalDays > 0 ? Math.round((dryDays / totalDays) * 100) : 0}%)</strong>
               </div>
             </div>
 
@@ -142,7 +147,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-badge stamp-white_baby">White 👶</div>
               <div className="dist-info">
                 <span>Fertile Mucus Days</span>
-                <strong>{fertileMucusDays} {t.stats.days} ({Math.round((fertileMucusDays / totalDays) * 100)}%)</strong>
+                <strong>{fertileMucusDays} {t.stats.days} ({totalDays > 0 ? Math.round((fertileMucusDays / totalDays) * 100) : 0}%)</strong>
               </div>
             </div>
 
@@ -163,22 +168,34 @@ export const CycleAnalyticsView: React.FC = () => {
             <h3>{t.analytics.trendTitle}</h3>
           </div>
           <div className="mucus-trend-wrapper">
-            <div className="mucus-trend-chart">
-              {observations.map(obs => {
-                const score = getMucusScore(obs);
-                const heightPct = Math.max((score / 10) * 100, 8);
-                return (
-                  <div key={obs.id} className="trend-bar-col" title={`CD ${obs.cycleDay}: ${obs.codeString || '0'} (Score: ${score})`}>
-                    <div className="trend-bar-value">{score > 0 ? score : ''}</div>
-                    <div
-                      className={`trend-bar ${obs.isPeakDay ? 'bar-peak' : score >= 6 ? 'bar-fertile' : 'bar-dry'}`}
-                      style={{ height: `${heightPct}%` }}
-                    />
-                    <div className="trend-bar-label">CD{obs.cycleDay}</div>
+            {targetCycles.map((cycle, cIdx) => {
+              const cycleNum = cycles.length - cycles.findIndex(c => c.id === cycle.id);
+              return (
+                <div key={cycle.id} className="cycle-trend-group">
+                  {isAll && (
+                    <div className="cycle-trend-group-title">
+                      Cycle {cycleNum} (Started {cycle.startDate})
+                    </div>
+                  )}
+                  <div className="mucus-trend-chart">
+                    {cycle.observations.map(obs => {
+                      const score = getMucusScore(obs);
+                      const heightPct = Math.max((score / 10) * 100, 8);
+                      return (
+                        <div key={obs.id} className="trend-bar-col" title={`CD ${obs.cycleDay}: ${obs.codeString || '0'} (Score: ${score})`}>
+                          <div className="trend-bar-value">{score > 0 ? score : ''}</div>
+                          <div
+                            className={`trend-bar ${obs.isPeakDay ? 'bar-peak' : score >= 6 ? 'bar-fertile' : 'bar-dry'}`}
+                            style={{ height: `${heightPct}%` }}
+                          />
+                          <div className="trend-bar-label">CD{obs.cycleDay}</div>
+                        </div>
+                      );
+                    })}
                   </div>
-                );
-              })}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

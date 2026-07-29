@@ -35,7 +35,7 @@ describe('CycleAnalyticsView Component', () => {
     renderAnalyticsView();
     fireEvent.click(screen.getByText('Load Demo Data'));
 
-    expect(screen.getByText('Cycle Phases Breakdown')).toBeInTheDocument();
+    expect(screen.getByText(/Cycle Phases Breakdown/)).toBeInTheDocument();
     expect(screen.getByText('Mucus & Stamp Score Distribution')).toBeInTheDocument();
     expect(screen.getByText('Creighton Mucus Score Trend (0 to 10)')).toBeInTheDocument();
     expect(screen.getByText('Practitioner Clinical Summary (CrMS / NaPro)')).toBeInTheDocument();
