@@ -7,10 +7,12 @@
     "dev": "vite",
     "build": "tsc --noEmit && vite build",
     "preview": "vite preview",
+    "pages:dev": "wrangler pages dev dist",
+    "deploy": "npm run build && wrangler pages deploy dist",
     "test": "vitest run"
   },
   "engines": {
-    "node": ">=26.5.0"
+    "node": ">=22.0.0"
   },
   "repository": {
     "type": "git",
@@ -19,7 +21,7 @@
   "keywords": [],
   "author": "",
   "license": "MIT",
-  "type": "commonjs",
+  "type": "module",
   "bugs": {
     "url": "https://github.com/gsuquet/fertility-care/issues"
   },
@@ -39,6 +41,7 @@
     "jsdom": "^30.0.0",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10"
+    "vitest": "^4.1.10",
+    "wrangler": "^3.114.0"
   }
 }

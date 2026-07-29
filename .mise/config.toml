@@ -9,6 +9,7 @@ dev = { run = "npm run dev", description = "Start Vite development server" }
 build = { run = "npm run build", description = "Type-check TypeScript and build production bundle" }
 test = { run = "npm run test", description = "Run Vitest unit and integration test suite" }
 preview = { run = "npm run preview", description = "Preview production build locally" }
+deploy = { run = "npm run deploy", description = "Build and deploy application to Cloudflare Pages" }
 install = { run = "npm install", description = "Install project dependencies" }
 
 [tools]
