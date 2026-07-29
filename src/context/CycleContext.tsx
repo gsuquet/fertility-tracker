@@ -4,6 +4,7 @@ import { processCycleObservations } from '../domain/peakDetector';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
+import { getTodayStr, addDays } from '../utils/dateUtils';
 
 interface CycleContextType {
   observations: Observation[];
@@ -59,7 +60,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   const saveObservation = (obsData: Partial<Observation>) => {
     setObservations(prev => {
-      const date = obsData.date || new Date().toISOString().split('T')[0];
+      const date = obsData.date || getTodayStr();
       const existingIdx = prev.findIndex(o => o.date === date);
 
       const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
@@ -140,14 +141,12 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   const loadDemoData = () => {
-    const today = new Date();
+    const todayStr = getTodayStr();
     const demoObs: Observation[] = [];
 
     // Generate 2 full 28-day past cycles + current cycle (56 days total history)
     for (let i = 55; i >= 0; i--) {
-      const d = new Date(today);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = addDays(todayStr, -i);
 
       // Day within 28-day cycle: 1 to 28
       const cd = ((55 - i) % 28) + 1;

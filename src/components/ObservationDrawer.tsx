@@ -6,12 +6,13 @@ import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
 import { StampBadge } from './StampBadge';
 import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
+import { getTodayStr } from '../utils/dateUtils';
 
 export const ObservationDrawer: React.FC = () => {
   const { selectedObservation, setSelectedObservation, isDrawerOpen, setIsDrawerOpen, saveObservation, deleteObservation } = useCycle();
   const { t } = useLanguage();
 
-  const [date, setDate] = useState(() => new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState(() => getTodayStr());
   const [bleeding, setBleeding] = useState<BleedingCode | undefined>();
   const [stretch, setStretch] = useState<MucusStretch | undefined>();
   const [modifiers, setModifiers] = useState<MucusModifier[]>([]);
@@ -35,7 +36,7 @@ export const ObservationDrawer: React.FC = () => {
       setIsManualPeak(selectedObservation.isManualPeak || false);
       setDirectInputText(selectedObservation.codeString || '');
     } else {
-      setDate(new Date().toISOString().split('T')[0]);
+      setDate(getTodayStr());
       setBleeding(undefined);
       setStretch(undefined);
       setModifiers([]);

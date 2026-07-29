@@ -5,6 +5,7 @@ import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode, 
 import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
 import { StampBadge } from './StampBadge';
+import { getTodayStr, addDays, formatDateDisplay } from '../utils/dateUtils';
 import { 
   Calendar as CalendarIcon, 
   ChevronLeft, 
@@ -28,8 +29,6 @@ import {
 export const TodayView: React.FC = () => {
   const { observations, saveObservation, deleteObservation, selectedObservation, setSelectedObservation } = useCycle();
   const { t, language } = useLanguage();
-
-  const getTodayStr = () => new Date().toISOString().split('T')[0];
 
   // User preference for entry mode: 'direct' (direct code input only) or 'detailed' (button selectors)
   const [entryMode, setEntryMode] = useState<'direct' | 'detailed'>(() => {
@@ -116,15 +115,11 @@ export const TodayView: React.FC = () => {
 
   // Navigation handlers
   const handlePrevDay = () => {
-    const d = new Date(selectedDate + 'T00:00:00');
-    d.setDate(d.getDate() - 1);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(prev => addDays(prev, -1));
   };
 
   const handleNextDay = () => {
-    const d = new Date(selectedDate + 'T00:00:00');
-    d.setDate(d.getDate() + 1);
-    setSelectedDate(d.toISOString().split('T')[0]);
+    setSelectedDate(prev => addDays(prev, 1));
   };
 
   const handleGoToToday = () => {
@@ -242,27 +237,14 @@ export const TodayView: React.FC = () => {
 
   // Format date display
   const formatDateTitle = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
-        weekday: 'long',
-        year: 'numeric',
-        month: 'long',
-        day: 'numeric'
-      });
-    } catch (e) {
-      return dateStr;
-    }
+    return formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US');
   };
 
   // Recent 5 days preview
   const getRecentDays = () => {
     const list: { dateStr: string; obs?: Observation }[] = [];
-    const baseDate = new Date(selectedDate + 'T00:00:00');
     for (let i = 4; i >= 0; i--) {
-      const d = new Date(baseDate);
-      d.setDate(d.getDate() - i);
-      const dateStr = d.toISOString().split('T')[0];
+      const dateStr = addDays(selectedDate, -i);
       const obs = observations.find(o => o.date === dateStr);
       list.push({ dateStr, obs });
     }
@@ -324,7 +306,11 @@ export const TodayView: React.FC = () => {
               type="date"
               className="today-date-picker-input compact-picker-input"
               value={selectedDate}
-              onChange={e => setSelectedDate(e.target.value)}
+              onChange={e => {
+                if (e.target.value) {
+                  setSelectedDate(e.target.value);
+                }
+              }}
               aria-label={t.labels.date}
             />
           </div>
@@ -628,8 +614,7 @@ export const TodayView: React.FC = () => {
             <div className="recent-days-list">
               {getRecentDays().map(({ dateStr, obs }) => {
                 const isSelected = dateStr === selectedDate;
-                const d = new Date(dateStr + 'T00:00:00');
-                const dayLabel = d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+                const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
 
                 return (
                   <button

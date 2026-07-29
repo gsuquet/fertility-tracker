@@ -5,6 +5,7 @@ import { TodayView } from '../TodayView';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { ThemeProvider } from '../../context/ThemeContext';
 import { CycleProvider } from '../../context/CycleContext';
+import { getTodayStr, addDays, formatDateDisplay } from '../../utils/dateUtils';
 
 const renderTodayView = () => {
   return render(
@@ -28,9 +29,30 @@ describe('TodayView Component (Dedicated Today Page)', () => {
 
   it('allows stepping to previous and next days', () => {
     renderTodayView();
+    const todayStr = getTodayStr();
+    const prevDayStr = addDays(todayStr, -1);
+    const nextDayStr = addDays(todayStr, 1);
+
+    const prevTitleText = formatDateDisplay(prevDayStr, 'en-US');
+    const todayTitleText = formatDateDisplay(todayStr, 'en-US');
+    const nextTitleText = formatDateDisplay(nextDayStr, 'en-US');
+
+    expect(screen.getByText(todayTitleText)).toBeInTheDocument();
+
     const prevBtn = screen.getByTitle('Previous Day');
-    expect(prevBtn).toBeInTheDocument();
+    const nextBtn = screen.getByTitle('Next Day');
+
+    // Click Prev Day -> moves to yesterday
     fireEvent.click(prevBtn);
+    expect(screen.getByText(prevTitleText)).toBeInTheDocument();
+
+    // Click Next Day -> moves back to today
+    fireEvent.click(nextBtn);
+    expect(screen.getByText(todayTitleText)).toBeInTheDocument();
+
+    // Click Next Day again -> moves to tomorrow
+    fireEvent.click(nextBtn);
+    expect(screen.getByText(nextTitleText)).toBeInTheDocument();
   });
 
   it('updates form and code string when direct input text is typed', () => {

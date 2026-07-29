@@ -3,6 +3,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Observation } from '../types/crms';
 import { StampBadge } from './StampBadge';
+import { addDays, formatDayOfWeek } from '../utils/dateUtils';
 import { 
   Plus, 
   ChevronLeft, 
@@ -89,24 +90,13 @@ export const ChartRow: React.FC = () => {
     : cycles.filter(c => c.id === selectedCycleId);
 
   // Helper to format day of week (e.g. Mon, Tue / Lun, Mar)
-  const formatDayOfWeek = (dateStr: string) => {
-    try {
-      const d = new Date(dateStr + 'T00:00:00');
-      return d.toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short' });
-    } catch (e) {
-      return '';
-    }
+  const formatDayOfWeekHelper = (dateStr: string) => {
+    return formatDayOfWeek(dateStr, language === 'fr' ? 'fr-FR' : 'en-US');
   };
 
   // Helper to compute date for day offset from start date
   const getDateForDay = (startDateStr: string, dayNum: number) => {
-    try {
-      const d = new Date(startDateStr + 'T00:00:00');
-      d.setDate(d.getDate() + (dayNum - 1));
-      return d.toISOString().split('T')[0];
-    } catch (e) {
-      return '';
-    }
+    return addDays(startDateStr, dayNum - 1);
   };
 
   if (cycles.length === 0) {

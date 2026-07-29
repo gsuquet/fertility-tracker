@@ -2,6 +2,7 @@ import React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Printer, Download, FileText } from 'lucide-react';
+import { getTodayStr } from '../utils/dateUtils';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -24,7 +25,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose }) => 
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Creighton_FertilityCare_Chart_${new Date().toISOString().split('T')[0]}.json`;
+    a.download = `Creighton_FertilityCare_Chart_${getTodayStr()}.json`;
     a.click();
     URL.revokeObjectURL(url);
   };
