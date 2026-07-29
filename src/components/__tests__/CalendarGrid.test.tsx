@@ -22,4 +22,11 @@ describe('CalendarGrid Component', () => {
     expect(nextBtn).toBeInTheDocument();
     expect(nextBtn).toBeDisabled();
   });
+
+  it('renders Monday as the first column header of the week', () => {
+    const { container } = renderCalendarGrid();
+    const headers = container.querySelectorAll('.calendar-weekday-header .weekday-full');
+    expect(headers[0].textContent).toBe('Mon');
+    expect(headers[6].textContent).toBe('Sun');
+  });
 });

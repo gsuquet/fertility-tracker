@@ -40,8 +40,9 @@ export const CalendarGrid: React.FC = () => {
   const obsMap = new Map(observations.map(o => [o.date, o]));
 
   const daysGrid: (number | null)[] = [];
-  // Pad blank start days (Sunday = 0)
-  for (let i = 0; i < firstDayOfMonth; i++) {
+  // Pad blank start days (Monday = 0)
+  const startPadding = (firstDayOfMonth + 6) % 7;
+  for (let i = 0; i < startPadding; i++) {
     daysGrid.push(null);
   }
   for (let day = 1; day <= daysInMonth; day++) {
@@ -73,13 +74,13 @@ export const CalendarGrid: React.FC = () => {
 
       <div className="calendar-grid">
         {[
-          { full: 'Sun', short: 'S' },
           { full: 'Mon', short: 'M' },
           { full: 'Tue', short: 'T' },
           { full: 'Wed', short: 'W' },
           { full: 'Thu', short: 'T' },
           { full: 'Fri', short: 'F' },
           { full: 'Sat', short: 'S' },
+          { full: 'Sun', short: 'S' },
         ].map(d => (
           <div key={d.full} className="calendar-weekday-header">
             <span className="weekday-full">{d.full}</span>
