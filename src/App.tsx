@@ -10,11 +10,12 @@ import { TodayView } from './components/TodayView';
 import { ChartRow } from './components/ChartRow';
 import { CalendarGrid } from './components/CalendarGrid';
 import { CycleStatsHeader } from './components/CycleStatsHeader';
-import { CycleAnalyticsView } from './components/CycleAnalyticsView';
 import { ObservationDrawer } from './components/ObservationDrawer';
-import { ExportModal } from './components/ExportModal';
-import { PrintExportView } from './components/PrintExportView';
 import { Footer } from './components/Footer';
+
+const CycleAnalyticsView = React.lazy(() => import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView })));
+const ExportModal = React.lazy(() => import('./components/ExportModal').then(m => ({ default: m.ExportModal })));
+const PrintExportView = React.lazy(() => import('./components/PrintExportView').then(m => ({ default: m.PrintExportView })));
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
@@ -45,23 +46,27 @@ const MainApp: React.FC = () => {
       <main className={`main-content ${activeTab === 'today' ? 'today-active' : ''}`}>
         <CycleStatsHeader />
 
-        {activeTab === 'today' && <TodayView />}
-        {activeTab === 'chart' && <ChartRow />}
-        {activeTab === 'calendar' && <CalendarGrid />}
-        {activeTab === 'analytics' && <CycleAnalyticsView />}
+        <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
+          {activeTab === 'today' && <TodayView />}
+          {activeTab === 'chart' && <ChartRow />}
+          {activeTab === 'calendar' && <CalendarGrid />}
+          {activeTab === 'analytics' && <CycleAnalyticsView />}
+        </React.Suspense>
 
         <Footer />
       </main>
 
       <ObservationDrawer />
 
-      <ExportModal
-        isOpen={isExportModalOpen}
-        onClose={() => setIsExportModalOpen(false)}
-        onPreparePrint={handlePreparePrint}
-      />
+      <React.Suspense fallback={null}>
+        <ExportModal
+          isOpen={isExportModalOpen}
+          onClose={() => setIsExportModalOpen(false)}
+          onPreparePrint={handlePreparePrint}
+        />
 
-      <PrintExportView selectedCycleIds={printCycleIds} />
+        <PrintExportView selectedCycleIds={printCycleIds} />
+      </React.Suspense>
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>

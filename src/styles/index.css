@@ -1938,9 +1938,55 @@ body {
     font-weight: 800;
   }
 
+  .mobile-nav-fab {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 42px;
+    height: 42px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
+    color: #ffffff;
+    border: none;
+    cursor: pointer;
+    box-shadow: 0 4px 12px var(--accent-glow);
+    margin: 0 4px;
+    flex-shrink: 0;
+    transition: transform 0.15s ease, box-shadow 0.15s ease;
+  }
+
+  .mobile-nav-fab:active {
+    transform: scale(0.92);
+  }
+
   .mobile-nav-add-btn {
     color: var(--accent-primary);
   }
+}
+
+.header-brand-btn {
+  background: none;
+  border: none;
+  padding: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.65rem;
+  cursor: pointer;
+  user-select: none;
+  flex-shrink: 0;
+  text-align: left;
+  font-family: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+}
+
+.visually-hidden-checkbox:focus-visible + .checkbox-icon {
+  outline: 2px solid var(--accent-primary);
+  outline-offset: 2px;
+  border-radius: 4px;
 }
 
 /* Logger Drawer Overlay */

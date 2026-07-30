@@ -57,7 +57,7 @@ export const CycleAnalyticsView: React.FC = () => {
     : '0.0';
 
   return (
-    <div className="analytics-view">
+    <div className="analytics-view" id="analytics-panel" role="tabpanel" aria-labelledby="tab-analytics">
       {/* Interactive MCS Explanation Guide Card */}
       <div className="analytics-card mcs-guide-card full-width">
         <button

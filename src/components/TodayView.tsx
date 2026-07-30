@@ -294,7 +294,7 @@ export const TodayView: React.FC = () => {
   };
 
   return (
-    <div className="today-page-container">
+    <div className="today-page-container" id="today-panel" role="tabpanel" aria-labelledby="tab-today">
       {/* Toast Notification */}
       {toastMessage && (
         <div className="today-toast" role="status" aria-live="polite">
