@@ -4,16 +4,17 @@ import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { CyclePicker } from './CyclePicker';
 import { ActiveTab } from '../types/crms';
-import { Sun, Moon, Globe, Plus, Download, Layout, Calendar as CalendarIcon, BarChart2, CalendarDays, Info } from 'lucide-react';
+import { Sun, Moon, Globe, Plus, Download, Layout, Calendar as CalendarIcon, BarChart2, CalendarDays, Info, BookOpen } from 'lucide-react';
 
 interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   onOpenExport: () => void;
   onOpenVersion?: () => void;
+  onOpenWelcome?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenExport, onOpenVersion }) => {
+export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenExport, onOpenVersion, onOpenWelcome }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { setSelectedObservation } = useCycle();
@@ -107,6 +108,17 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
         >
           <Download size={18} />
         </button>
+
+        {onOpenWelcome && (
+          <button
+            className="icon-button"
+            onClick={onOpenWelcome}
+            title={t.welcomeModal.title}
+            aria-label={t.welcomeModal.title}
+          >
+            <BookOpen size={18} />
+          </button>
+        )}
 
         {onOpenVersion && (
           <button

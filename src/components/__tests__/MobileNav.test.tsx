@@ -19,9 +19,9 @@ describe('MobileNav Component (Phone Navigation)', () => {
   it('renders mobile navigation items including Today tab', () => {
     renderMobileNav({ activeTab: 'chart', setActiveTab: vi.fn() });
     expect(screen.getByText('Today')).toBeInTheDocument();
-    expect(screen.getByText('Paper Chart Strip')).toBeInTheDocument();
-    expect(screen.getByText('Monthly Calendar')).toBeInTheDocument();
-    expect(screen.getByText('Cycle Analytics')).toBeInTheDocument();
+    expect(screen.getByText('Chart')).toBeInTheDocument();
+    expect(screen.getByText('Calendar')).toBeInTheDocument();
+    expect(screen.getByText('Analytics')).toBeInTheDocument();
   });
 
   it('triggers setActiveTab when mobile tab buttons are tapped', () => {
@@ -31,7 +31,7 @@ describe('MobileNav Component (Phone Navigation)', () => {
     fireEvent.click(screen.getByText('Today'));
     expect(setActiveTab).toHaveBeenCalledWith('today');
 
-    fireEvent.click(screen.getByText('Monthly Calendar'));
+    fireEvent.click(screen.getByText('Calendar'));
     expect(setActiveTab).toHaveBeenCalledWith('calendar');
   });
 });
