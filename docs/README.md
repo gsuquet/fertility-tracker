@@ -55,6 +55,7 @@ How-To guides provide actionable, step-by-step instructions to accomplish specif
 
 Reference documentation provides precise, technical specifications and schemas for developer reference.
 
+* **[Full Application Specification](../SPEC.md):** Complete technical and functional specification of the application architecture, domain algorithms, views, and data models.
 * **[CrMS Biomarker Codes & Stamp Rules](reference/crms-biomarker-codes.md):** Complete catalog of stretch, bleeding, frequency, symptom, and stamp color codes.
 * **[Domain Engine API Reference](reference/domain-engine-api.md):** Function signatures, inputs, and output types for `codeParser`, `stampCalculator`, `peakDetector`, and `cycleBoundaryDetector`.
 * **[Project & Component Structure](reference/project-structure.md):** High-level breakdown of directories, React components, context providers, and tests.

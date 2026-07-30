@@ -178,6 +178,7 @@ To contribute:
 
 This project uses the **[Diátaxis Framework](docs/README.md)** for developer and user documentation:
 
+- 📋 **[Full Specification Document (SPEC.md)](SPEC.md)** – Complete technical and functional specification of the application.
 - **[Diátaxis Documentation Hub](docs/README.md)**
   - 🎓 **[Tutorials](docs/tutorials/01-getting-started.md)** – Step-by-step onboarding walkthrough.
   - 🛠️ **[How-To Guides](docs/how-to/log-biomarkers.md)** – Actionable task-oriented guides.
