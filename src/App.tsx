@@ -1,8 +1,9 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
 import { ActiveTab } from './types/crms';
+import { checkAndRecordVersionSeen } from './domain/versionTracker';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -16,12 +17,18 @@ import { Footer } from './components/Footer';
 const CycleAnalyticsView = React.lazy(() => import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView })));
 const ExportModal = React.lazy(() => import('./components/ExportModal').then(m => ({ default: m.ExportModal })));
 const PrintExportView = React.lazy(() => import('./components/PrintExportView').then(m => ({ default: m.PrintExportView })));
+const VersionModal = React.lazy(() => import('./components/VersionModal').then(m => ({ default: m.VersionModal })));
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
+  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   const [shouldPrint, setShouldPrint] = useState(false);
+
+  useEffect(() => {
+    checkAndRecordVersionSeen();
+  }, []);
 
   React.useEffect(() => {
     if (shouldPrint) {
@@ -41,6 +48,7 @@ const MainApp: React.FC = () => {
         activeTab={activeTab}
         setActiveTab={setActiveTab}
         onOpenExport={() => setIsExportModalOpen(true)}
+        onOpenVersion={() => setIsVersionModalOpen(true)}
       />
 
       <main className={`main-content ${activeTab === 'today' ? 'today-active' : ''}`}>
@@ -53,7 +61,7 @@ const MainApp: React.FC = () => {
           {activeTab === 'analytics' && <CycleAnalyticsView />}
         </React.Suspense>
 
-        <Footer />
+        <Footer onOpenVersion={() => setIsVersionModalOpen(true)} />
       </main>
 
       <ObservationDrawer />
@@ -63,6 +71,11 @@ const MainApp: React.FC = () => {
           isOpen={isExportModalOpen}
           onClose={() => setIsExportModalOpen(false)}
           onPreparePrint={handlePreparePrint}
+        />
+
+        <VersionModal
+          isOpen={isVersionModalOpen}
+          onClose={() => setIsVersionModalOpen(false)}
         />
 
         <PrintExportView selectedCycleIds={printCycleIds} />

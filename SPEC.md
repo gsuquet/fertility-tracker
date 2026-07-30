@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.0.0  
+**Document Version:** 1.1.0  
 **Status:** Approved  
 **Last Updated:** July 30, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -17,6 +17,7 @@
    - [3.3 Stamp Calculation Rules](#33-stamp-calculation-rules)
    - [3.4 Peak Day & Post-Peak Detector](#34-peak-day--post-peak-detector)
    - [3.5 Cycle Boundary Detector](#35-cycle-boundary-detector)
+   - [3.6 Version Tracker Engine](#36-version-tracker-engine)
 4. [Data Schemas & Type System](#4-data-schemas--type-system)
 5. [User Interface & Views](#5-user-interface--views)
    - [5.1 Navigation & Global Controls](#51-navigation--global-controls)
@@ -27,6 +28,7 @@
    - [5.6 Cycle Analytics View](#56-cycle-analytics-view)
    - [5.7 Observation Drawer](#57-observation-drawer)
    - [5.8 Export & Printing System](#58-export--printing-system)
+   - [5.9 Version Tracker & System Info Modal](#59-version-tracker--system-info-modal)
 6. [State Management & Data Persistence](#6-state-management--data-persistence)
 7. [Internationalization & Design System](#7-internationalization--design-system)
 8. [Testing & Quality Assurance](#8-testing--quality-assurance)
@@ -204,6 +206,17 @@ flowchart TD
 
 ---
 
+### 3.6 Version Tracker Engine
+
+**Module:** [src/domain/versionTracker.ts](./src/domain/versionTracker.ts)
+
+- **Version & Release History Management:** Maintains structured release entries (`VERSION_HISTORY`) detailing version tags, release dates, titles, taglines, and feature highlights (e.g. `v1.1.0` release notes).
+- **Runtime Metadata:** Retrieves application version from Vite build-time constants (`__APP_VERSION__`, `__BUILD_DATE__`) falling back to `package.json` specifications.
+- **Version Update Tracking:** Evaluates user's last-seen version stored in `localStorage` (`fertility_tracker_last_seen_version`) via `checkAndRecordVersionSeen()`.
+- **Storage Footprint Diagnostics:** Calculates live browser storage usage statistics via `getStorageStats()`, parsing stored observations in `fertility_care_observations` and running cycle boundary detection to measure exact cycles and observations count.
+
+---
+
 ## 4. Data Schemas & Type System
 
 **Module:** [src/types/crms.ts](./src/types/crms.ts)
@@ -265,7 +278,8 @@ The user interface comprises four primary view tabs, global navigation, header s
 
 ### 5.1 Navigation & Global Controls
 
-- **Desktop Header ([Header.tsx](./src/components/Header.tsx)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`).
+- **Desktop Header ([Header.tsx](./src/components/Header.tsx)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`). Responsive design automatically hides brand title text on narrow viewports ($\le 480\text{px}$) while scaling the logo icon.
+- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Version Badge button (`v1.1.0`) linking to the Version Tracker modal.
 - **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
 
 ---
@@ -353,14 +367,26 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ---
 
+### 5.9 Version Tracker & System Info Modal
+
+**Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
+
+- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.1.0`) in the footer.
+- **Tabbed Interface:**
+  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.1.0`) with feature highlights, release date, and full changelog history.
+  2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB.
+- **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
+
+---
+
 ## 6. State Management & Data Persistence
 
 **Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
 
 - State managed via React Context (`CycleProvider`).
-- **Storage Strategy:** Browser `localStorage` using key `fertility_care_observations`.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, and `fertility_tracker_last_seen_version` for version update tracking.
 - **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
-- **Demo Data Generator:** Built-in 56-day sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
+- **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
 ---
 
@@ -371,7 +397,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Module:** [src/context/LanguageContext.tsx](./src/context/LanguageContext.tsx)
 
 - Supported languages: **English (`en`)**, **French (`fr`)**, **Spanish (`es`)**.
-- Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, and error messages.
+- Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
 
 ### 7.2 Design System & Themes
 
@@ -383,7 +409,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `--stamp-dark-green`: `#15803d`
   - `--stamp-white-baby`: `#ffffff`
   - `--stamp-light-green`: `#86efac`
-  - Theme-adaptive background, text, border, and elevation variables.
+  - Theme-adaptive background (`var(--bg-surface)`, `var(--bg-primary)`), text, border (`var(--bg-surface-border)`), and elevation variables.
 
 ---
 
@@ -403,7 +429,9 @@ npm run test
 - `stampCalculator.test.ts`: Mucus stretch and modifier stamp assignment accuracy.
 - `peakDetector.test.ts`: Automatic peak detection, manual peak overrides, and post-peak $P+1, P+2, P+3$ stamp assignments.
 - `cycleBoundaryDetector.test.ts`: Menses onset boundary splitting and cycle day numbering.
-- `Component Integration Tests`: Header, ChartRow, TodayView, and ObservationDrawer rendering tests.
+- `versionTracker.test.ts`: Version history management, last-seen version tracking, and live storage footprint calculation.
+- `VersionModal.test.tsx`: Modal rendering, tab navigation, and keyboard/button close interactions.
+- `Component Integration Tests`: Header, Footer, ChartRow, TodayView, CalendarGrid, ExportModal, and ObservationDrawer rendering tests.
 
 ---
 

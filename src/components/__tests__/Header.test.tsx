@@ -43,4 +43,15 @@ describe('Header Component (Desktop)', () => {
     fireEvent.click(langBtn);
     expect(langBtn).toHaveTextContent('FR');
   });
+
+  it('triggers onOpenVersion when info button is clicked', () => {
+    const handleOpenVersion = vi.fn();
+    renderHeader({ activeTab: 'chart', setActiveTab: vi.fn(), onOpenExport: vi.fn(), onOpenVersion: handleOpenVersion });
+
+    const versionBtn = screen.getByRole('button', { name: /About & Version Tracker|À propos/i });
+    expect(versionBtn).toBeInTheDocument();
+
+    fireEvent.click(versionBtn);
+    expect(handleOpenVersion).toHaveBeenCalledTimes(1);
+  });
 });
