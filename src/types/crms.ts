@@ -14,7 +14,8 @@ export type StampType =
   | 'WHITE_BABY'           // Fertile mucus day
   | 'LIGHT_GREEN_BABY_1'   // Post-peak day 1
   | 'LIGHT_GREEN_BABY_2'   // Post-peak day 2
-  | 'LIGHT_GREEN_BABY_3';  // Post-peak day 3
+  | 'LIGHT_GREEN_BABY_3'   // Post-peak day 3
+  | 'YELLOW';              // Continuous mucus / yellow stamp regime
 
 export interface Observation {
   id: string;

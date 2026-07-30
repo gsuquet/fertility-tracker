@@ -5,8 +5,11 @@ export interface VersionRelease {
   version: string;
   date: string;
   title: string;
+  titleFr?: string;
   tagline?: string;
+  taglineFr?: string;
   highlights: string[];
+  highlightsFr?: string[];
   crmsSpecVersion: string;
   breakingChanges?: boolean;
 }
@@ -29,15 +32,49 @@ export interface StorageStats {
 }
 
 export const LAST_SEEN_VERSION_KEY = 'fertility_tracker_last_seen_version';
+export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome';
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.0.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.2.0',
+    date: '2026-07-30',
+    title: 'Welcome Screen & New User Onboarding Guide',
+    titleFr: 'Écran de Bienvenue & Guide de Démarrage',
+    tagline: 'Multi-step interactive onboarding, CrMS biomarker education, dual-mode logging guide, demo data loader, and persistent first-visit tracking',
+    taglineFr: 'Guide d\'accueil interactif, tutoriel biomarqueurs CrMS, guidage de saisie double-mode et données démo en un clic',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Added interactive multi-step Welcome Screen & Onboarding Guide modal for new users',
+      'Comprehensive Creighton Model System (CrMS) biomarker & stamp color educational guide',
+      'Interactive dual-mode charting walkthrough explaining Direct Code vs. Detailed Selectors',
+      'Symmetrical card layout, justified text alignment, and fixed-column stamp icon formatting',
+      'Interactive Version History accordion with expandable release notes and separated version/date badges',
+      'Mobile bottom navigation localization fix using concise mobile tab labels (e.g. Graphique, Calendrier)',
+      'One-click Demo Data loader on final onboarding slide to populate sample cycle observations instantly',
+      'Persistent first-visit detection with auto-popup and quick-access Help buttons in Header & Footer',
+      'Full English and French localization across all onboarding slides and system modals',
+    ],
+    highlightsFr: [
+      'Ajout du modal d\'accueil interactif en 4 étapes pour guider les nouvelles utilisatrices',
+      'Guide pédagogique complet des biomarqueurs et timbres de couleur du Modèle Creighton (CrMS)',
+      'Présentation interactive du mode Saisie Directe par code et des Sélecteurs Détaillés',
+      'Mise en page symétrique des cartes, texte justifié et alignement fixe de la colonne des timbres',
+      'Accordéon interactif pour l\'historique des versions avec badges de version et dates séparés',
+      'Correction de la barre de navigation mobile utilisant les traductions courtes (ex. Graphique, Calendrier)',
+      'Bouton de chargement de données démo en un clic pour explorer immédiatement toutes les vues',
+      'Détection automatique de première visite et boutons d\'aide dédiés dans le Header et le Footer',
+      'Traduction intégrale en anglais et en français sur tous les écrans du guide et modals système',
+    ],
+  },
+  {
     version: '1.1.0',
     date: '2026-07-30',
     title: 'Version Tracker & Application UX Performance Suite',
+    titleFr: 'Suivi des Versions & Suite de Performance UX',
     tagline: 'Built-in Version Tracker, UX performance enhancements, and mobile top bar scaling',
+    taglineFr: 'Système de suivi des versions intégré, optimisations de rendu et barre supérieure mobile adaptative',
     crmsSpecVersion: '1.0.0',
     highlights: [
       'Added interactive Version Tracker & System Diagnostics modal accessible from header & footer',
@@ -46,12 +83,21 @@ export const VERSION_HISTORY: VersionRelease[] = [
       'Enhanced surface token color contrast across dark and light UI design modes',
       'Live storage footprint diagnostics tracking logged observations and active cycles',
     ],
+    highlightsFr: [
+      'Ajout du modal interactif À propos, Suivi des versions et Diagnostics système',
+      'Optimisations des performances de rendu pour des transitions de vue instantanées',
+      'Disposition adaptative de la barre de navigation mobile selon la taille d\'écran',
+      'Amélioration du contraste des couleurs sur les thèmes clair et sombre',
+      'Diagnostics de l\'empreinte mémoire locale avec comptage des cycles et observations',
+    ],
   },
   {
     version: '1.0.0',
     date: '2026-07-29',
     title: 'Creighton Model System Core Engine & Multi-View Suite',
+    titleFr: 'Moteur Mère Modèle Creighton & Vues Multiples',
     tagline: 'Initial official release of Fertility Tracker',
+    taglineFr: 'Version initiale officielle de Fertility Tracker',
     crmsSpecVersion: '1.0.0',
     highlights: [
       'Standardized Creighton Model System (CrMS) biomarker parser and stamp calculator',
@@ -61,6 +107,14 @@ export const VERSION_HISTORY: VersionRelease[] = [
       'Bilingual support (English and French) with light and dark mode design themes',
       'Privacy-first architecture with 100% local client-side data storage',
     ],
+    highlightsFr: [
+      'Analyseur de biomarqueurs et calcul des timbres conforme aux règles CrMS',
+      'Détection automatique du Jour Sommet (P) et décompte des jours post-sommet (P+1, P+2, P+3)',
+      'Graphique Papier 35 jours, Calendrier Mensuel, Tableau de bord Aujourd\'hui et Analyses',
+      'Export PDF praticien, rendu PNG haute définition et sauvegarde/restauration JSON',
+      'Prise en charge bilingue français/anglais et thèmes clair et sombre',
+      'Architecture 100% locale sans aucun serveur ni suivi tiers',
+    ],
   },
 ];
 
@@ -68,7 +122,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.1.0';
+  return '1.2.0';
 }
 
 export function getBuildDate(): string {
@@ -130,6 +184,7 @@ export function getStorageStats(): StorageStats {
       const knownKeys = [
         STORAGE_OBSERVATIONS_KEY,
         LAST_SEEN_VERSION_KEY,
+        STORAGE_HAS_SEEN_WELCOME_KEY,
         'fertility_care_lang',
         'fertility_care_theme',
       ];

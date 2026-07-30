@@ -3,7 +3,7 @@ import { LanguageProvider } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
 import { ActiveTab } from './types/crms';
-import { checkAndRecordVersionSeen } from './domain/versionTracker';
+import { checkAndRecordVersionSeen, STORAGE_HAS_SEEN_WELCOME_KEY } from './domain/versionTracker';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -18,16 +18,28 @@ const CycleAnalyticsView = React.lazy(() => import('./components/CycleAnalyticsV
 const ExportModal = React.lazy(() => import('./components/ExportModal').then(m => ({ default: m.ExportModal })));
 const PrintExportView = React.lazy(() => import('./components/PrintExportView').then(m => ({ default: m.PrintExportView })));
 const VersionModal = React.lazy(() => import('./components/VersionModal').then(m => ({ default: m.VersionModal })));
+const WelcomeModal = React.lazy(() => import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal })));
 
 const MainApp: React.FC = () => {
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   const [shouldPrint, setShouldPrint] = useState(false);
 
   useEffect(() => {
     checkAndRecordVersionSeen();
+    try {
+      if (typeof localStorage !== 'undefined') {
+        const hasSeenWelcome = localStorage.getItem(STORAGE_HAS_SEEN_WELCOME_KEY);
+        if (!hasSeenWelcome) {
+          setIsWelcomeModalOpen(true);
+        }
+      }
+    } catch {
+      // Ignore localStorage errors
+    }
   }, []);
 
   React.useEffect(() => {
@@ -49,6 +61,7 @@ const MainApp: React.FC = () => {
         setActiveTab={setActiveTab}
         onOpenExport={() => setIsExportModalOpen(true)}
         onOpenVersion={() => setIsVersionModalOpen(true)}
+        onOpenWelcome={() => setIsWelcomeModalOpen(true)}
       />
 
       <main className={`main-content ${activeTab === 'today' ? 'today-active' : ''}`}>
@@ -61,7 +74,10 @@ const MainApp: React.FC = () => {
           {activeTab === 'analytics' && <CycleAnalyticsView />}
         </React.Suspense>
 
-        <Footer onOpenVersion={() => setIsVersionModalOpen(true)} />
+        <Footer
+          onOpenVersion={() => setIsVersionModalOpen(true)}
+          onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+        />
       </main>
 
       <ObservationDrawer />
@@ -76,6 +92,11 @@ const MainApp: React.FC = () => {
         <VersionModal
           isOpen={isVersionModalOpen}
           onClose={() => setIsVersionModalOpen(false)}
+        />
+
+        <WelcomeModal
+          isOpen={isWelcomeModalOpen}
+          onClose={() => setIsWelcomeModalOpen(false)}
         />
 
         <PrintExportView selectedCycleIds={printCycleIds} />

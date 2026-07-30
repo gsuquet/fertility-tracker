@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.1.0  
+**Document Version:** 1.2.0  
 **Status:** Approved  
 **Last Updated:** July 30, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -29,6 +29,7 @@
    - [5.7 Observation Drawer](#57-observation-drawer)
    - [5.8 Export & Printing System](#58-export--printing-system)
    - [5.9 Version Tracker & System Info Modal](#59-version-tracker--system-info-modal)
+   - [5.10 Welcome Screen & Onboarding Guide Modal](#510-welcome-screen--onboarding-guide-modal)
 6. [State Management & Data Persistence](#6-state-management--data-persistence)
 7. [Internationalization & Design System](#7-internationalization--design-system)
 8. [Testing & Quality Assurance](#8-testing--quality-assurance)
@@ -278,8 +279,8 @@ The user interface comprises four primary view tabs, global navigation, header s
 
 ### 5.1 Navigation & Global Controls
 
-- **Desktop Header ([Header.tsx](./src/components/Header.tsx)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`). Responsive design automatically hides brand title text on narrow viewports ($\le 480\text{px}$) while scaling the logo icon.
-- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Version Badge button (`v1.1.0`) linking to the Version Tracker modal.
+- **Desktop Header ([Header.tsx](./src/components/Header.tsx)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`). Responsive design automatically hides brand title text on narrow viewports ($\le 480\text{px}$) while scaling the logo icon.
+- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding Guide link and Version Badge button (`v1.2.0`) linking to the Version Tracker modal.
 - **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
 
 ---
@@ -371,11 +372,25 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
 
-- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.1.0`) in the footer.
+- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.2.0`) in the footer.
 - **Tabbed Interface:**
-  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.1.0`) with feature highlights, release date, and full changelog history.
+  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.2.0`) with feature highlights, release date, and full changelog history.
   2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB.
 - **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
+
+---
+
+### 5.10 Welcome Screen & Onboarding Guide Modal
+
+**Module:** [src/components/WelcomeModal.tsx](./src/components/WelcomeModal.tsx)
+
+- **First-Visit Auto-Popup:** Automatically opens when a user opens the app for the first time (`fertility_tracker_has_seen_welcome` is not present in `localStorage`).
+- **Interactive Multi-Step Stepper (4 Slides):**
+  1. **CrMS Overview & Privacy First:** Explains natural biomarker charting principles and 100% client-side local storage privacy.
+  2. **Biomarker & Stamp Legend:** Interactive visual matrix explaining Red (Bleeding), Dark Green (Dry), Green+Baby (Fertile Mucus), White+Baby (Peak/High Fertility), and Yellow stamps, as well as post-peak counting ($P+1, P+2, P+3$).
+  3. **Daily Charting Guide:** Walkthrough of the Today Dashboard, Observation Drawer, Direct Code Entry (`10KL X3 I AP`), and Detailed Selectors.
+  4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
+- **Accessible Design & Navigation:** Keyboard navigation (`Escape` close, tab trap), step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
 
 ---
 
@@ -384,7 +399,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
 
 - State managed via React Context (`CycleProvider`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, and `fertility_tracker_last_seen_version` for version update tracking.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
 - **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
