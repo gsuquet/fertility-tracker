@@ -25,4 +25,16 @@ describe('PrintExportView Component', () => {
     expect(screen.getByText(/Clinical Chart Export • Landscape 35-Day Grid View/i)).toBeInTheDocument();
     expect(screen.getByText(/Creighton Model Chart Stamp Key:/i)).toBeInTheDocument();
   });
+
+  it('removes day of week, strips spaces from observations, and renders notes line under observation', () => {
+    const { container } = renderPrintExportView({ selectedCycleIds: ['all'] });
+    
+    // Check that day of week element (.print-day-name) is not rendered
+    const dayNameElements = container.querySelectorAll('.print-day-name');
+    expect(dayNameElements.length).toBe(0);
+
+    // Check that notes elements (.print-notes) are rendered for grid cells
+    const notesElements = container.querySelectorAll('.print-notes');
+    expect(notesElements.length).toBeGreaterThan(0);
+  });
 });

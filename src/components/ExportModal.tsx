@@ -70,6 +70,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     } else {
       window.print();
     }
+    onClose();
   };
 
   const handleDownloadJson = () => {
@@ -81,6 +82,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     a.download = `Creighton_FertilityCare_Chart_${getTodayStr()}.json`;
     a.click();
     URL.revokeObjectURL(url);
+    onClose();
   };
 
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {

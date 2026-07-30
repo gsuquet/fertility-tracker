@@ -38,6 +38,31 @@ export const CRMS_SPEC_VERSION = '1.0.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.3.0',
+    date: '2026-07-31',
+    title: 'PDF Export Enhancement & Symptom Refinement',
+    titleFr: 'Optimisation Export PDF & Séparation des Symptômes',
+    tagline: 'Compact PDF chart export grid with 2-line observation code wrapping, dedicated free-form notes row, auto-close modal flow, and symptom code formatting',
+    taglineFr: 'Grille PDF compacte avec repli du code sur 2 lignes, ligne de notes libres en-dessous, fermeture automatique du modal et séparation des symptômes',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Removed day of week display from printable PDF chart export cells to maximize horizontal space',
+      'Compact observation code rendering with space removal and automatic 2-line text wrapping for long codes',
+      'Added dedicated free-form notes line at the bottom of each chart cell in PDF export view',
+      'Seamless PDF export user flow with automatic modal close and real-time success toast notification',
+      'Separated symptom codes (AP, RAP, LAP) from primary codeString to eliminate duplicate display and ensure strict placement in symptom badges',
+      'Full English and French localization for PDF export success feedback and version release notes',
+    ],
+    highlightsFr: [
+      'Supprimé l\'affichage du jour de la semaine dans l\'exportation PDF pour maximiser l\'espace disponible',
+      'Rendu compact des codes d\'observation avec suppression des espaces et repli automatique sur 2 lignes',
+      'Ajouté une ligne dédiée pour les notes libres en bas de chaque cellule de graphique dans la vue PDF',
+      'Flux d\'exportation PDF optimisé avec fermeture automatique du modal et notification de succès',
+      'Séparation des codes de symptômes (AP, RAP, LAP) de la chaîne de code principale pour supprimer les doublons',
+      'Traduction intégrale en anglais et en français des notifications et des notes de version',
+    ],
+  },
+  {
     version: '1.2.0',
     date: '2026-07-30',
     title: 'Welcome Screen & New User Onboarding Guide',
@@ -122,14 +147,14 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.2.0';
+  return '1.3.0';
 }
 
 export function getBuildDate(): string {
   if (typeof __BUILD_DATE__ !== 'undefined') {
     return __BUILD_DATE__;
   }
-  return '2026-07-30T00:00:00.000Z';
+  return '2026-07-31T00:00:00.000Z';
 }
 
 export function getVersionInfo(): VersionInfo {

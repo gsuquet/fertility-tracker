@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.2.0  
+**Document Version:** 1.3.0  
 **Status:** Approved  
-**Last Updated:** July 30, 2026  
+**Last Updated:** July 31, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -158,9 +158,10 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 The parser operates in two directions:
 
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order:  
-   `[Bleeding] [Stretch][Modifiers] [Frequency] [Symptoms...] [Intercourse]`  
+   `[Bleeding] [Stretch][Modifiers] [Frequency] [Intercourse]`  
+   *Note:* Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
    *Example:* `10KL X3 I` or `H` or `2W X2`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies, symptoms, and the `I` intercourse flag.
+2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies, symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
@@ -363,7 +364,11 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx)
 
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
-- **Print / PDF Export:** Generates clean, printer-optimized PDF layout hiding UI chrome and headers.
+- **Print / PDF Export:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
+  - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
+  - Observation codes (`codeString`) have spaces removed and support 2-line word wrapping for long codes.
+  - Adds a dedicated horizontal line under the observation code at the bottom of each cell for free-form user notes (`obs.notes`).
+  - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification.
 - **JSON Data Backup & Restore:** Complete data export to JSON file and import capabilities for data portability across devices.
 
 ---
@@ -372,9 +377,9 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
 
-- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.2.0`) in the footer.
+- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.3.0`) in the footer.
 - **Tabbed Interface:**
-  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.2.0`) with feature highlights, release date, and full changelog history.
+  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.3.0`) with feature highlights, release date, and full changelog history.
   2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB.
 - **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
 

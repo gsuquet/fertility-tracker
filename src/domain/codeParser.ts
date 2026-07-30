@@ -44,12 +44,7 @@ export function formatCodeString(obs: Partial<Observation>): string {
     parts.push(obs.frequency);
   }
 
-  // 4. Symptoms (e.g. AP, RAP, LAP)
-  if (obs.symptoms && obs.symptoms.length > 0) {
-    parts.push(...obs.symptoms);
-  }
-
-  // 5. Intercourse marker ('I')
+  // 4. Intercourse marker ('I')
   if (obs.intercourse) {
     parts.push('I');
   }

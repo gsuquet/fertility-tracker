@@ -38,13 +38,15 @@ describe('ExportModal Component', () => {
     expect(screen.getByText('Deselect All')).toBeInTheDocument();
   });
 
-  it('calls onPreparePrint when print button is clicked', () => {
+  it('calls onPreparePrint and onClose when print button is clicked', () => {
     const onPreparePrint = vi.fn();
-    renderExportModal({ isOpen: true, onClose: vi.fn(), onPreparePrint });
+    const onClose = vi.fn();
+    renderExportModal({ isOpen: true, onClose, onPreparePrint });
 
     const printBtn = screen.getByLabelText(/Print \/ Save as PDF/i);
     fireEvent.click(printBtn);
 
     expect(onPreparePrint).toHaveBeenCalled();
+    expect(onClose).toHaveBeenCalled();
   });
 });
