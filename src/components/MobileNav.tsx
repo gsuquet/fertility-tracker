@@ -11,11 +11,11 @@ interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab }) => {
   const { t } = useLanguage();
-  const { setSelectedObservation } = useCycle();
+  const { setSelectedObservation, setIsDrawerOpen } = useCycle();
 
-  const handleNewEntry = () => {
+  const handleQuickAdd = () => {
     setSelectedObservation(null);
-    setActiveTab('today');
+    setIsDrawerOpen(true);
   };
 
   return (
@@ -39,6 +39,16 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
       >
         <Layout size={20} />
         <span>{t.tabs.chart}</span>
+      </button>
+
+      <button
+        type="button"
+        className="mobile-nav-fab"
+        onClick={handleQuickAdd}
+        aria-label={t.actions.newEntry}
+        title={t.actions.newEntry}
+      >
+        <Plus size={22} />
       </button>
 
       <button

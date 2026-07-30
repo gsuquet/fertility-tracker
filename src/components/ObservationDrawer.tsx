@@ -49,6 +49,21 @@ export const ObservationDrawer: React.FC = () => {
     }
   }, [selectedObservation, isDrawerOpen]);
 
+  const drawerRef = React.useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (!isDrawerOpen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        setIsDrawerOpen(false);
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isDrawerOpen, setIsDrawerOpen]);
+
   if (!isDrawerOpen) return null;
 
   const calculatedStamp = calculateStamp(bleeding, stretch, modifiers);
@@ -137,7 +152,7 @@ export const ObservationDrawer: React.FC = () => {
 
   return (
     <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
-      <div className="drawer-container" onClick={e => e.stopPropagation()}>
+      <div className="drawer-container" ref={drawerRef} onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
           <h2 id="drawer-title">{selectedObservation?.id ? 'Edit Observation' : t.actions.newEntry}</h2>
           <button className="icon-button" onClick={() => setIsDrawerOpen(false)} aria-label="Close entry panel">

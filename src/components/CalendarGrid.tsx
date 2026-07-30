@@ -52,7 +52,7 @@ export const CalendarGrid: React.FC = () => {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   return (
-    <div className="calendar-view">
+    <div className="calendar-view" id="calendar-panel" role="tabpanel" aria-labelledby="tab-calendar">
       <div className="calendar-header">
         <button className="icon-button" onClick={handlePrevMonth} title="Previous month" aria-label="Previous month">
           <ChevronLeft size={20} />
@@ -102,9 +102,11 @@ export const CalendarGrid: React.FC = () => {
           const isToday = dateStr === todayStr;
 
           return (
-            <div
+            <button
               key={dateStr}
+              type="button"
               className={`calendar-day ${obs ? 'has-obs' : ''} ${isFutureDay ? 'future-day' : ''} ${isToday ? 'is-today' : ''}`}
+              disabled={isFutureDay}
               onClick={() => {
                 if (!isFutureDay) {
                   setSelectedObservation(obs || {
@@ -119,25 +121,7 @@ export const CalendarGrid: React.FC = () => {
                   setIsDrawerOpen(true);
                 }
               }}
-              tabIndex={isFutureDay ? -1 : 0}
-              role="button"
               aria-label={`Date ${dateStr}, ${obs ? `Observation ${obs.codeString}` : 'No observation'}`}
-              onKeyDown={(e) => {
-                if (!isFutureDay && (e.key === 'Enter' || e.key === ' ')) {
-                  e.preventDefault();
-                  setSelectedObservation(obs || {
-                    id: '',
-                    date: dateStr,
-                    cycleDay: 1,
-                    stamp: 'DARK_GREEN',
-                    codeString: '',
-                    intercourse: false,
-                    symptoms: [],
-                  });
-                  setIsDrawerOpen(true);
-                }
-              }}
-              style={{ opacity: isFutureDay ? 0.4 : 1, cursor: isFutureDay ? 'not-allowed' : 'pointer' }}
             >
               <div className="calendar-day-num">{dayNum}</div>
               {obs ? (
@@ -155,7 +139,7 @@ export const CalendarGrid: React.FC = () => {
                   </div>
                 </div>
               ) : null}
-            </div>
+            </button>
           );
         })}
       </div>

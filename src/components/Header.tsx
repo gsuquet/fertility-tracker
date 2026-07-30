@@ -24,13 +24,19 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
 
   return (
     <header className="app-header">
-      <div className="header-brand" onClick={() => setActiveTab('today')} title="Creighton FertilityCare System Home">
+      <button 
+        type="button" 
+        className="header-brand-btn" 
+        onClick={() => setActiveTab('today')} 
+        title="Creighton FertilityCare System Home"
+        aria-label="Creighton FertilityCare System Home"
+      >
         <div className="brand-logo" aria-hidden="true">🌱</div>
         <div className="brand-text">
           <h1 className="brand-title">{t.appTitle}</h1>
           <span className="brand-subtitle">{t.subtitle}</span>
         </div>
-      </div>
+      </button>
 
       <nav className="header-tabs" role="tablist" aria-label="Main Navigation Views">
         <button

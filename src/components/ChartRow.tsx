@@ -102,7 +102,7 @@ export const ChartRow: React.FC = () => {
   if (cycles.length === 0) {
     // Empty state - render an authentic 35-day paper grid
     return (
-      <div className="chart-strip-view">
+      <div className="chart-strip-view" id="chart-panel" role="tabpanel" aria-labelledby="tab-chart">
         {/* Toolbar */}
         <div className="chart-strip-toolbar">
           <div className="toolbar-left">
@@ -167,7 +167,7 @@ export const ChartRow: React.FC = () => {
   }
 
   return (
-    <div className="chart-strip-view">
+    <div className="chart-strip-view" id="chart-panel" role="tabpanel" aria-labelledby="tab-chart">
       {/* Chart Strip View Controls */}
       <div className="chart-strip-toolbar">
         <div className="toolbar-left">
