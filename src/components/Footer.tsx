@@ -1,9 +1,15 @@
 import React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { ShieldAlert, Info } from 'lucide-react';
+import { ShieldAlert, Info, Tag } from 'lucide-react';
+import { getAppVersion } from '../domain/versionTracker';
 
-export const Footer: React.FC = () => {
+interface FooterProps {
+  onOpenVersion?: () => void;
+}
+
+export const Footer: React.FC<FooterProps> = ({ onOpenVersion }) => {
   const { t } = useLanguage();
+  const appVersion = getAppVersion();
 
   return (
     <footer className="app-footer" role="contentinfo" aria-label="Legal and Trademark Disclaimers">
@@ -26,6 +32,18 @@ export const Footer: React.FC = () => {
         </div>
         <div className="footer-copyright">
           <span>&copy; {new Date().getFullYear()} Fertility Tracker &bull; Open Source Software</span>
+          {onOpenVersion && (
+            <button
+              type="button"
+              className="footer-version-btn"
+              onClick={onOpenVersion}
+              title={t.versionTracker.title}
+              aria-label={t.versionTracker.title}
+            >
+              <Tag size={12} />
+              <span>v{appVersion}</span>
+            </button>
+          )}
         </div>
       </div>
     </footer>
