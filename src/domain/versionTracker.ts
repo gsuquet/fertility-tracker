@@ -38,6 +38,29 @@ export const CRMS_SPEC_VERSION = '1.0.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.4.0',
+    date: '2026-07-31',
+    title: 'Mobile Navigation & Clean Export Utilities Suite',
+    titleFr: 'Optimisation Layout Mobile & Suite Noms d\'Exportation',
+    tagline: 'Mobile top stats removal on graph & calendar, 5-day aligned history items, streamlined version history accordion, and standardized lowercase dash-separated export filenames',
+    taglineFr: 'Masquage des stats mobiles sur graphique et calendrier, alignement de l\'historique 5 jours, accordéon de version épuré et noms d\'exportation en minuscules avec tirets',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Removed top stats header cards on mobile for Graph, Calendar, and Today views to increase charting area while retaining them on Analytics view',
+      'Refactored Recent 5-Day Observation History card with aligned 3-column layout: fixed date column, aligned stamp badge slot, and single-line code text',
+      'Streamlined past version history accordion headers by displaying version badge and date only, placing title inside the expanded section body',
+      'Redesigned GitHub open-source repository link in System Information tab with a GitHub icon and responsive mobile layout',
+      'Standardized all JSON backup and PDF export file names to strictly lowercase dash-separated strings (e.g. fertility-tracker-data-backup-YYYY-MM-DD.json)',
+    ],
+    highlightsFr: [
+      'Masquage des cartes statistiques supérieures sur mobile pour les vues Graphique, Calendrier et Aujourd\'hui pour maximiser l\'espace',
+      'Réorganisation de l\'historique des 5 derniers jours avec alignement en 3 colonnes : date fixe, emplacement de timbre aligné et code sur une seule ligne',
+      'Épuration de l\'accordéon d\'historique des versions en déplaçant le titre dans la section dépliée pour éviter les retours à la ligne',
+      'Nouveau design du lien du dépôt GitHub dans l\'onglet Informations Système avec icône GitHub adaptative sur mobile',
+      'Normalisation de tous les noms de fichiers d\'exportation JSON et PDF en minuscules avec tirets',
+    ],
+  },
+  {
     version: '1.3.0',
     date: '2026-07-31',
     title: 'PDF Export Enhancement & Symptom Refinement',
@@ -147,7 +170,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.3.0';
+  return '1.4.0';
 }
 
 export function getBuildDate(): string {

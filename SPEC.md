@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.3.0  
+**Document Version:** 1.4.0  
 **Status:** Approved  
 **Last Updated:** July 31, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -306,7 +306,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 - **Daily Status Card:** Hero summary card displaying today's date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
 - **Quick Logging Controls:** One-click buttons to log dry day, fertile mucus, bleeding, or open full observation drawer.
-- **Recent Observation Timeline:** Scrollable history of recently logged observations with quick edit/delete actions.
+- **Recent 5-Day Observation History Card:** Aligned 3-column layout featuring a fixed-width date column, aligned `.recent-stamp-slot` for stamp badges, and single-line observation code string with ellipsis truncation.
 
 ---
 
@@ -344,6 +344,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
   - **Luteal Phase Health:** Post-peak phase duration monitoring (ideal: 9–16 days).
   - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
+- **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
 ---
 
@@ -361,15 +362,17 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ### 5.8 Export & Printing System
 
-**Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx)
+**Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx), [exportUtils.ts](./src/utils/exportUtils.ts)
 
+- **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
+  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`.
+  - **Print / PDF Export Filenames:** Dynamically sets the browser document title prior to `window.print()` to suggest clean PDF filenames (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
-- **Print / PDF Export:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
+- **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
   - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
   - Observation codes (`codeString`) have spaces removed and support 2-line word wrapping for long codes.
   - Adds a dedicated horizontal line under the observation code at the bottom of each cell for free-form user notes (`obs.notes`).
   - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification.
-- **JSON Data Backup & Restore:** Complete data export to JSON file and import capabilities for data portability across devices.
 
 ---
 
@@ -377,10 +380,10 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
 
-- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.3.0`) in the footer.
+- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.4.0`) in the footer.
 - **Tabbed Interface:**
-  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.3.0`) with feature highlights, release date, and full changelog history.
-  2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB.
+  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.4.0`) with feature highlights, release date, and full changelog history. Past releases feature a clean accordion header (version badge & date only) with title displayed inside the expanded section body.
+  2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB, alongside a GitHub open-source repository link with responsive mobile icon layout.
 - **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
 
 ---

@@ -3,6 +3,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Printer, Download, FileText, Calendar, Layers, CheckSquare, Square } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
+import { getExportFilename } from '../utils/exportUtils';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -59,16 +60,34 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
 
   const handlePrint = () => {
     let idsToExport: string[] = [];
+    let detail = 'all-cycles';
+
     if (exportMode === 'single') {
-      idsToExport = selectedSingleId ? [selectedSingleId] : (cycles[0] ? [cycles[0].id] : ['all']);
+      const targetId = selectedSingleId || (cycles[0] ? cycles[0].id : 'all');
+      idsToExport = [targetId];
+      const cycleIndex = cycles.findIndex(c => c.id === targetId);
+      detail = cycleIndex !== -1 ? `cycle-${cycles.length - cycleIndex}` : 'single-cycle';
     } else {
       idsToExport = selectedMultiIds.length > 0 ? selectedMultiIds : ['all'];
+      if (selectedMultiIds.length === 1) {
+        const cycleIndex = cycles.findIndex(c => c.id === selectedMultiIds[0]);
+        detail = cycleIndex !== -1 ? `cycle-${cycles.length - cycleIndex}` : 'single-cycle';
+      } else if (selectedMultiIds.length > 0 && selectedMultiIds.length < cycles.length) {
+        detail = 'selected-cycles';
+      } else {
+        detail = 'all-cycles';
+      }
     }
 
     if (onPreparePrint) {
       onPreparePrint(idsToExport);
     } else {
+      const originalTitle = document.title;
+      document.title = getExportFilename('pdf', detail);
       window.print();
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1000);
     }
     onClose();
   };
@@ -79,7 +98,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     const url = URL.createObjectURL(blob);
     const a = document.createElement('a');
     a.href = url;
-    a.download = `Creighton_FertilityCare_Chart_${getTodayStr()}.json`;
+    a.download = getExportFilename('backup');
     a.click();
     URL.revokeObjectURL(url);
     onClose();

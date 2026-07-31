@@ -407,14 +407,14 @@ export const TodayView: React.FC = () => {
                   onClick={() => setSelectedDate(dateStr)}
                 >
                   <span className="recent-date-label">{dayLabel}</span>
-                  {obs ? (
-                    <div className="recent-badge-wrapper">
+                  <div className="recent-stamp-slot">
+                    {obs && (
                       <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay || obs.isManualPeak} intercourse={obs.intercourse} size="sm" />
-                      <span className="recent-code">{obs.codeString}</span>
-                    </div>
-                  ) : (
-                    <span className="recent-empty">{t.todayView.noEntryShort}</span>
-                  )}
+                    )}
+                  </div>
+                  <span className={obs ? "recent-code" : "recent-empty"}>
+                    {obs ? obs.codeString : t.todayView.noEntryShort}
+                  </span>
                 </button>
               );
             })}

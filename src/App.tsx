@@ -20,6 +20,8 @@ const PrintExportView = React.lazy(() => import('./components/PrintExportView').
 const VersionModal = React.lazy(() => import('./components/VersionModal').then(m => ({ default: m.VersionModal })));
 const WelcomeModal = React.lazy(() => import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal })));
 
+import { getExportFilename } from './utils/exportUtils';
+
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
@@ -46,8 +48,19 @@ const MainApp: React.FC = () => {
 
   React.useEffect(() => {
     if (shouldPrint) {
+      const originalTitle = document.title;
+      let detail = 'all-cycles';
+      if (printCycleIds.length === 1 && printCycleIds[0] !== 'all') {
+        detail = `single-cycle`;
+      } else if (printCycleIds.length > 1) {
+        detail = 'selected-cycles';
+      }
+      document.title = getExportFilename('pdf', detail);
       window.print();
       setShouldPrint(false);
+      setTimeout(() => {
+        document.title = originalTitle;
+      }, 1000);
     }
   }, [shouldPrint, printCycleIds]);
 
@@ -68,7 +81,7 @@ const MainApp: React.FC = () => {
         onOpenWelcome={() => setIsWelcomeModalOpen(true)}
       />
 
-      <main className={`main-content ${activeTab === 'today' ? 'today-active' : ''}`}>
+      <main className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}>
         <CycleStatsHeader />
 
         <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
