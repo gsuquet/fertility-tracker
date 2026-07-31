@@ -24,8 +24,12 @@ describe('VersionModal Component', () => {
 
     expect(screen.getByRole('dialog')).toBeInTheDocument();
     expect(screen.getByText(/About & Version Tracker/i)).toBeInTheDocument();
-    expect(screen.getByText(/Creighton Model System Core Engine/i)).toBeInTheDocument();
     expect(screen.getByText(/Key Features & Enhancements/i)).toBeInTheDocument();
+    expect(screen.getByText('v1.0.0')).toBeInTheDocument();
+
+    // Click to expand past version item to see title in body
+    fireEvent.click(screen.getByText('v1.0.0'));
+    expect(screen.getByText(/Creighton Model System Core Engine/i)).toBeInTheDocument();
   });
 
   it('switches tabs to System Information when tab button is clicked', () => {

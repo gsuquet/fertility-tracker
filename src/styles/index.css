@@ -3133,7 +3133,7 @@ body {
 .recent-day-item {
   display: flex;
   align-items: center;
-  justify-content: space-between;
+  gap: 0.65rem;
   padding: 0.65rem 0.85rem;
   background-color: var(--bg-primary);
   border: 1px solid var(--bg-surface-border);
@@ -3141,6 +3141,7 @@ body {
   cursor: pointer;
   transition: all 0.18s ease;
   text-align: left;
+  width: 100%;
 }
 
 .recent-day-item:hover,
@@ -3153,12 +3154,27 @@ body {
   font-size: 0.82rem;
   font-weight: 700;
   color: var(--text-primary);
+  width: 85px;
+  flex-shrink: 0;
+  white-space: nowrap;
 }
 
-.recent-badge-wrapper {
+.recent-stamp-slot {
+  width: 32px;
+  height: 32px;
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  justify-content: center;
+  flex-shrink: 0;
+}
+
+.recent-code,
+.recent-empty {
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .recent-code {
@@ -3295,8 +3311,10 @@ body {
 }
 
 @media (max-width: 768px) {
-  /* Hide cycle stats cards (length, peak day, luteal, intercourse) on mobile when on Today page */
-  .today-active .stats-dashboard {
+  /* Hide cycle stats cards on mobile for today, graph, and calendar views (keep visible on analytics view) */
+  .tab-today .stats-dashboard,
+  .tab-chart .stats-dashboard,
+  .tab-calendar .stats-dashboard {
     display: none !important;
   }
 }
@@ -4232,12 +4250,12 @@ body {
   font-weight: 500;
 }
 
-.history-item-title {
+.history-expanded-title {
   font-size: 0.88rem;
   font-weight: 700;
   color: var(--text-primary);
-  margin: 0;
-  flex: 1;
+  margin: 0 0 6px 0;
+  line-height: 1.35;
 }
 
 .history-expand-icon {
@@ -4335,6 +4353,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 12px;
   padding: 12px 16px;
   background-color: var(--bg-primary);
   border: 1px dashed var(--bg-surface-border-strong);
@@ -4343,18 +4362,42 @@ body {
   color: var(--text-muted);
 }
 
+.repo-info-left {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  min-width: 0;
+}
+
 .repo-external-link {
   display: inline-flex;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   color: var(--accent-primary, #10b981);
   font-weight: 600;
   text-decoration: none;
-  transition: color 0.2s ease;
+  transition: all 0.2s ease;
+  flex-shrink: 0;
+  padding: 4px 8px;
+  border-radius: 6px;
 }
 
 .repo-external-link:hover {
-  text-decoration: underline;
+  background-color: rgba(99, 102, 241, 0.08);
+}
+
+@media (max-width: 600px) {
+  .repo-link-text,
+  .repo-external-icon {
+    display: none !important;
+  }
+
+  .repo-external-link {
+    padding: 6px;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: 8px;
+  }
 }
 
 .version-modal-footer {
