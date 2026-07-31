@@ -3,7 +3,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
 import { Observation } from '../types/crms';
-import { formatDayOfWeek, addDays } from '../utils/dateUtils';
+import { addDays } from '../utils/dateUtils';
 import { Target } from 'lucide-react';
 
 interface PrintExportViewProps {
@@ -12,7 +12,7 @@ interface PrintExportViewProps {
 
 export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleIds }) => {
   const { cycles } = useCycle();
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const displayCycles = cycles.length > 0 ? cycles : [{
     id: 'cycle_empty',
@@ -98,7 +98,6 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                 {rowChunks.map((chunk, chunkIdx) => (
                   <div key={chunkIdx} className="print-grid-row">
                     {chunk.map(({ dayNum, obs, dateStr }) => {
-                      const dayOfWeek = formatDayOfWeek(dateStr, language === 'fr' ? 'fr-FR' : 'en-US');
                       const isPeak = obs?.isPeakDay;
 
                       if (obs) {
@@ -115,18 +114,28 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
 
                             <div className="print-cell-header">
                               <span className="print-day-num">{obs.cycleDay}</span>
-                              <span className="print-day-name">{dayOfWeek}</span>
                             </div>
 
-                            <div className="print-code">
-                              {obs.codeString || '---'}
-                            </div>
+                            {(() => {
+                              const cleanCode = (obs.codeString || '')
+                                .replace(/\b(AP|RAP|LAP)\b/g, '')
+                                .replace(/\s+/g, '');
+                              return (
+                                <div className="print-code">
+                                  {cleanCode || '---'}
+                                </div>
+                              );
+                            })()}
 
                             {obs.symptoms && obs.symptoms.length > 0 && (
                               <div className="print-symptoms">
                                 {obs.symptoms.join(',')}
                               </div>
                             )}
+
+                            <div className="print-notes" title={obs.notes || ''}>
+                              {obs.notes || ''}
+                            </div>
                           </div>
                         );
                       }
@@ -139,6 +148,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                           <div className="print-cell-header">
                             <span className="print-day-num">{dayNum}</span>
                           </div>
+                          <div className="print-notes" />
                         </div>
                       );
                     })}

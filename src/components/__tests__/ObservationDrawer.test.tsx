@@ -34,7 +34,7 @@ describe('ObservationDrawer Component (Dual Logger)', () => {
     expect(directInput).toBeInTheDocument();
 
     fireEvent.change(directInput, { target: { value: '10kl x3 i ap' } });
-    expect(screen.getByText('10KL X3 AP I')).toBeInTheDocument();
+    expect(screen.getByText('10KL X3 I')).toBeInTheDocument();
   });
 
   it('updates live stamp preview when options are clicked', () => {

@@ -366,10 +366,18 @@ export const ChartRow: React.FC = () => {
                           <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
                         </div>
 
-                        {/* CrMS Code */}
-                        <div className="cell-code" title={obs.codeString}>
-                          {obs.codeString || '---'}
-                        </div>
+                        {/* CrMS Code (Symptoms excluded, shown in tag below) */}
+                        {(() => {
+                          const cleanCode = (obs.codeString || '')
+                            .replace(/\b(AP|RAP|LAP)\b/g, '')
+                            .trim()
+                            .replace(/\s+/g, ' ');
+                          return (
+                            <div className="cell-code" title={cleanCode}>
+                              {cleanCode || '---'}
+                            </div>
+                          );
+                        })()}
 
                         {/* Symptoms & Notes Indicators */}
                         <div className="cell-footer-indicators">

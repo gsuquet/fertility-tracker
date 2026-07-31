@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { LanguageProvider } from './context/LanguageContext';
+import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
 import { ActiveTab } from './types/crms';
@@ -21,12 +21,14 @@ const VersionModal = React.lazy(() => import('./components/VersionModal').then(m
 const WelcomeModal = React.lazy(() => import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal })));
 
 const MainApp: React.FC = () => {
+  const { t } = useLanguage();
   const [activeTab, setActiveTab] = useState<ActiveTab>('today');
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   const [shouldPrint, setShouldPrint] = useState(false);
+  const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     checkAndRecordVersionSeen();
@@ -52,6 +54,8 @@ const MainApp: React.FC = () => {
   const handlePreparePrint = (selectedCycleIds: string[]) => {
     setPrintCycleIds(selectedCycleIds);
     setShouldPrint(true);
+    setToastMessage(t.exportModal.exportSuccess);
+    setTimeout(() => setToastMessage(null), 3500);
   };
 
   return (
@@ -101,6 +105,12 @@ const MainApp: React.FC = () => {
 
         <PrintExportView selectedCycleIds={printCycleIds} />
       </React.Suspense>
+
+      {toastMessage && (
+        <div className="today-toast" role="status" aria-live="polite">
+          <span>{toastMessage}</span>
+        </div>
+      )}
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>

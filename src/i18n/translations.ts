@@ -165,6 +165,7 @@ export const translations = {
       selectAll: 'Select All',
       deselectAll: 'Deselect All',
       oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
+      exportSuccess: 'PDF report generated successfully!',
     },
     disclaimer: {
       trademark: 'FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction.',
@@ -433,6 +434,7 @@ export const translations = {
       selectAll: 'Tout sélectionner',
       deselectAll: 'Tout désélectionner',
       oldestToNewestNote: 'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
+      exportSuccess: 'Rapport PDF généré avec succès !',
     },
     disclaimer: {
       trademark: 'FertilityCare™ et le système Creighton Model FertilityCare™ (CrMS) sont des marques déposées de l\'Institut Saint Paul VI pour l\'étude de la reproduction humaine.',

@@ -50,7 +50,7 @@ describe('Creighton Model Domain Engine', () => {
       expect(parsed.frequency).toBe('X3');
       expect(parsed.intercourse).toBe(true);
       expect(parsed.symptoms).toEqual(['AP']);
-      expect(parsed.formattedCode).toBe('10KL X3 AP I');
+      expect(parsed.formattedCode).toBe('10KL X3 I');
     });
 
     it('parses bleeding codes cleanly', () => {
