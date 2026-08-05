@@ -47,4 +47,14 @@ describe('CalendarGrid Component', () => {
     expect(dateInput).toBeInTheDocument();
     expect(dateInput.value).toBe(dateStr);
   });
+
+  it('highlights current day with is-today class and aria-current attribute', () => {
+    renderCalendarGrid();
+    const now = new Date();
+    const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+    const todayElement = screen.getByRole('button', { name: new RegExp(`Date ${todayStr}`) });
+    expect(todayElement).toBeInTheDocument();
+    expect(todayElement).toHaveClass('is-today');
+    expect(todayElement).toHaveAttribute('aria-current', 'date');
+  });
 });

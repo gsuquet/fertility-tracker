@@ -100,6 +100,16 @@ describe('ChartRow Component (Paper Chart Strip)', () => {
     // In 35-day paper grid: Cycle header displays "2026-07-20 → 2026-07-25"
     expect(screen.getByText('2026-07-20 → 2026-07-25')).toBeInTheDocument();
   });
+
+  it('highlights current day in chart slot with is-today class and Today pill badge', () => {
+    const { container } = renderChartRow();
+    const todayPill = container.querySelector('.cell-today-pill');
+    expect(todayPill).toBeInTheDocument();
+    expect(todayPill?.textContent).toBe('Today');
+
+    const todayCell = container.querySelector('.chart-cell.is-today');
+    expect(todayCell).toBeInTheDocument();
+  });
 });
 
 
