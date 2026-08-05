@@ -29,6 +29,7 @@ export interface Observation {
   intercourse?: boolean; // 'I' marker
   notes?: string;
   isManualPeak?: boolean; // Manual Peak override
+  isCycleStart?: boolean; // Explicitly designated cycle start boundary flag
   stamp: StampType;
   codeString: string; // Formatted code e.g. "10KL X3 I"
   isPeakDay?: boolean; // Automatically or manually designated Peak Day 'P'

@@ -2282,6 +2282,19 @@ body {
   border: 1px solid var(--bg-surface-border);
 }
 
+.cycle-start-modal-overlay {
+  z-index: 1000 !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+
+.cycle-start-modal-container {
+  margin: auto !important;
+  border-radius: 20px !important;
+}
+
 .modal-header {
   padding: 1.15rem 1.35rem;
   border-bottom: 1px solid var(--bg-surface-border);

@@ -38,6 +38,44 @@ export const CRMS_SPEC_VERSION = '1.0.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.6.1',
+    date: '2026-08-05',
+    title: 'Centered Modal Overlay & Viewport Elevation Polish',
+    titleFr: 'Centrage de la Modale de Confirmation & Superposition Visuelle',
+    tagline: 'Centered modal layout overlaying top of page with elevated z-index for optimal visibility across all screen sizes',
+    taglineFr: 'Affichage centré de la modale superposée avec z-index élevé pour une visibilité optimale sur tous les écrans',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Centered CycleStartModal in exact screen middle with elevated z-index overlay',
+      'Prevented mobile bottom sheet repositioning for Cycle Start prompt modal',
+    ],
+    highlightsFr: [
+      'Centrage de la modale CycleStartModal au milieu de l\'écran avec un z-index élevé',
+      'Maintien du centrage sur mobile pour la modale de confirmation de début de cycle',
+    ],
+  },
+  {
+    version: '1.6.0',
+    date: '2026-08-05',
+    title: 'First Bleeding Day Cycle Start Confirmation & Drawer Controls',
+    titleFr: 'Confirmation de début de cycle sur premier jour de saignement',
+    tagline: 'Interactive prompt and Observation Drawer toggle to designate whether the first bleeding day of a series marks a new cycle boundary',
+    taglineFr: 'Invitation interactive et commutateur dans le tiroir pour désigner si le premier jour de saignement marque un nouveau cycle',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Added interactive Cycle Start modal prompting when logging the first bleeding day of a series',
+      'Added explicit "Start of New Cycle" toggle switch in the Observation Drawer when bleeding is active',
+      'Updated cycle boundary detector engine to respect explicit isCycleStart overrides on observations',
+      'Updated unit test suite covering cycle boundary detector and version tracker',
+    ],
+    highlightsFr: [
+      'Ajout d\'une modale interactive de confirmation du début de cycle lors de la saisie du premier jour de saignement',
+      'Ajout d\'un commutateur "Début de nouveau cycle" dans le tiroir d\'observation lorsque des saignements sont sélectionnés',
+      'Mise à jour du moteur de détection des limites de cycle pour respecter les choix utilisateur explicites',
+      'Mise à jour des tests automatisés couvrant les limites de cycle et le gestionnaire de version',
+    ],
+  },
+  {
     version: '1.5.0',
     date: '2026-08-05',
     title: 'Current Day Visual Highlighting & View Focus Suite',
@@ -191,7 +229,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.5.0';
+  return '1.6.1';
 }
 
 export function getBuildDate(): string {

@@ -4,12 +4,14 @@ import { useLanguage } from '../context/LanguageContext';
 import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode } from '../types/crms';
 import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
+import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
+import { CycleStartModal } from './CycleStartModal';
 import { StampBadge } from './StampBadge';
-import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
+import { X, Save, Trash2, Heart, Flag, Calendar } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
 
 export const ObservationDrawer: React.FC = () => {
-  const { selectedObservation, setSelectedObservation, isDrawerOpen, setIsDrawerOpen, saveObservation, deleteObservation } = useCycle();
+  const { observations, selectedObservation, setSelectedObservation, isDrawerOpen, setIsDrawerOpen, saveObservation, deleteObservation } = useCycle();
   const { t } = useLanguage();
 
   const [date, setDate] = useState(() => getTodayStr());
@@ -21,7 +23,9 @@ export const ObservationDrawer: React.FC = () => {
   const [intercourse, setIntercourse] = useState(false);
   const [notes, setNotes] = useState('');
   const [isManualPeak, setIsManualPeak] = useState(false);
+  const [isCycleStart, setIsCycleStart] = useState<boolean | undefined>(undefined);
   const [directInputText, setDirectInputText] = useState('');
+  const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   useEffect(() => {
     if (selectedObservation) {
@@ -34,6 +38,7 @@ export const ObservationDrawer: React.FC = () => {
       setIntercourse(selectedObservation.intercourse || false);
       setNotes(selectedObservation.notes || '');
       setIsManualPeak(selectedObservation.isManualPeak || false);
+      setIsCycleStart(selectedObservation.isCycleStart);
       setDirectInputText(selectedObservation.codeString || '');
     } else {
       setDate(getTodayStr());
@@ -45,6 +50,7 @@ export const ObservationDrawer: React.FC = () => {
       setIntercourse(false);
       setNotes('');
       setIsManualPeak(false);
+      setIsCycleStart(undefined);
       setDirectInputText('');
     }
   }, [selectedObservation, isDrawerOpen]);
@@ -123,8 +129,8 @@ export const ObservationDrawer: React.FC = () => {
     setDirectInputText(updatedCode);
   };
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
+  const executeSave = (explicitCycleStart?: boolean) => {
+    const finalCycleStart = explicitCycleStart !== undefined ? explicitCycleStart : isCycleStart;
     saveObservation({
       id: selectedObservation?.id,
       date,
@@ -136,10 +142,37 @@ export const ObservationDrawer: React.FC = () => {
       intercourse,
       notes,
       isManualPeak,
+      isCycleStart: finalCycleStart,
       codeString: currentCode,
     });
     setIsDrawerOpen(false);
     setSelectedObservation(null);
+    setShowCycleStartModal(false);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+
+    // Check if this is the first bleeding day of a series and cycle start choice is unconfirmed
+    if (
+      bleeding &&
+      isCycleStart === undefined &&
+      isFirstBleedingDayOfSeries({ date, bleeding }, observations)
+    ) {
+      setShowCycleStartModal(true);
+      return;
+    }
+
+    executeSave();
+  };
+
+  const handleModalConfirm = (choice: boolean) => {
+    setIsCycleStart(choice);
+    executeSave(choice);
+  };
+
+  const handleModalCancel = () => {
+    setShowCycleStartModal(false);
   };
 
   const handleDelete = () => {
@@ -228,6 +261,29 @@ export const ObservationDrawer: React.FC = () => {
               ))}
             </div>
           </div>
+
+          {/* Start of New Cycle Toggle (Visible when Bleeding is active) */}
+          {bleeding && (
+            <div className="form-group">
+              <button
+                type="button"
+                className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
+                onClick={() => setIsCycleStart(prev => (prev === true ? false : true))}
+                aria-pressed={isCycleStart === true}
+                style={{
+                  borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
+                  backgroundColor: isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
+                  color: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
+                }}
+              >
+                <Calendar size={18} />
+                <span>
+                  {t.cycleStartModal?.isCycleStartLabel || 'Start of New Cycle'}
+                  {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
+                </span>
+              </button>
+            </div>
+          )}
 
           {/* Mucus Stretch Selector */}
           <div className="form-group">
@@ -346,6 +402,13 @@ export const ObservationDrawer: React.FC = () => {
           </div>
         </form>
       </div>
+
+      <CycleStartModal
+        isOpen={showCycleStartModal}
+        date={date}
+        onConfirm={handleModalConfirm}
+        onCancel={handleModalCancel}
+      />
     </div>
   );
 };

@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.5.0  
+**Document Version:** 1.6.1  
 **Status:** Approved  
 **Last Updated:** August 5, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -203,7 +203,11 @@ flowchart TD
 **Module:** [src/domain/cycleBoundaryDetector.ts](./src/domain/cycleBoundaryDetector.ts)
 
 - Automatically groups a raw timeline of observations into distinct menstrual cycles.
-- A **new cycle boundary** is triggered when menses bleeding (`H`, `M`, `L`, `VL`) occurs after non-bleeding or dry days.
+- A **new cycle boundary** is determined based on user explicit confirmation or default menses rules:
+  - If `isCycleStart === true` on an observation, it explicitly starts a new cycle boundary regardless of bleeding code.
+  - If `isCycleStart === false` on an observation, it is explicitly excluded from starting a new cycle (e.g. breakthrough bleeding or intermenstrual spotting).
+  - If `isCycleStart` is `undefined`, a new cycle boundary is triggered when menses bleeding (`H`, `M`, `L`, `VL`) occurs after non-bleeding or dry days.
+- When logging or saving the first bleeding day (`H`, `M`, `L`, `VL`, `B`) of a series (preceded by a non-bleeding day), the system prompts the user: *"Is this bleeding day the start of a new cycle?"*.
 - Output cycles are returned ordered newest-to-oldest, with recalculated relative `cycleDay` indices (Day 1, 2, 3...) calculated relative to each cycle's start date.
 
 ---
@@ -254,6 +258,7 @@ export interface Observation {
   intercourse?: boolean;     // 'I' marker
   notes?: string;
   isManualPeak?: boolean;    // Manual Peak override flag
+  isCycleStart?: boolean;    // Explicitly designated cycle start boundary
   stamp: StampType;
   codeString: string;        // Formatted code string e.g. "10KL X3 I"
   isPeakDay?: boolean;       // Designated Peak Day ('P')
