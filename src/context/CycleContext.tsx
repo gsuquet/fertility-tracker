@@ -95,6 +95,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         intercourse: obsData.intercourse || false,
         notes: obsData.notes || '',
         isManualPeak: obsData.isManualPeak || false,
+        isCycleStart: obsData.isCycleStart,
         stamp,
         codeString,
       };

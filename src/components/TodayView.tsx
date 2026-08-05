@@ -4,6 +4,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode, Observation } from '../types/crms';
 import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
+import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
+import { CycleStartModal } from './CycleStartModal';
 import { StampBadge } from './StampBadge';
 import { getTodayStr, addDays, formatDateDisplay } from '../utils/dateUtils';
 import { 
@@ -85,7 +87,9 @@ export const TodayView: React.FC = () => {
   const [intercourse, setIntercourse] = useState(false);
   const [notes, setNotes] = useState('');
   const [isManualPeak, setIsManualPeak] = useState(false);
+  const [isCycleStart, setIsCycleStart] = useState<boolean | undefined>(undefined);
   const [directInputText, setDirectInputText] = useState('');
+  const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
@@ -102,6 +106,7 @@ export const TodayView: React.FC = () => {
       setIntercourse(existingObs.intercourse || false);
       setNotes(existingObs.notes || '');
       setIsManualPeak(existingObs.isManualPeak || false);
+      setIsCycleStart(existingObs.isCycleStart);
       setDirectInputText(existingObs.codeString || '');
     } else {
       setBleeding(undefined);
@@ -112,6 +117,7 @@ export const TodayView: React.FC = () => {
       setIntercourse(false);
       setNotes('');
       setIsManualPeak(false);
+      setIsCycleStart(undefined);
       setDirectInputText('');
     }
   }, [selectedDate, observations]);
@@ -213,6 +219,7 @@ export const TodayView: React.FC = () => {
     const sameFrequency = currentObs.frequency === frequency;
     const sameIntercourse = (currentObs.intercourse || false) === intercourse;
     const samePeak = (currentObs.isManualPeak || false) === isManualPeak;
+    const sameCycleStart = currentObs.isCycleStart === isCycleStart;
     const sameNotes = (currentObs.notes || '') === notes;
     
     const sameModifiers = (currentObs.modifiers || []).length === modifiers.length &&
@@ -221,13 +228,11 @@ export const TodayView: React.FC = () => {
     const sameSymptoms = (currentObs.symptoms || []).length === symptoms.length &&
       symptoms.every(s => (currentObs.symptoms || []).includes(s));
 
-    return !(sameBleeding && sameStretch && sameFrequency && sameIntercourse && samePeak && sameNotes && sameModifiers && sameSymptoms);
+    return !(sameBleeding && sameStretch && sameFrequency && sameIntercourse && samePeak && sameCycleStart && sameNotes && sameModifiers && sameSymptoms);
   })();
 
-  const handleSave = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!hasUnsavedChanges) return;
-
+  const executeSave = (explicitCycleStart?: boolean) => {
+    const finalCycleStart = explicitCycleStart !== undefined ? explicitCycleStart : isCycleStart;
     saveObservation({
       id: currentObs?.id,
       date: selectedDate,
@@ -239,9 +244,36 @@ export const TodayView: React.FC = () => {
       intercourse,
       notes,
       isManualPeak,
+      isCycleStart: finalCycleStart,
       codeString: currentCode,
     });
     showToast(t.todayView.savedNotice);
+    setShowCycleStartModal(false);
+  };
+
+  const handleSave = (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!hasUnsavedChanges) return;
+
+    if (
+      bleeding &&
+      isCycleStart === undefined &&
+      isFirstBleedingDayOfSeries({ date: selectedDate, bleeding }, observations)
+    ) {
+      setShowCycleStartModal(true);
+      return;
+    }
+
+    executeSave();
+  };
+
+  const handleModalConfirm = (choice: boolean) => {
+    setIsCycleStart(choice);
+    executeSave(choice);
+  };
+
+  const handleModalCancel = () => {
+    setShowCycleStartModal(false);
   };
 
   const handleDelete = () => {
@@ -515,6 +547,29 @@ export const TodayView: React.FC = () => {
                 </div>
               </div>
 
+              {/* Start of New Cycle Toggle (Visible when Bleeding is active) */}
+              {bleeding && (
+                <div className="form-group">
+                  <button
+                    type="button"
+                    className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
+                    onClick={() => setIsCycleStart(prev => (prev === true ? false : true))}
+                    aria-pressed={isCycleStart === true}
+                    style={{
+                      borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
+                      backgroundColor: isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
+                      color: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
+                    }}
+                  >
+                    <CalendarIcon size={18} />
+                    <span>
+                      {t.cycleStartModal?.isCycleStartLabel || 'Start of New Cycle'}
+                      {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
+                    </span>
+                  </button>
+                </div>
+              )}
+
               {/* Mucus Stretch Selection */}
               <div className="form-group">
                 <label>{t.labels.stretch}</label>
@@ -654,6 +709,13 @@ export const TodayView: React.FC = () => {
           </div>
         </div>
       </div>
+
+      <CycleStartModal
+        isOpen={showCycleStartModal}
+        date={selectedDate}
+        onConfirm={handleModalConfirm}
+        onCancel={handleModalCancel}
+      />
     </div>
   );
 };

@@ -267,6 +267,16 @@ export const translations = {
         },
       },
     },
+    cycleStartModal: {
+      title: 'New Cycle Start?',
+      question: 'Is this bleeding day the start of a new cycle?',
+      description: 'This is the first bleeding day following non-bleeding days. You can choose whether this starts a new cycle or continues your current cycle.',
+      yesBtn: 'Yes, Start New Cycle',
+      noBtn: 'No, Continue Current Cycle',
+      cancelBtn: 'Cancel',
+      isCycleStartLabel: 'Start of New Cycle',
+      isCycleStartHelp: 'Designates this observation as the Day 1 boundary of a new menstrual cycle.',
+    },
   },
   fr: {
     appTitle: 'Fertility Tracker',
@@ -532,9 +542,19 @@ export const translations = {
             analytics: 'Analyses du Cycle : Métriques de durée de cycle, phase lutéale et score de mucus.',
           },
           quickStartTitle: 'Prête à commencer ?',
-          quickStartDesc: 'Chargez des données démo pour explorer toutes les vues du graphique, ou commencez avec un graphique vierge pour votre suivi personnel.',
+          quickStartDesc: 'Chargez des données démo pour explorer toutes les vues du graphique, ou commencez avec un graphique vierge pour votre suivi personal.',
         },
       },
+    },
+    cycleStartModal: {
+      title: 'Début de nouveau cycle ?',
+      question: 'Ce jour de saignement est-il le début d’un nouveau cycle ?',
+      description: 'C’est le premier jour de saignement après des jours sans saignement. Vous pouvez choisir s’il commence un nouveau cycle ou poursuit votre cycle actuel.',
+      yesBtn: 'Oui, démarrer un nouveau cycle',
+      noBtn: 'Non, poursuivre le cycle actuel',
+      cancelBtn: 'Annuler',
+      isCycleStartLabel: 'Début de nouveau cycle',
+      isCycleStartHelp: 'Désigne cette observation comme le jour 1 d’un nouveau cycle menstruel.',
     },
   }
 };
