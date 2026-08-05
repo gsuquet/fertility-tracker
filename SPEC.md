@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.4.0  
+**Document Version:** 1.5.0  
 **Status:** Approved  
-**Last Updated:** July 31, 2026  
+**Last Updated:** August 5, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -322,6 +322,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
   - **Light Green with Baby & Number (1, 2, 3):** Post-peak count days
 - Displays day numbers, formatted code strings, intercourse (`I`) flags, and Peak (`P`) markers.
 - Allows toggling manual Peak Day designation directly on individual stamp cells.
+- **Current Day Highlighting:** Automatically detects today's date (`todayStr`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
 
 ---
 
@@ -331,6 +332,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 - Monthly grid layout displaying observations on their actual calendar date.
 - Shows stamp badge color, day code snippet, and intercourse indicator on calendar tiles.
+- **Current Day Highlighting:** Automatically highlights the current date tile (`.calendar-day.is-today`) with a 2px accent border ring (`var(--accent-primary)`), soft theme-aware background tint (`var(--accent-soft)`), a circular date number badge (`.calendar-day-num`), and `aria-current="date"` attribute.
 - Clicking any tile opens the Observation Drawer pre-populated for that date.
 
 ---
@@ -380,9 +382,9 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
 
-- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.4.0`) in the footer.
+- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.5.0`) in the footer.
 - **Tabbed Interface:**
-  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.4.0`) with feature highlights, release date, and full changelog history. Past releases feature a clean accordion header (version badge & date only) with title displayed inside the expanded section body.
+  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.5.0`) with feature highlights, release date, and full changelog history. Past releases feature a clean accordion header (version badge & date only) with title displayed inside the expanded section body.
   2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB, alongside a GitHub open-source repository link with responsive mobile icon layout.
 - **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
 

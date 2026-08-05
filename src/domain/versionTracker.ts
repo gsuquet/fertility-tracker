@@ -38,6 +38,27 @@ export const CRMS_SPEC_VERSION = '1.0.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.5.0',
+    date: '2026-08-05',
+    title: 'Current Day Visual Highlighting & View Focus Suite',
+    titleFr: 'Mise en Valeur du Jour Actuel & Focalisation Visuelle',
+    tagline: 'Distinct current day visual styling across Calendar and Chart views with glowing accent borders, circular date badges, today headers, and screen reader accessibility',
+    taglineFr: 'Mise en valeur visuelle du jour actuel sur le calendrier et le graphique avec bordures lumineuses, timbres circulaires et compatibilité lecteurs d\'écran',
+    crmsSpecVersion: '1.0.0',
+    highlights: [
+      'Added distinct accent border ring, background tint, and circular date badge highlighting today in Calendar Grid view',
+      'Added glowing accent border and "TODAY" pill badge on active cycle columns in Chart / Paper Grid view',
+      'Integrated screen reader accessibility with aria-current="date" attributes on current day elements',
+      'Updated automated test suite covering current day visual indicators and accessibility attributes',
+    ],
+    highlightsFr: [
+      'Ajout d\'une bordure d\'accentuation, d\'une nuance de fond et d\'un badge circulaire pour le jour actuel dans le Calendrier',
+      'Ajout d\'une bordure lumineuse et d\'un badge "TODAY" dans l\'en-tête de colonne de la vue Graphique',
+      'Prise en charge des lecteurs d\'écran avec l\'attribut aria-current="date" sur les éléments du jour actuel',
+      'Mise à jour des tests automatisés couvrant les indicateurs du jour actuel et l\'accessibilité',
+    ],
+  },
+  {
     version: '1.4.0',
     date: '2026-07-31',
     title: 'Mobile Navigation & Clean Export Utilities Suite',
@@ -170,14 +191,14 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.4.0';
+  return '1.5.0';
 }
 
 export function getBuildDate(): string {
   if (typeof __BUILD_DATE__ !== 'undefined') {
     return __BUILD_DATE__;
   }
-  return '2026-07-31T00:00:00.000Z';
+  return '2026-08-05T00:00:00.000Z';
 }
 
 export function getVersionInfo(): VersionInfo {

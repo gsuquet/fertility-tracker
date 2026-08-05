@@ -106,6 +106,7 @@ export const CalendarGrid: React.FC = () => {
               key={dateStr}
               type="button"
               className={`calendar-day ${obs ? 'has-obs' : ''} ${isFutureDay ? 'future-day' : ''} ${isToday ? 'is-today' : ''}`}
+              aria-current={isToday ? 'date' : undefined}
               disabled={isFutureDay}
               onClick={() => {
                 if (!isFutureDay) {

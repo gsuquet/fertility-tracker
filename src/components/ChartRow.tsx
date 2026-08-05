@@ -28,6 +28,9 @@ export const ChartRow: React.FC = () => {
   const [showLegend, setShowLegend] = useState(false);
   const [hoveredCellKey, setHoveredCellKey] = useState<string | null>(null);
 
+  const now = new Date();
+  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+
   // Refs for scrolling rows
   const scrollRefs = useRef<{ [cycleId: string]: HTMLDivElement | null }>({});
 
@@ -333,12 +336,14 @@ export const ChartRow: React.FC = () => {
                   const isHovered = hoveredCellKey === cellKey;
                   const dayOfWeek = formatDayOfWeek(dateStr);
                   const isPeak = obs?.isPeakDay;
+                  const isToday = dateStr === todayStr;
 
                   if (obs) {
                     return (
                       <div
                         key={obs.id || dayNum}
-                        className={`chart-cell filled-cell paper-cell ${isPeak ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()}`}
+                        className={`chart-cell filled-cell paper-cell ${isPeak ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''}`}
+                        aria-current={isToday ? 'date' : undefined}
                         onClick={() => handleCellClick(obs)}
                         onMouseEnter={() => setHoveredCellKey(cellKey)}
                         onMouseLeave={() => setHoveredCellKey(null)}
@@ -346,7 +351,7 @@ export const ChartRow: React.FC = () => {
                         onBlur={() => setHoveredCellKey(null)}
                         tabIndex={0}
                         role="button"
-                        aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}`}
+                        aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}${isToday ? ', Today' : ''}`}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -356,6 +361,7 @@ export const ChartRow: React.FC = () => {
                       >
                         {/* Day Header */}
                         <div className="cell-header">
+                          {isToday && <span className="cell-today-pill" title="Today">Today</span>}
                           <span className="cell-day-num">{obs.cycleDay}</span>
                           <span className="cell-day-name">{dayOfWeek}</span>
                           <span className="cell-date">{obs.date.slice(5)}</span>
@@ -445,11 +451,12 @@ export const ChartRow: React.FC = () => {
                     return (
                       <div
                         key={`empty_${dayNum}`}
-                        className="chart-cell empty-cell paper-cell"
+                        className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
+                        aria-current={isToday ? 'date' : undefined}
                         onClick={() => handleCellClick(undefined, dateStr, dayNum)}
                         tabIndex={0}
                         role="button"
-                        aria-label={`Day ${dayNum} - Empty. Click to add observation.`}
+                        aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
                         onKeyDown={(e) => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
@@ -458,6 +465,7 @@ export const ChartRow: React.FC = () => {
                         }}
                       >
                         <div className="cell-header">
+                          {isToday && <span className="cell-today-pill" title="Today">Today</span>}
                           <span className="cell-day-num">{dayNum}</span>
                           {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
                         </div>
