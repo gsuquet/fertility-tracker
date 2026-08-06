@@ -33,24 +33,46 @@ describe('Creighton Model Domain Engine', () => {
   });
 
   describe('codeParser & formatter', () => {
-    it('formats structured observation into canonical code string', () => {
+    it('formats structured observation into canonical code string without whitespace between mucus and frequency', () => {
       const code = formatCodeString({
         stretch: '10',
         modifiers: ['K', 'L'],
         frequency: 'X3',
         intercourse: true
       });
-      expect(code).toBe('10KL X3 I');
+      expect(code).toBe('10KLX3 I');
     });
 
-    it('parses direct text input and auto-formats', () => {
+    it('parses direct text input with space between mucus and frequency and auto-formats without space', () => {
       const parsed = parseCodeString('10kl x3 i ap');
       expect(parsed.stretch).toBe('10');
       expect(parsed.modifiers).toEqual(['K', 'L']);
       expect(parsed.frequency).toBe('X3');
       expect(parsed.intercourse).toBe(true);
       expect(parsed.symptoms).toEqual(['AP']);
-      expect(parsed.formattedCode).toBe('10KL X3 I');
+      expect(parsed.formattedCode).toBe('10KLX3 I');
+    });
+
+    it('parses direct text input without space between mucus and frequency', () => {
+      const parsed = parseCodeString('10klx3 i ap');
+      expect(parsed.stretch).toBe('10');
+      expect(parsed.modifiers).toEqual(['K', 'L']);
+      expect(parsed.frequency).toBe('X3');
+      expect(parsed.intercourse).toBe(true);
+      expect(parsed.symptoms).toEqual(['AP']);
+      expect(parsed.formattedCode).toBe('10KLX3 I');
+    });
+
+    it('parses 0AD and 2WX2 with or without whitespace', () => {
+      const parsed1 = parseCodeString('0 ad');
+      expect(parsed1.stretch).toBe('0');
+      expect(parsed1.frequency).toBe('AD');
+      expect(parsed1.formattedCode).toBe('0AD');
+
+      const parsed2 = parseCodeString('2wx2');
+      expect(parsed2.stretch).toBe('2W');
+      expect(parsed2.frequency).toBe('X2');
+      expect(parsed2.formattedCode).toBe('2WX2');
     });
 
     it('parses bleeding codes cleanly', () => {

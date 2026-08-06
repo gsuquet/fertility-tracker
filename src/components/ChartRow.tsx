@@ -45,7 +45,7 @@ export const ChartRow: React.FC = () => {
         date: targetDate,
         cycleDay: dayNum || 1,
         stamp: 'DARK_GREEN',
-        codeString: '0 AD',
+        codeString: '0AD',
         intercourse: false,
         symptoms: [],
       });

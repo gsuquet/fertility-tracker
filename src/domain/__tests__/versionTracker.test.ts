@@ -29,9 +29,9 @@ describe('versionTracker Domain Engine', () => {
     const latest = getLatestRelease();
 
     expect(history.length).toBeGreaterThan(1);
-    expect(latest.version).toBe('1.6.1');
+    expect(latest.version).toBe('1.7.0');
     expect(latest.highlights.length).toBeGreaterThan(0);
-    expect(latest.crmsSpecVersion).toBe('1.0.0');
+    expect(latest.crmsSpecVersion).toBe('1.1.0');
   });
 
   it('correctly tracks and updates last seen version in localStorage', () => {
@@ -39,12 +39,12 @@ describe('versionTracker Domain Engine', () => {
     const check1 = checkAndRecordVersionSeen();
     expect(check1.isNewVersion).toBe(true);
     expect(check1.previousVersion).toBeNull();
-    expect(localStorage.getItem(LAST_SEEN_VERSION_KEY)).toBe('1.6.1');
+    expect(localStorage.getItem(LAST_SEEN_VERSION_KEY)).toBe('1.7.0');
 
     // Second run (same version stored)
     const check2 = checkAndRecordVersionSeen();
     expect(check2.isNewVersion).toBe(false);
-    expect(check2.previousVersion).toBe('1.6.1');
+    expect(check2.previousVersion).toBe('1.7.0');
   });
 
   it('calculates storage stats from localStorage', () => {

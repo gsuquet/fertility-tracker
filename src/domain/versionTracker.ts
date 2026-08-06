@@ -34,9 +34,28 @@ export interface StorageStats {
 export const LAST_SEEN_VERSION_KEY = 'fertility_tracker_last_seen_version';
 export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome';
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
-export const CRMS_SPEC_VERSION = '1.0.0';
+export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: '1.7.0',
+    date: '2026-08-06',
+    title: 'Mucus & Frequency Code Formatting Streamlining',
+    titleFr: 'Formatage Épuré des Codes Glaire & Fréquence',
+    tagline: 'Removed whitespace between mucus stretch/modifier and frequency in both code formatting and parsing (e.g. 10KLX3, 0AD)',
+    taglineFr: 'Suppression des espaces entre la glaire et la fréquence dans le formatage et l\'analyse des codes (ex. 10KLX3, 0AD)',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Removed whitespace between mucus stretch/modifiers and frequency code (e.g. 10KLX3, 0AD, 2WX2)',
+      'Enhanced soft parser to parse freeform text input with or without whitespace between mucus and frequency',
+      'Updated placeholders, onboarding documentation, and automated tests across the application',
+    ],
+    highlightsFr: [
+      'Suppression de l\'espace entre la glaire (étirement/qualité) et le code de fréquence (ex. 10KLX3, 0AD, 2WX2)',
+      'Amélioration de l\'analyseur direct pour traiter les saisis avec ou sans espace entre glaire et fréquence',
+      'Mise à jour des exemples, de la documentation d\'accueil et des tests automatisés',
+    ],
+  },
   {
     version: '1.6.1',
     date: '2026-08-05',
@@ -229,14 +248,14 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.6.1';
+  return '1.7.0';
 }
 
 export function getBuildDate(): string {
   if (typeof __BUILD_DATE__ !== 'undefined') {
     return __BUILD_DATE__;
   }
-  return '2026-08-05T00:00:00.000Z';
+  return '2026-08-06T00:00:00.000Z';
 }
 
 export function getVersionInfo(): VersionInfo {

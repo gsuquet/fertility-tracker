@@ -30,11 +30,11 @@ describe('ObservationDrawer Component (Dual Logger)', () => {
     renderDrawer();
     fireEvent.click(screen.getByText('Open Drawer'));
 
-    const directInput = screen.getByPlaceholderText('e.g. 10KL X3 I AP');
+    const directInput = screen.getByPlaceholderText('e.g. 10KLX3 I AP');
     expect(directInput).toBeInTheDocument();
 
     fireEvent.change(directInput, { target: { value: '10kl x3 i ap' } });
-    expect(screen.getByText('10KL X3 I')).toBeInTheDocument();
+    expect(screen.getByText('10KLX3 I')).toBeInTheDocument();
   });
 
   it('updates live stamp preview when options are clicked', () => {
