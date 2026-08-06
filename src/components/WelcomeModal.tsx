@@ -258,7 +258,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
                     <p className="justified-text">{slides.slide3.directText}</p>
                   </div>
                   <div className="code-example-badge">
-                    <code>10KL X3 I AP</code>
+                    <code>10KLX3 I AP</code>
                   </div>
                 </div>
 

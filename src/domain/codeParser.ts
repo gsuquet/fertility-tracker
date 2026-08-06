@@ -29,19 +29,27 @@ export function formatCodeString(obs: Partial<Observation>): string {
   }
 
   // 2. Mucus stretch + Modifiers (e.g. 10KL or 2W or 0)
+  let mucusToken = '';
   if (obs.stretch) {
-    let mucusToken = obs.stretch;
+    mucusToken = obs.stretch;
     if (obs.modifiers && obs.modifiers.length > 0) {
       mucusToken += obs.modifiers.join('');
     }
-    parts.push(mucusToken);
   } else if (obs.modifiers && obs.modifiers.length > 0) {
-    parts.push(obs.modifiers.join(''));
+    mucusToken = obs.modifiers.join('');
   }
 
-  // 3. Frequency (e.g. X1, X2, X3, AD)
+  // 3. Frequency (e.g. X1, X2, X3, AD) - concatenated directly to mucus token if present
   if (obs.frequency) {
-    parts.push(obs.frequency);
+    if (mucusToken) {
+      mucusToken += obs.frequency;
+    } else {
+      parts.push(obs.frequency);
+    }
+  }
+
+  if (mucusToken) {
+    parts.push(mucusToken);
   }
 
   // 4. Intercourse marker ('I')
@@ -95,13 +103,21 @@ export function parseCodeString(input: string): ParsedCodeResult {
       continue;
     }
 
-    // Check stretch prefix
-    let matchedStretch = validStretches.find(s => token.startsWith(s));
     let remaining = token;
+
+    // Check if token ends with a valid frequency code (e.g. 10KLX3 -> frequency X3, remaining 10KL)
+    const matchedFreq = validFreqs.find(f => remaining.endsWith(f));
+    if (matchedFreq) {
+      frequency = matchedFreq;
+      remaining = remaining.slice(0, remaining.length - matchedFreq.length);
+    }
+
+    // Check stretch prefix
+    let matchedStretch = validStretches.find(s => remaining.startsWith(s));
 
     if (matchedStretch) {
       stretch = matchedStretch;
-      remaining = token.slice(matchedStretch.length);
+      remaining = remaining.slice(matchedStretch.length);
     }
 
     // Parse remaining modifiers

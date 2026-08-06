@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.6.1  
+**Document Version:** 1.7.0  
 **Status:** Approved  
-**Last Updated:** August 5, 2026  
+**Last Updated:** August 6, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -153,15 +153,16 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 
 ### 3.2 Code Parser Engine
 
-**Module:** [src/domain/codeParser.ts](./src/domain/codeParser.ts)
+**Module:** [src/domain/codeParser.ts](./src/domain/codeParser.ts)  
+**CrMS Specification Version:** `1.1.0` (Streamlined CrMS token formatting without whitespace between mucus and frequency)
 
 The parser operates in two directions:
 
-1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order:  
-   `[Bleeding] [Stretch][Modifiers] [Frequency] [Intercourse]`  
+1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
+   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
    *Note:* Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
-   *Example:* `10KL X3 I` or `H` or `2W X2`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies, symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+   *Example:* `10KLX3 I` or `H` or `2WX2` or `0AD`.
+2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
@@ -260,7 +261,7 @@ export interface Observation {
   isManualPeak?: boolean;    // Manual Peak override flag
   isCycleStart?: boolean;    // Explicitly designated cycle start boundary
   stamp: StampType;
-  codeString: string;        // Formatted code string e.g. "10KL X3 I"
+  codeString: string;        // Formatted code string e.g. "10KLX3 I"
   isPeakDay?: boolean;       // Designated Peak Day ('P')
 }
 
@@ -403,7 +404,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - **Interactive Multi-Step Stepper (4 Slides):**
   1. **CrMS Overview & Privacy First:** Explains natural biomarker charting principles and 100% client-side local storage privacy.
   2. **Biomarker & Stamp Legend:** Interactive visual matrix explaining Red (Bleeding), Dark Green (Dry), Green+Baby (Fertile Mucus), White+Baby (Peak/High Fertility), and Yellow stamps, as well as post-peak counting ($P+1, P+2, P+3$).
-  3. **Daily Charting Guide:** Walkthrough of the Today Dashboard, Observation Drawer, Direct Code Entry (`10KL X3 I AP`), and Detailed Selectors.
+  3. **Daily Charting Guide:** Walkthrough of the Today Dashboard, Observation Drawer, Direct Code Entry (`10KLX3 I AP`), and Detailed Selectors.
   4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
 - **Accessible Design & Navigation:** Keyboard navigation (`Escape` close, tab trap), step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
 

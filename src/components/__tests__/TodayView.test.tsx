@@ -57,16 +57,16 @@ describe('TodayView Component (Dedicated Today Page)', () => {
 
   it('updates form and code string when direct input text is typed', () => {
     renderTodayView();
-    const directInput = screen.getByPlaceholderText('e.g. 10KL X3 I AP');
-    fireEvent.change(directInput, { target: { value: '10KL X3 I' } });
-    expect(directInput).toHaveValue('10KL X3 I');
+    const directInput = screen.getByPlaceholderText('e.g. 10KLX3 I AP');
+    fireEvent.change(directInput, { target: { value: '10KLX3 I' } });
+    expect(directInput).toHaveValue('10KLX3 I');
   });
 
   it('enables save button when changes are made and disables when pristine/saved', () => {
     renderTodayView();
     // Initially empty or saved observation: type input to make a change
-    const directInput = screen.getByPlaceholderText('e.g. 10KL X3 I AP');
-    fireEvent.change(directInput, { target: { value: '10KL X3 I' } });
+    const directInput = screen.getByPlaceholderText('e.g. 10KLX3 I AP');
+    fireEvent.change(directInput, { target: { value: '10KLX3 I' } });
 
     const saveBtn = screen.getByRole('button', { name: /Save Observation/i });
     expect(saveBtn).not.toBeDisabled();
