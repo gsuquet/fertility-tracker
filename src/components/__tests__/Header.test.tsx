@@ -54,4 +54,30 @@ describe('Header Component (Desktop)', () => {
     fireEvent.click(versionBtn);
     expect(handleOpenVersion).toHaveBeenCalledTimes(1);
   });
+
+  it('opens mobile action sheet and triggers actions when items are clicked', () => {
+    const handleExport = vi.fn();
+    const handleWelcome = vi.fn();
+    const handleVersion = vi.fn();
+
+    renderHeader({
+      activeTab: 'today',
+      setActiveTab: vi.fn(),
+      onOpenExport: handleExport,
+      onOpenWelcome: handleWelcome,
+      onOpenVersion: handleVersion,
+    });
+
+    const moreBtn = screen.getByRole('button', { name: /More actions/i });
+    expect(moreBtn).toBeInTheDocument();
+
+    // Open sheet
+    fireEvent.click(moreBtn);
+    expect(screen.getByRole('dialog', { name: /Mobile Navigation Menu/i })).toBeInTheDocument();
+
+    // Click Export in sheet
+    fireEvent.click(screen.getByText(/Imprimer ou exporter en PDF \/ JSON|Print or export PDF \/ JSON charts/i));
+    expect(handleExport).toHaveBeenCalledTimes(1);
+    expect(screen.queryByRole('dialog', { name: /Mobile Navigation Menu/i })).not.toBeInTheDocument();
+  });
 });

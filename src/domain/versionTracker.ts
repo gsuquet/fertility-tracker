@@ -38,6 +38,46 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.9.1',
+    date: '2026-09-01',
+    title: 'Mobile Action Sheet Portal & Viewport Positioning Fix',
+    titleFr: 'Correction du Positionnement et Rendu par Portail du Menu Mobile',
+    tagline: 'Portaled mobile action sheet directly to document.body to prevent ancestor backdrop-filter displacement',
+    taglineFr: 'Rendu du volet d\'actions mobile via un portail sur document.body pour éviter les décalages liés au backdrop-filter',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Rendered mobile action sheet via ReactDOM.createPortal directly into document.body',
+      'Fixed viewport clipping and stacking context offset caused by ancestor header CSS backdrop-filter',
+      'Added explicit full-viewport overlay bounds and touch scroll containment for mobile action sheet',
+    ],
+    highlightsFr: [
+      'Rendu du volet d\'actions mobile via ReactDOM.createPortal directement dans document.body',
+      'Correction du décalage d\'affichage causé par le backdrop-filter CSS de l\'en-tête parent',
+      'Ajout des limites de vue complètes et confinement du défilement tactile sur le volet mobile',
+    ],
+  },
+  {
+    version: '1.9.0',
+    date: '2026-09-01',
+    title: 'Mobile Navigation Streamlining & Bottom-Sheet Popups',
+    titleFr: 'Simplification de l\'En-tête Mobile & Modales en Volet Inférieur',
+    tagline: 'Consolidated mobile header into a sleek More menu and transformed all dialogs into responsive native bottom sheets',
+    taglineFr: 'Regroupement des actions de l\'en-tête mobile dans un menu Plus et conversion des modales en volets inférieurs adaptés',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Streamlined mobile top navigation to Logo, Cycle Picker, and a consolidated More Actions button (⋮)',
+      'Added sleek mobile Action Sheet bottom drawer for Export, Welcome Guide, Version info, Language, and Theme toggles',
+      'Transformed all popups (ExportModal, WelcomeModal, VersionModal, CycleStartModal) into mobile-friendly bottom sheets with clamped 88dvh height, sticky headers/footers, and independent scrollable bodies',
+      'Full safe-area inset compatibility for mobile browsers and touch devices',
+    ],
+    highlightsFr: [
+      'Simplification de la barre supérieure mobile avec le logo, le sélecteur de cycle et un bouton Plus d\'actions unique (⋮)',
+      'Ajout d\'un volet d\'actions mobile fluide pour l\'export, le guide d\'accueil, les infos de version, la langue et le thème',
+      'Conversion de toutes les modales (Export, Bienvenue, Version, Nouveau cycle) en volets inférieurs limités à 88dvh avec défilement interne et barres figées',
+      'Prise en charge intégrale des zones sécurisées (safe-area insets) pour mobiles',
+    ],
+  },
+  {
     version: '1.8.2',
     date: '2026-09-01',
     title: 'Dark Mode UI Theming & Button Primitives Polish',
@@ -305,7 +345,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.8.2';
+  return '1.9.1';
 }
 
 export function getBuildDate(): string {
