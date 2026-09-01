@@ -68,3 +68,11 @@ Explanation articles offer high-level context, background concepts, and design r
 
 * **[Creighton Model Methodology](explanation/crms-methodology.md):** Clinical principles of CrMS, biomarker scoring, and peak day calculation mechanics.
 * **[Architecture Overview](explanation/architecture-overview.md):** System design, data flow, reactive state management, and separation of concerns.
+
+---
+
+## 🏛️ 5. Architecture Decision Records (ADRs)
+
+* **[ADR 0001: Automated Backup & Multi-Device Synchronization with Zero-Knowledge Privacy](adr/0001-automated-backup-and-sync-privacy.md):** Analysis of zero-knowledge serverless sync, Bring-Your-Own-Storage, WebRTC P2P, key management UX, and conflict resolution models.
+* **[ADR 0002: CSS Maintainability & Layered Design System Architecture](adr/0002-css-maintainability-design-system.md):** Modular layered styling architecture (`@layer tokens, base, primitives, views, utilities`) with reusable design system primitives.
+

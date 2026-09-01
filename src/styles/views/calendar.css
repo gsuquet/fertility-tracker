@@ -1,0 +1,244 @@
+/* ==========================================================================
+   Monthly Calendar Grid View
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  .calendar-view {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-xl);
+    padding: 1.5rem;
+    box-shadow: var(--shadow-sm);
+    box-sizing: border-box;
+    width: 100%;
+    overflow: hidden;
+  }
+
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 1.25rem;
+  }
+
+  .calendar-month-title {
+    font-size: 1.25rem;
+    font-weight: 800;
+    letter-spacing: -0.01em;
+  }
+
+  .calendar-grid {
+    display: grid;
+    grid-template-columns: repeat(7, minmax(0, 1fr));
+    gap: 8px;
+    width: 100%;
+    box-sizing: border-box;
+  }
+
+  .calendar-weekday-header {
+    text-align: center;
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-muted);
+    padding-bottom: 8px;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+  }
+
+  /* Default desktop display for weekday headers: show SUN, MON, etc., hide S, M, T */
+  .calendar-weekday-header .weekday-full {
+    display: inline;
+  }
+
+  .calendar-weekday-header .weekday-short {
+    display: none;
+  }
+
+  .calendar-day {
+    min-height: 112px;
+    height: 112px;
+    background-color: var(--bg-primary);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    padding: 8px 6px;
+    cursor: pointer;
+    transition: all 0.18s ease;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    align-items: stretch;
+    position: relative;
+    min-width: 0;
+    overflow: hidden;
+    box-sizing: border-box;
+  }
+
+  .calendar-day:hover:not(.future-day) {
+    border-color: var(--accent-primary);
+    box-shadow: var(--shadow-md);
+    transform: translateY(-2px);
+  }
+
+  .calendar-day.is-today {
+    border: 2px solid var(--accent-primary) !important;
+    background-color: var(--accent-soft, rgba(99, 102, 241, 0.08));
+    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), var(--shadow-sm);
+    position: relative;
+    z-index: 2;
+  }
+
+  .calendar-day.is-today .calendar-day-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 4px;
+    border-radius: 9999px;
+    background-color: var(--accent-primary);
+    color: #ffffff;
+    font-weight: 800;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+  }
+
+  .calendar-day-num {
+    font-size: 0.8rem;
+    font-weight: 800;
+    color: var(--text-primary);
+    line-height: 1;
+  }
+
+  .calendar-day-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100%;
+    gap: 3px;
+    width: 100%;
+  }
+
+  .calendar-stamp-wrapper {
+    height: 50px;
+    min-height: 50px;
+    max-height: 50px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    width: 100%;
+  }
+
+  .calendar-code {
+    font-size: 0.65rem;
+    font-weight: 800;
+    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    text-align: center;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    max-width: 100%;
+    margin-top: auto;
+  }
+
+  .calendar-add-slot {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+  }
+
+  .calendar-add-pill {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 4px 8px;
+    border-radius: var(--radius-sm);
+    border: 1px dashed var(--bg-surface-border-strong);
+    background-color: var(--bg-surface);
+    color: var(--text-muted);
+    font-size: 0.68rem;
+    font-weight: 700;
+    transition: all 0.18s ease;
+  }
+
+  .calendar-day:hover .calendar-add-pill {
+    border-color: var(--accent-primary);
+    border-style: solid;
+    color: var(--accent-primary);
+    background-color: var(--accent-light);
+    transform: scale(1.04);
+  }
+
+  /* Responsive Media Queries */
+  @media (max-width: 640px) {
+    .calendar-view {
+      padding: 0.85rem;
+      overflow: hidden;
+    }
+
+    .calendar-month-title {
+      font-size: 1rem;
+    }
+
+    .calendar-weekday-header .weekday-full {
+      display: none;
+    }
+
+    .calendar-weekday-header .weekday-short {
+      display: inline;
+      font-size: 0.72rem;
+      font-weight: 800;
+    }
+
+    .calendar-grid {
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
+      width: 100%;
+    }
+
+    .calendar-day {
+      min-height: 76px;
+      height: 76px;
+      padding: 4px 3px;
+      min-width: 0;
+      overflow: hidden;
+    }
+
+    .calendar-day-num {
+      font-size: 0.7rem;
+    }
+
+    .calendar-stamp-wrapper {
+      height: 44px;
+      min-height: 44px;
+      max-height: 44px;
+    }
+
+    .calendar-code {
+      font-size: 0.55rem;
+      max-width: 100%;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    .calendar-add-slot {
+      width: 100%;
+      min-width: 0;
+    }
+
+    .calendar-add-pill {
+      padding: 3px 4px;
+      gap: 0;
+      max-width: 100%;
+    }
+
+    .calendar-add-pill .add-text {
+      display: none;
+    }
+  }
+}

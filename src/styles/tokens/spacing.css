@@ -1,0 +1,35 @@
+/* ==========================================================================
+   Spacing, Sizing & Z-Index Tokens
+   Layer: tokens
+   ========================================================================== */
+
+@layer tokens {
+  :root {
+    /* Spacing Scale */
+    --space-2xs: 2px;
+    --space-xs: 4px;
+    --space-sm: 8px;
+    --space-md: 16px;
+    --space-lg: 24px;
+    --space-xl: 32px;
+    --space-2xl: 48px;
+    --space-3xl: 64px;
+
+    /* Semantic Z-Index Scale */
+    --z-base: 1;
+    --z-raised: 10;
+    --z-sticky: 100;
+    --z-header: 200;
+    --z-mobile-nav: 300;
+    --z-drawer: 500;
+    --z-modal-backdrop: 900;
+    --z-modal: 1000;
+    --z-popover: 1100;
+    --z-toast: 1200;
+
+    /* Transition / Motion Tokens */
+    --transition-fast: 0.15s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-normal: 0.25s cubic-bezier(0.4, 0, 0.2, 1);
+    --transition-slow: 0.35s cubic-bezier(0.4, 0, 0.2, 1);
+  }
+}

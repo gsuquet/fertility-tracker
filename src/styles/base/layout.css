@@ -1,0 +1,29 @@
+/* ==========================================================================
+   App Layout Shell & Main Containers
+   Layer: base
+   ========================================================================== */
+
+@layer base {
+  .app-layout {
+    min-height: 100vh;
+    min-height: 100dvh;
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-primary);
+  }
+
+  .main-content {
+    flex: 1;
+    padding: 1.25rem 1.5rem;
+    max-width: 1440px;
+    margin: 0 auto;
+    width: 100%;
+    overflow-x: hidden;
+  }
+
+  @media (max-width: 640px) {
+    .main-content {
+      padding: 1rem 0.75rem;
+    }
+  }
+}

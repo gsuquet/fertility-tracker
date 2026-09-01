@@ -184,7 +184,7 @@ This project uses the **[Diátaxis Framework](docs/README.md)** for developer an
   - 🛠️ **[How-To Guides](docs/how-to/log-biomarkers.md)** – Actionable task-oriented guides.
   - 📖 **[Reference](docs/reference/crms-biomarker-codes.md)** – CrMS codes, domain engine API, and project structure.
   - 💡 **[Explanation](docs/explanation/architecture-overview.md)** – Clinical background and architecture overview.
-- 🏛️ **[Architecture Decision Records (ADR)](docs/adr/0001-domain-driven-crms-engine.md)** – Architectural design records.
+- 🏛️ **[Architecture Decision Records (ADR)](docs/adr/0001-automated-backup-and-sync-privacy.md)** – Architectural design records.
 - 📋 **[Request for Comments (RFC)](docs/rfcs/0001-cloud-sync-and-pwa.md)** – Proposed feature specifications.
 
 ### External References

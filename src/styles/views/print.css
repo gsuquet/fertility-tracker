@@ -1,0 +1,313 @@
+/* ==========================================================================
+   Print Export & Paper PDF Output Stylesheet
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  /* Print Export Container - Hidden in screen view */
+  .print-export-container {
+    display: none;
+  }
+
+  /* Media Print Stylesheet */
+  @media print {
+    @page {
+      size: landscape;
+      margin: 8mm;
+    }
+
+    body {
+      background: #ffffff !important;
+      color: #000000 !important;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      -webkit-print-color-adjust: exact !important;
+      print-color-adjust: exact !important;
+    }
+
+    .app-header,
+    .mobile-nav-bar,
+    .drawer-overlay,
+    .modal-overlay,
+    .new-entry-btn,
+    .icon-button,
+    .main-content,
+    .chart-strip-toolbar,
+    .chart-strip-legend,
+    .today-toast {
+      display: none !important;
+    }
+
+    .print-export-container {
+      display: block !important;
+      width: 100% !important;
+      padding: 0 !important;
+      margin: 0 !important;
+    }
+
+    .print-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: flex-end;
+      border-bottom: 2px solid #0f172a;
+      padding-bottom: 6px;
+      margin-bottom: 12px;
+    }
+
+    .print-header-main h1 {
+      font-size: 16pt;
+      font-weight: 700;
+      margin: 0;
+      color: #0f172a;
+    }
+
+    .print-subtitle {
+      font-size: 9pt;
+      color: #475569;
+      margin: 2px 0 0 0;
+    }
+
+    .print-header-meta {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-end;
+      font-size: 8pt;
+      color: #64748b;
+    }
+
+    .print-cycles-list {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    .print-cycle-card {
+      break-inside: avoid;
+      page-break-inside: avoid;
+      border: 1px solid #cbd5e1;
+      border-radius: 6px;
+      padding: 6px;
+      background: #ffffff;
+    }
+
+    .print-cycle-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 4px;
+      font-size: 9pt;
+    }
+
+    .print-cycle-info {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .print-cycle-badge {
+      background: #0284c7;
+      color: #ffffff;
+      font-weight: 700;
+      padding: 1px 6px;
+      border-radius: 4px;
+      font-size: 8.5pt;
+    }
+
+    .print-cycle-dates {
+      font-weight: 600;
+      color: #0f172a;
+    }
+
+    .print-cycle-length {
+      color: #64748b;
+      font-size: 8pt;
+    }
+
+    .print-peak-badge {
+      color: #d97706;
+      font-weight: 600;
+      font-size: 8pt;
+      display: flex;
+      align-items: center;
+      gap: 3px;
+    }
+
+    .print-grid-wrapper {
+      overflow: visible;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    .print-grid-row {
+      display: grid;
+      grid-template-columns: repeat(35, minmax(0, 1fr));
+      width: 100%;
+      gap: 1px;
+      background: #e2e8f0;
+      border: 1px solid #94a3b8;
+      border-radius: 4px;
+      overflow: hidden;
+      box-sizing: border-box;
+    }
+
+    .print-cell {
+      background: #ffffff;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: flex-start;
+      gap: 2px;
+      padding: 2px 1px;
+      min-height: 58px;
+      width: 100%;
+      min-width: 0;
+      box-sizing: border-box;
+      overflow: hidden;
+    }
+
+    .print-stamp-wrapper {
+      margin: 1px 0 2px 0;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      width: 100%;
+    }
+
+    .print-cell-header {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      width: 100%;
+      overflow: hidden;
+      font-size: 6.5pt;
+      line-height: 1;
+      color: #475569;
+    }
+
+    .print-day-num {
+      font-weight: 700;
+      font-size: 7.5pt;
+      color: #0f172a;
+    }
+
+    .print-day-name {
+      font-size: 5.5pt;
+      text-transform: uppercase;
+    }
+
+    .print-date {
+      font-size: 5.5pt;
+      font-weight: 600;
+      color: #475569;
+      line-height: 1;
+      text-align: center;
+      margin: 1px 0;
+    }
+
+    .print-intercourse {
+      font-size: 6.5pt;
+      font-weight: 800;
+      color: #4f46e5;
+      background: rgba(99, 102, 241, 0.12);
+      border: 1px solid #6366f1;
+      border-radius: 3px;
+      padding: 0 3px;
+      line-height: 1.1;
+      margin: 1px 0;
+      text-align: center;
+    }
+
+    .print-code {
+      font-size: 6.5pt;
+      font-weight: 700;
+      color: #0f172a;
+      text-align: center;
+      word-break: break-all;
+      overflow-wrap: anywhere;
+      white-space: normal;
+      line-height: 1.05;
+      max-height: 2.2em;
+      overflow: hidden;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+    }
+
+    .print-symptoms {
+      font-size: 5pt;
+      color: #0284c7;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    .print-notes {
+      font-size: 4.5pt;
+      color: #334155;
+      border-top: 1px solid #cbd5e1;
+      width: 100%;
+      min-height: 11px;
+      text-align: center;
+      margin-top: auto;
+      padding: 1px 1px 0 1px;
+      word-break: break-word;
+      overflow: hidden;
+      line-clamp: 2;
+      display: -webkit-box;
+      -webkit-line-clamp: 2;
+      -webkit-box-orient: vertical;
+      line-height: 1.1;
+      box-sizing: border-box;
+    }
+
+    .print-cell.empty-cell {
+      background: #f8fafc;
+      opacity: 0.6;
+    }
+
+    .print-legend {
+      margin-top: 12px;
+      padding-top: 6px;
+      border-top: 1px dashed #cbd5e1;
+      font-size: 7.5pt;
+      break-inside: avoid;
+      page-break-inside: avoid;
+    }
+
+    .print-legend-title {
+      font-weight: 700;
+      margin-bottom: 4px;
+      color: #0f172a;
+    }
+
+    .print-legend-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px;
+    }
+
+    .print-legend-item {
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .print-badge-sample {
+      width: 12px;
+      height: 12px;
+      border-radius: 2px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 6pt;
+      font-weight: bold;
+      border: 1px solid rgba(0,0,0,0.15);
+    }
+
+    .print-badge-sample.stamp-red { background-color: #ef4444; }
+    .print-badge-sample.stamp-dark_green { background-color: #15803d; }
+    .print-badge-sample.stamp-white_baby { background-color: #ffffff; color: #0284c7; border: 1px solid #0284c7; }
+    .print-badge-sample.stamp-light_green_baby_1 { background-color: #86efac; color: #166534; }
+    .print-badge-sample.peak-legend { background-color: #f59e0b; color: #ffffff; }
+    .print-badge-sample.intercourse-legend { background-color: #6366f1; color: #ffffff; }
+  }
+}

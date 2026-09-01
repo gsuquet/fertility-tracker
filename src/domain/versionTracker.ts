@@ -38,6 +38,63 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.8.2',
+    date: '2026-09-01',
+    title: 'Dark Mode UI Theming & Button Primitives Polish',
+    titleFr: 'Polissage du Thème Sombre & Primitives de Boutons',
+    tagline: 'Fixed dark mode styling for detailed selectors toggle, PDF export configuration card, and modal action buttons',
+    taglineFr: 'Correction du style en mode sombre pour le bouton des sélecteurs détaillés, la configuration d\'export PDF et les boutons de modales',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Defined robust .btn-outline, .btn-ghost, .btn-sm, and .btn-lg button primitives using design tokens',
+      'Replaced undefined color variables in PDF configurator with theme-adaptive design tokens (--bg-surface, --bg-primary, --text-primary)',
+      'Ensured full dark mode compatibility across tour navigation and form toggles',
+    ],
+    highlightsFr: [
+      'Définition des primitives de bouton .btn-outline, .btn-ghost, .btn-sm et .btn-lg avec les jetons de design',
+      'Remplacement des variables non définies de l\'export PDF par les jetons adaptatifs (--bg-surface, --bg-primary, --text-primary)',
+      'Garantie d\'une compatibilité totale en mode sombre pour les boutons de navigation du guide et les sélecteurs',
+    ],
+  },
+  {
+    version: '1.8.1',
+    date: '2026-09-01',
+    title: 'Mobile Header Brand Text Collapse Optimization',
+    titleFr: 'Optimisation du Masquage du Titre dans l\'En-tête Mobile',
+    tagline: 'Collapsed brand text on mobile viewports so only the logo is displayed, preventing header bar overflow',
+    taglineFr: 'Masquage du texte de la marque sur mobile pour n\'afficher que le logo, évitant le débordement de l\'en-tête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Collapsed brand text (.brand-text) on mobile screens (<= 640px) to keep only the logo icon visible',
+      'Eliminated header control crowding and improved cycle picker layout on compact touch displays',
+    ],
+    highlightsFr: [
+      'Masquage du texte de marque (.brand-text) sur les écrans mobiles (<= 640px) pour ne conserver que le logo',
+      'Suppression des chevauchements d\'en-tête et amélioration de la disposition du sélecteur de cycle sur mobile',
+    ],
+  },
+  {
+    version: '1.8.0',
+    date: '2026-08-31',
+    title: 'Layered CSS Design System Architecture & Maintainability',
+    titleFr: 'Architecture CSS Modulaire & Système de Design en Couches',
+    tagline: 'Modularized monolithic styling with native CSS @layer, formalized design tokens, and domain stylesheets (ADR 0002)',
+    taglineFr: 'Modularisation des styles avec CSS @layer natif, jetons de design formalisés et feuilles de style dédiées (ADR 0002)',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Architected modular layered CSS with @layer tokens, base, primitives, views, utilities (ADR 0002)',
+      'Extracted styles into dedicated token, primitive, and view modules (tokens, spacing, buttons, badges, chart, calendar, today, analytics, modals, print)',
+      'Formalized semantic spacing and z-index design token scales while retaining 100% selector stability',
+      'Enhanced empty chart row state to seamlessly highlight current day with today pill badge',
+    ],
+    highlightsFr: [
+      'Architecture CSS modulaire avec @layer tokens, base, primitives, views, utilities (ADR 0002)',
+      'Extraction des styles en modules dédiés (jetons, espacements, boutons, badges, graphique, calendrier, aujourd\'hui, analyses, modales, impression)',
+      'Formalisation des échelles de jetons d\'espacement et de z-index avec une compatibilité totale des sélecteurs',
+      'Amélioration de l\'état vide du graphique pour mettre en valeur le jour actuel avec le badge Aujourd\'hui',
+    ],
+  },
+  {
     version: '1.7.0',
     date: '2026-08-06',
     title: 'Mucus & Frequency Code Formatting Streamlining',
@@ -248,14 +305,14 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.7.0';
+  return '1.8.2';
 }
 
 export function getBuildDate(): string {
   if (typeof __BUILD_DATE__ !== 'undefined') {
     return __BUILD_DATE__;
   }
-  return '2026-08-06T00:00:00.000Z';
+  return '2026-09-01T00:00:00.000Z';
 }
 
 export function getVersionInfo(): VersionInfo {

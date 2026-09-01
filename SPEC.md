@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.7.0  
+**Document Version:** 1.8.2  
 **Status:** Approved  
-**Last Updated:** August 6, 2026  
+**Last Updated:** September 1, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -286,8 +286,8 @@ The user interface comprises four primary view tabs, global navigation, header s
 
 ### 5.1 Navigation & Global Controls
 
-- **Desktop Header ([Header.tsx](./src/components/Header.tsx)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`). Responsive design automatically hides brand title text on narrow viewports ($\le 480\text{px}$) while scaling the logo icon.
-- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding Guide link and Version Badge button (`v1.2.0`) linking to the Version Tracker modal.
+- **Desktop & Mobile Header ([Header.tsx](./src/components/Header.tsx), [src/styles/views/header.css](./src/styles/views/header.css)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`). Responsive design automatically collapses the brand text container (`.brand-text` containing `.brand-title` and `.brand-subtitle`) on mobile viewports ($\le 640\text{px}$), displaying only the logo (`🌱`) to guarantee sufficient horizontal space for header controls and the cycle picker.
+- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding Guide link and Version Badge button (`v1.8.1`) linking to the Version Tracker modal.
 - **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
 
 ---
@@ -430,17 +430,42 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - Supported languages: **English (`en`)**, **French (`fr`)**, **Spanish (`es`)**.
 - Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
 
-### 7.2 Design System & Themes
+### 7.2 Design System & Layered CSS Architecture
 
-**Module:** [src/context/ThemeContext.tsx](./src/context/ThemeContext.tsx), [src/styles/index.css](./src/styles/index.css)
+**Modules & Directory Structure:** [src/context/ThemeContext.tsx](./src/context/ThemeContext.tsx), [src/styles/index.css](./src/styles/index.css), `src/styles/`
+**Architecture Decision:** [ADR 0002: CSS Maintainability & Layered Design System Architecture](docs/adr/0002-css-maintainability-design-system.md)
 
-- Styled using CSS custom properties (variables) supporting **Dark** and **Light** modes.
-- Color Tokens:
-  - `--stamp-red`: `#ef4444`
-  - `--stamp-dark-green`: `#15803d`
-  - `--stamp-white-baby`: `#ffffff`
-  - `--stamp-light-green`: `#86efac`
-  - Theme-adaptive background (`var(--bg-surface)`, `var(--bg-primary)`), text, border (`var(--bg-surface-border)`), and elevation variables.
+- **Cascade Layer Order:** Native CSS `@layer` declaration enforcing strict override precedence without specificity conflicts:
+  ```css
+  @layer tokens, base, primitives, views, utilities;
+  ```
+- **Modular Directory Organization:**
+  - `src/styles/tokens/`:
+    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`).
+    - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
+    - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
+  - `src/styles/base/`:
+    - `reset.css`: Modern CSS box-sizing resets, zero-margin defaults, font smoothing.
+    - `layout.css`: App shell container (`.app-layout`, `.main-content`), mobile bottom bar offsets, global focus outlines.
+  - `src/styles/primitives/`:
+    - `buttons.css`: Reusable action button primitives (`.btn`, `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-icon`, `.btn-danger`, `.btn-sm`, `.btn-lg`, `.toggle-btn`).
+    - `cards.css`: Reusable surface containers (`.card`, `.card-surface`, `.card-glass`, `.card-interactive`, `.card-header`, `.card-body`).
+    - `forms.css`: Form inputs, selects, textareas, custom checkboxes, and toggle switches.
+    - `badges.css`: Indicators, pills, and biomarker badges (`.badge`, `.badge-pill`, `.stamp-badge`).
+    - `dialogs.css`: Modal backdrops, dialog containers, and slide-in drawer panels.
+  - `src/styles/views/`:
+    - `header.css`: Global header, navigation brand, language selector, and theme switcher.
+    - `cycle-picker.css`: Cycle dropdown selector and cycle summary metrics.
+    - `today.css`: Dedicated Today Dashboard view, date selector strip, quick log banner, and recent history cards.
+    - `chart.css`: Creighton paper chart strip (`.chart-table`, `.cell-day`, `.paper-cell`, `.is-today`, `.peak-marker`).
+    - `calendar.css`: Monthly calendar grid view, day cells, month navigation, and calendar legend.
+    - `analytics.css`: Cycle analytics metrics, Mucus Cycle Score (MCS) card, and biomarker distribution graphs.
+    - `drawer.css`: Full-featured observation logger drawer, direct code entry, and biomarker pickers.
+    - `modals.css`: View modals including `ExportModal`, `VersionModal`, `WelcomeModal`, and `CycleStartModal`.
+    - `footer.css`: App footer, legal disclaimers, and version badge.
+    - `print.css`: High-resolution export layouts and `@media print` rules.
+  - `src/styles/utilities/`:
+    - `utilities.css`: Layout helpers (`.flex-center`, `.gap-2`, `.items-center`), text helpers (`.text-truncate`, `.sr-only`).
 
 ---
 

@@ -143,17 +143,21 @@ export const ChartRow: React.FC = () => {
             <div className="chart-row-strip paper-grid-strip">
               {Array.from({ length: 35 }).map((_, idx) => {
                 const dayNum = idx + 1;
+                const dateStr = addDays(todayStr, idx);
+                const isToday = idx === 0;
                 return (
                   <div
                     key={idx}
-                    className="chart-cell empty-cell paper-cell"
-                    onClick={() => handleCellClick()}
+                    className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
+                    onClick={() => handleCellClick(undefined, dateStr, dayNum)}
                     tabIndex={0}
                     role="button"
-                    aria-label={`Day ${dayNum} - Empty`}
+                    aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}`}
                   >
                     <div className="cell-header">
+                      {isToday && <span className="cell-today-pill" title="Today">Today</span>}
                       <span className="cell-day-num">{dayNum}</span>
+                      {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
                     </div>
                     <div className="cell-placeholder">
                       <Plus size={16} className="add-icon" />

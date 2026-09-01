@@ -1,6 +1,6 @@
 import React from 'react';
 import { render, screen, fireEvent, act } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, beforeEach } from 'vitest';
 import { ChartRow } from '../ChartRow';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider, useCycle } from '../../context/CycleContext';
@@ -37,6 +37,9 @@ const renderChartRow = () => {
 };
 
 describe('ChartRow Component (Paper Chart Strip)', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
   it('renders 35-day paper chart row strip in empty state', () => {
     renderChartRow();
     expect(screen.getByText(/Cycle 1 \(Days 1 - 35\)/i)).toBeInTheDocument();

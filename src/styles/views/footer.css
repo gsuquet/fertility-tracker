@@ -1,0 +1,70 @@
+/* ==========================================================================
+   Footer Component & Legal Disclaimers
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  .app-footer {
+    margin-top: 3rem;
+    padding: 1.5rem 0 2rem 0;
+    border-top: 1px solid var(--bg-surface-border);
+    width: 100%;
+  }
+
+  .footer-container {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    max-width: 100%;
+  }
+
+  .footer-disclaimer-box {
+    background-color: var(--bg-surface);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    padding: 1.1rem 1.25rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+  }
+
+  .disclaimer-header {
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    color: var(--text-muted);
+  }
+
+  .disclaimer-header.medical-header {
+    margin-top: 0.35rem;
+  }
+
+  .disclaimer-icon {
+    color: var(--accent-primary);
+    flex-shrink: 0;
+  }
+
+  .disclaimer-title {
+    font-size: 0.75rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    color: var(--text-muted);
+  }
+
+  .disclaimer-text {
+    font-size: 0.78rem;
+    line-height: 1.45;
+    color: var(--text-muted);
+    margin: 0;
+  }
+
+  .footer-copyright {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    opacity: 0.8;
+  }
+}
