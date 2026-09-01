@@ -38,6 +38,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.9.2',
+    date: '2026-09-01',
+    title: 'Mobile Header Control Height & Footer Layout Harmonization',
+    titleFr: 'Harmonisation de la Hauteur de l\'En-tête Mobile & Mise en Page du Pied de Page',
+    tagline: 'Standardized cycle picker height to 38px and restructured mobile footer into clean rows with bottom-nav clearance',
+    taglineFr: 'Standardisation de la hauteur du sélecteur de cycle à 38px et restructuration du pied de page mobile avec dégagement de la barre inférieure',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Standardized mobile cycle selector button height to 38px (matching the more action button)',
+      'Refined touch target padding and vertical centering in the mobile top navigation header',
+      'Restructured mobile footer into clean rows: copyright on top, User Guide and Version badges neatly aligned on a dedicated row',
+      'Added bottom-navigation safe clearance to prevent bottom bar overlap on mobile viewports',
+    ],
+    highlightsFr: [
+      'Standardisation de la hauteur du bouton sélecteur de cycle à 38px (identique au bouton Plus d\'actions)',
+      'Ajustement des marges tactiles et alignement vertical parfait dans la barre d\'en-tête mobile',
+      'Restructuration du pied de page mobile en lignes épurées : copyright au-dessus, badges Guide utilisateur et Version alignés sur une seule ligne',
+      'Ajout d\'un espacement de sécurité pour éviter le chevauchement avec la barre de navigation inférieure sur mobile',
+    ],
+  },
+  {
     version: '1.9.1',
     date: '2026-09-01',
     title: 'Mobile Action Sheet Portal & Viewport Positioning Fix',
@@ -345,7 +366,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.9.1';
+  return '1.9.2';
 }
 
 export function getBuildDate(): string {

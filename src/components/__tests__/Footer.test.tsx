@@ -32,4 +32,20 @@ describe('Footer Component', () => {
     fireEvent.click(versionBtn);
     expect(handleOpenVersion).toHaveBeenCalledTimes(1);
   });
+
+  it('renders user guide button when onOpenWelcome callback is provided', () => {
+    const handleOpenWelcome = vi.fn();
+    render(
+      <LanguageProvider>
+        <Footer onOpenWelcome={handleOpenWelcome} />
+      </LanguageProvider>
+    );
+
+    const guideBtn = screen.getByRole('button', { name: /Welcome to Fertility Tracker|User Guide|Bienvenue/i });
+    expect(guideBtn).toBeInTheDocument();
+    expect(guideBtn).toHaveTextContent(/User Guide/i);
+
+    fireEvent.click(guideBtn);
+    expect(handleOpenWelcome).toHaveBeenCalledTimes(1);
+  });
 });

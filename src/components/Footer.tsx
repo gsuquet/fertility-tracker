@@ -32,31 +32,33 @@ export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenWelcome }) 
           </p>
         </div>
         <div className="footer-copyright">
-          <span>&copy; {new Date().getFullYear()} Fertility Tracker &bull; Open Source Software</span>
-          {onOpenWelcome && (
-            <button
-              type="button"
-              className="footer-version-btn"
-              onClick={onOpenWelcome}
-              title={t.welcomeModal.title}
-              aria-label={t.welcomeModal.title}
-            >
-              <BookOpen size={12} />
-              <span>User Guide</span>
-            </button>
-          )}
-          {onOpenVersion && (
-            <button
-              type="button"
-              className="footer-version-btn"
-              onClick={onOpenVersion}
-              title={t.versionTracker.title}
-              aria-label={t.versionTracker.title}
-            >
-              <Tag size={12} />
-              <span>v{appVersion}</span>
-            </button>
-          )}
+          <span className="footer-copyright-text">&copy; {new Date().getFullYear()} Fertility Tracker &bull; Open Source Software</span>
+          <div className="footer-links">
+            {onOpenWelcome && (
+              <button
+                type="button"
+                className="footer-version-btn"
+                onClick={onOpenWelcome}
+                title={t.welcomeModal.title}
+                aria-label={t.welcomeModal.title}
+              >
+                <BookOpen size={12} />
+                <span>User Guide</span>
+              </button>
+            )}
+            {onOpenVersion && (
+              <button
+                type="button"
+                className="footer-version-btn"
+                onClick={onOpenVersion}
+                title={t.versionTracker.title}
+                aria-label={t.versionTracker.title}
+              >
+                <Tag size={12} />
+                <span>v{appVersion}</span>
+              </button>
+            )}
+          </div>
         </div>
       </div>
     </footer>

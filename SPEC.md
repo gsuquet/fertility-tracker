@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.9.1  
+**Document Version:** 1.9.2  
 **Status:** Approved  
 **Last Updated:** September 1, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -287,10 +287,10 @@ The user interface comprises four primary view tabs, global navigation, header s
 ### 5.1 Navigation & Global Controls
 
 - **Desktop & Mobile Header ([Header.tsx](./src/components/Header.tsx), [src/styles/views/header.css](./src/styles/views/header.css)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`).
-  - **Desktop View:** Directly exposes all individual control buttons in the top header control bar.
-  - **Mobile View ($\le 640\text{px}$):** Streamlines the top navigation bar to only three primary elements: Logo (`🌱`), Cycle Picker dropdown, and a single More Actions button (`⋮`). Secondary action buttons (Export, Welcome Guide, Version Info, Language toggle, and Theme toggle) are consolidated into a slide-up mobile Action Sheet portaled directly to `document.body` via `ReactDOM.createPortal` (preventing CSS `backdrop-filter` stacking context displacement) and anchored at `bottom: 0`.
+  - **Desktop View:** Directly exposes all individual control buttons in the top header control bar with standard 42px touch targets.
+  - **Mobile View ($\le 640\text{px}$):** Streamlines the top navigation bar to only three primary elements: Logo (`🌱`), Cycle Picker dropdown, and a single More Actions button (`⋮`), aligned with uniform 38px heights (`height: 38px; min-height: 38px;`). Secondary action buttons (Export, Welcome Guide, Version Info, Language toggle, and Theme toggle) are consolidated into a slide-up mobile Action Sheet portaled directly to `document.body` via `ReactDOM.createPortal` (preventing CSS `backdrop-filter` stacking context displacement) and anchored at `bottom: 0`.
 - **Mobile Modal Bottom-Sheet Architecture ([dialogs.css](./src/styles/primitives/dialogs.css), [modals.css](./src/styles/views/modals.css)):** On mobile viewports ($\le 640\text{px}$), all modal dialogs (`ExportModal`, `WelcomeModal`, `VersionModal`, `CycleStartModal`) render as bottom sheets anchored to the bottom of the viewport with rounded top corners (`24px`), height clamped at `88dvh`, sticky header and action footer, and an independently scrolling modal body.
-- **Footer ([Footer.tsx](./src/components/Footer.tsx)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding Guide link and Version Badge button linking to the Version Tracker modal.
+- **Footer ([Footer.tsx](./src/components/Footer.tsx), [src/styles/views/footer.css](./src/styles/views/footer.css)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding User Guide link and Version Badge button linking to the Version Tracker modal. On mobile devices ($\le 640\text{px}$), the copyright text and the action badge links (`User Guide` and `v1.9.2`) are structured on separate aligned rows to ensure neat one-line presentation of badges with clear bottom-navigation safe area clearance.
 - **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
 
 ---
