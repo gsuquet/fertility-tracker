@@ -4,18 +4,100 @@
    ========================================================================== */
 
 @layer views {
-  /* Cycle Start Modal Overrides */
+  /* Cycle Start Modal */
   .cycle-start-modal-overlay {
-    z-index: 1000 !important;
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-    padding: 1rem !important;
+    position: fixed;
+    inset: 0;
+    z-index: var(--z-modal, 1000);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: var(--space-md, 1rem);
+    background-color: var(--bg-overlay, rgba(15, 23, 42, 0.65));
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
 
   .cycle-start-modal-container {
-    margin: auto !important;
-    border-radius: 20px !important;
+    width: 100%;
+    max-width: 480px;
+    padding: 1.75rem;
+    margin: auto;
+    border-radius: var(--radius-xl, 20px);
+    box-shadow: var(--shadow-xl, 0 20px 25px -5px rgba(0, 0, 0, 0.3));
+    border: 1px solid var(--bg-surface-border);
+    background-color: var(--bg-surface);
+  }
+
+  .cycle-start-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 1.25rem;
+  }
+
+  .cycle-start-header-left {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .cycle-start-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background-color: rgba(239, 68, 68, 0.15);
+    color: var(--stamp-red, #ef4444);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .cycle-start-title {
+    margin: 0;
+    font-size: 1.25rem;
+    font-weight: 600;
+  }
+
+  .cycle-start-date {
+    font-size: 0.85rem;
+    color: var(--text-muted);
+  }
+
+  .cycle-start-body {
+    margin-bottom: 1.5rem;
+    line-height: 1.5;
+  }
+
+  .cycle-start-question {
+    font-weight: 600;
+    font-size: 1rem;
+    margin-bottom: 0.5rem;
+    color: var(--text-primary);
+  }
+
+  .cycle-start-description {
+    font-size: 0.9rem;
+    color: var(--text-secondary);
+    margin: 0;
+  }
+
+  .cycle-start-actions {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+
+  .cycle-start-cancel-link {
+    background: none;
+    border: none;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+    padding: 0.4rem;
+    cursor: pointer;
+    text-decoration: underline;
+    align-self: center;
+    margin-top: 0.25rem;
   }
 
   .export-actions-grid {
