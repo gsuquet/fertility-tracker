@@ -54,3 +54,29 @@ Identifies cycle boundaries (Day 1 of new cycle triggered by new heavy/moderate 
 ### `detectCycleBoundaries(observations: Observation[]): number[]`
 
 - **Returns:** Array of observation indices marking the start of new cycles.
+
+### `groupObservationsIntoCycles(observations: Observation[]): Cycle[]`
+
+- **Returns:** Grouped array of `Cycle` objects containing assigned cycle day numbers and peak day markers.
+
+---
+
+## 5. Version Tracker & Diagnostics (`versionTracker.ts`)
+
+Manages version history, release change highlights, last-seen update tracking, and local storage diagnostics.
+
+### `getVersionInfo(): VersionInfo`
+
+- **Returns:** `VersionInfo` metadata object with app version, CrMS spec version, build date, and repository URL.
+
+### `getVersionHistory(): VersionRelease[]`
+
+- **Returns:** Full chronological list of all app releases and bilingual feature highlights.
+
+### `getLatestRelease(): VersionRelease`
+
+- **Returns:** The most recent release record.
+
+### `getStorageStats(): StorageStats`
+
+- **Returns:** Real-time diagnostics containing observation count, cycle count, total localStorage keys, and estimated byte footprint.

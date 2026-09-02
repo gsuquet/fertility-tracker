@@ -91,13 +91,13 @@
 
   /* Danger Button */
   .btn-danger {
-    background-color: #ef4444;
-    color: #ffffff;
+    background-color: var(--color-danger, #ef4444);
+    color: var(--color-white, #ffffff);
     border-color: transparent;
   }
 
   .btn-danger:hover {
-    background-color: #dc2626;
+    background-color: var(--color-danger-hover, #dc2626);
   }
 
   /* Icon Button */

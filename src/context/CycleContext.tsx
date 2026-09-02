@@ -4,6 +4,7 @@ import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
 import { getTodayStr, addDays } from '../utils/dateUtils';
+import { parseAndValidateObservationsJson } from '../domain/dataValidator';
 
 export interface CycleDataContextType {
   observations: Observation[];
@@ -44,13 +45,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (typeof window !== 'undefined' && window.localStorage) {
         const saved = localStorage.getItem(STORAGE_KEY);
         if (saved) {
-          const parsed = JSON.parse(saved);
-          return reprocessObservations(parsed);
+          const validated = parseAndValidateObservationsJson(saved);
+          if (validated) {
+            return reprocessObservations(validated);
+          }
         }
       }
-    } catch (e) {
-      console.error('Failed to parse saved observations', e);
-    }
+    } catch (_e) {}
     return [];
   });
 
@@ -113,9 +114,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     });
   }, []);
 
-  const deleteObservation = useCallback((id: string) => {
+  const deleteObservation = useCallback((idOrDate: string) => {
     setObservations(prev => {
-      const filtered = prev.filter(o => o.id !== id);
+      const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
       return reprocessObservations(filtered);
     });
   }, []);
@@ -138,9 +139,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const importDataJson = useCallback((jsonStr: string): boolean => {
     try {
-      const parsed = JSON.parse(jsonStr);
-      if (Array.isArray(parsed)) {
-        const processed = reprocessObservations(parsed);
+      const validated = parseAndValidateObservationsJson(jsonStr);
+      if (validated) {
+        const processed = reprocessObservations(validated);
         setObservations(processed);
         const newCycles = groupObservationsIntoCycles(processed);
         if (newCycles.length > 0) {
@@ -150,9 +151,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         }
         return true;
       }
-    } catch (e) {
-      console.error('Import failed', e);
-    }
+    } catch (_e) {}
     return false;
   }, []);
 

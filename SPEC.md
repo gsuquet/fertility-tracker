@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.11.0  
+**Document Version:** 1.12.0  
 **Status:** Approved  
 **Last Updated:** September 2, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -438,10 +438,16 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ### 7.1 Internationalization (i18n)
 
-**Module:** [src/context/LanguageContext.tsx](./src/context/LanguageContext.tsx)
+**Modules & Directory Structure:** [src/context/LanguageContext.tsx](./src/context/LanguageContext.tsx), `src/i18n/`
 
-- Supported languages: **English (`en`)**, **French (`fr`)**, **Spanish (`es`)**.
+- **Modular Locales Directory:**
+  - `src/i18n/types.ts`: Strictly typed `TranslationSchema` matching the canonical structure.
+  - `src/i18n/locales/en.ts`: English canonical dictionary.
+  - `src/i18n/locales/fr.ts`: French localized dictionary implementing `TranslationSchema`.
+  - `src/i18n/index.ts`: Unified export providing `translations`, `TranslationSchema`, `supportedLanguages`.
+- Supported languages: **English (`en`)**, **French (`fr`)**.
 - Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
+- TypeScript compiler strictly enforces key parity across all language modules (`TranslationSchema`).
 
 ### 7.2 Design System & Layered CSS Architecture
 
@@ -454,7 +460,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   ```
 - **Modular Directory Organization:**
   - `src/styles/tokens/`:
-    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`).
+    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-info`, `--color-white`, `--color-black`).
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
@@ -510,13 +516,15 @@ npx tsc --noEmit
 
 ### Key Test Coverage Areas
 
+- `dataValidator.test.ts`: Schema parsing, array validation, sanitization of malformed JSON imports and corrupt local storage data.
 - `codeParser.test.ts`: Canonical string formatting and freeform string parsing edge cases.
 - `stampCalculator.test.ts`: Mucus stretch and modifier stamp assignment accuracy.
 - `peakDetector.test.ts`: Automatic peak detection, manual peak overrides, and post-peak $P+1, P+2, P+3$ stamp assignments.
 - `cycleBoundaryDetector.test.ts`: Menses onset boundary splitting and cycle day numbering.
 - `versionTracker.test.ts`: Version history management, last-seen version tracking, and live storage footprint calculation.
-- `VersionModal.test.tsx`: Modal rendering, tab navigation, and keyboard/button close interactions.
-- `Component Integration Tests`: Header, Footer, ChartRow, TodayView, CalendarGrid, ExportModal, and ObservationDrawer rendering tests.
+- `translations.test.ts`: Multi-locale key parity and schema validation.
+- `CycleContext.test.tsx`, `LanguageContext.test.tsx`, `ThemeContext.test.tsx`: Context state transitions, persistence, and fallback behaviors.
+- `Component Integration Tests`: `App.test.tsx`, `Header.test.tsx`, `Footer.test.tsx`, `ChartRow.test.tsx`, `TodayView.test.tsx`, `CalendarGrid.test.tsx`, `CycleStatsHeader.test.tsx`, `CycleStartModal.test.tsx`, `ExportModal.test.tsx`, `VersionModal.test.tsx`, `WelcomeModal.test.tsx`, and `ObservationDrawer.test.tsx`.
 
 ---
 

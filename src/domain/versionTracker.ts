@@ -38,6 +38,33 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.12.0',
+    date: '2026-09-02',
+    title:
+      'Modular i18n Architecture, Data Validation Schema, Token Harmonization & Test Suite Completion',
+    titleFr:
+      'Architecture i18n Modulaire, Schéma de Validation des Données, Harmonisation CSS & Suite de Tests Complète',
+    tagline:
+      'Modularized i18n with TranslationSchema, added JSON/storage data validation, harmonized CSS tokens, and completed comprehensive context and component test coverage',
+    taglineFr:
+      'Modularisation i18n avec TranslationSchema, validation des données JSON/stockage, harmonisation des tokens CSS et complétion intégrale de la suite de tests',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Modularized i18n system into standalone locale files (en.ts, fr.ts) with strict TypeScript TranslationSchema type checking',
+      'Implemented lightweight data validator (dataValidator.ts) to sanitize and validate JSON imports and localStorage payloads',
+      'Harmonized CSS design tokens with semantic feedback variables (--color-danger, --color-success, --color-warning, --color-info)',
+      'Completed comprehensive unit test suite: App.test.tsx, CycleStatsHeader.test.tsx, CycleStartModal.test.tsx, LanguageContext.test.tsx, ThemeContext.test.tsx, and dataValidator.test.ts',
+      'Updated architecture guides (project-structure.md, domain-engine-api.md, architecture-overview.md) with subcomponent and context specifications',
+    ],
+    highlightsFr: [
+      'Modularisation du système i18n en fichiers de langue dédiés (en.ts, fr.ts) avec vérification stricte du schéma TranslationSchema',
+      'Mise en place d’un validateur de données léger (dataValidator.ts) pour sécuriser et assainir les imports JSON et le stockage local',
+      'Harmonisation des tokens de design CSS avec variables sémantiques (--color-danger, --color-success, --color-warning, --color-info)',
+      'Complétion intégrale de la suite de tests : App.test.tsx, CycleStatsHeader.test.tsx, CycleStartModal.test.tsx, LanguageContext.test.tsx, ThemeContext.test.tsx et dataValidator.test.ts',
+      'Mise à jour des guides d’architecture (project-structure.md, domain-engine-api.md, architecture-overview.md) avec spécifications complètes',
+    ],
+  },
+  {
     version: '1.11.0',
     date: '2026-09-02',
     title: 'Component Modularization, Decoupled State & CSS System Harmonization',
@@ -439,7 +466,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.11.0';
+  return '1.12.0';
 }
 
 export function getBuildDate(): string {

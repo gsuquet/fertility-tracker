@@ -1,11 +1,11 @@
 import React, { createContext, useContext, useState } from 'react';
 import { Language } from '../types/crms';
-import { translations } from '../i18n/translations';
+import { translations, TranslationSchema } from '../i18n';
 
 interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
-  t: (typeof translations)['en'];
+  t: TranslationSchema;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
@@ -15,9 +15,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         const saved = localStorage.getItem('fertility_care_lang');
-        if (saved === 'fr' || saved === 'en') return saved;
+        if (saved === 'fr' || saved === 'en') return saved as Language;
       }
-    } catch (e) {}
+    } catch (_e) {}
     return 'en';
   });
 
@@ -27,10 +27,10 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('fertility_care_lang', lang);
       }
-    } catch (e) {}
+    } catch (_e) {}
   };
 
-  const t = translations[language];
+  const t = translations[language] || translations.en;
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>
