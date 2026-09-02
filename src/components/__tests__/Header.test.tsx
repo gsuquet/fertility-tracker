@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
@@ -46,7 +45,12 @@ describe('Header Component (Desktop)', () => {
 
   it('triggers onOpenVersion when info button is clicked', () => {
     const handleOpenVersion = vi.fn();
-    renderHeader({ activeTab: 'chart', setActiveTab: vi.fn(), onOpenExport: vi.fn(), onOpenVersion: handleOpenVersion });
+    renderHeader({
+      activeTab: 'chart',
+      setActiveTab: vi.fn(),
+      onOpenExport: vi.fn(),
+      onOpenVersion: handleOpenVersion,
+    });
 
     const versionBtn = screen.getByRole('button', { name: /About & Version Tracker|À propos/i });
     expect(versionBtn).toBeInTheDocument();
@@ -76,8 +80,12 @@ describe('Header Component (Desktop)', () => {
     expect(screen.getByRole('dialog', { name: /Mobile Navigation Menu/i })).toBeInTheDocument();
 
     // Click Export in sheet
-    fireEvent.click(screen.getByText(/Imprimer ou exporter en PDF \/ JSON|Print or export PDF \/ JSON charts/i));
+    fireEvent.click(
+      screen.getByText(/Imprimer ou exporter en PDF \/ JSON|Print or export PDF \/ JSON charts/i)
+    );
     expect(handleExport).toHaveBeenCalledTimes(1);
-    expect(screen.queryByRole('dialog', { name: /Mobile Navigation Menu/i })).not.toBeInTheDocument();
+    expect(
+      screen.queryByRole('dialog', { name: /Mobile Navigation Menu/i })
+    ).not.toBeInTheDocument();
   });
 });

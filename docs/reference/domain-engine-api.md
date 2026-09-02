@@ -12,8 +12,8 @@ Converts observation form fields into standardized CrMS code strings and vice ve
 
 Generates standardized short code string (e.g. `"10KL X3 I"`).
 
-* **Parameters:** `obs` - Partial observation object.
-* **Returns:** Formatted string.
+- **Parameters:** `obs` - Partial observation object.
+- **Returns:** Formatted string.
 
 ### `parseCodeString(codeStr: string): Partial<Observation>`
 
@@ -27,10 +27,10 @@ Calculates the CrMS stamp type based on observation biomarkers.
 
 ### `calculateStamp(obs: Partial<Observation>, postPeakDayNumber?: number): StampType`
 
-* **Parameters:**
-  * `obs`: Observation fields (`bleeding`, `stretch`, `modifiers`).
-  * `postPeakDayNumber`: Optional index ($1$, $2$, or $3$) if within post-peak 3-day window.
-* **Returns:** `StampType` (`'RED' | 'DARK_GREEN' | 'WHITE_BABY' | 'LIGHT_GREEN_BABY_1' | 'LIGHT_GREEN_BABY_2' | 'LIGHT_GREEN_BABY_3'`).
+- **Parameters:**
+  - `obs`: Observation fields (`bleeding`, `stretch`, `modifiers`).
+  - `postPeakDayNumber`: Optional index ($1$, $2$, or $3$) if within post-peak 3-day window.
+- **Returns:** `StampType` (`'RED' | 'DARK_GREEN' | 'WHITE_BABY' | 'LIGHT_GREEN_BABY_1' | 'LIGHT_GREEN_BABY_2' | 'LIGHT_GREEN_BABY_3'`).
 
 ---
 
@@ -40,10 +40,10 @@ Determines Peak Day designation across an ordered sequence of observations in a 
 
 ### `detectPeakDay(observations: Observation[], manualPeakDate?: string): { peakIndex: number; peakDate?: string }`
 
-* **Algorithm:**
+- **Algorithm:**
   1. If `manualPeakDate` is supplied, locates the observation matching `manualPeakDate`.
   2. Otherwise, identifies the last consecutive day of **Peak-type mucus** (stretch $\ge 10$, clear `'K'`, clear mixture `'C/K'`, or lubricative `'L'`).
-* **Returns:** Index of the Peak Day and date string.
+- **Returns:** Index of the Peak Day and date string.
 
 ---
 
@@ -53,4 +53,4 @@ Identifies cycle boundaries (Day 1 of new cycle triggered by new heavy/moderate 
 
 ### `detectCycleBoundaries(observations: Observation[]): number[]`
 
-* **Returns:** Array of observation indices marking the start of new cycles.
+- **Returns:** Array of observation indices marking the start of new cycles.

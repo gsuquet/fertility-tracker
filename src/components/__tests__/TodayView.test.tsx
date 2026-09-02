@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { TodayView } from '../TodayView';
@@ -23,8 +22,8 @@ describe('TodayView Component (Dedicated Today Page)', () => {
   it('renders Today Page title, date navigation, and form sections', () => {
     renderTodayView();
     expect(screen.getByText("Today's Observation")).toBeInTheDocument();
-    expect(screen.getByText("Direct Code Entry")).toBeInTheDocument();
-    expect(screen.getByText("Recent 5-Day Observation History")).toBeInTheDocument();
+    expect(screen.getByText('Direct Code Entry')).toBeInTheDocument();
+    expect(screen.getByText('Recent 5-Day Observation History')).toBeInTheDocument();
   });
 
   it('allows stepping to previous and next days', () => {

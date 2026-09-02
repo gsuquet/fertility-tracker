@@ -47,12 +47,12 @@
   }
 
   button,
-  [role="button"] {
+  [role='button'] {
     cursor: pointer;
   }
 
   button:focus-visible,
-  [role="button"]:focus-visible,
+  [role='button']:focus-visible,
   input:focus-visible,
   select:focus-visible,
   textarea:focus-visible {

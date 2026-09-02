@@ -38,7 +38,7 @@ describe('CyclePicker Component', () => {
   it('opens cycle selection menu on button click and allows selecting cycles', () => {
     renderCyclePicker();
     const btn = screen.getByRole('button', { name: /filter cycle view/i });
-    
+
     fireEvent.click(btn);
 
     const menu = screen.getByRole('listbox');

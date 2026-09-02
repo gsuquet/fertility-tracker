@@ -23,11 +23,21 @@
     justify-content: space-between;
   }
 
-  .gap-1 { gap: var(--space-xs, 4px); }
-  .gap-2 { gap: var(--space-sm, 8px); }
-  .gap-3 { gap: 12px; }
-  .gap-4 { gap: var(--space-md, 16px); }
-  .gap-6 { gap: var(--space-lg, 24px); }
+  .gap-1 {
+    gap: var(--space-xs, 4px);
+  }
+  .gap-2 {
+    gap: var(--space-sm, 8px);
+  }
+  .gap-3 {
+    gap: 12px;
+  }
+  .gap-4 {
+    gap: var(--space-md, 16px);
+  }
+  .gap-6 {
+    gap: var(--space-lg, 24px);
+  }
 
   .text-truncate {
     overflow: hidden;

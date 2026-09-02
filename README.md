@@ -11,10 +11,10 @@
 2. [Who this project is for](#who-this-project-is-for)
 3. [Project dependencies](#project-dependencies)
 4. [Instructions for using Fertility Tracker](#instructions-for-using-fertility-tracker)
-    - [Install Fertility Tracker](#install-fertility-tracker)
-    - [Configure Fertility Tracker](#configure-fertility-tracker)
-    - [Run Fertility Tracker](#run-fertility-tracker)
-    - [Troubleshoot Fertility Tracker](#troubleshoot-fertility-tracker)
+   - [Install Fertility Tracker](#install-fertility-tracker)
+   - [Configure Fertility Tracker](#configure-fertility-tracker)
+   - [Run Fertility Tracker](#run-fertility-tracker)
+   - [Troubleshoot Fertility Tracker](#troubleshoot-fertility-tracker)
 5. [Contributing guidelines](#contributing-guidelines)
 6. [Additional documentation](#additional-documentation)
 7. [How to get help](#how-to-get-help)
@@ -146,12 +146,12 @@ Get started with **Fertility Tracker** by cloning the repository and launching t
 
 ### Troubleshoot Fertility Tracker
 
-| Issue | Solution |
-| :--- | :--- |
-| `npm install` fails or throws peer dependency conflicts | Ensure you are using Node.js $\ge 18$. Run `npm install --legacy-peer-deps` if node version mismatches persist. |
+| Issue                                                    | Solution                                                                                                                              |
+| :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
+| `npm install` fails or throws peer dependency conflicts  | Ensure you are using Node.js $\ge 18$. Run `npm install --legacy-peer-deps` if node version mismatches persist.                       |
 | Port `5173` is already in use when running `npm run dev` | Vite will automatically try the next available port (e.g., `5174`). Alternatively, specify a port explicitly: `npx vite --port 3000`. |
-| TypeScript check fails during `npm run build` | Clear local Vite cache and re-run build: `rm -rf node_modules/.vite dist && npm run build`. |
-| Tests fail in headless environment | Ensure `jsdom` is installed correctly and run `npm run test -- --update`. |
+| TypeScript check fails during `npm run build`            | Clear local Vite cache and re-run build: `rm -rf node_modules/.vite dist && npm run build`.                                           |
+| Tests fail in headless environment                       | Ensure `jsdom` is installed correctly and run `npm run test -- --update`.                                                             |
 
 **Other troubleshooting supports:**
 

@@ -41,6 +41,6 @@ sequenceDiagram
 
 ## State Architecture
 
-* **CycleContext:** Manages cycle creation, daily observation logging, updates, deletions, and manual Peak overrides. Automatically re-evaluates Peak Day detection on state mutation.
-* **ThemeContext:** Manages dark/light mode preference and updates root DOM CSS variable attributes (`data-theme`).
-* **LanguageContext:** Manages active i18n locale and provides `t(key)` helper for UI string localization.
+- **CycleContext:** Manages cycle creation, daily observation logging, updates, deletions, and manual Peak overrides. Automatically re-evaluates Peak Day detection on state mutation.
+- **ThemeContext:** Manages dark/light mode preference and updates root DOM CSS variable attributes (`data-theme`).
+- **LanguageContext:** Manages active i18n locale and provides `t(key)` helper for UI string localization.

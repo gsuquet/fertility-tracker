@@ -17,23 +17,23 @@ export const translations = {
     },
     todayView: {
       title: "Today's Observation",
-      subtitle: "Record, view, and track your daily Creighton Model System observations",
-      todayLabel: "Today",
-      loggedStatus: "Observation recorded for this date",
-      notLoggedStatus: "No observation logged yet for this date",
-      fertilityStatus: "Fertility Status & Guidance",
-      recentHistory: "Recent 5-Day Observation History",
-      prevDay: "Previous Day",
-      nextDay: "Next Day",
-      goToToday: "Jump to Today",
-      savedNotice: "Observation saved successfully!",
-      deletedNotice: "Observation deleted.",
-      noEntryShort: "Not logged",
-      entryMode: "Entry Mode",
-      modeDirect: "Direct Code Only",
-      modeDetailed: "Detailed Form",
-      showDetailed: "Show Detailed Selectors",
-      hideDetailed: "Hide Detailed Selectors",
+      subtitle: 'Record, view, and track your daily Creighton Model System observations',
+      todayLabel: 'Today',
+      loggedStatus: 'Observation recorded for this date',
+      notLoggedStatus: 'No observation logged yet for this date',
+      fertilityStatus: 'Fertility Status & Guidance',
+      recentHistory: 'Recent 5-Day Observation History',
+      prevDay: 'Previous Day',
+      nextDay: 'Next Day',
+      goToToday: 'Jump to Today',
+      savedNotice: 'Observation saved successfully!',
+      deletedNotice: 'Observation deleted.',
+      noEntryShort: 'Not logged',
+      entryMode: 'Entry Mode',
+      modeDirect: 'Direct Code Only',
+      modeDetailed: 'Detailed Form',
+      showDetailed: 'Show Detailed Selectors',
+      hideDetailed: 'Hide Detailed Selectors',
     },
     actions: {
       newEntry: 'Log Observation',
@@ -108,7 +108,7 @@ export const translations = {
       },
       intercourse: {
         I: 'I - Sexual Intercourse',
-      }
+      },
     },
     stats: {
       cycleLength: 'Cycle Length',
@@ -127,7 +127,8 @@ export const translations = {
       trendTitle: 'Creighton Mucus Score Trend (0 to 10)',
       clinicalTitle: 'Practitioner Clinical Summary (CrMS / NaPro)',
       mcsGuideTitle: 'What is the Creighton Mucus Score (MCS)?',
-      mcsGuideText: 'The Mucus Cycle Score (MCS) is a clinical metric developed by Dr. Thomas Hilgers (Pope Paul VI Institute). It evaluates cervical mucus quality on a 0 to 10 scale (Dry=0, Damp=2, Stretchy=6..8, Very Stretchy/Clear/Lubricative=10). NaPro physicians benchmark scores >= 9.0 for optimal fertility potential.',
+      mcsGuideText:
+        'The Mucus Cycle Score (MCS) is a clinical metric developed by Dr. Thomas Hilgers (Pope Paul VI Institute). It evaluates cervical mucus quality on a 0 to 10 scale (Dry=0, Damp=2, Stretchy=6..8, Very Stretchy/Clear/Lubricative=10). NaPro physicians benchmark scores >= 9.0 for optimal fertility potential.',
       avgMucusScore: 'Average Mucus Score',
       lutealHealth: 'Luteal Phase Health',
       normalLuteal: 'Normal (9-17 days)',
@@ -154,7 +155,8 @@ export const translations = {
     },
     exportModal: {
       title: 'Practitioner Export & Data Backup',
-      description: 'Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.',
+      description:
+        'Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.',
       printPdf: 'Print / Save as PDF',
       downloadPng: 'Download High-Res PNG',
       pdfExportMode: 'PDF Export Scope',
@@ -168,9 +170,12 @@ export const translations = {
       exportSuccess: 'PDF report generated successfully!',
     },
     disclaimer: {
-      trademark: 'FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction.',
-      nonAffiliation: 'Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).',
-      medical: 'This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.',
+      trademark:
+        'FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction.',
+      nonAffiliation:
+        'Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).',
+      medical:
+        'This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.',
     },
     versionTracker: {
       title: 'About & Version Tracker',
@@ -206,11 +211,14 @@ export const translations = {
         slide1: {
           tag: '1. Introduction',
           title: 'Clinical Charting, Privacy First',
-          description: 'Fertility Tracker is designed around the Creighton Model System (CrMS)—a standardized, scientific method for charting natural biomarkers of fertility.',
+          description:
+            'Fertility Tracker is designed around the Creighton Model System (CrMS)—a standardized, scientific method for charting natural biomarkers of fertility.',
           privacyTitle: '100% Client-Side Privacy',
-          privacyText: 'Your reproductive health data stays exclusively in your browser storage. No accounts, no backend servers, and zero third-party tracking.',
+          privacyText:
+            'Your reproductive health data stays exclusively in your browser storage. No accounts, no backend servers, and zero third-party tracking.',
           crmsTitle: 'Natural Biomarker Observation',
-          crmsText: 'Unlike statistical period calculators that guess your cycle, CrMS relies on daily physical observations of mucus, bleeding, and sensation.',
+          crmsText:
+            'Unlike statistical period calculators that guess your cycle, CrMS relies on daily physical observations of mucus, bleeding, and sensation.',
         },
         slide2: {
           tag: '2. Biomarkers & Stamps',
@@ -239,23 +247,29 @@ export const translations = {
             },
           },
           peakNoteTitle: 'Peak Day (P) & Count',
-          peakNoteText: 'The last day of clear, stretchy, or lubricative mucus is Peak Day (P). Post-peak count days (P+1, P+2, P+3) mark the transition to infertile days.',
+          peakNoteText:
+            'The last day of clear, stretchy, or lubricative mucus is Peak Day (P). Post-peak count days (P+1, P+2, P+3) mark the transition to infertile days.',
         },
         slide3: {
           tag: '3. Daily Logging',
           title: 'How to Log Observations',
-          description: 'Log your daily observations in seconds using the Today View or Observation Drawer.',
+          description:
+            'Log your daily observations in seconds using the Today View or Observation Drawer.',
           directTitle: 'Direct Code Entry',
-          directText: 'Experienced chartists can type standard CrMS code strings directly (e.g. 10KLX3 I AP).',
+          directText:
+            'Experienced chartists can type standard CrMS code strings directly (e.g. 10KLX3 I AP).',
           detailedTitle: 'Detailed Form Selectors',
-          detailedText: 'New users can select Bleeding, Stretch, Modifiers, Frequency, and Symptoms step-by-step with instant stamp preview.',
+          detailedText:
+            'New users can select Bleeding, Stretch, Modifiers, Frequency, and Symptoms step-by-step with instant stamp preview.',
           livePreviewTitle: 'Automatic Peak Detection',
-          livePreviewText: 'The CrMS engine automatically updates stamp colors, peak markers, and post-peak transition counts as you chart.',
+          livePreviewText:
+            'The CrMS engine automatically updates stamp colors, peak markers, and post-peak transition counts as you chart.',
         },
         slide4: {
           tag: '4. Views & Quick Start',
           title: 'Explore Views & Begin Charting',
-          description: 'Switch seamlessly between four specialized views tailored for daily tracking, physical paper chart alignment, and practitioner consultation.',
+          description:
+            'Switch seamlessly between four specialized views tailored for daily tracking, physical paper chart alignment, and practitioner consultation.',
           views: {
             today: 'Today Dashboard: Fast daily observation logging and recent timeline.',
             chart: 'Paper Chart Strip: Renders identical 35-day paper chart rows.',
@@ -263,19 +277,22 @@ export const translations = {
             analytics: 'Cycle Analytics: Cycle length, luteal phase, and mucus score metrics.',
           },
           quickStartTitle: 'Ready to Get Started?',
-          quickStartDesc: 'Populate sample multi-cycle data to explore full chart features, or begin with a blank canvas for your personal tracking.',
+          quickStartDesc:
+            'Populate sample multi-cycle data to explore full chart features, or begin with a blank canvas for your personal tracking.',
         },
       },
     },
     cycleStartModal: {
       title: 'New Cycle Start?',
       question: 'Is this bleeding day the start of a new cycle?',
-      description: 'This is the first bleeding day following non-bleeding days. You can choose whether this starts a new cycle or continues your current cycle.',
+      description:
+        'This is the first bleeding day following non-bleeding days. You can choose whether this starts a new cycle or continues your current cycle.',
       yesBtn: 'Yes, Start New Cycle',
       noBtn: 'No, Continue Current Cycle',
       cancelBtn: 'Cancel',
       isCycleStartLabel: 'Start of New Cycle',
-      isCycleStartHelp: 'Designates this observation as the Day 1 boundary of a new menstrual cycle.',
+      isCycleStartHelp:
+        'Designates this observation as the Day 1 boundary of a new menstrual cycle.',
     },
   },
   fr: {
@@ -295,24 +312,24 @@ export const translations = {
       analytics: 'Analyses',
     },
     todayView: {
-      title: "Observation du jour",
-      subtitle: "Saisissez, consultez et suivez votre observation quotidienne du Modèle Creighton",
+      title: 'Observation du jour',
+      subtitle: 'Saisissez, consultez et suivez votre observation quotidienne du Modèle Creighton',
       todayLabel: "Aujourd'hui",
-      loggedStatus: "Observation enregistrée pour cette date",
-      notLoggedStatus: "Aucune observation saisie pour cette date",
-      fertilityStatus: "Statut de fertilité & Conseils",
-      recentHistory: "Historique des 5 derniers jours",
-      prevDay: "Jour précédent",
-      nextDay: "Jour suivant",
+      loggedStatus: 'Observation enregistrée pour cette date',
+      notLoggedStatus: 'Aucune observation saisie pour cette date',
+      fertilityStatus: 'Statut de fertilité & Conseils',
+      recentHistory: 'Historique des 5 derniers jours',
+      prevDay: 'Jour précédent',
+      nextDay: 'Jour suivant',
       goToToday: "Aller à aujourd'hui",
-      savedNotice: "Observation enregistrée avec succès !",
-      deletedNotice: "Observation supprimée.",
-      noEntryShort: "Non saisie",
-      entryMode: "Mode de Saisie",
-      modeDirect: "Code Direct Seul",
-      modeDetailed: "Formulaire Détaillé",
-      showDetailed: "Afficher les Sélecteurs Détaillés",
-      hideDetailed: "Masquer les Sélecteurs Détaillés",
+      savedNotice: 'Observation enregistrée avec succès !',
+      deletedNotice: 'Observation supprimée.',
+      noEntryShort: 'Non saisie',
+      entryMode: 'Mode de Saisie',
+      modeDirect: 'Code Direct Seul',
+      modeDetailed: 'Formulaire Détaillé',
+      showDetailed: 'Afficher les Sélecteurs Détaillés',
+      hideDetailed: 'Masquer les Sélecteurs Détaillés',
     },
     actions: {
       newEntry: 'Saisir une observation',
@@ -387,7 +404,7 @@ export const translations = {
       },
       intercourse: {
         I: 'I - Rapports sexuels',
-      }
+      },
     },
     stats: {
       cycleLength: 'Longueur du Cycle',
@@ -406,7 +423,8 @@ export const translations = {
       trendTitle: 'Tendance du Score de Glaire Creighton (0 à 10)',
       clinicalTitle: 'Résumé Clinique Praticien (CrMS / NaPro)',
       mcsGuideTitle: 'Qu est-ce que le Score de Glaire Creighton (MCS) ?',
-      mcsGuideText: 'Le Score de Glaire (MCS) est une métrique clinique développée par le Dr Thomas Hilgers (Institut Pape Paul VI). Il évalue la qualité de la glaire cervicale de 0 à 10 (Sec=0, Humide=2, Élastique=6..8, Très Élastique/Transparent/Lubrifiant=10). Les médecins NaPro recommandent un score >= 9.0 pour une fertilité optimale.',
+      mcsGuideText:
+        'Le Score de Glaire (MCS) est une métrique clinique développée par le Dr Thomas Hilgers (Institut Pape Paul VI). Il évalue la qualité de la glaire cervicale de 0 à 10 (Sec=0, Humide=2, Élastique=6..8, Très Élastique/Transparent/Lubrifiant=10). Les médecins NaPro recommandent un score >= 9.0 pour une fertilité optimale.',
       avgMucusScore: 'Score Moyen de Glaire',
       lutealHealth: 'Santé de la Phase Lutéale',
       normalLuteal: 'Normale (9-17 jours)',
@@ -433,27 +451,32 @@ export const translations = {
     },
     exportModal: {
       title: 'Export Praticien & Sauvegarde',
-      description: 'Exportez votre graphique Creighton en PDF ou PNG pour votre instructeur FertilityCare ou médecin NaPro.',
+      description:
+        'Exportez votre graphique Creighton en PDF ou PNG pour votre instructeur FertilityCare ou médecin NaPro.',
       printPdf: 'Imprimer / Sauvegarder en PDF',
       downloadPng: 'Télécharger en PNG',
-      pdfExportMode: 'Périmètre d\'exportation PDF',
+      pdfExportMode: "Périmètre d'exportation PDF",
       singleCycle: 'Cycle unique',
       multipleCycles: 'Plusieurs cycles',
       selectCycle: 'Sélectionner le cycle',
       selectCycles: 'Sélectionner les cycles à exporter',
       selectAll: 'Tout sélectionner',
       deselectAll: 'Tout désélectionner',
-      oldestToNewestNote: 'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
+      oldestToNewestNote:
+        'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
       exportSuccess: 'Rapport PDF généré avec succès !',
     },
     disclaimer: {
-      trademark: 'FertilityCare™ et le système Creighton Model FertilityCare™ (CrMS) sont des marques déposées de l\'Institut Saint Paul VI pour l\'étude de la reproduction humaine.',
-      nonAffiliation: 'Fertility Tracker est un projet logiciel indépendant et open-source. Il n\'est pas affilié, approuvé, certifié ou sponsorisé par l\'Institut Saint Paul VI, FertilityCare™ Centers of America (FCCA) ou FertilityCare™ Centers International (FCCI).',
-      medical: 'Ce logiciel est destiné uniquement au suivi personnel, à l\'archivage et à des fins éducatives. Il ne constitue pas un avis, un diagnostic ou un traitement médical. Consultez toujours un instructeur certifié FertilityCare ou un consultant médical pour des conseils cliniques.',
+      trademark:
+        "FertilityCare™ et le système Creighton Model FertilityCare™ (CrMS) sont des marques déposées de l'Institut Saint Paul VI pour l'étude de la reproduction humaine.",
+      nonAffiliation:
+        "Fertility Tracker est un projet logiciel indépendant et open-source. Il n'est pas affilié, approuvé, certifié ou sponsorisé par l'Institut Saint Paul VI, FertilityCare™ Centers of America (FCCA) ou FertilityCare™ Centers International (FCCI).",
+      medical:
+        "Ce logiciel est destiné uniquement au suivi personnel, à l'archivage et à des fins éducatives. Il ne constitue pas un avis, un diagnostic ou un traitement médical. Consultez toujours un instructeur certifié FertilityCare ou un consultant médical pour des conseils cliniques.",
     },
     versionTracker: {
       title: 'À propos & Suivi des Versions',
-      appVersion: 'Version de l\'application',
+      appVersion: "Version de l'application",
       crmsSpec: 'Spécification CrMS',
       buildDate: 'Date de build',
       tabReleaseNotes: 'Notes de version',
@@ -485,11 +508,14 @@ export const translations = {
         slide1: {
           tag: '1. Introduction',
           title: 'Graphique Clinique & Confidentialité Absolue',
-          description: 'Fertility Tracker est conçu autour du Modèle Creighton (CrMS)—une méthode scientifique et standardisée pour suivre les biomarqueurs naturels de fertilité.',
+          description:
+            'Fertility Tracker est conçu autour du Modèle Creighton (CrMS)—une méthode scientifique et standardisée pour suivre les biomarqueurs naturels de fertilité.',
           privacyTitle: 'Confidentialité 100% Locale',
-          privacyText: 'Vos données de santé restent exclusivement enregistrées dans votre navigateur. Aucun compte, aucun serveur distant, aucun suivi tiers.',
+          privacyText:
+            'Vos données de santé restent exclusivement enregistrées dans votre navigateur. Aucun compte, aucun serveur distant, aucun suivi tiers.',
           crmsTitle: 'Observation des Biomarqueurs',
-          crmsText: 'Contrairement aux outils de calcul statistique qui prédisent vos règles, le système CrMS s\'appuie sur des observations physiques quotidiennes du mucus, des saignements et des sensations.',
+          crmsText:
+            "Contrairement aux outils de calcul statistique qui prédisent vos règles, le système CrMS s'appuie sur des observations physiques quotidiennes du mucus, des saignements et des sensations.",
         },
         slide2: {
           tag: '2. Biomarqueurs & Timbres',
@@ -518,43 +544,52 @@ export const translations = {
             },
           },
           peakNoteTitle: 'Jour Sommet (P) & Décompte',
-          peakNoteText: 'Le dernier jour de mucus transparent, étirable ou lubrifiant est le Jour Sommet (P). Les jours de décompte (P+1, P+2, P+3) marquent la transition vers la période inféconde.',
+          peakNoteText:
+            'Le dernier jour de mucus transparent, étirable ou lubrifiant est le Jour Sommet (P). Les jours de décompte (P+1, P+2, P+3) marquent la transition vers la période inféconde.',
         },
         slide3: {
           tag: '3. Saisie Quotidienne',
           title: 'Comment Saisir vos Observations',
-          description: 'Enregistrez votre observation quotidienne en quelques secondes via la vue Aujourd\'hui ou le tiroir de saisie.',
+          description:
+            "Enregistrez votre observation quotidienne en quelques secondes via la vue Aujourd'hui ou le tiroir de saisie.",
           directTitle: 'Saisie Directe par Code',
-          directText: 'Les utilisatrices expérimentées peuvent saisir directement leur code CrMS (ex. 10KLX3 I AP).',
+          directText:
+            'Les utilisatrices expérimentées peuvent saisir directement leur code CrMS (ex. 10KLX3 I AP).',
           detailedTitle: 'Sélecteurs Détaillés',
-          detailedText: 'Les nouvelles utilisatrices peuvent sélectionner pas à pas le flux, la viscosité, l\'apparence, la fréquence et les symptômes avec aperçu instantané du timbre.',
+          detailedText:
+            "Les nouvelles utilisatrices peuvent sélectionner pas à pas le flux, la viscosité, l'apparence, la fréquence et les symptômes avec aperçu instantané du timbre.",
           livePreviewTitle: 'Détection Automatique du Sommet',
-          livePreviewText: 'Le moteur CrMS met automatiquement à jour la couleur des timbres, le marqueur Sommet et le décompte post-sommet.',
+          livePreviewText:
+            'Le moteur CrMS met automatiquement à jour la couleur des timbres, le marqueur Sommet et le décompte post-sommet.',
         },
         slide4: {
           tag: '4. Vues & Démarrage Rapide',
           title: 'Explorez les Vues & Commencez',
-          description: 'Basculez facilement entre 4 vues spécialisées conçues pour le suivi quotidien, le rendu conforme au graphique papier et les consultations.',
+          description:
+            'Basculez facilement entre 4 vues spécialisées conçues pour le suivi quotidien, le rendu conforme au graphique papier et les consultations.',
           views: {
-            today: 'Tableau de bord Aujourd\'hui : Saisie rapide et historique récent.',
+            today: "Tableau de bord Aujourd'hui : Saisie rapide et historique récent.",
             chart: 'Graphique Papier : Lignes de 35 jours identiques au graphique papier.',
-            calendar: 'Calendrier Mensuel : Vue d\'ensemble de vos observations par mois.',
-            analytics: 'Analyses du Cycle : Métriques de durée de cycle, phase lutéale et score de mucus.',
+            calendar: "Calendrier Mensuel : Vue d'ensemble de vos observations par mois.",
+            analytics:
+              'Analyses du Cycle : Métriques de durée de cycle, phase lutéale et score de mucus.',
           },
           quickStartTitle: 'Prête à commencer ?',
-          quickStartDesc: 'Chargez des données démo pour explorer toutes les vues du graphique, ou commencez avec un graphique vierge pour votre suivi personal.',
+          quickStartDesc:
+            'Chargez des données démo pour explorer toutes les vues du graphique, ou commencez avec un graphique vierge pour votre suivi personal.',
         },
       },
     },
     cycleStartModal: {
       title: 'Début de nouveau cycle ?',
       question: 'Ce jour de saignement est-il le début d’un nouveau cycle ?',
-      description: 'C’est le premier jour de saignement après des jours sans saignement. Vous pouvez choisir s’il commence un nouveau cycle ou poursuit votre cycle actuel.',
+      description:
+        'C’est le premier jour de saignement après des jours sans saignement. Vous pouvez choisir s’il commence un nouveau cycle ou poursuit votre cycle actuel.',
       yesBtn: 'Oui, démarrer un nouveau cycle',
       noBtn: 'Non, poursuivre le cycle actuel',
       cancelBtn: 'Annuler',
       isCycleStartLabel: 'Début de nouveau cycle',
       isCycleStartHelp: 'Désigne cette observation comme le jour 1 d’un nouveau cycle menstruel.',
     },
-  }
+  },
 };

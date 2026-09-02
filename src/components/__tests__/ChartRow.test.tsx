@@ -19,8 +19,12 @@ const TestChartAppWithControls: React.FC = () => {
   const { saveObservation } = useCycle();
   return (
     <div>
-      <button onClick={() => saveObservation({ date: '2026-07-25', bleeding: 'H' })}>Add July 25</button>
-      <button onClick={() => saveObservation({ date: '2026-07-20', bleeding: 'L' })}>Add July 20</button>
+      <button onClick={() => saveObservation({ date: '2026-07-25', bleeding: 'H' })}>
+        Add July 25
+      </button>
+      <button onClick={() => saveObservation({ date: '2026-07-20', bleeding: 'L' })}>
+        Add July 20
+      </button>
       <ChartRow />
     </div>
   );
@@ -114,10 +118,3 @@ describe('ChartRow Component (Paper Chart Strip)', () => {
     expect(todayCell).toBeInTheDocument();
   });
 });
-
-
-
-
-
-
-

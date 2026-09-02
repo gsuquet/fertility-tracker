@@ -36,7 +36,7 @@ Additionally, this repository maintains formal records for architectural evoluti
 
 Tutorials guide newcomers step-by-step through creating their first cycle chart and understanding the core application workflow.
 
-* **[Getting Started with Fertility Tracker](tutorials/01-getting-started.md):** Hands-on walkthrough for set up, navigation, and logging your first cycle.
+- **[Getting Started with Fertility Tracker](tutorials/01-getting-started.md):** Hands-on walkthrough for set up, navigation, and logging your first cycle.
 
 ---
 
@@ -44,10 +44,10 @@ Tutorials guide newcomers step-by-step through creating their first cycle chart 
 
 How-To guides provide actionable, step-by-step instructions to accomplish specific real-world tasks.
 
-* **[Log Biomarker Observations](how-to/log-biomarkers.md):** Step-by-step guide to using the observation drawer, Creighton codes, and manual Peak Day overrides.
-* **[Export Cycle Charts](how-to/export-cycle-charts.md):** Step-by-step guide to generating PDF reports, PNG chart images, or JSON data backups.
-* **[Add a New Language](how-to/add-new-language.md):** Instructions for contributing new i18n locale translations.
-* **[Deploy to Cloudflare Pages](how-to/deploy-cloudflare.md):** Step-by-step guide for manual CLI deployment and GitHub Actions automated CD to Cloudflare Pages.
+- **[Log Biomarker Observations](how-to/log-biomarkers.md):** Step-by-step guide to using the observation drawer, Creighton codes, and manual Peak Day overrides.
+- **[Export Cycle Charts](how-to/export-cycle-charts.md):** Step-by-step guide to generating PDF reports, PNG chart images, or JSON data backups.
+- **[Add a New Language](how-to/add-new-language.md):** Instructions for contributing new i18n locale translations.
+- **[Deploy to Cloudflare Pages](how-to/deploy-cloudflare.md):** Step-by-step guide for manual CLI deployment and GitHub Actions automated CD to Cloudflare Pages.
 
 ---
 
@@ -55,10 +55,10 @@ How-To guides provide actionable, step-by-step instructions to accomplish specif
 
 Reference documentation provides precise, technical specifications and schemas for developer reference.
 
-* **[Full Application Specification](../SPEC.md):** Complete technical and functional specification of the application architecture, domain algorithms, views, and data models.
-* **[CrMS Biomarker Codes & Stamp Rules](reference/crms-biomarker-codes.md):** Complete catalog of stretch, bleeding, frequency, symptom, and stamp color codes.
-* **[Domain Engine API Reference](reference/domain-engine-api.md):** Function signatures, inputs, and output types for `codeParser`, `stampCalculator`, `peakDetector`, and `cycleBoundaryDetector`.
-* **[Project & Component Structure](reference/project-structure.md):** High-level breakdown of directories, React components, context providers, and tests.
+- **[Full Application Specification](../SPEC.md):** Complete technical and functional specification of the application architecture, domain algorithms, views, and data models.
+- **[CrMS Biomarker Codes & Stamp Rules](reference/crms-biomarker-codes.md):** Complete catalog of stretch, bleeding, frequency, symptom, and stamp color codes.
+- **[Domain Engine API Reference](reference/domain-engine-api.md):** Function signatures, inputs, and output types for `codeParser`, `stampCalculator`, `peakDetector`, and `cycleBoundaryDetector`.
+- **[Project & Component Structure](reference/project-structure.md):** High-level breakdown of directories, React components, context providers, and tests.
 
 ---
 
@@ -66,13 +66,12 @@ Reference documentation provides precise, technical specifications and schemas f
 
 Explanation articles offer high-level context, background concepts, and design rationales behind the system.
 
-* **[Creighton Model Methodology](explanation/crms-methodology.md):** Clinical principles of CrMS, biomarker scoring, and peak day calculation mechanics.
-* **[Architecture Overview](explanation/architecture-overview.md):** System design, data flow, reactive state management, and separation of concerns.
+- **[Creighton Model Methodology](explanation/crms-methodology.md):** Clinical principles of CrMS, biomarker scoring, and peak day calculation mechanics.
+- **[Architecture Overview](explanation/architecture-overview.md):** System design, data flow, reactive state management, and separation of concerns.
 
 ---
 
 ## 🏛️ 5. Architecture Decision Records (ADRs)
 
-* **[ADR 0001: Automated Backup & Multi-Device Synchronization with Zero-Knowledge Privacy](adr/0001-automated-backup-and-sync-privacy.md):** Analysis of zero-knowledge serverless sync, Bring-Your-Own-Storage, WebRTC P2P, key management UX, and conflict resolution models.
-* **[ADR 0002: CSS Maintainability & Layered Design System Architecture](adr/0002-css-maintainability-design-system.md):** Modular layered styling architecture (`@layer tokens, base, primitives, views, utilities`) with reusable design system primitives.
-
+- **[ADR 0001: Automated Backup & Multi-Device Synchronization with Zero-Knowledge Privacy](adr/0001-automated-backup-and-sync-privacy.md):** Analysis of zero-knowledge serverless sync, Bring-Your-Own-Storage, WebRTC P2P, key management UX, and conflict resolution models.
+- **[ADR 0002: CSS Maintainability & Layered Design System Architecture](adr/0002-css-maintainability-design-system.md):** Modular layered styling architecture (`@layer tokens, base, primitives, views, utilities`) with reusable design system primitives.

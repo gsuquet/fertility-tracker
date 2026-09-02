@@ -1,12 +1,10 @@
 import React, { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
-import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 export const CalendarGrid: React.FC = () => {
   const { observations, setSelectedObservation, setIsDrawerOpen } = useCycle();
-  const { t } = useLanguage();
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -14,17 +12,25 @@ export const CalendarGrid: React.FC = () => {
   const month = currentMonth.getMonth();
 
   const now = new Date();
-  const isCurrentOrFutureMonth = (
-    year > now.getFullYear() ||
-    (year === now.getFullYear() && month >= now.getMonth())
-  );
+  const isCurrentOrFutureMonth =
+    year > now.getFullYear() || (year === now.getFullYear() && month >= now.getMonth());
 
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
   const monthNames = [
-    'January', 'February', 'March', 'April', 'May', 'June',
-    'July', 'August', 'September', 'October', 'November', 'December'
+    'January',
+    'February',
+    'March',
+    'April',
+    'May',
+    'June',
+    'July',
+    'August',
+    'September',
+    'October',
+    'November',
+    'December',
   ];
 
   const handlePrevMonth = () => {
@@ -52,9 +58,19 @@ export const CalendarGrid: React.FC = () => {
   const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
 
   return (
-    <div className="calendar-view" id="calendar-panel" role="tabpanel" aria-labelledby="tab-calendar">
+    <div
+      className="calendar-view"
+      id="calendar-panel"
+      role="tabpanel"
+      aria-labelledby="tab-calendar"
+    >
       <div className="calendar-header">
-        <button className="icon-button" onClick={handlePrevMonth} title="Previous month" aria-label="Previous month">
+        <button
+          className="icon-button"
+          onClick={handlePrevMonth}
+          title="Previous month"
+          aria-label="Previous month"
+        >
           <ChevronLeft size={20} />
         </button>
         <h2 className="calendar-month-title">
@@ -64,9 +80,12 @@ export const CalendarGrid: React.FC = () => {
           className={`icon-button ${isCurrentOrFutureMonth ? 'disabled' : ''}`}
           onClick={handleNextMonth}
           disabled={isCurrentOrFutureMonth}
-          title={isCurrentOrFutureMonth ? "Future months disabled" : "Next month"}
-          aria-label={isCurrentOrFutureMonth ? "Future months disabled" : "Next month"}
-          style={{ opacity: isCurrentOrFutureMonth ? 0.4 : 1, cursor: isCurrentOrFutureMonth ? 'not-allowed' : 'pointer' }}
+          title={isCurrentOrFutureMonth ? 'Future months disabled' : 'Next month'}
+          aria-label={isCurrentOrFutureMonth ? 'Future months disabled' : 'Next month'}
+          style={{
+            opacity: isCurrentOrFutureMonth ? 0.4 : 1,
+            cursor: isCurrentOrFutureMonth ? 'not-allowed' : 'pointer',
+          }}
         >
           <ChevronRight size={20} />
         </button>
@@ -110,15 +129,17 @@ export const CalendarGrid: React.FC = () => {
               disabled={isFutureDay}
               onClick={() => {
                 if (!isFutureDay) {
-                  setSelectedObservation(obs || {
-                    id: '',
-                    date: dateStr,
-                    cycleDay: 1,
-                    stamp: 'DARK_GREEN',
-                    codeString: '',
-                    intercourse: false,
-                    symptoms: [],
-                  });
+                  setSelectedObservation(
+                    obs || {
+                      id: '',
+                      date: dateStr,
+                      cycleDay: 1,
+                      stamp: 'DARK_GREEN',
+                      codeString: '',
+                      intercourse: false,
+                      symptoms: [],
+                    }
+                  );
                   setIsDrawerOpen(true);
                 }
               }}
@@ -128,7 +149,12 @@ export const CalendarGrid: React.FC = () => {
               {obs ? (
                 <div className="calendar-day-content">
                   <div className="calendar-stamp-wrapper">
-                    <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
+                    <StampBadge
+                      stamp={obs.stamp}
+                      isPeakDay={obs.isPeakDay}
+                      intercourse={obs.intercourse}
+                      size="sm"
+                    />
                   </div>
                   <span className="calendar-code">{obs.codeString}</span>
                 </div>

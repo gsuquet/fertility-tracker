@@ -46,13 +46,13 @@ fertility-tracker/
 
 ## Component Responsibilities
 
-| Component | Responsibility |
-| :--- | :--- |
-| `App.tsx` | App root wrapping context providers (`ThemeProvider`, `LanguageProvider`, `CycleProvider`). |
-| `Header.tsx` | Top desktop navbar, tab switcher, export trigger, theme toggle, language dropdown. |
-| `ChartRow.tsx` | Renders paper chart view, cycle day cards, stamps, code badges, and Peak Day indicators ($P$, $P+1$, etc.). |
-| `CalendarGrid.tsx` | Renders month-by-month calendar view with stamp indicators per day. |
-| `CycleAnalyticsView.tsx` | Displays cycle length histogram, post-peak length, mucific score, and fertility metrics. |
-| `ObservationDrawer.tsx` | Drawer form for logging bleeding, stretch, modifiers, frequency, symptoms, and manual Peak override. |
-| `StampBadge.tsx` | Reusable visual badge rendering CrMS stamp colors (`RED`, `DARK_GREEN`, `WHITE_BABY`, `LIGHT_GREEN_BABY`). |
-| `ExportModal.tsx` | Modal dialog for generating PDF, PNG, and JSON backup files. |
+| Component                | Responsibility                                                                                              |
+| :----------------------- | :---------------------------------------------------------------------------------------------------------- |
+| `App.tsx`                | App root wrapping context providers (`ThemeProvider`, `LanguageProvider`, `CycleProvider`).                 |
+| `Header.tsx`             | Top desktop navbar, tab switcher, export trigger, theme toggle, language dropdown.                          |
+| `ChartRow.tsx`           | Renders paper chart view, cycle day cards, stamps, code badges, and Peak Day indicators ($P$, $P+1$, etc.). |
+| `CalendarGrid.tsx`       | Renders month-by-month calendar view with stamp indicators per day.                                         |
+| `CycleAnalyticsView.tsx` | Displays cycle length histogram, post-peak length, mucific score, and fertility metrics.                    |
+| `ObservationDrawer.tsx`  | Drawer form for logging bleeding, stretch, modifiers, frequency, symptoms, and manual Peak override.        |
+| `StampBadge.tsx`         | Reusable visual badge rendering CrMS stamp colors (`RED`, `DARK_GREEN`, `WHITE_BABY`, `LIGHT_GREEN_BABY`).  |
+| `ExportModal.tsx`        | Modal dialog for generating PDF, PNG, and JSON backup files.                                                |

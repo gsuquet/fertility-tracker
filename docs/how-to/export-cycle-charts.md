@@ -8,7 +8,7 @@ This guide explains how to generate export files (PDF, PNG, or JSON) from **Fert
 
 1. Click the **Export** button in the top navigation header.
 2. In the Export Modal, select **PDF Report**.
-3. Choose the target cycle(s) to include (e.g., *Current Cycle* or *All Historical Cycles*).
+3. Choose the target cycle(s) to include (e.g., _Current Cycle_ or _All Historical Cycles_).
 4. Click **Generate PDF**.
 5. Save the generated `.pdf` file to your device.
 

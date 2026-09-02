@@ -1,6 +1,6 @@
 import React, { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { X, Calendar, AlertCircle } from 'lucide-react';
+import { X, Calendar } from 'lucide-react';
 
 interface CycleStartModalProps {
   isOpen: boolean;
@@ -66,7 +66,14 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
           backgroundColor: 'var(--bg-surface)',
         }}
       >
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '1.25rem' }}>
+        <div
+          style={{
+            display: 'flex',
+            justifyContent: 'space-between',
+            alignItems: 'flex-start',
+            marginBottom: '1.25rem',
+          }}
+        >
           <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
             <div
               style={{
@@ -83,7 +90,10 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
               <Calendar size={22} />
             </div>
             <div>
-              <h2 id="cycle-start-modal-title" style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}>
+              <h2
+                id="cycle-start-modal-title"
+                style={{ margin: 0, fontSize: '1.25rem', fontWeight: 600 }}
+              >
                 {t.cycleStartModal?.title || 'New Cycle Start?'}
               </h2>
               <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>{date}</span>
@@ -93,14 +103,26 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
             onClick={onCancel}
             className="btn-icon"
             aria-label={t.actions?.close || 'Close'}
-            style={{ background: 'none', border: 'none', cursor: 'pointer', color: 'var(--text-muted)' }}
+            style={{
+              background: 'none',
+              border: 'none',
+              cursor: 'pointer',
+              color: 'var(--text-muted)',
+            }}
           >
             <X size={20} />
           </button>
         </div>
 
         <div style={{ marginBottom: '1.5rem', lineHeight: '1.5' }}>
-          <p style={{ fontWeight: 600, fontSize: '1rem', marginBottom: '0.5rem', color: 'var(--text-primary)' }}>
+          <p
+            style={{
+              fontWeight: 600,
+              fontSize: '1rem',
+              marginBottom: '0.5rem',
+              color: 'var(--text-primary)',
+            }}
+          >
             {t.cycleStartModal?.question || 'Is this bleeding day the start of a new cycle?'}
           </p>
           <p style={{ fontSize: '0.9rem', color: 'var(--text-secondary)', margin: 0 }}>

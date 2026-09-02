@@ -1,6 +1,6 @@
 {
   "name": "fertility-tracker",
-  "version": "1.9.2",
+  "version": "1.10.0",
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -9,7 +9,12 @@
     "preview": "vite preview",
     "pages:dev": "wrangler pages dev dist",
     "deploy": "npm run build && wrangler pages deploy dist",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:coverage": "vitest run --coverage",
+    "lint": "biome lint src vite.config.ts",
+    "lint:fix": "biome lint --write src vite.config.ts",
+    "format:check": "prettier --check .",
+    "format": "prettier --write ."
   },
   "engines": {
     "node": ">=22.0.0"
@@ -32,6 +37,8 @@
     "react-dom": "^19.2.8"
   },
   "devDependencies": {
+    "@biomejs/biome": "^2.5.11",
+    "@testing-library/dom": "^10.4.1",
     "@testing-library/jest-dom": "^7.0.0",
     "@testing-library/react": "^16.3.2",
     "@testing-library/user-event": "^14.6.1",
@@ -39,10 +46,12 @@
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
     "@vitejs/plugin-react": "^6.0.4",
+    "@vitest/coverage-v8": "^4.1.11",
     "jsdom": "^30.0.0",
+    "prettier": "^3.9.6",
     "typescript": "^7.0.2",
     "vite": "^8.1.5",
-    "vitest": "^4.1.10",
+    "vitest": "^4.1.11",
     "wrangler": "^4.115.0"
   }
 }

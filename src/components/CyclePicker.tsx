@@ -31,8 +31,10 @@ export const CyclePicker: React.FC = () => {
     const handleClickOutside = (event: MouseEvent) => {
       const target = event.target as Node;
       if (
-        buttonRef.current && !buttonRef.current.contains(target) &&
-        dropdownRef.current && !dropdownRef.current.contains(target)
+        buttonRef.current &&
+        !buttonRef.current.contains(target) &&
+        dropdownRef.current &&
+        !dropdownRef.current.contains(target)
       ) {
         setIsOpen(false);
       }
@@ -75,7 +77,9 @@ export const CyclePicker: React.FC = () => {
       return isMobile ? `All (${cycles.length})` : `All Cycles (${cycles.length})`;
     }
     if (activeCycleNumber) {
-      return isMobile ? `Cycle ${activeCycleNumber}` : `Cycle ${activeCycleNumber} (${activeCycle?.startDate})`;
+      return isMobile
+        ? `Cycle ${activeCycleNumber}`
+        : `Cycle ${activeCycleNumber} (${activeCycle?.startDate})`;
     }
     return `All Cycles`;
   };
@@ -109,7 +113,7 @@ export const CyclePicker: React.FC = () => {
       >
         <div className="cycle-dropdown-header">
           <span>Filter Cycle View</span>
-          <button 
+          <button
             type="button"
             className="cycle-dropdown-close"
             onClick={() => setIsOpen(false)}
@@ -131,7 +135,9 @@ export const CyclePicker: React.FC = () => {
                 <Layers size={16} className="cycle-item-icon" />
                 <strong>All Cycles</strong>
               </div>
-              <span className="cycle-option-subtitle">Display all {cycles.length} recorded cycles</span>
+              <span className="cycle-option-subtitle">
+                Display all {cycles.length} recorded cycles
+              </span>
             </div>
             {selectedCycleId === 'all' && <Check size={18} className="cycle-check-icon" />}
           </button>
@@ -202,7 +208,9 @@ export const CyclePicker: React.FC = () => {
         ))}
       </select>
 
-      {typeof document !== 'undefined' && menuContent ? ReactDOM.createPortal(menuContent, document.body) : null}
+      {typeof document !== 'undefined' && menuContent
+        ? ReactDOM.createPortal(menuContent, document.body)
+        : null}
     </div>
   );
 };

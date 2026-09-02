@@ -1,23 +1,30 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode, Observation } from '../types/crms';
+import {
+  BleedingCode,
+  MucusStretch,
+  MucusModifier,
+  FrequencyCode,
+  SymptomCode,
+  Observation,
+} from '../types/crms';
 import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
 import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
 import { CycleStartModal } from './CycleStartModal';
 import { StampBadge } from './StampBadge';
 import { getTodayStr, addDays, formatDateDisplay } from '../utils/dateUtils';
-import { 
-  Calendar as CalendarIcon, 
-  ChevronLeft, 
-  ChevronRight, 
-  RotateCcw, 
-  Save, 
-  Trash2, 
-  Heart, 
-  Flag, 
-  CheckCircle2, 
+import {
+  Calendar as CalendarIcon,
+  ChevronLeft,
+  ChevronRight,
+  RotateCcw,
+  Save,
+  Trash2,
+  Heart,
+  Flag,
+  CheckCircle2,
   AlertCircle,
   Clock,
   Sparkles,
@@ -25,11 +32,17 @@ import {
   Zap,
   Sliders,
   ChevronDown,
-  ChevronUp
+  ChevronUp,
 } from 'lucide-react';
 
 export const TodayView: React.FC = () => {
-  const { observations, saveObservation, deleteObservation, selectedObservation, setSelectedObservation } = useCycle();
+  const {
+    observations,
+    saveObservation,
+    deleteObservation,
+    selectedObservation,
+    setSelectedObservation,
+  } = useCycle();
   const { t, language } = useLanguage();
 
   // User preference for entry mode: 'direct' (direct code input only) or 'detailed' (button selectors)
@@ -150,7 +163,14 @@ export const TodayView: React.FC = () => {
   };
 
   const calculatedStamp = calculateStamp(bleeding, stretch, modifiers);
-  const currentCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse });
+  const currentCode = formatCodeString({
+    bleeding,
+    stretch,
+    modifiers,
+    frequency,
+    symptoms,
+    intercourse,
+  });
 
   const handleDirectTextChange = (text: string) => {
     setDirectInputText(text);
@@ -166,7 +186,14 @@ export const TodayView: React.FC = () => {
   const toggleModifier = (mod: MucusModifier) => {
     setModifiers(prev => {
       const next = prev.includes(mod) ? prev.filter(m => m !== mod) : [...prev, mod];
-      const updatedCode = formatCodeString({ bleeding, stretch, modifiers: next, frequency, symptoms, intercourse });
+      const updatedCode = formatCodeString({
+        bleeding,
+        stretch,
+        modifiers: next,
+        frequency,
+        symptoms,
+        intercourse,
+      });
       setDirectInputText(updatedCode);
       return next;
     });
@@ -175,7 +202,14 @@ export const TodayView: React.FC = () => {
   const toggleSymptom = (sym: SymptomCode) => {
     setSymptoms(prev => {
       const next = prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym];
-      const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms: next, intercourse });
+      const updatedCode = formatCodeString({
+        bleeding,
+        stretch,
+        modifiers,
+        frequency,
+        symptoms: next,
+        intercourse,
+      });
       setDirectInputText(updatedCode);
       return next;
     });
@@ -183,26 +217,54 @@ export const TodayView: React.FC = () => {
 
   const handleBleedingSelect = (b?: BleedingCode) => {
     setBleeding(b);
-    const updatedCode = formatCodeString({ bleeding: b, stretch, modifiers, frequency, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding: b,
+      stretch,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleStretchSelect = (s?: MucusStretch) => {
     setStretch(s);
-    const updatedCode = formatCodeString({ bleeding, stretch: s, modifiers, frequency, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch: s,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleFrequencySelect = (f?: FrequencyCode) => {
     setFrequency(f);
-    const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency: f, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch,
+      modifiers,
+      frequency: f,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleIntercourseToggle = () => {
     const next = !intercourse;
     setIntercourse(next);
-    const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse: next });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse: next,
+    });
     setDirectInputText(updatedCode);
   };
 
@@ -212,7 +274,16 @@ export const TodayView: React.FC = () => {
   const hasUnsavedChanges = (() => {
     if (!currentObs) {
       // For a new entry, enable save if at least one parameter or note is entered
-      return bleeding !== undefined || stretch !== undefined || modifiers.length > 0 || frequency !== undefined || symptoms.length > 0 || intercourse || notes.trim() !== '' || isManualPeak;
+      return (
+        bleeding !== undefined ||
+        stretch !== undefined ||
+        modifiers.length > 0 ||
+        frequency !== undefined ||
+        symptoms.length > 0 ||
+        intercourse ||
+        notes.trim() !== '' ||
+        isManualPeak
+      );
     }
     const sameBleeding = currentObs.bleeding === bleeding;
     const sameStretch = currentObs.stretch === stretch;
@@ -221,14 +292,26 @@ export const TodayView: React.FC = () => {
     const samePeak = (currentObs.isManualPeak || false) === isManualPeak;
     const sameCycleStart = currentObs.isCycleStart === isCycleStart;
     const sameNotes = (currentObs.notes || '') === notes;
-    
-    const sameModifiers = (currentObs.modifiers || []).length === modifiers.length &&
+
+    const sameModifiers =
+      (currentObs.modifiers || []).length === modifiers.length &&
       modifiers.every(m => (currentObs.modifiers || []).includes(m));
-      
-    const sameSymptoms = (currentObs.symptoms || []).length === symptoms.length &&
+
+    const sameSymptoms =
+      (currentObs.symptoms || []).length === symptoms.length &&
       symptoms.every(s => (currentObs.symptoms || []).includes(s));
 
-    return !(sameBleeding && sameStretch && sameFrequency && sameIntercourse && samePeak && sameCycleStart && sameNotes && sameModifiers && sameSymptoms);
+    return !(
+      sameBleeding &&
+      sameStretch &&
+      sameFrequency &&
+      sameIntercourse &&
+      samePeak &&
+      sameCycleStart &&
+      sameNotes &&
+      sameModifiers &&
+      sameSymptoms
+    );
   })();
 
   const executeSave = (explicitCycleStart?: boolean) => {
@@ -326,7 +409,12 @@ export const TodayView: React.FC = () => {
   };
 
   return (
-    <div className="today-page-container" id="today-panel" role="tabpanel" aria-labelledby="tab-today">
+    <div
+      className="today-page-container"
+      id="today-panel"
+      role="tabpanel"
+      aria-labelledby="tab-today"
+    >
       {/* Toast Notification */}
       {toastMessage && (
         <div className="today-toast" role="status" aria-live="polite">
@@ -338,9 +426,9 @@ export const TodayView: React.FC = () => {
       {/* Compact Date Navigation Bar (Minimal Vertical Height with Arrows & Picker) */}
       <div className="today-header-card compact-date-bar">
         <div className="compact-date-nav-controls">
-          <button 
-            type="button" 
-            className="icon-button date-nav-btn compact-nav-btn" 
+          <button
+            type="button"
+            className="icon-button date-nav-btn compact-nav-btn"
             onClick={handlePrevDay}
             title={t.todayView.prevDay}
             aria-label={t.todayView.prevDay}
@@ -365,9 +453,9 @@ export const TodayView: React.FC = () => {
             />
           </div>
 
-          <button 
-            type="button" 
-            className="icon-button date-nav-btn compact-nav-btn" 
+          <button
+            type="button"
+            className="icon-button date-nav-btn compact-nav-btn"
             onClick={handleNextDay}
             title={t.todayView.nextDay}
             aria-label={t.todayView.nextDay}
@@ -389,9 +477,7 @@ export const TodayView: React.FC = () => {
             </button>
           )}
           {currentObs?.cycleDay && (
-            <span className="badge badge-secondary badge-sm">
-              Day {currentObs.cycleDay}
-            </span>
+            <span className="badge badge-secondary badge-sm">Day {currentObs.cycleDay}</span>
           )}
           {currentObs ? (
             <span className="badge badge-success badge-sm">
@@ -410,7 +496,12 @@ export const TodayView: React.FC = () => {
       {/* TOP STAMP & STATUS BANNER (Mobile display at top) */}
       <div className="today-top-status-banner mobile-only-stamp-banner">
         <div className="status-stamp-hero">
-          <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+          <StampBadge
+            stamp={calculatedStamp}
+            isPeakDay={isManualPeak}
+            intercourse={intercourse}
+            size="lg"
+          />
           <div className="status-hero-info">
             <div className="status-code-display">{currentCode || '---'}</div>
             <div className="status-hero-guidance">
@@ -429,7 +520,11 @@ export const TodayView: React.FC = () => {
           <div className="recent-days-list">
             {getRecentDays().map(({ dateStr, obs }) => {
               const isSelected = dateStr === selectedDate;
-              const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', { weekday: 'short', month: 'numeric', day: 'numeric' });
+              const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', {
+                weekday: 'short',
+                month: 'numeric',
+                day: 'numeric',
+              });
 
               return (
                 <button
@@ -441,10 +536,15 @@ export const TodayView: React.FC = () => {
                   <span className="recent-date-label">{dayLabel}</span>
                   <div className="recent-stamp-slot">
                     {obs && (
-                      <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay || obs.isManualPeak} intercourse={obs.intercourse} size="sm" />
+                      <StampBadge
+                        stamp={obs.stamp}
+                        isPeakDay={obs.isPeakDay || obs.isManualPeak}
+                        intercourse={obs.intercourse}
+                        size="sm"
+                      />
                     )}
                   </div>
-                  <span className={obs ? "recent-code" : "recent-empty"}>
+                  <span className={obs ? 'recent-code' : 'recent-empty'}>
                     {obs ? obs.codeString : t.todayView.noEntryShort}
                   </span>
                 </button>
@@ -465,6 +565,7 @@ export const TodayView: React.FC = () => {
             <div className="entry-mode-toggle" role="radiogroup" aria-label={t.todayView.entryMode}>
               <button
                 type="button"
+                role="radio"
                 className={`mode-toggle-btn ${entryMode === 'direct' ? 'active' : ''}`}
                 onClick={() => handleSetEntryMode('direct')}
                 title="Direct Code Entry Only"
@@ -475,6 +576,7 @@ export const TodayView: React.FC = () => {
               </button>
               <button
                 type="button"
+                role="radio"
                 className={`mode-toggle-btn ${entryMode === 'detailed' ? 'active' : ''}`}
                 onClick={() => handleSetEntryMode('detailed')}
                 title="Detailed Form Button Selectors"
@@ -521,7 +623,9 @@ export const TodayView: React.FC = () => {
                 onClick={() => setShowDetailedOverride(!showDetailedOverride)}
               >
                 {showDetailedOverride ? <ChevronUp size={14} /> : <ChevronDown size={14} />}
-                <span>{showDetailedOverride ? t.todayView.hideDetailed : t.todayView.showDetailed}</span>
+                <span>
+                  {showDetailedOverride ? t.todayView.hideDetailed : t.todayView.showDetailed}
+                </span>
               </button>
             </div>
           )}
@@ -557,7 +661,8 @@ export const TodayView: React.FC = () => {
                     aria-pressed={isCycleStart === true}
                     style={{
                       borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
-                      backgroundColor: isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
+                      backgroundColor:
+                        isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
                       color: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
                     }}
                   >
@@ -574,7 +679,9 @@ export const TodayView: React.FC = () => {
               <div className="form-group">
                 <label>{t.labels.stretch}</label>
                 <div className="button-grid" role="group" aria-label={t.labels.stretch}>
-                  {(['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]).map(code => (
+                  {(
+                    ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]
+                  ).map(code => (
                     <button
                       type="button"
                       key={code}
@@ -673,20 +780,29 @@ export const TodayView: React.FC = () => {
           {/* Action Bar with Submit Button Grayed Out when Unchanged */}
           <div className="today-form-actions">
             {currentObs?.id ? (
-              <button type="button" className="btn btn-danger" onClick={handleDelete} aria-label={t.actions.delete}>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleDelete}
+                aria-label={t.actions.delete}
+              >
                 <Trash2 size={16} />
                 <span>{t.actions.delete}</span>
               </button>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
 
-            <button 
-              type="submit" 
+            <button
+              type="submit"
               className={`btn btn-primary btn-lg submit-save-btn ${!hasUnsavedChanges ? 'disabled-submit' : ''}`}
               disabled={!hasUnsavedChanges}
               aria-disabled={!hasUnsavedChanges}
             >
               <Save size={18} />
-              <span>{hasUnsavedChanges ? t.actions.save : (currentObs ? 'Saved' : t.actions.save)}</span>
+              <span>
+                {hasUnsavedChanges ? t.actions.save : currentObs ? 'Saved' : t.actions.save}
+              </span>
             </button>
           </div>
         </form>
@@ -699,7 +815,12 @@ export const TodayView: React.FC = () => {
           </div>
 
           <div className="status-stamp-wrapper">
-            <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+            <StampBadge
+              stamp={calculatedStamp}
+              isPeakDay={isManualPeak}
+              intercourse={intercourse}
+              size="lg"
+            />
             <div className="status-code-text">{currentCode || '---'}</div>
           </div>
 
