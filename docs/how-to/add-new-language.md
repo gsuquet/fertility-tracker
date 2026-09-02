@@ -6,31 +6,42 @@ This guide describes how to add support for a new locale to **Fertility Tracker*
 
 ## Step 1: Add Locale Key to Type Definitions
 
-1. Open [`src/types/crms.ts`](../../src/types/crms.ts#L44).
-2. Update the `Language` type definition to include your new ISO 639-1 language code (e.g., `'es'` for Spanish, `'de'` for German):
+1. Open [`src/types/crms.ts`](../../src/types/crms.ts).
+2. Update the `Language` type definition to include your new ISO 639-1 language code (e.g. `'de'` for German):
 
    ```typescript
-   export type Language = 'en' | 'fr' | 'es';
+   export type Language = 'en' | 'fr' | 'es' | 'de';
    ```
+
+3. Update [`src/i18n/types.ts`](../../src/i18n/types.ts) to include the new language code in `SupportedLanguage`.
 
 ---
 
-## Step 2: Create the Translation Dictionary
+## Step 2: Create the Dedicated Translation Module
 
-1. Open [`src/i18n/translations.ts`](../../src/i18n/translations.ts).
-2. Add a new dictionary object under your language code key, translating all existing keys from English:
+1. Create a new locale file in `src/i18n/locales/<locale>.ts` (e.g. `src/i18n/locales/de.ts`).
+2. Implement the `TranslationSchema` type:
 
    ```typescript
+   import { TranslationSchema } from '../types';
+
+   export const de: TranslationSchema = {
+     appTitle: 'Fertility Tracker',
+     subtitle: 'Creighton Model System (CrMS)',
+     // ... provide translations for all required schema keys
+   };
+   ```
+
+3. Register the new locale in [`src/i18n/index.ts`](../../src/i18n/index.ts):
+
+   ```typescript
+   import { de } from './locales/de';
+
    export const translations = {
-     en: { ... },
-     fr: { ... },
-     es: {
-       appTitle: 'Cuidad de Fertilidad',
-       chartView: 'Gráfico',
-       calendarView: 'Calendario',
-       analyticsView: 'Análisis',
-       // ... translate remaining keys
-     }
+     en,
+     fr,
+     es,
+     de,
    };
    ```
 

@@ -41,6 +41,16 @@ sequenceDiagram
 
 ## State Architecture
 
-- **CycleContext:** Manages cycle creation, daily observation logging, updates, deletions, and manual Peak overrides. Automatically re-evaluates Peak Day detection on state mutation.
+- **CycleContext (Decoupled Data & UI Providers):**
+  - **`CycleDataContext`:** Manages cycle creation, daily observation logging, updates, deletions, and manual Peak overrides. Automatically re-evaluates Peak Day detection on state mutation.
+  - **`CycleUiContext`:** Manages observation drawer visibility and active selection state without causing unnecessary re-renders in heavy charting views.
+  - **`useCycle()`:** Unified convenience hook combining data and UI contexts for complete backward compatibility.
 - **ThemeContext:** Manages dark/light mode preference and updates root DOM CSS variable attributes (`data-theme`).
-- **LanguageContext:** Manages active i18n locale and provides `t(key)` helper for UI string localization.
+- **LanguageContext:** Manages active i18n locale (`en`, `fr`) backed by strictly-typed `TranslationSchema` dictionaries.
+
+---
+
+## Modular Component & CSS Architecture
+
+- **Subcomponent Decomposition:** Complex views such as `TodayView` are composed of focused subcomponents (`TodayDateNav`, `TodayHistoryList`, `TodayObservationForm`, `TodayFertilityGuidance`) keeping container components lean.
+- **Layered CSS Architecture:** Styles are organized in standard CSS `@layer` tiers (`tokens`, `primitives`, `views`, `utilities`), preventing specificity conflicts and enabling seamless dark/light theme transitions through semantic variables.

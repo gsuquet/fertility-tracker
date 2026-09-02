@@ -18,7 +18,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (typeof window !== 'undefined' && window.matchMedia) {
         return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
       }
-    } catch (e) {}
+    } catch (_e) {}
     return 'light';
   });
 
@@ -30,7 +30,7 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem('fertility_care_theme', theme);
       }
-    } catch (e) {}
+    } catch (_e) {}
   }, [theme]);
 
   const toggleTheme = () => {
