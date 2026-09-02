@@ -1,11 +1,11 @@
-import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
 import { Observation, Cycle } from '../types/crms';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
 import { getTodayStr, addDays } from '../utils/dateUtils';
 
-interface CycleContextType {
+export interface CycleDataContextType {
   observations: Observation[];
   cycles: Cycle[];
   selectedCycleId: string;
@@ -17,13 +17,19 @@ interface CycleContextType {
   importDataJson: (jsonStr: string) => boolean;
   clearAllData: () => void;
   loadDemoData: () => void;
+}
+
+export interface CycleUiContextType {
   selectedObservation: Observation | null;
   setSelectedObservation: (obs: Observation | null) => void;
   isDrawerOpen: boolean;
   setIsDrawerOpen: (open: boolean) => void;
 }
 
-const CycleContext = createContext<CycleContextType | undefined>(undefined);
+export type CycleContextType = CycleDataContextType & CycleUiContextType;
+
+const CycleDataContext = createContext<CycleDataContextType | undefined>(undefined);
+const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fertility_care_observations';
 
@@ -32,7 +38,7 @@ const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
 };
 
-export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [observations, setObservations] = useState<Observation[]>(() => {
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
@@ -49,10 +55,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   });
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
-
-  const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id || 'all');
-  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
 
   useEffect(() => {
     if (cycles.length > 0) {
@@ -71,10 +74,10 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
       }
-    } catch (e) {}
+    } catch (_e) {}
   }, [observations]);
 
-  const saveObservation = (obsData: Partial<Observation>) => {
+  const saveObservation = useCallback((obsData: Partial<Observation>) => {
     setObservations(prev => {
       const date = obsData.date || getTodayStr();
       const existingIdx = prev.findIndex(o => o.date === date);
@@ -108,16 +111,16 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
       return reprocessObservations(updatedList);
     });
-  };
+  }, []);
 
-  const deleteObservation = (id: string) => {
+  const deleteObservation = useCallback((id: string) => {
     setObservations(prev => {
       const filtered = prev.filter(o => o.id !== id);
       return reprocessObservations(filtered);
     });
-  };
+  }, []);
 
-  const toggleManualPeak = (date: string) => {
+  const toggleManualPeak = useCallback((date: string) => {
     setObservations(prev => {
       const updated = prev.map(obs => {
         if (obs.date === date) {
@@ -127,13 +130,13 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       });
       return reprocessObservations(updated);
     });
-  };
+  }, []);
 
-  const exportDataJson = () => {
+  const exportDataJson = useCallback(() => {
     return JSON.stringify(observations, null, 2);
-  };
+  }, [observations]);
 
-  const importDataJson = (jsonStr: string): boolean => {
+  const importDataJson = useCallback((jsonStr: string): boolean => {
     try {
       const parsed = JSON.parse(jsonStr);
       if (Array.isArray(parsed)) {
@@ -151,27 +154,25 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       console.error('Import failed', e);
     }
     return false;
-  };
+  }, []);
 
-  const clearAllData = () => {
+  const clearAllData = useCallback(() => {
     setObservations([]);
     setSelectedCycleId('all');
     try {
       if (typeof window !== 'undefined' && window.localStorage) {
         localStorage.removeItem(STORAGE_KEY);
       }
-    } catch (e) {}
-  };
+    } catch (_e) {}
+  }, []);
 
-  const loadDemoData = () => {
+  const loadDemoData = useCallback(() => {
     const todayStr = getTodayStr();
     const demoObs: Observation[] = [];
 
     // Generate 2 full 28-day past cycles + current cycle (56 days total history)
     for (let i = 55; i >= 0; i--) {
       const dateStr = addDays(todayStr, -i);
-
-      // Day within 28-day cycle: 1 to 28
       const cd = ((55 - i) % 28) + 1;
 
       let bleeding: any;
@@ -248,35 +249,78 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     if (newCycles.length > 0) {
       setSelectedCycleId(newCycles[0].id);
     }
-  };
+  }, []);
 
+  const dataValue = useMemo(
+    () => ({
+      observations,
+      cycles,
+      selectedCycleId,
+      setSelectedCycleId,
+      saveObservation,
+      deleteObservation,
+      toggleManualPeak,
+      exportDataJson,
+      importDataJson,
+      clearAllData,
+      loadDemoData,
+    }),
+    [
+      observations,
+      cycles,
+      selectedCycleId,
+      saveObservation,
+      deleteObservation,
+      toggleManualPeak,
+      exportDataJson,
+      importDataJson,
+      clearAllData,
+      loadDemoData,
+    ]
+  );
+
+  return <CycleDataContext.Provider value={dataValue}>{children}</CycleDataContext.Provider>;
+};
+
+export const CycleUiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+  const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);
+  const [isDrawerOpen, setIsDrawerOpen] = useState(false);
+
+  const uiValue = useMemo(
+    () => ({
+      selectedObservation,
+      setSelectedObservation,
+      isDrawerOpen,
+      setIsDrawerOpen,
+    }),
+    [selectedObservation, isDrawerOpen]
+  );
+
+  return <CycleUiContext.Provider value={uiValue}>{children}</CycleUiContext.Provider>;
+};
+
+export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <CycleContext.Provider
-      value={{
-        observations,
-        cycles,
-        selectedCycleId,
-        setSelectedCycleId,
-        saveObservation,
-        deleteObservation,
-        toggleManualPeak,
-        exportDataJson,
-        importDataJson,
-        clearAllData,
-        loadDemoData,
-        selectedObservation,
-        setSelectedObservation,
-        isDrawerOpen,
-        setIsDrawerOpen,
-      }}
-    >
-      {children}
-    </CycleContext.Provider>
+    <CycleDataProvider>
+      <CycleUiProvider>{children}</CycleUiProvider>
+    </CycleDataProvider>
   );
 };
 
-export const useCycle = () => {
-  const context = useContext(CycleContext);
-  if (!context) throw new Error('useCycle must be used within CycleProvider');
+export const useCycleData = () => {
+  const context = useContext(CycleDataContext);
+  if (!context) throw new Error('useCycleData must be used within CycleProvider');
   return context;
+};
+
+export const useCycleUi = () => {
+  const context = useContext(CycleUiContext);
+  if (!context) throw new Error('useCycleUi must be used within CycleProvider');
+  return context;
+};
+
+export const useCycle = (): CycleContextType => {
+  const data = useCycleData();
+  const ui = useCycleUi();
+  return { ...data, ...ui };
 };

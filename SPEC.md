@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.10.0  
+**Document Version:** 1.11.0  
 **Status:** Approved  
 **Last Updated:** September 2, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -312,10 +312,15 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 ### 5.3 Today View (Dashboard)
 
-**Module:** [src/components/TodayView.tsx](./src/components/TodayView.tsx)
+**Module:** [src/components/TodayView.tsx](./src/components/TodayView.tsx)  
+**Decomposed Subcomponents:**
 
-- **Daily Status Card:** Hero summary card displaying today's date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
-- **Quick Logging Controls:** One-click buttons to log dry day, fertile mucus, bleeding, or open full observation drawer.
+- [TodayDateNav.tsx](./src/components/today/TodayDateNav.tsx): Compact date navigation bar with previous/next day stepping, native date picker trigger, formatted date display, and status badges (Today indicator, Cycle Day, Recorded/Pending status).
+- [TodayHistoryList.tsx](./src/components/today/TodayHistoryList.tsx): Recent 5-day observation timeline card with aligned 3-column layout (date label, stamp badge slot, and truncated code string).
+- [TodayObservationForm.tsx](./src/components/today/TodayObservationForm.tsx): Observation logging form supporting dual entry modes (Direct Code Entry and Detailed Selectors for bleeding, stretch, modifiers, frequency, symptoms, intercourse, notes, and cycle start).
+- [TodayFertilityGuidance.tsx](./src/components/today/TodayFertilityGuidance.tsx): Real-time CrMS stamp preview badge, formatted code text, and clinical fertility guidance message (rendered in top mobile banner and desktop status card).
+
+- **Daily Status Card:** Hero summary card displaying active date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
 - **Recent 5-Day Observation History Card:** Aligned 3-column layout featuring a fixed-width date column, aligned `.recent-stamp-slot` for stamp badges, and single-line observation code string with ellipsis truncation.
 
 ---
@@ -418,7 +423,11 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
 
-- State managed via React Context (`CycleProvider`).
+- **Decoupled Context Architecture:**
+  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, `toggleManualPeak`, etc.).
+  - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
+  - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
+  - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
 - **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
 - **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.

@@ -38,6 +38,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
   {
+    version: '1.11.0',
+    date: '2026-09-02',
+    title: 'Component Modularization, Decoupled State & CSS System Harmonization',
+    titleFr: 'Modularisation des Composants, Découplage de Contexte & Harmonisation CSS',
+    tagline:
+      'Decomposed TodayView into dedicated subcomponents, decoupled CycleContext data and UI states, and eliminated modal inline styles',
+    taglineFr:
+      "Décomposition de TodayView en sous-composants dédiés, découplage des états de données et d'interface dans CycleContext, et élimination des styles en ligne",
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Deconstructed 840+ line TodayView monolith into 4 modular subcomponents: TodayDateNav, TodayHistoryList, TodayObservationForm, and TodayFertilityGuidance',
+      'Decoupled CycleContext into CycleDataContext (for domain data mutations) and CycleUiContext (for modal and drawer interaction states)',
+      'Eliminated all residual inline CSS styles in CycleStartModal, moving styling into layered CSS tokens in modals.css',
+      'Added comprehensive unit tests for decoupled context providers, navigation controls, and fertility guidance widgets',
+    ],
+    highlightsFr: [
+      'Décomposition du monolithe TodayView de plus de 840 lignes en 4 sous-composants modulaires : TodayDateNav, TodayHistoryList, TodayObservationForm et TodayFertilityGuidance',
+      'Découplage de CycleContext en CycleDataContext (pour les mutations de données métier) et CycleUiContext (pour les états de tiroir et modales)',
+      'Élimination de tous les styles CSS en ligne résiduels dans CycleStartModal au profit de règles modulaires dans modals.css',
+      'Ajout de tests unitaires complets pour les providers découplés, les contrôles de navigation et les widgets de guidage',
+    ],
+  },
+  {
     version: '1.10.0',
     date: '2026-09-02',
     title: 'Code Quality, Static Analysis, V8 Coverage & CI Pipeline Suite',
@@ -416,7 +439,7 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.10.0';
+  return '1.11.0';
 }
 
 export function getBuildDate(): string {
