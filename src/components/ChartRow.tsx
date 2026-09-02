@@ -13,14 +13,13 @@ import {
   Layers,
   Grid,
   List,
-  Calendar as CalendarIcon,
   MessageSquare,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 
 export const ChartRow: React.FC = () => {
-  const { cycles, selectedCycleId, setSelectedObservation, setIsDrawerOpen, saveObservation } = useCycle();
-  const { t, language } = useLanguage();
+  const { cycles, selectedCycleId, setSelectedObservation, setIsDrawerOpen } = useCycle();
+  const { t } = useLanguage();
 
   // View preferences
   const [viewMode, setViewMode] = useState<'35-day' | 'compact'>('35-day');
@@ -88,14 +87,8 @@ export const ChartRow: React.FC = () => {
     }
   };
 
-  const filteredCycles = selectedCycleId === 'all'
-    ? cycles
-    : cycles.filter(c => c.id === selectedCycleId);
-
-  // Helper to format day of week (e.g. Mon, Tue / Lun, Mar)
-  const formatDayOfWeekHelper = (dateStr: string) => {
-    return formatDayOfWeek(dateStr, language === 'fr' ? 'fr-FR' : 'en-US');
-  };
+  const filteredCycles =
+    selectedCycleId === 'all' ? cycles : cycles.filter(c => c.id === selectedCycleId);
 
   // Helper to compute date for day offset from start date
   const getDateForDay = (startDateStr: string, dayNum: number) => {
@@ -105,7 +98,12 @@ export const ChartRow: React.FC = () => {
   if (cycles.length === 0) {
     // Empty state - render an authentic 35-day paper grid
     return (
-      <div className="chart-strip-view" id="chart-panel" role="tabpanel" aria-labelledby="tab-chart">
+      <div
+        className="chart-strip-view"
+        id="chart-panel"
+        role="tabpanel"
+        aria-labelledby="tab-chart"
+      >
         {/* Toolbar */}
         <div className="chart-strip-toolbar">
           <div className="toolbar-left">
@@ -131,15 +129,18 @@ export const ChartRow: React.FC = () => {
 
         <div className="chart-row-container paper-theme">
           <div className="chart-row-header flex-header">
-            <span className="cycle-title-badge">
-              {t.chartStrip.cycleBadge} 1 (Days 1 - 35)
-            </span>
+            <span className="cycle-title-badge">{t.chartStrip.cycleBadge} 1 (Days 1 - 35)</span>
             <span className="cycle-helper-hint">
               <Sparkles size={14} className="hint-icon" /> Click any cell to log your observation
             </span>
           </div>
 
-          <div className="chart-row-scroll" ref={el => { scrollRefs.current['empty'] = el; }}>
+          <div
+            className="chart-row-scroll"
+            ref={el => {
+              scrollRefs.current['empty'] = el;
+            }}
+          >
             <div className="chart-row-strip paper-grid-strip">
               {Array.from({ length: 35 }).map((_, idx) => {
                 const dayNum = idx + 1;
@@ -155,7 +156,11 @@ export const ChartRow: React.FC = () => {
                     aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}`}
                   >
                     <div className="cell-header">
-                      {isToday && <span className="cell-today-pill" title="Today">Today</span>}
+                      {isToday && (
+                        <span className="cell-today-pill" title="Today">
+                          Today
+                        </span>
+                      )}
                       <span className="cell-day-num">{dayNum}</span>
                       {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
                     </div>
@@ -243,17 +248,19 @@ export const ChartRow: React.FC = () => {
 
         // Determine total slots to display in 35-day view (minimum 35, or max cycleDay + buffer)
         const maxObsDay = Math.max(...cycle.observations.map(o => o.cycleDay), 0);
-        const totalGridSlots = viewMode === '35-day' ? Math.max(35, Math.ceil(maxObsDay / 7) * 7) : daysCount;
+        const totalGridSlots =
+          viewMode === '35-day' ? Math.max(35, Math.ceil(maxObsDay / 7) * 7) : daysCount;
 
         // Build list of slots to render
-        const slotsToRender = viewMode === '35-day'
-          ? Array.from({ length: totalGridSlots }, (_, i) => {
-            const dayNum = i + 1;
-            const obs = obsMap.get(dayNum);
-            const computedDate = obs?.date || getDateForDay(startDate, dayNum);
-            return { dayNum, obs, dateStr: computedDate };
-          })
-          : cycle.observations.map(obs => ({ dayNum: obs.cycleDay, obs, dateStr: obs.date }));
+        const slotsToRender =
+          viewMode === '35-day'
+            ? Array.from({ length: totalGridSlots }, (_, i) => {
+                const dayNum = i + 1;
+                const obs = obsMap.get(dayNum);
+                const computedDate = obs?.date || getDateForDay(startDate, dayNum);
+                return { dayNum, obs, dateStr: computedDate };
+              })
+            : cycle.observations.map(obs => ({ dayNum: obs.cycleDay, obs, dateStr: obs.date }));
 
         return (
           <div key={cycle.id} className="chart-row-container paper-theme">
@@ -325,14 +332,14 @@ export const ChartRow: React.FC = () => {
             </div>
 
             {/* Full-width Cycle Phase Timeline Strip */}
-            {showPhaseBar && (
-              <CyclePhaseTimeline cycle={cycle} totalSlots={totalGridSlots} viewMode={viewMode} t={t} />
-            )}
+            {showPhaseBar && <CyclePhaseTimeline cycle={cycle} totalSlots={totalGridSlots} t={t} />}
 
             {/* Paper Chart Scroll Strip */}
             <div
               className="chart-row-scroll"
-              ref={el => { scrollRefs.current[cycle.id] = el; }}
+              ref={el => {
+                scrollRefs.current[cycle.id] = el;
+              }}
             >
               <div className="chart-row-strip paper-grid-strip">
                 {slotsToRender.map(({ dayNum, obs, dateStr }) => {
@@ -356,7 +363,7 @@ export const ChartRow: React.FC = () => {
                         tabIndex={0}
                         role="button"
                         aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}${isToday ? ', Today' : ''}`}
-                        onKeyDown={(e) => {
+                        onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleCellClick(obs);
@@ -365,7 +372,11 @@ export const ChartRow: React.FC = () => {
                       >
                         {/* Day Header */}
                         <div className="cell-header">
-                          {isToday && <span className="cell-today-pill" title="Today">Today</span>}
+                          {isToday && (
+                            <span className="cell-today-pill" title="Today">
+                              Today
+                            </span>
+                          )}
                           <span className="cell-day-num">{obs.cycleDay}</span>
                           <span className="cell-day-name">{dayOfWeek}</span>
                           <span className="cell-date">{obs.date.slice(5)}</span>
@@ -373,7 +384,12 @@ export const ChartRow: React.FC = () => {
 
                         {/* Stamp Badge */}
                         <div className="cell-stamp-wrapper">
-                          <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
+                          <StampBadge
+                            stamp={obs.stamp}
+                            isPeakDay={obs.isPeakDay}
+                            intercourse={obs.intercourse}
+                            size="sm"
+                          />
                         </div>
 
                         {/* CrMS Code (Symptoms excluded, shown in tag below) */}
@@ -392,12 +408,18 @@ export const ChartRow: React.FC = () => {
                         {/* Symptoms & Notes Indicators */}
                         <div className="cell-footer-indicators">
                           {obs.symptoms && obs.symptoms.length > 0 && (
-                            <span className="cell-symptom-tag" title={`Symptoms: ${obs.symptoms.join(', ')}`}>
+                            <span
+                              className="cell-symptom-tag"
+                              title={`Symptoms: ${obs.symptoms.join(', ')}`}
+                            >
                               {obs.symptoms.join(',')}
                             </span>
                           )}
                           {obs.notes && obs.notes.trim() !== '' && (
-                            <span className="cell-notes-icon" title={`${t.chartStrip.notesTooltip}: ${obs.notes}`}>
+                            <span
+                              className="cell-notes-icon"
+                              title={`${t.chartStrip.notesTooltip}: ${obs.notes}`}
+                            >
                               <MessageSquare size={10} />
                             </span>
                           )}
@@ -413,7 +435,9 @@ export const ChartRow: React.FC = () => {
                             <div className="popover-body">
                               <div className="popover-row">
                                 <span className="popover-label">Code:</span>
-                                <span className="popover-val highlight">{obs.codeString || '---'}</span>
+                                <span className="popover-val highlight">
+                                  {obs.codeString || '---'}
+                                </span>
                               </div>
                               {obs.bleeding && (
                                 <div className="popover-row">
@@ -439,11 +463,7 @@ export const ChartRow: React.FC = () => {
                                   <span className="popover-val intercourse-text">Yes (I)</span>
                                 </div>
                               )}
-                              {obs.notes && (
-                                <div className="popover-notes">
-                                  "{obs.notes}"
-                                </div>
-                              )}
+                              {obs.notes && <div className="popover-notes">"{obs.notes}"</div>}
                             </div>
                             <div className="popover-footer">Click to edit</div>
                           </div>
@@ -461,7 +481,7 @@ export const ChartRow: React.FC = () => {
                         tabIndex={0}
                         role="button"
                         aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
-                        onKeyDown={(e) => {
+                        onKeyDown={e => {
                           if (e.key === 'Enter' || e.key === ' ') {
                             e.preventDefault();
                             handleCellClick(undefined, dateStr, dayNum);
@@ -469,7 +489,11 @@ export const ChartRow: React.FC = () => {
                         }}
                       >
                         <div className="cell-header">
-                          {isToday && <span className="cell-today-pill" title="Today">Today</span>}
+                          {isToday && (
+                            <span className="cell-today-pill" title="Today">
+                              Today
+                            </span>
+                          )}
                           <span className="cell-day-num">{dayNum}</span>
                           {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
                         </div>
@@ -506,7 +530,13 @@ const ChartStripLegend: React.FC<{ t: any }> = ({ t }) => {
         </div>
         <div className="legend-item">
           <span className="legend-badge stamp-white_baby">
-            <svg className="baby-svg" viewBox="0 0 24 24" fill="currentColor" width="12" height="12">
+            <svg
+              className="baby-svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              width="12"
+              height="12"
+            >
               <path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11c0 2.2-1.8 4-4 4s-4-1.8-4-4V9.5C4.8 8.8 4 7.5 4 6a4 4 0 0 1 4-4h4zm0 2a2 2 0 0 0-2 2v1h4V6a2 2 0 0 0-2-2zM8 17h8a1 1 0 0 1 1 1v1a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3v-1a1 1 0 0 1 1-1z" />
             </svg>
           </span>
@@ -514,7 +544,13 @@ const ChartStripLegend: React.FC<{ t: any }> = ({ t }) => {
         </div>
         <div className="legend-item">
           <span className="legend-badge stamp-light_green_baby_1">
-            <svg className="baby-svg" viewBox="0 0 24 24" fill="currentColor" width="10" height="10">
+            <svg
+              className="baby-svg"
+              viewBox="0 0 24 24"
+              fill="currentColor"
+              width="10"
+              height="10"
+            >
               <path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11c0 2.2-1.8 4-4 4s-4-1.8-4-4V9.5C4.8 8.8 4 7.5 4 6a4 4 0 0 1 4-4h4zm0 2a2 2 0 0 0-2 2v1h4V6a2 2 0 0 0-2-2zM8 17h8a1 1 0 0 1 1 1v1a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3v-1a1 1 0 0 1 1-1z" />
             </svg>
             <span className="num">1,2,3</span>
@@ -535,12 +571,11 @@ const ChartStripLegend: React.FC<{ t: any }> = ({ t }) => {
 };
 
 /* Phase Timeline Sub-component */
-const CyclePhaseTimeline: React.FC<{ cycle: any; totalSlots: number; viewMode: string; t: any }> = ({
-  cycle,
-  totalSlots,
-  viewMode,
-  t,
-}) => {
+const CyclePhaseTimeline: React.FC<{
+  cycle: any;
+  totalSlots: number;
+  t: any;
+}> = ({ cycle, totalSlots, t }) => {
   const obsList: Observation[] = cycle.observations;
 
   return (
@@ -589,4 +624,3 @@ const CyclePhaseTimeline: React.FC<{ cycle: any; totalSlots: number; viewMode: s
     </div>
   );
 };
-

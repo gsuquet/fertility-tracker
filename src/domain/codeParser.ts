@@ -4,7 +4,7 @@ import {
   MucusModifier,
   FrequencyCode,
   SymptomCode,
-  Observation
+  Observation,
 } from '../types/crms';
 
 export interface ParsedCodeResult {
@@ -75,7 +75,18 @@ export function parseCodeString(input: string): ParsedCodeResult {
   let intercourse = false;
 
   const validBleeding: BleedingCode[] = ['H', 'M', 'L', 'VL'];
-  const validStretches: MucusStretch[] = ['10WL', '10SL', '10DL', '2W', '10', '8', '6', '4', '2', '0'];
+  const validStretches: MucusStretch[] = [
+    '10WL',
+    '10SL',
+    '10DL',
+    '2W',
+    '10',
+    '8',
+    '6',
+    '4',
+    '2',
+    '0',
+  ];
   const validModifiers: MucusModifier[] = ['C/K', 'B', 'C', 'G', 'K', 'L', 'P', 'Y'];
   const validFreqs: FrequencyCode[] = ['X1', 'X2', 'X3', 'AD'];
   const validSymptoms: SymptomCode[] = ['RAP', 'LAP', 'AP'];
@@ -113,7 +124,7 @@ export function parseCodeString(input: string): ParsedCodeResult {
     }
 
     // Check stretch prefix
-    let matchedStretch = validStretches.find(s => remaining.startsWith(s));
+    const matchedStretch = validStretches.find(s => remaining.startsWith(s));
 
     if (matchedStretch) {
       stretch = matchedStretch;
@@ -146,7 +157,7 @@ export function parseCodeString(input: string): ParsedCodeResult {
     modifiers,
     frequency,
     symptoms,
-    intercourse
+    intercourse,
   });
 
   return {
@@ -156,6 +167,6 @@ export function parseCodeString(input: string): ParsedCodeResult {
     frequency,
     symptoms,
     intercourse,
-    formattedCode
+    formattedCode,
   };
 }

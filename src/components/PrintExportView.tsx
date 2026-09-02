@@ -14,16 +14,22 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
   const { cycles } = useCycle();
   const { t } = useLanguage();
 
-  const displayCycles = cycles.length > 0 ? cycles : [{
-    id: 'cycle_empty',
-    startDate: new Date().toISOString().slice(0, 10),
-    observations: [],
-  }];
+  const displayCycles =
+    cycles.length > 0
+      ? cycles
+      : [
+          {
+            id: 'cycle_empty',
+            startDate: new Date().toISOString().slice(0, 10),
+            observations: [],
+          },
+        ];
 
   // Filter cycles matching selectedCycleIds
-  const filtered = (selectedCycleIds.includes('all') || selectedCycleIds.length === 0)
-    ? displayCycles
-    : displayCycles.filter(c => selectedCycleIds.includes(c.id));
+  const filtered =
+    selectedCycleIds.includes('all') || selectedCycleIds.length === 0
+      ? displayCycles
+      : displayCycles.filter(c => selectedCycleIds.includes(c.id));
 
   const finalCycles = filtered;
 
@@ -72,7 +78,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
           });
 
           // Split slots into 35-column row chunks
-          const rowChunks: typeof slots[] = [];
+          const rowChunks: (typeof slots)[] = [];
           for (let i = 0; i < slots.length; i += 35) {
             rowChunks.push(slots.slice(i, i + 35));
           }
@@ -82,9 +88,15 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
               {/* Cycle Card Header */}
               <div className="print-cycle-header">
                 <div className="print-cycle-info">
-                  <span className="print-cycle-badge">{t.chartStrip.cycleBadge} {cycleNum}</span>
-                  <span className="print-cycle-dates">{startDate} → {endDate}</span>
-                  <span className="print-cycle-length">({daysCount} {t.stats.days})</span>
+                  <span className="print-cycle-badge">
+                    {t.chartStrip.cycleBadge} {cycleNum}
+                  </span>
+                  <span className="print-cycle-dates">
+                    {startDate} → {endDate}
+                  </span>
+                  <span className="print-cycle-length">
+                    ({daysCount} {t.stats.days})
+                  </span>
                 </div>
                 {peakDayNum && (
                   <span className="print-peak-badge">
@@ -107,7 +119,12 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                             className={`print-cell filled-cell ${isPeak ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()}`}
                           >
                             <div className="print-stamp-wrapper">
-                              <StampBadge stamp={obs.stamp} isPeakDay={obs.isPeakDay} intercourse={obs.intercourse} size="sm" />
+                              <StampBadge
+                                stamp={obs.stamp}
+                                isPeakDay={obs.isPeakDay}
+                                intercourse={obs.intercourse}
+                                size="sm"
+                              />
                             </div>
 
                             <div className="print-date">{obs.date.slice(5)}</div>
@@ -120,17 +137,11 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                               const cleanCode = (obs.codeString || '')
                                 .replace(/\b(AP|RAP|LAP)\b/g, '')
                                 .replace(/\s+/g, '');
-                              return (
-                                <div className="print-code">
-                                  {cleanCode || '---'}
-                                </div>
-                              );
+                              return <div className="print-code">{cleanCode || '---'}</div>;
                             })()}
 
                             {obs.symptoms && obs.symptoms.length > 0 && (
-                              <div className="print-symptoms">
-                                {obs.symptoms.join(',')}
-                              </div>
+                              <div className="print-symptoms">{obs.symptoms.join(',')}</div>
                             )}
 
                             <div className="print-notes" title={obs.notes || ''}>
@@ -174,7 +185,13 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-white_baby">
-              <svg className="baby-svg" viewBox="0 0 24 24" fill="currentColor" width="10" height="10">
+              <svg
+                className="baby-svg"
+                viewBox="0 0 24 24"
+                fill="currentColor"
+                width="10"
+                height="10"
+              >
                 <path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11c0 2.2-1.8 4-4 4s-4-1.8-4-4V9.5C4.8 8.8 4 7.5 4 6a4 4 0 0 1 4-4h4zm0 2a2 2 0 0 0-2 2v1h4V6a2 2 0 0 0-2-2zM8 17h8a1 1 0 0 1 1 1v1a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3v-1a1 1 0 0 1 1-1z" />
               </svg>
             </span>

@@ -83,7 +83,9 @@
   .calendar-day.is-today {
     border: 2px solid var(--accent-primary) !important;
     background-color: var(--accent-soft, rgba(99, 102, 241, 0.08));
-    box-shadow: 0 0 0 2px rgba(99, 102, 241, 0.2), var(--shadow-sm);
+    box-shadow:
+      0 0 0 2px rgba(99, 102, 241, 0.2),
+      var(--shadow-sm);
     position: relative;
     z-index: 2;
   }

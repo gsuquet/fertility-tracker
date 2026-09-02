@@ -1,7 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { BleedingCode, MucusStretch, MucusModifier, FrequencyCode, SymptomCode } from '../types/crms';
+import {
+  BleedingCode,
+  MucusStretch,
+  MucusModifier,
+  FrequencyCode,
+  SymptomCode,
+} from '../types/crms';
 import { parseCodeString, formatCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
 import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
@@ -11,7 +17,15 @@ import { X, Save, Trash2, Heart, Flag, Calendar } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
 
 export const ObservationDrawer: React.FC = () => {
-  const { observations, selectedObservation, setSelectedObservation, isDrawerOpen, setIsDrawerOpen, saveObservation, deleteObservation } = useCycle();
+  const {
+    observations,
+    selectedObservation,
+    setSelectedObservation,
+    isDrawerOpen,
+    setIsDrawerOpen,
+    saveObservation,
+    deleteObservation,
+  } = useCycle();
   const { t } = useLanguage();
 
   const [date, setDate] = useState(() => getTodayStr());
@@ -73,7 +87,14 @@ export const ObservationDrawer: React.FC = () => {
   if (!isDrawerOpen) return null;
 
   const calculatedStamp = calculateStamp(bleeding, stretch, modifiers);
-  const currentCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse });
+  const currentCode = formatCodeString({
+    bleeding,
+    stretch,
+    modifiers,
+    frequency,
+    symptoms,
+    intercourse,
+  });
 
   const handleDirectTextChange = (text: string) => {
     setDirectInputText(text);
@@ -89,7 +110,14 @@ export const ObservationDrawer: React.FC = () => {
   const toggleModifier = (mod: MucusModifier) => {
     setModifiers(prev => {
       const next = prev.includes(mod) ? prev.filter(m => m !== mod) : [...prev, mod];
-      const updatedCode = formatCodeString({ bleeding, stretch, modifiers: next, frequency, symptoms, intercourse });
+      const updatedCode = formatCodeString({
+        bleeding,
+        stretch,
+        modifiers: next,
+        frequency,
+        symptoms,
+        intercourse,
+      });
       setDirectInputText(updatedCode);
       return next;
     });
@@ -98,7 +126,14 @@ export const ObservationDrawer: React.FC = () => {
   const toggleSymptom = (sym: SymptomCode) => {
     setSymptoms(prev => {
       const next = prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym];
-      const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms: next, intercourse });
+      const updatedCode = formatCodeString({
+        bleeding,
+        stretch,
+        modifiers,
+        frequency,
+        symptoms: next,
+        intercourse,
+      });
       setDirectInputText(updatedCode);
       return next;
     });
@@ -106,26 +141,54 @@ export const ObservationDrawer: React.FC = () => {
 
   const handleBleedingSelect = (b?: BleedingCode) => {
     setBleeding(b);
-    const updatedCode = formatCodeString({ bleeding: b, stretch, modifiers, frequency, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding: b,
+      stretch,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleStretchSelect = (s?: MucusStretch) => {
     setStretch(s);
-    const updatedCode = formatCodeString({ bleeding, stretch: s, modifiers, frequency, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch: s,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleFrequencySelect = (f?: FrequencyCode) => {
     setFrequency(f);
-    const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency: f, symptoms, intercourse });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch,
+      modifiers,
+      frequency: f,
+      symptoms,
+      intercourse,
+    });
     setDirectInputText(updatedCode);
   };
 
   const handleIntercourseToggle = () => {
     const next = !intercourse;
     setIntercourse(next);
-    const updatedCode = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse: next });
+    const updatedCode = formatCodeString({
+      bleeding,
+      stretch,
+      modifiers,
+      frequency,
+      symptoms,
+      intercourse: next,
+    });
     setDirectInputText(updatedCode);
   };
 
@@ -184,11 +247,23 @@ export const ObservationDrawer: React.FC = () => {
   };
 
   return (
-    <div className="drawer-overlay" onClick={() => setIsDrawerOpen(false)} role="dialog" aria-modal="true" aria-labelledby="drawer-title">
+    <div
+      className="drawer-overlay"
+      onClick={() => setIsDrawerOpen(false)}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="drawer-title"
+    >
       <div className="drawer-container" ref={drawerRef} onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
-          <h2 id="drawer-title">{selectedObservation?.id ? 'Edit Observation' : t.actions.newEntry}</h2>
-          <button className="icon-button" onClick={() => setIsDrawerOpen(false)} aria-label="Close entry panel">
+          <h2 id="drawer-title">
+            {selectedObservation?.id ? 'Edit Observation' : t.actions.newEntry}
+          </h2>
+          <button
+            className="icon-button"
+            onClick={() => setIsDrawerOpen(false)}
+            aria-label="Close entry panel"
+          >
             <X size={20} />
           </button>
         </div>
@@ -197,7 +272,12 @@ export const ObservationDrawer: React.FC = () => {
           {/* Live Stamp & Code Preview */}
           <div className="preview-card" aria-live="polite">
             <div className="preview-stamp">
-              <StampBadge stamp={calculatedStamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+              <StampBadge
+                stamp={calculatedStamp}
+                isPeakDay={isManualPeak}
+                intercourse={intercourse}
+                size="lg"
+              />
             </div>
             <div className="preview-details">
               <span className="preview-label">{t.labels.stampPreview}</span>
@@ -289,7 +369,9 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.stretch}</label>
             <div className="button-grid" role="group" aria-label={t.labels.stretch}>
-              {(['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]).map(code => (
+              {(
+                ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]
+              ).map(code => (
                 <button
                   type="button"
                   key={code}
@@ -385,13 +467,24 @@ export const ObservationDrawer: React.FC = () => {
           {/* Footer Actions */}
           <div className="drawer-footer">
             {selectedObservation?.id ? (
-              <button type="button" className="btn btn-danger" onClick={handleDelete} aria-label={t.actions.delete}>
+              <button
+                type="button"
+                className="btn btn-danger"
+                onClick={handleDelete}
+                aria-label={t.actions.delete}
+              >
                 <Trash2 size={16} />
                 <span>{t.actions.delete}</span>
               </button>
-            ) : <div />}
+            ) : (
+              <div />
+            )}
             <div className="drawer-footer-right">
-              <button type="button" className="btn btn-secondary" onClick={() => setIsDrawerOpen(false)}>
+              <button
+                type="button"
+                className="btn btn-secondary"
+                onClick={() => setIsDrawerOpen(false)}
+              >
                 {t.actions.cancel}
               </button>
               <button type="submit" className="btn btn-primary">

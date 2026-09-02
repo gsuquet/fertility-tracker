@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.9.2  
+**Document Version:** 1.10.0  
 **Status:** Approved  
-**Last Updated:** September 1, 2026  
+**Last Updated:** September 2, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -83,15 +83,16 @@ graph TD
 
 ### Technology Stack Details
 
-| Layer | Technology | Specification / Version |
-| :--- | :--- | :--- |
-| **UI Library** | React | `v19.2.8` |
-| **Language** | TypeScript | `v7.0.2` (Strict mode, ES2022 target) |
-| **Build Tool** | Vite | `v8.1.5` |
-| **Icons** | Lucide React | `v1.27.0` |
-| **Styling** | Custom Vanilla CSS | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox |
-| **Testing** | Vitest & React Testing Library | `vitest v4.1.10`, `@testing-library/react v16.3.2`, `jsdom v30.0.0` |
-| **Deployment** | Cloudflare Pages | `@cloudflare/wrangler v4.115.0` |
+| Layer                  | Technology                                 | Specification / Version                                                                    |
+| :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------- |
+| **UI Library**         | React                                      | `v19.2.8`                                                                                  |
+| **Language**           | TypeScript                                 | `v7.0.2` (Strict mode, ES2022 target, strict unused checking)                              |
+| **Build Tool**         | Vite                                       | `v8.1.5`                                                                                   |
+| **Linter & Formatter** | Biome & Prettier                           | `@biomejs/biome v2.5.11`, `prettier v3.9.6`                                                |
+| **Icons**              | Lucide React                               | `v1.27.0`                                                                                  |
+| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                     |
+| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v4.1.11`, `@vitest/coverage-v8`, `@testing-library/react v16.3.2`, `jsdom v30.0.0` |
+| **Deployment**         | Cloudflare Pages                           | `@cloudflare/wrangler v4.115.0`                                                            |
 
 ---
 
@@ -160,8 +161,8 @@ The parser operates in two directions:
 
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
    `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
-   *Note:* Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
-   *Example:* `10KLX3 I` or `H` or `2WX2` or `0AD`.
+   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
+   _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
 2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
@@ -208,7 +209,7 @@ flowchart TD
   - If `isCycleStart === true` on an observation, it explicitly starts a new cycle boundary regardless of bleeding code.
   - If `isCycleStart === false` on an observation, it is explicitly excluded from starting a new cycle (e.g. breakthrough bleeding or intermenstrual spotting).
   - If `isCycleStart` is `undefined`, a new cycle boundary is triggered when menses bleeding (`H`, `M`, `L`, `VL`) occurs after non-bleeding or dry days.
-- When logging or saving the first bleeding day (`H`, `M`, `L`, `VL`, `B`) of a series (preceded by a non-bleeding day), the system prompts the user: *"Is this bleeding day the start of a new cycle?"*.
+- When logging or saving the first bleeding day (`H`, `M`, `L`, `VL`, `B`) of a series (preceded by a non-bleeding day), the system prompts the user: _"Is this bleeding day the start of a new cycle?"_.
 - Output cycles are returned ordered newest-to-oldest, with recalculated relative `cycleDay` indices (Day 1, 2, 3...) calculated relative to each cycle's start date.
 
 ---
@@ -239,35 +240,35 @@ export type FrequencyCode = 'X1' | 'X2' | 'X3' | 'AD';
 
 export type SymptomCode = 'AP' | 'RAP' | 'LAP';
 
-export type StampType = 
-  | 'RED'                  // Bleeding menses
-  | 'DARK_GREEN'           // Infertile dry day
-  | 'WHITE_BABY'           // Fertile mucus day
-  | 'LIGHT_GREEN_BABY_1'   // Post-peak day 1
-  | 'LIGHT_GREEN_BABY_2'   // Post-peak day 2
-  | 'LIGHT_GREEN_BABY_3';  // Post-peak day 3
+export type StampType =
+  | 'RED' // Bleeding menses
+  | 'DARK_GREEN' // Infertile dry day
+  | 'WHITE_BABY' // Fertile mucus day
+  | 'LIGHT_GREEN_BABY_1' // Post-peak day 1
+  | 'LIGHT_GREEN_BABY_2' // Post-peak day 2
+  | 'LIGHT_GREEN_BABY_3'; // Post-peak day 3
 
 export interface Observation {
   id: string;
-  date: string;              // YYYY-MM-DD
-  cycleDay: number;          // 1, 2, 3...
+  date: string; // YYYY-MM-DD
+  cycleDay: number; // 1, 2, 3...
   bleeding?: BleedingCode;
   stretch?: MucusStretch;
   modifiers?: MucusModifier[];
   frequency?: FrequencyCode;
   symptoms?: SymptomCode[];
-  intercourse?: boolean;     // 'I' marker
+  intercourse?: boolean; // 'I' marker
   notes?: string;
-  isManualPeak?: boolean;    // Manual Peak override flag
-  isCycleStart?: boolean;    // Explicitly designated cycle start boundary
+  isManualPeak?: boolean; // Manual Peak override flag
+  isCycleStart?: boolean; // Explicitly designated cycle start boundary
   stamp: StampType;
-  codeString: string;        // Formatted code string e.g. "10KLX3 I"
-  isPeakDay?: boolean;       // Designated Peak Day ('P')
+  codeString: string; // Formatted code string e.g. "10KLX3 I"
+  isPeakDay?: boolean; // Designated Peak Day ('P')
 }
 
 export interface Cycle {
   id: string;
-  startDate: string;         // YYYY-MM-DD
+  startDate: string; // YYYY-MM-DD
   observations: Observation[];
   manualPeakDate?: string;
   notes?: string;
@@ -474,12 +475,28 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ## 8. Testing & Quality Assurance
 
-The codebase maintains automated tests for domain algorithms and UI components using **Vitest** and **React Testing Library**.
+The codebase maintains automated tests for domain algorithms and UI components using **Vitest**, **React Testing Library**, and **V8 Coverage Engine**, with static analysis governed by **Biome** and **Prettier**.
 
-### Test Suite Execution
+### Quality & Test Suite Execution
 
 ```bash
+# Execute full unit test suite
 npm run test
+
+# Execute test suite with V8 code coverage report
+npm run test:coverage
+
+# Static code linting with Biome
+npm run lint
+
+# Code formatting check with Prettier
+npm run format:check
+
+# Auto-format codebase
+npm run format
+
+# TypeScript strict type check
+npx tsc --noEmit
 ```
 
 ### Key Test Coverage Areas
@@ -512,7 +529,11 @@ npm run test
   npm run deploy # executes npm run build && wrangler pages deploy dist
   ```
 
-- **CI/CD:** Automated GitHub Actions workflows building and validating Pull Requests and deploying main branch builds to Cloudflare Pages.
+- **CI/CD Quality Gates:** Automated GitHub Actions workflows building and validating Pull Requests across four strict gates:
+  1. **Linting Check:** `npm run lint` (Biome Linter)
+  2. **Format Verification:** `npm run format:check` (Prettier)
+  3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
+  4. **TypeScript Strict Type Check:** `npx tsc --noEmit`
 
 ---
 

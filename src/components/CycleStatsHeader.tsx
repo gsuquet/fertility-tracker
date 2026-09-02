@@ -67,8 +67,12 @@ export const CycleStatsHeader: React.FC = () => {
           <Calendar size={20} />
         </div>
         <div className="stat-content">
-          <span className="stat-label" title={t.stats.cycleLength}>{t.stats.cycleLength}</span>
-          <span className="stat-value" title={cycleLengthText}>{cycleLengthText}</span>
+          <span className="stat-label" title={t.stats.cycleLength}>
+            {t.stats.cycleLength}
+          </span>
+          <span className="stat-value" title={cycleLengthText}>
+            {cycleLengthText}
+          </span>
         </div>
       </div>
 
@@ -77,8 +81,12 @@ export const CycleStatsHeader: React.FC = () => {
           <Flame size={20} />
         </div>
         <div className="stat-content">
-          <span className="stat-label" title={t.stats.peakDay}>{t.stats.peakDay}</span>
-          <span className="stat-value" title={peakDayText}>{peakDayText}</span>
+          <span className="stat-label" title={t.stats.peakDay}>
+            {t.stats.peakDay}
+          </span>
+          <span className="stat-value" title={peakDayText}>
+            {peakDayText}
+          </span>
         </div>
       </div>
 
@@ -87,8 +95,12 @@ export const CycleStatsHeader: React.FC = () => {
           <Activity size={20} />
         </div>
         <div className="stat-content">
-          <span className="stat-label" title={t.stats.lutealPhase}>{t.stats.lutealPhase}</span>
-          <span className="stat-value" title={lutealPhaseText}>{lutealPhaseText}</span>
+          <span className="stat-label" title={t.stats.lutealPhase}>
+            {t.stats.lutealPhase}
+          </span>
+          <span className="stat-value" title={lutealPhaseText}>
+            {lutealPhaseText}
+          </span>
         </div>
       </div>
 
@@ -97,8 +109,12 @@ export const CycleStatsHeader: React.FC = () => {
           <Heart size={20} />
         </div>
         <div className="stat-content">
-          <span className="stat-label" title={t.stats.intercourseCount}>{t.stats.intercourseCount}</span>
-          <span className="stat-value" title={String(intercourseCount)}>{intercourseCount}</span>
+          <span className="stat-label" title={t.stats.intercourseCount}>
+            {t.stats.intercourseCount}
+          </span>
+          <span className="stat-value" title={String(intercourseCount)}>
+            {intercourseCount}
+          </span>
         </div>
       </div>
     </div>

@@ -7,11 +7,17 @@ import { BleedingCode, MucusStretch, MucusModifier, StampType } from '../types/c
  */
 export function isPeakTypeMucus(stretch?: MucusStretch, modifiers: MucusModifier[] = []): boolean {
   if (!stretch && modifiers.length === 0) return false;
-  
-  const isStretchy = stretch === '6' || stretch === '8' || stretch === '10' || 
-                     stretch === '10DL' || stretch === '10SL' || stretch === '10WL';
-  const isClearOrLubricative = modifiers.includes('K') || modifiers.includes('L') || modifiers.includes('C/K');
-  
+
+  const isStretchy =
+    stretch === '6' ||
+    stretch === '8' ||
+    stretch === '10' ||
+    stretch === '10DL' ||
+    stretch === '10SL' ||
+    stretch === '10WL';
+  const isClearOrLubricative =
+    modifiers.includes('K') || modifiers.includes('L') || modifiers.includes('C/K');
+
   return isStretchy || isClearOrLubricative;
 }
 

@@ -27,12 +27,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenWelcome }) 
             <Info size={16} className="disclaimer-icon" aria-hidden="true" />
             <span className="disclaimer-title">Medical Disclaimer</span>
           </div>
-          <p className="disclaimer-text">
-            {t.disclaimer.medical}
-          </p>
+          <p className="disclaimer-text">{t.disclaimer.medical}</p>
         </div>
         <div className="footer-copyright">
-          <span className="footer-copyright-text">&copy; {new Date().getFullYear()} Fertility Tracker &bull; Open Source Software</span>
+          <span className="footer-copyright-text">
+            &copy; {new Date().getFullYear()} Fertility Tracker &bull; Open Source Software
+          </span>
           <div className="footer-links">
             {onOpenWelcome && (
               <button

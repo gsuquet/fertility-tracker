@@ -197,7 +197,9 @@
     padding: 1rem 1.15rem;
     box-shadow: var(--shadow-sm);
     position: relative;
-    transition: box-shadow 0.2s ease, border-color 0.2s ease;
+    transition:
+      box-shadow 0.2s ease,
+      border-color 0.2s ease;
   }
 
   .chart-row-container.paper-theme:hover {
@@ -449,14 +451,19 @@
     scroll-snap-align: start;
     touch-action: manipulation;
     position: relative;
-    transition: transform 0.18s cubic-bezier(0.16, 1, 0.3, 1), border-color 0.18s ease, box-shadow 0.18s ease;
+    transition:
+      transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
+      border-color 0.18s ease,
+      box-shadow 0.18s ease;
     user-select: none;
   }
 
   .chart-cell.paper-cell:hover {
     transform: translateY(-4px);
     border-color: var(--accent-primary);
-    box-shadow: var(--shadow-md), 0 0 0 1px var(--accent-primary);
+    box-shadow:
+      var(--shadow-md),
+      0 0 0 1px var(--accent-primary);
     z-index: 10;
   }
 
@@ -471,13 +478,17 @@
 
   .chart-cell.peak-cell {
     border-color: #f59e0b !important;
-    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.4), var(--shadow-sm);
+    box-shadow:
+      0 0 0 2px rgba(245, 158, 11, 0.4),
+      var(--shadow-sm);
   }
 
   .chart-cell.paper-cell.is-today {
     border: 2px solid var(--accent-primary) !important;
     background-color: var(--accent-soft, rgba(99, 102, 241, 0.06));
-    box-shadow: 0 0 10px rgba(99, 102, 241, 0.3), var(--shadow-sm);
+    box-shadow:
+      0 0 10px rgba(99, 102, 241, 0.3),
+      var(--shadow-sm);
     z-index: 5;
   }
 

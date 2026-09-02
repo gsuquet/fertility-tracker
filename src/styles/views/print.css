@@ -19,7 +19,8 @@
     body {
       background: #ffffff !important;
       color: #000000 !important;
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif !important;
+      font-family:
+        -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif !important;
       -webkit-print-color-adjust: exact !important;
       print-color-adjust: exact !important;
     }
@@ -300,14 +301,31 @@
       justify-content: center;
       font-size: 6pt;
       font-weight: bold;
-      border: 1px solid rgba(0,0,0,0.15);
+      border: 1px solid rgba(0, 0, 0, 0.15);
     }
 
-    .print-badge-sample.stamp-red { background-color: #ef4444; }
-    .print-badge-sample.stamp-dark_green { background-color: #15803d; }
-    .print-badge-sample.stamp-white_baby { background-color: #ffffff; color: #0284c7; border: 1px solid #0284c7; }
-    .print-badge-sample.stamp-light_green_baby_1 { background-color: #86efac; color: #166534; }
-    .print-badge-sample.peak-legend { background-color: #f59e0b; color: #ffffff; }
-    .print-badge-sample.intercourse-legend { background-color: #6366f1; color: #ffffff; }
+    .print-badge-sample.stamp-red {
+      background-color: #ef4444;
+    }
+    .print-badge-sample.stamp-dark_green {
+      background-color: #15803d;
+    }
+    .print-badge-sample.stamp-white_baby {
+      background-color: #ffffff;
+      color: #0284c7;
+      border: 1px solid #0284c7;
+    }
+    .print-badge-sample.stamp-light_green_baby_1 {
+      background-color: #86efac;
+      color: #166534;
+    }
+    .print-badge-sample.peak-legend {
+      background-color: #f59e0b;
+      color: #ffffff;
+    }
+    .print-badge-sample.intercourse-legend {
+      background-color: #6366f1;
+      color: #ffffff;
+    }
   }
 }

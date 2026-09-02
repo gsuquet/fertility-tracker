@@ -89,10 +89,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
       aria-modal="true"
       aria-labelledby="welcome-modal-title"
     >
-      <div
-        className="modal-container welcome-modal-container"
-        onClick={(e) => e.stopPropagation()}
-      >
+      <div className="modal-container welcome-modal-container" onClick={e => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="modal-header welcome-modal-header">
           <div className="welcome-header-left">
@@ -100,7 +97,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
               <BookOpen size={22} className="welcome-book-icon" />
             </div>
             <div>
-              <h2 id="welcome-modal-title" className="welcome-title">{welcomeT.title}</h2>
+              <h2 id="welcome-modal-title" className="welcome-title">
+                {welcomeT.title}
+              </h2>
               <span className="welcome-subtitle">{welcomeT.subtitle}</span>
             </div>
           </div>
@@ -118,7 +117,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
         {/* Stepper Header / Progress */}
         <div className="welcome-stepper-bar">
           <div className="stepper-dots" role="tablist" aria-label="Onboarding Steps">
-            {[1, 2, 3, 4].map((step) => (
+            {[1, 2, 3, 4].map(step => (
               <button
                 key={step}
                 type="button"
@@ -133,7 +132,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
             ))}
           </div>
           <span className="step-count-badge">
-            {welcomeT.stepCount.replace('{current}', String(currentStep)).replace('{total}', String(totalSteps))}
+            {welcomeT.stepCount
+              .replace('{current}', String(currentStep))
+              .replace('{total}', String(totalSteps))}
           </span>
         </div>
 
@@ -345,32 +346,20 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
 
         {/* Modal Footer Controls */}
         <div className="modal-footer welcome-modal-footer">
-          <button
-            type="button"
-            className="btn btn-ghost skip-btn"
-            onClick={handleDismiss}
-          >
+          <button type="button" className="btn btn-ghost skip-btn" onClick={handleDismiss}>
             {welcomeT.skip}
           </button>
 
           <div className="footer-nav-buttons">
             {currentStep > 1 && (
-              <button
-                type="button"
-                className="btn btn-secondary prev-btn"
-                onClick={handlePrev}
-              >
+              <button type="button" className="btn btn-secondary prev-btn" onClick={handlePrev}>
                 <ChevronLeft size={18} />
                 <span>{welcomeT.previous}</span>
               </button>
             )}
 
             {currentStep < totalSteps ? (
-              <button
-                type="button"
-                className="btn btn-primary next-btn"
-                onClick={handleNext}
-              >
+              <button type="button" className="btn btn-primary next-btn" onClick={handleNext}>
                 <span>{welcomeT.next}</span>
                 <ChevronRight size={18} />
               </button>

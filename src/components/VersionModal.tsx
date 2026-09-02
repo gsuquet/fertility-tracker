@@ -24,7 +24,11 @@ const GithubIcon: React.FC<{ size?: number; className?: string }> = ({ size = 18
     aria-hidden="true"
     className={className}
   >
-    <path fillRule="evenodd" clipRule="evenodd" d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z" />
+    <path
+      fillRule="evenodd"
+      clipRule="evenodd"
+      d="M12 2C6.477 2 2 6.484 2 12.017c0 4.425 2.865 8.18 6.839 9.504.5.092.682-.217.682-.483 0-.237-.008-.868-.013-1.703-2.782.605-3.369-1.343-3.369-1.343-.454-1.158-1.11-1.466-1.11-1.466-.908-.62.069-.608.069-.608 1.003.07 1.53 1.032 1.53 1.032.892 1.53 2.341 1.088 2.91.832.092-.647.35-1.088.636-1.338-2.22-.253-4.555-1.113-4.555-4.951 0-1.093.39-1.988 1.029-2.688-.103-.253-.446-1.272.098-2.65 0 0 .84-.27 2.75 1.026A9.564 9.564 0 0112 6.844c.85.004 1.705.115 2.504.337 1.909-1.296 2.747-1.027 2.747-1.027.546 1.379.202 2.398.1 2.651.64.7 1.028 1.595 1.028 2.688 0 3.848-2.339 4.695-4.566 4.943.359.309.678.92.678 1.855 0 1.338-.012 2.419-.012 2.747 0 .268.18.58.688.482A10.019 10.019 0 0022 12.017C22 6.484 17.522 2 12 2z"
+    />
   </svg>
 );
 import {
@@ -42,7 +46,9 @@ interface VersionModalProps {
 export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'notes' | 'system'>('notes');
-  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({ '1.1.0': true });
+  const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
+    '1.1.0': true,
+  });
 
   useEffect(() => {
     if (!isOpen) return;
@@ -65,25 +71,37 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
   const latestRelease = history[0];
 
   const toggleVersionExpand = (version: string) => {
-    setExpandedVersions((prev) => ({
+    setExpandedVersions(prev => ({
       ...prev,
       [version]: !prev[version],
     }));
   };
 
-  const getReleaseTitle = (rel: VersionRelease) => (language === 'fr' && rel.titleFr ? rel.titleFr : rel.title);
-  const getReleaseTagline = (rel: VersionRelease) => (language === 'fr' && rel.taglineFr ? rel.taglineFr : rel.tagline);
-  const getReleaseHighlights = (rel: VersionRelease) => (language === 'fr' && rel.highlightsFr ? rel.highlightsFr : rel.highlights);
+  const getReleaseTitle = (rel: VersionRelease) =>
+    language === 'fr' && rel.titleFr ? rel.titleFr : rel.title;
+  const getReleaseTagline = (rel: VersionRelease) =>
+    language === 'fr' && rel.taglineFr ? rel.taglineFr : rel.tagline;
+  const getReleaseHighlights = (rel: VersionRelease) =>
+    language === 'fr' && rel.highlightsFr ? rel.highlightsFr : rel.highlights;
 
-  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(language === 'fr' ? 'fr-FR' : 'en-US', {
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric',
-  });
+  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(
+    language === 'fr' ? 'fr-FR' : 'en-US',
+    {
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+    }
+  );
 
   return (
-    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="version-modal-title">
-      <div className="modal-container version-modal-container" onClick={(e) => e.stopPropagation()}>
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="version-modal-title"
+    >
+      <div className="modal-container version-modal-container" onClick={e => e.stopPropagation()}>
         {/* Modal Header */}
         <div className="modal-header version-modal-header">
           <div className="version-header-left">
@@ -91,11 +109,12 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
               <Sparkles size={20} className="version-sparkle-icon" />
             </div>
             <div>
-              <h2 id="version-modal-title" className="version-title">{t.versionTracker.title}</h2>
+              <h2 id="version-modal-title" className="version-title">
+                {t.versionTracker.title}
+              </h2>
               <div className="version-subtitle-pills">
                 <span className="version-pill primary-pill">
-                  <Tag size={12} />
-                  v{versionInfo.version}
+                  <Tag size={12} />v{versionInfo.version}
                 </span>
                 <span className="version-pill secondary-pill">
                   <Layers size={12} />
@@ -181,14 +200,17 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
                 <div className="release-history-section">
                   <h4 className="section-title">{t.versionTracker.releaseHistory}</h4>
                   <div className="history-list">
-                    {history.slice(1).map((rel) => {
+                    {history.slice(1).map(rel => {
                       const isExpanded = !!expandedVersions[rel.version];
                       const relTitle = getReleaseTitle(rel);
                       const relTagline = getReleaseTagline(rel);
                       const relHighlights = getReleaseHighlights(rel);
 
                       return (
-                        <div key={rel.version} className={`history-item-card ${isExpanded ? 'expanded' : ''}`}>
+                        <div
+                          key={rel.version}
+                          className={`history-item-card ${isExpanded ? 'expanded' : ''}`}
+                        >
                           <button
                             type="button"
                             className="history-item-header-btn"

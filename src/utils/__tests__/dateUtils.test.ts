@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { getTodayStr, addDays, formatDateDisplay, formatDayOfWeek, getDaysDifference } from '../dateUtils';
+import {
+  getTodayStr,
+  addDays,
+  formatDateDisplay,
+  formatDayOfWeek,
+  getDaysDifference,
+} from '../dateUtils';
 
 describe('dateUtils', () => {
   describe('getTodayStr', () => {
@@ -81,4 +87,3 @@ describe('dateUtils', () => {
     });
   });
 });
-

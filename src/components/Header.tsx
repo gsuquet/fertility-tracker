@@ -5,21 +5,21 @@ import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { CyclePicker } from './CyclePicker';
 import { ActiveTab } from '../types/crms';
-import { 
-  Sun, 
-  Moon, 
-  Globe, 
-  Plus, 
-  Download, 
-  Layout, 
-  Calendar as CalendarIcon, 
-  BarChart2, 
-  CalendarDays, 
-  Info, 
-  BookOpen, 
-  MoreVertical, 
+import {
+  Sun,
+  Moon,
+  Globe,
+  Plus,
+  Download,
+  Layout,
+  Calendar as CalendarIcon,
+  BarChart2,
+  CalendarDays,
+  Info,
+  BookOpen,
+  MoreVertical,
   X,
-  Sparkles
+  Sparkles,
 } from 'lucide-react';
 import { getAppVersion } from '../domain/versionTracker';
 
@@ -31,7 +31,13 @@ interface HeaderProps {
   onOpenWelcome?: () => void;
 }
 
-export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenExport, onOpenVersion, onOpenWelcome }) => {
+export const Header: React.FC<HeaderProps> = ({
+  activeTab,
+  setActiveTab,
+  onOpenExport,
+  onOpenVersion,
+  onOpenWelcome,
+}) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { setSelectedObservation } = useCycle();
@@ -58,14 +64,16 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
 
   return (
     <header className="app-header">
-      <button 
-        type="button" 
-        className="header-brand-btn" 
-        onClick={() => setActiveTab('today')} 
+      <button
+        type="button"
+        className="header-brand-btn"
+        onClick={() => setActiveTab('today')}
         title="Creighton FertilityCare System Home"
         aria-label="Creighton FertilityCare System Home"
       >
-        <div className="brand-logo" aria-hidden="true">🌱</div>
+        <div className="brand-logo" aria-hidden="true">
+          🌱
+        </div>
         <div className="brand-text">
           <h1 className="brand-title">{t.appTitle}</h1>
           <span className="brand-subtitle">{t.subtitle}</span>
@@ -124,8 +132,8 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
         <CyclePicker />
 
         {/* Desktop Direct New Entry */}
-        <button 
-          className="btn btn-primary new-entry-btn desktop-only-action" 
+        <button
+          className="btn btn-primary new-entry-btn desktop-only-action"
           onClick={handleNewEntry}
           aria-label={t.actions.newEntry}
         >
@@ -134,9 +142,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
         </button>
 
         {/* Desktop Direct Actions */}
-        <button 
-          className="icon-button desktop-only-action" 
-          onClick={onOpenExport} 
+        <button
+          className="icon-button desktop-only-action"
+          onClick={onOpenExport}
           title={t.actions.exportPdf}
           aria-label={t.actions.exportPdf}
         >
@@ -175,9 +183,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
           <span>{language.toUpperCase()}</span>
         </button>
 
-        <button 
-          className="icon-button desktop-only-action" 
-          onClick={toggleTheme} 
+        <button
+          className="icon-button desktop-only-action"
+          onClick={toggleTheme}
           title="Toggle Dark/Light Mode"
           aria-label="Toggle Dark/Light Mode"
         >
@@ -200,24 +208,21 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
       {/* Mobile Actions Bottom Sheet Modal via Portal */}
       {isMoreMenuOpen && typeof document !== 'undefined'
         ? ReactDOM.createPortal(
-            <div 
-              className="modal-overlay mobile-menu-overlay" 
+            <div
+              className="modal-overlay mobile-menu-overlay"
               onClick={() => setIsMoreMenuOpen(false)}
               role="dialog"
               aria-modal="true"
               aria-label="Mobile Navigation Menu"
             >
-              <div 
-                className="mobile-action-sheet" 
-                onClick={(e) => e.stopPropagation()}
-              >
+              <div className="mobile-action-sheet" onClick={e => e.stopPropagation()}>
                 <div className="mobile-action-sheet-header">
                   <div className="sheet-header-title">
                     <Sparkles size={16} className="sheet-icon" />
                     <span>{language === 'fr' ? 'Menu & Options' : 'Menu & Options'}</span>
                   </div>
-                  <button 
-                    type="button" 
+                  <button
+                    type="button"
                     className="icon-button sheet-close-btn"
                     onClick={() => setIsMoreMenuOpen(false)}
                     aria-label="Close menu"
@@ -228,9 +233,9 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
 
                 <div className="mobile-action-sheet-body">
                   {/* Export Option */}
-                  <button 
+                  <button
                     type="button"
-                    className="sheet-action-item" 
+                    className="sheet-action-item"
                     onClick={() => {
                       setIsMoreMenuOpen(false);
                       onOpenExport();
@@ -241,15 +246,19 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
                     </div>
                     <div className="sheet-action-content">
                       <strong>{t.actions.exportPdf}</strong>
-                      <span>{language === 'fr' ? 'Imprimer ou exporter en PDF / JSON' : 'Print or export PDF / JSON charts'}</span>
+                      <span>
+                        {language === 'fr'
+                          ? 'Imprimer ou exporter en PDF / JSON'
+                          : 'Print or export PDF / JSON charts'}
+                      </span>
                     </div>
                   </button>
 
                   {/* Welcome & Guide Option */}
                   {onOpenWelcome && (
-                    <button 
+                    <button
                       type="button"
-                      className="sheet-action-item" 
+                      className="sheet-action-item"
                       onClick={() => {
                         setIsMoreMenuOpen(false);
                         onOpenWelcome();
@@ -260,16 +269,20 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
                       </div>
                       <div className="sheet-action-content">
                         <strong>{t.welcomeModal.title}</strong>
-                        <span>{language === 'fr' ? 'Tutoriel et guide des biomarqueurs' : 'Interactive guide & biomarker chart tutorial'}</span>
+                        <span>
+                          {language === 'fr'
+                            ? 'Tutoriel et guide des biomarqueurs'
+                            : 'Interactive guide & biomarker chart tutorial'}
+                        </span>
                       </div>
                     </button>
                   )}
 
                   {/* Version & About Option */}
                   {onOpenVersion && (
-                    <button 
+                    <button
                       type="button"
-                      className="sheet-action-item" 
+                      className="sheet-action-item"
                       onClick={() => {
                         setIsMoreMenuOpen(false);
                         onOpenVersion();
@@ -283,7 +296,11 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
                           <strong>{t.versionTracker.title}</strong>
                           <span className="sheet-version-badge">v{currentVersion}</span>
                         </div>
-                        <span>{language === 'fr' ? 'Notes de version & stockage local' : 'Release notes & system storage diagnostics'}</span>
+                        <span>
+                          {language === 'fr'
+                            ? 'Notes de version & stockage local'
+                            : 'Release notes & system storage diagnostics'}
+                        </span>
                       </div>
                     </button>
                   )}
@@ -301,13 +318,17 @@ export const Header: React.FC<HeaderProps> = ({ activeTab, setActiveTab, onOpenE
                       <span>{language === 'fr' ? 'Langue : Français' : 'Language : English'}</span>
                     </button>
 
-                    <button
-                      type="button"
-                      className="sheet-toggle-btn"
-                      onClick={toggleTheme}
-                    >
+                    <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
                       {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                      <span>{theme === 'dark' ? (language === 'fr' ? 'Thème : Sombre' : 'Theme : Dark') : (language === 'fr' ? 'Thème : Clair' : 'Theme : Light')}</span>
+                      <span>
+                        {theme === 'dark'
+                          ? language === 'fr'
+                            ? 'Thème : Sombre'
+                            : 'Theme : Dark'
+                          : language === 'fr'
+                            ? 'Thème : Clair'
+                            : 'Theme : Light'}
+                      </span>
                     </button>
                   </div>
                 </div>

@@ -19,7 +19,7 @@ export const getTodayStr = (): string => {
  */
 export const addDays = (dateStr: string, days: number): string => {
   const [year, month, day] = dateStr.split('-').map(Number);
-  if (isNaN(year) || isNaN(month) || isNaN(day)) {
+  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
     return dateStr;
   }
   const d = new Date(Date.UTC(year, month - 1, day + days));
@@ -36,14 +36,14 @@ export const formatDateDisplay = (
     weekday: 'long',
     year: 'numeric',
     month: 'long',
-    day: 'numeric'
+    day: 'numeric',
   }
 ): string => {
   try {
     const [year, month, day] = dateStr.split('-').map(Number);
     const d = new Date(year, month - 1, day);
     return d.toLocaleDateString(locale, options);
-  } catch (e) {
+  } catch (_e) {
     return dateStr;
   }
 };
@@ -56,7 +56,7 @@ export const formatDayOfWeek = (dateStr: string, locale: string = 'en-US'): stri
     const [year, month, day] = dateStr.split('-').map(Number);
     const d = new Date(year, month - 1, day);
     return d.toLocaleDateString(locale, { weekday: 'short' });
-  } catch (e) {
+  } catch (_e) {
     return '';
   }
 };
@@ -67,11 +67,17 @@ export const formatDayOfWeek = (dateStr: string, locale: string = 'en-US'): stri
 export const getDaysDifference = (startDateStr: string, endDateStr: string): number => {
   const [sYear, sMonth, sDay] = startDateStr.split('-').map(Number);
   const [eYear, eMonth, eDay] = endDateStr.split('-').map(Number);
-  if (isNaN(sYear) || isNaN(sMonth) || isNaN(sDay) || isNaN(eYear) || isNaN(eMonth) || isNaN(eDay)) {
+  if (
+    Number.isNaN(sYear) ||
+    Number.isNaN(sMonth) ||
+    Number.isNaN(sDay) ||
+    Number.isNaN(eYear) ||
+    Number.isNaN(eMonth) ||
+    Number.isNaN(eDay)
+  ) {
     return 0;
   }
   const start = Date.UTC(sYear, sMonth - 1, sDay);
   const end = Date.UTC(eYear, eMonth - 1, eDay);
   return Math.round((end - start) / (1000 * 60 * 60 * 24));
 };
-

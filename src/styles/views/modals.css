@@ -36,7 +36,9 @@
     text-align: left;
     cursor: pointer;
     min-height: 52px;
-    transition: border-color 0.18s ease, transform 0.18s ease;
+    transition:
+      border-color 0.18s ease,
+      transform 0.18s ease;
   }
 
   .export-card-btn:hover {
@@ -467,7 +469,9 @@
     border: 1px solid var(--bg-surface-border);
     border-radius: 10px;
     overflow: hidden;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition:
+      border-color 0.2s ease,
+      box-shadow 0.2s ease;
   }
 
   .history-item-card:hover {
@@ -876,11 +880,21 @@
     text-justify: inter-word;
   }
 
-  .text-emerald { color: #10b981; }
-  .text-indigo { color: #6366f1; }
-  .text-amber { color: #f59e0b; }
-  .text-blue { color: #3b82f6; }
-  .text-purple { color: #8b5cf6; }
+  .text-emerald {
+    color: #10b981;
+  }
+  .text-indigo {
+    color: #6366f1;
+  }
+  .text-amber {
+    color: #f59e0b;
+  }
+  .text-blue {
+    color: #3b82f6;
+  }
+  .text-purple {
+    color: #8b5cf6;
+  }
 
   .welcome-stamp-grid {
     display: flex;

@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Footer } from '../Footer';
@@ -13,7 +12,9 @@ describe('Footer Component', () => {
     );
 
     expect(screen.getByText(/Saint Paul VI Institute/i)).toBeInTheDocument();
-    expect(screen.getByText(/Fertility Tracker is an independent open-source/i)).toBeInTheDocument();
+    expect(
+      screen.getByText(/Fertility Tracker is an independent open-source/i)
+    ).toBeInTheDocument();
     expect(screen.getByText(/medical advice, diagnosis, or treatment/i)).toBeInTheDocument();
   });
 
@@ -41,7 +42,9 @@ describe('Footer Component', () => {
       </LanguageProvider>
     );
 
-    const guideBtn = screen.getByRole('button', { name: /Welcome to Fertility Tracker|User Guide|Bienvenue/i });
+    const guideBtn = screen.getByRole('button', {
+      name: /Welcome to Fertility Tracker|User Guide|Bienvenue/i,
+    });
     expect(guideBtn).toBeInTheDocument();
     expect(guideBtn).toHaveTextContent(/User Guide/i);
 

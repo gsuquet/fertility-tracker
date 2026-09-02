@@ -9,10 +9,7 @@ import { getTodayStr } from './dateUtils';
  * - pdf single cycle: 'fertility-tracker-chart-cycle-1-2026-07-31'
  * - pdf all cycles: 'fertility-tracker-chart-all-cycles-2026-07-31'
  */
-export function getExportFilename(
-  type: 'backup' | 'pdf',
-  detail?: string
-): string {
+export function getExportFilename(type: 'backup' | 'pdf', detail?: string): string {
   const dateStr = getTodayStr();
 
   if (type === 'backup') {

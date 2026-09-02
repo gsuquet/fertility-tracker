@@ -14,11 +14,21 @@ import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
 
-const CycleAnalyticsView = React.lazy(() => import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView })));
-const ExportModal = React.lazy(() => import('./components/ExportModal').then(m => ({ default: m.ExportModal })));
-const PrintExportView = React.lazy(() => import('./components/PrintExportView').then(m => ({ default: m.PrintExportView })));
-const VersionModal = React.lazy(() => import('./components/VersionModal').then(m => ({ default: m.VersionModal })));
-const WelcomeModal = React.lazy(() => import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal })));
+const CycleAnalyticsView = React.lazy(() =>
+  import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
+);
+const ExportModal = React.lazy(() =>
+  import('./components/ExportModal').then(m => ({ default: m.ExportModal }))
+);
+const PrintExportView = React.lazy(() =>
+  import('./components/PrintExportView').then(m => ({ default: m.PrintExportView }))
+);
+const VersionModal = React.lazy(() =>
+  import('./components/VersionModal').then(m => ({ default: m.VersionModal }))
+);
+const WelcomeModal = React.lazy(() =>
+  import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal }))
+);
 
 import { getExportFilename } from './utils/exportUtils';
 
@@ -81,7 +91,9 @@ const MainApp: React.FC = () => {
         onOpenWelcome={() => setIsWelcomeModalOpen(true)}
       />
 
-      <main className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}>
+      <main
+        className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
+      >
         <CycleStatsHeader />
 
         <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
@@ -106,15 +118,9 @@ const MainApp: React.FC = () => {
           onPreparePrint={handlePreparePrint}
         />
 
-        <VersionModal
-          isOpen={isVersionModalOpen}
-          onClose={() => setIsVersionModalOpen(false)}
-        />
+        <VersionModal isOpen={isVersionModalOpen} onClose={() => setIsVersionModalOpen(false)} />
 
-        <WelcomeModal
-          isOpen={isWelcomeModalOpen}
-          onClose={() => setIsWelcomeModalOpen(false)}
-        />
+        <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
 
         <PrintExportView selectedCycleIds={printCycleIds} />
       </React.Suspense>

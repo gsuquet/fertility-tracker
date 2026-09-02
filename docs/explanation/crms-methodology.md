@@ -29,6 +29,6 @@ Observation Input  --->  Code Parsing  --->  Stamp Assignment  --->  Peak Day Ev
  (e.g. 10KL AD)            (Stretch/Color)      (White + Baby)          (Identifies 'P' & P+1..P+3)
 ```
 
-* **Automatic Peak Calculation:** The domain engine evaluates complete cycle observations sequentially to identify the final day of Peak-type mucus before a permanent dry shift.
-* **Manual Override Support:** Because clinical circumstances (such as double peak cycles or continuous mucus patterns) require certified practitioner evaluation, **Fertility Tracker** allows users to set a manual Peak Day override.
-* **Mucific Score Calculation:** In the Analytics View, the application computes the cycle's mucific score, measuring peak mucus quality across the fertile window.
+- **Automatic Peak Calculation:** The domain engine evaluates complete cycle observations sequentially to identify the final day of Peak-type mucus before a permanent dry shift.
+- **Manual Override Support:** Because clinical circumstances (such as double peak cycles or continuous mucus patterns) require certified practitioner evaluation, **Fertility Tracker** allows users to set a manual Peak Day override.
+- **Mucific Score Calculation:** In the Analytics View, the application computes the cycle's mucific score, measuring peak mucus quality across the fertile window.

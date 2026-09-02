@@ -20,7 +20,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
 
   return (
     <nav className="mobile-nav-bar" aria-label="Mobile Navigation">
-      <button 
+      <button
         className={`mobile-nav-item ${activeTab === 'today' ? 'active' : ''}`}
         onClick={() => {
           setSelectedObservation(null);

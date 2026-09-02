@@ -1,6 +1,5 @@
 import React, { createContext, useContext, useState, useEffect, useMemo } from 'react';
 import { Observation, Cycle } from '../types/crms';
-import { processCycleObservations } from '../domain/peakDetector';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
@@ -100,7 +99,7 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
         codeString,
       };
 
-      let updatedList = [...prev];
+      const updatedList = [...prev];
       if (existingIdx !== -1) {
         updatedList[existingIdx] = { ...updatedList[existingIdx], ...newObs };
       } else {
@@ -219,7 +218,14 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
       }
 
       const stamp = calculateStamp(bleeding, stretch, modifiers);
-      const codeString = formatCodeString({ bleeding, stretch, modifiers, frequency, symptoms, intercourse });
+      const codeString = formatCodeString({
+        bleeding,
+        stretch,
+        modifiers,
+        frequency,
+        symptoms,
+        intercourse,
+      });
 
       demoObs.push({
         id: `demo_${dateStr}`,
@@ -245,23 +251,25 @@ export const CycleProvider: React.FC<{ children: React.ReactNode }> = ({ childre
   };
 
   return (
-    <CycleContext.Provider value={{
-      observations,
-      cycles,
-      selectedCycleId,
-      setSelectedCycleId,
-      saveObservation,
-      deleteObservation,
-      toggleManualPeak,
-      exportDataJson,
-      importDataJson,
-      clearAllData,
-      loadDemoData,
-      selectedObservation,
-      setSelectedObservation,
-      isDrawerOpen,
-      setIsDrawerOpen,
-    }}>
+    <CycleContext.Provider
+      value={{
+        observations,
+        cycles,
+        selectedCycleId,
+        setSelectedCycleId,
+        saveObservation,
+        deleteObservation,
+        toggleManualPeak,
+        exportDataJson,
+        importDataJson,
+        clearAllData,
+        loadDemoData,
+        selectedObservation,
+        setSelectedObservation,
+        isDrawerOpen,
+        setIsDrawerOpen,
+      }}
+    >
       {children}
     </CycleContext.Provider>
   );

@@ -6,7 +6,14 @@ describe('cycleBoundaryDetector', () => {
   it('groups single cycle observations properly', () => {
     const rawObs: Observation[] = [
       { id: '1', date: '2026-07-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
-      { id: '2', date: '2026-07-02', cycleDay: 2, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '2',
+        date: '2026-07-02',
+        cycleDay: 2,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
     ];
 
     const cycles = groupObservationsIntoCycles(rawObs);
@@ -18,10 +25,24 @@ describe('cycleBoundaryDetector', () => {
     const rawObs: Observation[] = [
       // Cycle 1
       { id: '1', date: '2026-06-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
-      { id: '2', date: '2026-06-02', cycleDay: 2, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '2',
+        date: '2026-06-02',
+        cycleDay: 2,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
       // Cycle 2 (Menses start on July 1)
       { id: '3', date: '2026-07-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
-      { id: '4', date: '2026-07-02', cycleDay: 2, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '4',
+        date: '2026-07-02',
+        cycleDay: 2,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
     ];
 
     const cycles = groupObservationsIntoCycles(rawObs);
@@ -33,10 +54,32 @@ describe('cycleBoundaryDetector', () => {
   it('respects explicit isCycleStart = false (does not start new cycle on bleeding day)', () => {
     const rawObs: Observation[] = [
       { id: '1', date: '2026-06-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
-      { id: '2', date: '2026-06-15', cycleDay: 15, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '2',
+        date: '2026-06-15',
+        cycleDay: 15,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
       // Breakthrough bleeding on Day 16, marked explicitly as NOT a new cycle
-      { id: '3', date: '2026-06-16', cycleDay: 16, bleeding: 'L', isCycleStart: false, stamp: 'RED', codeString: 'L' },
-      { id: '4', date: '2026-06-17', cycleDay: 17, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '3',
+        date: '2026-06-16',
+        cycleDay: 16,
+        bleeding: 'L',
+        isCycleStart: false,
+        stamp: 'RED',
+        codeString: 'L',
+      },
+      {
+        id: '4',
+        date: '2026-06-17',
+        cycleDay: 17,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
     ];
 
     const cycles = groupObservationsIntoCycles(rawObs);
@@ -47,9 +90,24 @@ describe('cycleBoundaryDetector', () => {
   it('respects explicit isCycleStart = true (forces new cycle start)', () => {
     const rawObs: Observation[] = [
       { id: '1', date: '2026-06-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
-      { id: '2', date: '2026-06-15', cycleDay: 15, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '2',
+        date: '2026-06-15',
+        cycleDay: 15,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
       // Spotting day explicitly marked as new cycle start
-      { id: '3', date: '2026-06-16', cycleDay: 1, bleeding: 'VL', isCycleStart: true, stamp: 'RED', codeString: 'VL' },
+      {
+        id: '3',
+        date: '2026-06-16',
+        cycleDay: 1,
+        bleeding: 'VL',
+        isCycleStart: true,
+        stamp: 'RED',
+        codeString: 'VL',
+      },
     ];
 
     const cycles = groupObservationsIntoCycles(rawObs);
@@ -62,7 +120,14 @@ describe('cycleBoundaryDetector', () => {
     const existing: Observation[] = [
       { id: '1', date: '2026-06-01', cycleDay: 1, bleeding: 'H', stamp: 'RED', codeString: 'H' },
       { id: '2', date: '2026-06-02', cycleDay: 2, bleeding: 'M', stamp: 'RED', codeString: 'M' },
-      { id: '3', date: '2026-06-03', cycleDay: 3, stretch: '0', stamp: 'DARK_GREEN', codeString: '0' },
+      {
+        id: '3',
+        date: '2026-06-03',
+        cycleDay: 3,
+        stretch: '0',
+        stamp: 'DARK_GREEN',
+        codeString: '0',
+      },
     ];
 
     // Logging bleeding on June 4 (preceded by dry day June 3) -> TRUE

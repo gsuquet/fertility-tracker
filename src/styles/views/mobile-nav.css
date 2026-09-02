@@ -76,14 +76,20 @@
       width: 42px;
       height: 42px;
       border-radius: 50%;
-      background: linear-gradient(135deg, var(--accent-primary) 0%, var(--accent-primary-hover) 100%);
+      background: linear-gradient(
+        135deg,
+        var(--accent-primary) 0%,
+        var(--accent-primary-hover) 100%
+      );
       color: #ffffff;
       border: none;
       cursor: pointer;
       box-shadow: 0 4px 12px var(--accent-glow);
       margin: 0 4px;
       flex-shrink: 0;
-      transition: transform 0.15s ease, box-shadow 0.15s ease;
+      transition:
+        transform 0.15s ease,
+        box-shadow 0.15s ease;
     }
 
     .mobile-nav-fab:active {

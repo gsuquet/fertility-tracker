@@ -1,4 +1,3 @@
-import React from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CalendarGrid } from '../CalendarGrid';
@@ -38,10 +37,10 @@ describe('CalendarGrid Component', () => {
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     const dayElement = screen.getByRole('button', { name: new RegExp(`Date ${dateStr}`) });
     expect(dayElement).toBeInTheDocument();
-    
+
     // Click on day 1
     fireEvent.click(dayElement);
-    
+
     // Verify Observation Drawer opened with date set to dateStr
     const dateInput = container.querySelector('#obs-date') as HTMLInputElement;
     expect(dateInput).toBeInTheDocument();

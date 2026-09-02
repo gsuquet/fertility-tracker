@@ -8,9 +8,9 @@ This hands-on tutorial will guide you through setting up **Fertility Tracker** l
 
 Before starting this tutorial, ensure you have:
 
-* **mise** (recommended for managing Node.js versions and tasks) or **Node.js** installed ($\ge v26.5.0$).
-* **Git** installed on your system.
-* A modern web browser (Chrome, Firefox, Safari, or Edge).
+- **mise** (recommended for managing Node.js versions and tasks) or **Node.js** installed ($\ge v26.5.0$).
+- **Git** installed on your system.
+- A modern web browser (Chrome, Firefox, Safari, or Edge).
 
 ---
 
@@ -70,8 +70,8 @@ The application provides three primary views selectable via the navigation heade
 
 Once saved, observe how **Fertility Tracker** processes your observation:
 
-* An observation with `10KL AD` will automatically render a **White with Baby** fertile stamp.
-* When mucus observations change from lubricative/clear to dry on subsequent days, the domain engine automatically calculates the **Peak Day ($P$)** and tags post-peak days as $P+1$, $P+2$, and $P+3$ with light green stamps.
+- An observation with `10KL AD` will automatically render a **White with Baby** fertile stamp.
+- When mucus observations change from lubricative/clear to dry on subsequent days, the domain engine automatically calculates the **Peak Day ($P$)** and tags post-peak days as $P+1$, $P+2$, and $P+3$ with light green stamps.
 
 ---
 
@@ -79,9 +79,9 @@ Once saved, observe how **Fertility Tracker** processes your observation:
 
 1. Click the **Export** button in the top navigation header.
 2. Select your desired format:
-   * **PDF:** Printable chart layout for clinical review.
-   * **PNG:** High-resolution image of your current cycle row.
-   * **JSON:** Portable data backup.
+   - **PDF:** Printable chart layout for clinical review.
+   - **PNG:** High-resolution image of your current cycle row.
+   - **JSON:** Portable data backup.
 3. Click **Download**.
 
 ---
@@ -90,5 +90,5 @@ Once saved, observe how **Fertility Tracker** processes your observation:
 
 Congratulations! You have completed your first cycle logging workflow.
 
-* To learn more about Creighton codes, read the [CrMS Biomarker Code Reference](../reference/crms-biomarker-codes.md).
-* To understand how peak detection works programmatically, read [Creighton Model Methodology](../explanation/crms-methodology.md).
+- To learn more about Creighton codes, read the [CrMS Biomarker Code Reference](../reference/crms-biomarker-codes.md).
+- To understand how peak detection works programmatically, read [Creighton Model Methodology](../explanation/crms-methodology.md).

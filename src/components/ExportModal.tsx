@@ -1,8 +1,16 @@
 import React, { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { X, Printer, Download, FileText, Calendar, Layers, CheckSquare, Square } from 'lucide-react';
-import { getTodayStr } from '../utils/dateUtils';
+import {
+  X,
+  Printer,
+  Download,
+  FileText,
+  Calendar,
+  Layers,
+  CheckSquare,
+  Square,
+} from 'lucide-react';
 import { getExportFilename } from '../utils/exportUtils';
 
 interface ExportModalProps {
@@ -12,7 +20,8 @@ interface ExportModalProps {
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPreparePrint }) => {
-  const { cycles, selectedCycleId, exportDataJson, importDataJson, loadDemoData, clearAllData } = useCycle();
+  const { cycles, selectedCycleId, exportDataJson, importDataJson, loadDemoData, clearAllData } =
+    useCycle();
   const { t } = useLanguage();
 
   const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
@@ -21,9 +30,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
 
   useEffect(() => {
     if (cycles.length > 0) {
-      const initialSingle = (selectedCycleId && selectedCycleId !== 'all')
-        ? selectedCycleId
-        : cycles[0].id;
+      const initialSingle =
+        selectedCycleId && selectedCycleId !== 'all' ? selectedCycleId : cycles[0].id;
       setSelectedSingleId(initialSingle);
       setSelectedMultiIds(cycles.map(c => c.id));
     }
@@ -108,7 +116,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     const file = e.target.files?.[0];
     if (file) {
       const reader = new FileReader();
-      reader.onload = (event) => {
+      reader.onload = event => {
         const content = event.target?.result as string;
         if (content) {
           const success = importDataJson(content);
@@ -125,7 +133,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
   };
 
   return (
-    <div className="modal-overlay" onClick={onClose} role="dialog" aria-modal="true" aria-labelledby="modal-title">
+    <div
+      className="modal-overlay"
+      onClick={onClose}
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="modal-title"
+    >
       <div className="modal-container export-modal-enhanced" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2 id="modal-title">{t.exportModal.title}</h2>
@@ -176,7 +190,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
                     const cycleNum = cycles.length - idx;
                     return (
                       <option key={cycle.id} value={cycle.id}>
-                        {t.chartStrip.cycleBadge} {cycleNum} ({cycle.startDate} • {cycle.observations.length} {t.stats.days})
+                        {t.chartStrip.cycleBadge} {cycleNum} ({cycle.startDate} •{' '}
+                        {cycle.observations.length} {t.stats.days})
                       </option>
                     );
                   })}
@@ -187,11 +202,19 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
                 <div className="multi-select-header">
                   <span className="form-label">{t.exportModal.selectCycles}:</span>
                   <div className="multi-select-actions">
-                    <button type="button" className="btn-text-action" onClick={handleSelectAllMulti}>
+                    <button
+                      type="button"
+                      className="btn-text-action"
+                      onClick={handleSelectAllMulti}
+                    >
                       {t.exportModal.selectAll}
                     </button>
                     <span className="action-divider">•</span>
-                    <button type="button" className="btn-text-action" onClick={handleDeselectAllMulti}>
+                    <button
+                      type="button"
+                      className="btn-text-action"
+                      onClick={handleDeselectAllMulti}
+                    >
                       {t.exportModal.deselectAll}
                     </button>
                   </div>
@@ -202,7 +225,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
                     const cycleNum = cycles.length - idx;
                     const isChecked = selectedMultiIds.includes(cycle.id);
                     return (
-                      <label key={cycle.id} className={`multi-cycle-item ${isChecked ? 'checked' : ''}`}>
+                      <label
+                        key={cycle.id}
+                        className={`multi-cycle-item ${isChecked ? 'checked' : ''}`}
+                      >
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -215,7 +241,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
                           <Square size={18} className="checkbox-icon" />
                         )}
                         <span className="cycle-item-name">
-                          <strong>{t.chartStrip.cycleBadge} {cycleNum}</strong>
+                          <strong>
+                            {t.chartStrip.cycleBadge} {cycleNum}
+                          </strong>
                         </span>
                         <span className="cycle-item-dates">
                           {cycle.startDate} ({cycle.observations.length} {t.stats.days})
@@ -227,13 +255,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
               </div>
             )}
 
-            <div className="pdf-info-note">
-              {t.exportModal.oldestToNewestNote}
-            </div>
+            <div className="pdf-info-note">{t.exportModal.oldestToNewestNote}</div>
           </div>
 
           <div className="export-actions-grid">
-            <button className="export-card-btn primary-export-btn" onClick={handlePrint} aria-label={t.exportModal.printPdf}>
+            <button
+              className="export-card-btn primary-export-btn"
+              onClick={handlePrint}
+              aria-label={t.exportModal.printPdf}
+            >
               <Printer size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.exportModal.printPdf}</strong>
@@ -241,7 +271,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
               </div>
             </button>
 
-            <button className="export-card-btn" onClick={handleDownloadJson} aria-label={t.actions.exportJson}>
+            <button
+              className="export-card-btn"
+              onClick={handleDownloadJson}
+              aria-label={t.actions.exportJson}
+            >
               <Download size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.actions.exportJson}</strong>
@@ -256,7 +290,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
             <label className="btn btn-secondary import-label" style={{ cursor: 'pointer' }}>
               <FileText size={16} />
               <span>{t.actions.importJson}</span>
-              <input type="file" accept=".json" onChange={handleFileUpload} style={{ display: 'none' }} />
+              <input
+                type="file"
+                accept=".json"
+                onChange={handleFileUpload}
+                style={{ display: 'none' }}
+              />
             </label>
 
             <button
@@ -286,4 +325,3 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     </div>
   );
 };
-

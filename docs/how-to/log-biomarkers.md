@@ -8,16 +8,16 @@ This guide provides instructions for logging daily biomarker observations, enter
 
 1. Click on the target cycle day in the **Chart Row** view or open the **Observation Drawer**.
 2. **Select Bleeding (if present):**
-   * Heavy (`H`), Moderate (`M`), Light (`L`), Very Light (`VL`), or Brown (`B`).
-   * *Note: When bleeding is selected, non-bleeding mucus options are muted unless spotting occurs.*
+   - Heavy (`H`), Moderate (`M`), Light (`L`), Very Light (`VL`), or Brown (`B`).
+   - _Note: When bleeding is selected, non-bleeding mucus options are muted unless spotting occurs._
 3. **Select Mucus Stretch:**
-   * No stretch (`0`, `2`, `2W`), moderate stretch (`4`, `6`, `8`), or maximum stretch (`10`, `10DL`, `10SL`, `10WL`).
+   - No stretch (`0`, `2`, `2W`), moderate stretch (`4`, `6`, `8`), or maximum stretch (`10`, `10DL`, `10SL`, `10WL`).
 4. **Select Mucus Modifiers:**
-   * Select one or more color and consistency modifiers: `B` (Brown), `C` (Cloudy), `C/K` (Cloudy/Clear), `G` (Gummy), `K` (Clear), `L` (Lubricative), `P` (Pasty), `Y` (Yellow).
+   - Select one or more color and consistency modifiers: `B` (Brown), `C` (Cloudy), `C/K` (Cloudy/Clear), `G` (Gummy), `K` (Clear), `L` (Lubricative), `P` (Pasty), `Y` (Yellow).
 5. **Select Frequency:**
-   * `X1`, `X2`, `X3` (times observed per day), or `AD` (All Day).
+   - `X1`, `X2`, `X3` (times observed per day), or `AD` (All Day).
 6. **Toggle Intercourse (`I`):**
-   * Enable the intercourse toggle if intercourse occurred on this cycle day.
+   - Enable the intercourse toggle if intercourse occurred on this cycle day.
 
 ---
 
