@@ -1,17 +1,17 @@
-import {
+import type {
   BleedingCode,
   MucusStretch,
   MucusModifier,
   FrequencyCode,
   SymptomCode,
-  Observation,
+  ObservationInput,
 } from '../types/crms';
 
 export interface ParsedCodeResult {
-  bleeding?: BleedingCode;
-  stretch?: MucusStretch;
+  bleeding?: BleedingCode | undefined;
+  stretch?: MucusStretch | undefined;
   modifiers: MucusModifier[];
-  frequency?: FrequencyCode;
+  frequency?: FrequencyCode | undefined;
   symptoms: SymptomCode[];
   intercourse: boolean;
   formattedCode: string;
@@ -20,7 +20,7 @@ export interface ParsedCodeResult {
 /**
  * Formats structured observation components into a clean, canonical Creighton code string.
  */
-export function formatCodeString(obs: Partial<Observation>): string {
+export function formatCodeString(obs: ObservationInput): string {
   const parts: string[] = [];
 
   // 1. Bleeding

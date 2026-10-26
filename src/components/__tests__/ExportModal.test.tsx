@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { ExportModal } from '../ExportModal';
@@ -5,7 +6,7 @@ import { LanguageProvider } from '../../context/LanguageContext';
 import { ThemeProvider } from '../../context/ThemeContext';
 import { CycleProvider } from '../../context/CycleContext';
 
-const renderExportModal = (props: any) => {
+const renderExportModal = (props: ComponentProps<typeof ExportModal>) => {
   return render(
     <ThemeProvider>
       <LanguageProvider>

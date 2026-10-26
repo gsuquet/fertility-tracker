@@ -54,7 +54,7 @@ describe('VersionModal Component', () => {
       </LanguageProvider>
     );
 
-    const closeBtn = screen.getAllByRole('button', { name: /Close/i })[0];
+    const closeBtn = screen.getAllByRole('button', { name: /Close/i })[0]!;
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledTimes(1);
 

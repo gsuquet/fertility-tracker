@@ -1,7 +1,8 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import {
+import type {
   BleedingCode,
   MucusStretch,
   MucusModifier,
@@ -382,7 +383,7 @@ export const TodayView: React.FC = () => {
           bleeding={bleeding}
           onBleedingSelect={handleBleedingSelect}
           isCycleStart={isCycleStart}
-          onToggleCycleStart={() => setIsCycleStart(prev => (prev === true ? false : true))}
+          onToggleCycleStart={() => setIsCycleStart(prev => prev !== true)}
           stretch={stretch}
           onStretchSelect={handleStretchSelect}
           modifiers={modifiers}

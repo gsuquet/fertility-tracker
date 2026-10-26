@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { groupObservationsIntoCycles, isFirstBleedingDayOfSeries } from '../cycleBoundaryDetector';
-import { Observation } from '../../types/crms';
+import type { Observation } from '../../types/crms';
 
 describe('cycleBoundaryDetector', () => {
   it('groups single cycle observations properly', () => {
@@ -18,7 +18,7 @@ describe('cycleBoundaryDetector', () => {
 
     const cycles = groupObservationsIntoCycles(rawObs);
     expect(cycles.length).toBe(1);
-    expect(cycles[0].observations.length).toBe(2);
+    expect(cycles[0]?.observations.length).toBe(2);
   });
 
   it('splits multiple cycles when a new menses phase begins', () => {
@@ -47,8 +47,8 @@ describe('cycleBoundaryDetector', () => {
 
     const cycles = groupObservationsIntoCycles(rawObs);
     expect(cycles.length).toBe(2);
-    expect(cycles[0].startDate).toBe('2026-07-01'); // Most recent cycle first
-    expect(cycles[1].startDate).toBe('2026-06-01'); // Past cycle second
+    expect(cycles[0]?.startDate).toBe('2026-07-01'); // Most recent cycle first
+    expect(cycles[1]?.startDate).toBe('2026-06-01'); // Past cycle second
   });
 
   it('respects explicit isCycleStart = false (does not start new cycle on bleeding day)', () => {
@@ -84,7 +84,7 @@ describe('cycleBoundaryDetector', () => {
 
     const cycles = groupObservationsIntoCycles(rawObs);
     expect(cycles.length).toBe(1);
-    expect(cycles[0].observations.length).toBe(4);
+    expect(cycles[0]?.observations.length).toBe(4);
   });
 
   it('respects explicit isCycleStart = true (forces new cycle start)', () => {
@@ -112,8 +112,8 @@ describe('cycleBoundaryDetector', () => {
 
     const cycles = groupObservationsIntoCycles(rawObs);
     expect(cycles.length).toBe(2);
-    expect(cycles[0].startDate).toBe('2026-06-16');
-    expect(cycles[1].startDate).toBe('2026-06-01');
+    expect(cycles[0]?.startDate).toBe('2026-06-16');
+    expect(cycles[1]?.startDate).toBe('2026-06-01');
   });
 
   it('correctly identifies first bleeding day of a series with isFirstBleedingDayOfSeries', () => {

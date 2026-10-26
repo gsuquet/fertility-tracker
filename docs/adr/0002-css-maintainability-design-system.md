@@ -26,6 +26,7 @@ The Fertility Tracker application's visual interface is currently styled via a m
 Organize styles into domain-driven modular files under `src/styles/` orchestrated by native CSS `@layer` rules (`tokens`, `base`, `primitives`, `views`, `utilities`) and bundled via standard Vite `@import` resolution.
 
 - **Structure:**
+
   ```
   src/styles/
     ├── index.css               # Layer declarations & master imports
@@ -103,6 +104,7 @@ Write type-safe styles in TypeScript (`.css.ts`) that compile to static CSS at b
 We will adopt **Option A: Modular Layered CSS Architecture (`@layer`) with a Centralized Design System**:
 
 1. **CSS Cascade Layer Order:**
+
    ```css
    @layer tokens, base, primitives, views, utilities;
    ```

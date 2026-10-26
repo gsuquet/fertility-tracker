@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import {
+import type {
   BleedingCode,
   MucusStretch,
   MucusModifier,
@@ -41,6 +41,7 @@ export const ObservationDrawer: React.FC = () => {
   const [directInputText, setDirectInputText] = useState('');
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens
   useEffect(() => {
     if (selectedObservation) {
       setDate(selectedObservation.date);
@@ -348,7 +349,7 @@ export const ObservationDrawer: React.FC = () => {
               <button
                 type="button"
                 className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
-                onClick={() => setIsCycleStart(prev => (prev === true ? false : true))}
+                onClick={() => setIsCycleStart(prev => prev !== true)}
                 aria-pressed={isCycleStart === true}
                 style={{
                   borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,

@@ -1,5 +1,6 @@
-import React, { createContext, useContext, useState, useEffect } from 'react';
-import { Theme } from '../types/crms';
+import type React from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
+import type { Theme } from '../types/crms';
 
 interface ThemeContextType {
   theme: Theme;

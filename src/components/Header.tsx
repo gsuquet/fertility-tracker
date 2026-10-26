@@ -1,10 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { CyclePicker } from './CyclePicker';
-import { ActiveTab } from '../types/crms';
+import type { ActiveTab } from '../types/crms';
 import {
   Sun,
   Moon,

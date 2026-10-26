@@ -1,6 +1,6 @@
 import { en } from './locales/en';
 import { fr } from './locales/fr';
-import { TranslationSchema, SupportedLanguage } from './types';
+import type { TranslationSchema, SupportedLanguage } from './types';
 
 export const translations: Record<SupportedLanguage, TranslationSchema> = {
   en,

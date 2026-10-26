@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { Observation } from '../../types/crms';
+import type { Observation } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { addDays, formatDateDisplay } from '../../utils/dateUtils';
 
@@ -18,7 +18,7 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
   const { t, language } = useLanguage();
 
   const getRecentDays = () => {
-    const list: { dateStr: string; obs?: Observation }[] = [];
+    const list: { dateStr: string; obs?: Observation | undefined }[] = [];
     for (let i = 4; i >= 0; i--) {
       const dateStr = addDays(selectedDate, -i);
       const obs = observations.find(o => o.date === dateStr);

@@ -1,4 +1,4 @@
-import {
+import type {
   Observation,
   BleedingCode,
   MucusStretch,
@@ -9,8 +9,8 @@ import {
 import { calculateStamp } from './stampCalculator';
 import { formatCodeString } from './codeParser';
 
-const VALID_BLEEDING: Set<string> = new Set(['H', 'M', 'L', 'VL', 'B']);
-const VALID_STRETCH: Set<string> = new Set([
+const VALID_BLEEDING: ReadonlySet<string> = new Set<BleedingCode>(['H', 'M', 'L', 'VL', 'B']);
+const VALID_STRETCH: ReadonlySet<string> = new Set<MucusStretch>([
   '0',
   '2',
   '2W',
@@ -22,9 +22,23 @@ const VALID_STRETCH: Set<string> = new Set([
   '10SL',
   '10WL',
 ]);
-const VALID_MODIFIERS: Set<string> = new Set(['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y']);
-const VALID_FREQUENCY: Set<string> = new Set(['X1', 'X2', 'X3', 'AD']);
-const VALID_SYMPTOMS: Set<string> = new Set(['AP', 'RAP', 'LAP']);
+const VALID_MODIFIERS: ReadonlySet<string> = new Set<MucusModifier>([
+  'B',
+  'C',
+  'C/K',
+  'G',
+  'K',
+  'L',
+  'P',
+  'Y',
+]);
+const VALID_FREQUENCY: ReadonlySet<string> = new Set<FrequencyCode>(['X1', 'X2', 'X3', 'AD']);
+const VALID_SYMPTOMS: ReadonlySet<string> = new Set<SymptomCode>(['AP', 'RAP', 'LAP']);
+
+/** Narrows an unknown value to a member of a string literal union backed by `allowed`. */
+const isOneOf = <T extends string>(allowed: ReadonlySet<string>, value: unknown): value is T =>
+  typeof value === 'string' && allowed.has(value);
+
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
 /**
@@ -33,7 +47,7 @@ const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
  */
 export function validateObservation(raw: unknown): Observation | null {
   if (!raw || typeof raw !== 'object') return null;
-  const obj = raw as Record<string, any>;
+  const obj = raw as Record<string, unknown>;
 
   // Date is mandatory and must match YYYY-MM-DD
   if (typeof obj.date !== 'string' || !DATE_REGEX.test(obj.date)) {
@@ -41,24 +55,20 @@ export function validateObservation(raw: unknown): Observation | null {
   }
 
   // Validate or fallback optional biomarker fields
-  const bleeding: BleedingCode | undefined = VALID_BLEEDING.has(obj.bleeding)
-    ? (obj.bleeding as BleedingCode)
-    : undefined;
+  const bleeding = isOneOf<BleedingCode>(VALID_BLEEDING, obj.bleeding) ? obj.bleeding : undefined;
 
-  const stretch: MucusStretch | undefined = VALID_STRETCH.has(obj.stretch)
-    ? (obj.stretch as MucusStretch)
-    : undefined;
+  const stretch = isOneOf<MucusStretch>(VALID_STRETCH, obj.stretch) ? obj.stretch : undefined;
 
   const modifiers: MucusModifier[] = Array.isArray(obj.modifiers)
-    ? obj.modifiers.filter((m: any): m is MucusModifier => VALID_MODIFIERS.has(m))
+    ? obj.modifiers.filter((m: unknown) => isOneOf<MucusModifier>(VALID_MODIFIERS, m))
     : [];
 
-  const frequency: FrequencyCode | undefined = VALID_FREQUENCY.has(obj.frequency)
-    ? (obj.frequency as FrequencyCode)
+  const frequency = isOneOf<FrequencyCode>(VALID_FREQUENCY, obj.frequency)
+    ? obj.frequency
     : undefined;
 
   const symptoms: SymptomCode[] = Array.isArray(obj.symptoms)
-    ? obj.symptoms.filter((s: any): s is SymptomCode => VALID_SYMPTOMS.has(s))
+    ? obj.symptoms.filter((s: unknown) => isOneOf<SymptomCode>(VALID_SYMPTOMS, s))
     : [];
 
   const intercourse: boolean = Boolean(obj.intercourse);

@@ -13,7 +13,7 @@ Deployment is managed automatically by Cloudflare Pages native GitHub Integratio
    - **Framework Preset:** Vite
    - **Build Command:** `npm run build`
    - **Build Output Directory:** `dist`
-   - **Node.js Version:** $\ge 22.0.0$ (configured via `package.json` engines)
+   - **Node.js Version:** `26.12.1` (pinned in `package.json` engines and `.mise/config.toml`)
 3. **Production URL:** [`https://fertility-tracker.gsuquet.com`](https://fertility-tracker.gsuquet.com)
 4. **Preview Deployments:** Pull requests automatically generate unique staging preview URLs for isolated testing before merging to `main`.
 

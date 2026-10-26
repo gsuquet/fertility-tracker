@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -11,14 +12,16 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import { Observation } from '../types/crms';
+import type { Observation } from '../types/crms';
 
 export const CycleAnalyticsView: React.FC = () => {
   const { observations, cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
   const [showMcsGuide, setShowMcsGuide] = useState(false);
 
-  if (observations.length === 0 || cycles.length === 0) {
+  const activeCycle = cycles.find(c => c.id === selectedCycleId) ?? cycles[0];
+
+  if (observations.length === 0 || !activeCycle) {
     return (
       <div className="analytics-empty-state">
         <Activity size={48} className="icon-muted" />
@@ -32,7 +35,6 @@ export const CycleAnalyticsView: React.FC = () => {
   }
 
   const isAll = selectedCycleId === 'all';
-  const activeCycle = cycles.find(c => c.id === selectedCycleId) || cycles[0];
   const targetObs = isAll ? observations : activeCycle.observations;
   const targetCycles = isAll ? cycles : [activeCycle];
 

@@ -21,26 +21,29 @@ export interface Observation {
   id: string;
   date: string; // YYYY-MM-DD
   cycleDay: number; // 1, 2, 3...
-  bleeding?: BleedingCode;
-  stretch?: MucusStretch;
-  modifiers?: MucusModifier[];
-  frequency?: FrequencyCode;
-  symptoms?: SymptomCode[];
-  intercourse?: boolean; // 'I' marker
-  notes?: string;
-  isManualPeak?: boolean; // Manual Peak override
-  isCycleStart?: boolean; // Explicitly designated cycle start boundary flag
+  bleeding?: BleedingCode | undefined;
+  stretch?: MucusStretch | undefined;
+  modifiers?: MucusModifier[] | undefined;
+  frequency?: FrequencyCode | undefined;
+  symptoms?: SymptomCode[] | undefined;
+  intercourse?: boolean | undefined; // 'I' marker
+  notes?: string | undefined;
+  isManualPeak?: boolean | undefined; // Manual Peak override
+  isCycleStart?: boolean | undefined; // Explicitly designated cycle start boundary flag
   stamp: StampType;
   codeString: string; // Formatted code e.g. "10KLX3 I"
-  isPeakDay?: boolean; // Automatically or manually designated Peak Day 'P'
+  isPeakDay?: boolean | undefined; // Automatically or manually designated Peak Day 'P'
 }
+
+/** Partial observation payload accepted by save and format helpers. */
+export type ObservationInput = { [K in keyof Observation]?: Observation[K] | undefined };
 
 export interface Cycle {
   id: string;
   startDate: string; // YYYY-MM-DD
   observations: Observation[];
-  manualPeakDate?: string; // YYYY-MM-DD override
-  notes?: string;
+  manualPeakDate?: string | undefined; // YYYY-MM-DD override
+  notes?: string | undefined;
 }
 
 export type Language = 'en' | 'fr';

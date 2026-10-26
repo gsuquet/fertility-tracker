@@ -1,4 +1,4 @@
-import { Observation } from '../types/crms';
+import type { Observation } from '../types/crms';
 import { isPeakTypeMucus, calculateStamp } from './stampCalculator';
 import { getDaysDifference } from '../utils/dateUtils';
 
@@ -10,11 +10,11 @@ export function processCycleObservations(
   observations: Observation[],
   manualPeakDate?: string
 ): Observation[] {
-  if (observations.length === 0) return [];
-
   // Sort observations chronologically by date
   const sorted = [...observations].sort((a, b) => a.date.localeCompare(b.date));
-  const startDate = sorted[0].date;
+  const [first] = sorted;
+  if (!first) return [];
+  const startDate = first.date;
 
   // Find Peak Day
   let peakIndex = -1;
@@ -28,13 +28,7 @@ export function processCycleObservations(
       peakIndex = manualObsIndex;
     } else {
       // Find last day with peak-type mucus
-      for (let i = sorted.length - 1; i >= 0; i--) {
-        const obs = sorted[i];
-        if (isPeakTypeMucus(obs.stretch, obs.modifiers || [])) {
-          peakIndex = i;
-          break;
-        }
-      }
+      peakIndex = sorted.findLastIndex(obs => isPeakTypeMucus(obs.stretch, obs.modifiers || []));
     }
   }
 

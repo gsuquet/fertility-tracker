@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCycle } from '../context/CycleContext';
 import { StampBadge } from './StampBadge';
@@ -33,6 +34,17 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
+  const handleDismiss = useCallback(() => {
+    try {
+      if (typeof localStorage !== 'undefined') {
+        localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+      }
+    } catch {
+      // Ignore storage errors
+    }
+    onClose();
+  }, [onClose]);
+
   useEffect(() => {
     if (!isOpen) return;
 
@@ -44,20 +56,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
 
     document.addEventListener('keydown', handleKeyDown);
     return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen]);
+  }, [isOpen, handleDismiss]);
 
   if (!isOpen) return null;
-
-  const handleDismiss = () => {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
-      }
-    } catch {
-      // Ignore storage errors
-    }
-    onClose();
-  };
 
   const handleNext = () => {
     if (currentStep < totalSteps) {

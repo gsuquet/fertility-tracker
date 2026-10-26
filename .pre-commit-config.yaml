@@ -1,5 +1,40 @@
+# Hooks run on every commit. Install once with: mise run hooks
+# Remote hook revisions are pinned; local hooks use the versions locked in package-lock.json.
+default_install_hook_types: [pre-commit]
+fail_fast: false
+
 repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v6.0.0
+    hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-json
+        exclude: ^tsconfig\.json$
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
   - repo: https://github.com/gitleaks/gitleaks
     rev: v8.30.1
     hooks:
       - id: gitleaks
+
+  - repo: local
+    hooks:
+      - id: biome-check
+        name: biome check (lint + format)
+        entry: npx --no-install biome check --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true
+        language: system
+        types: [text]
+      - id: typecheck
+        name: tsc --noEmit
+        entry: npm run --silent typecheck
+        language: system
+        files: \.(ts|tsx)$
+        pass_filenames: false

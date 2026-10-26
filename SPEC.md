@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.12.0  
+**Document Version:** 1.13.0  
 **Status:** Approved  
-**Last Updated:** September 2, 2026  
+**Last Updated:** October 26, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -83,16 +83,21 @@ graph TD
 
 ### Technology Stack Details
 
-| Layer                  | Technology                                 | Specification / Version                                                                    |
-| :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------- |
-| **UI Library**         | React                                      | `v19.2.8`                                                                                  |
-| **Language**           | TypeScript                                 | `v7.0.2` (Strict mode, ES2022 target, strict unused checking)                              |
-| **Build Tool**         | Vite                                       | `v8.1.5`                                                                                   |
-| **Linter & Formatter** | Biome & Prettier                           | `@biomejs/biome v2.5.11`, `prettier v3.9.6`                                                |
-| **Icons**              | Lucide React                               | `v1.27.0`                                                                                  |
-| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                     |
-| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v4.1.11`, `@vitest/coverage-v8`, `@testing-library/react v16.3.2`, `jsdom v30.0.0` |
-| **Deployment**         | Cloudflare Pages                           | `@cloudflare/wrangler v4.115.0`                                                            |
+Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an exact version. `.npmrc` sets `save-exact=true` and `engine-strict=true`; `package.json` declares `engines`, `devEngines` and `packageManager`; `.mise/config.toml` and `.mise/mise.lock` pin the toolchain with checksums.
+
+| Layer                  | Technology                                 | Specification / Version                                                                          |
+| :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------------- |
+| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v12.2.1` (managed by mise `2026.10.19`)                                    |
+| **UI Library**         | React                                      | `v19.3.1`                                                                                        |
+| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)      |
+| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                         |
+| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)            |
+| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks  |
+| **Icons**              | Lucide React                               | `v1.61.0`                                                                                        |
+| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                           |
+| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3` |
+| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                             |
+| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                |
 
 ---
 
@@ -455,6 +460,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Architecture Decision:** [ADR 0002: CSS Maintainability & Layered Design System Architecture](docs/adr/0002-css-maintainability-design-system.md)
 
 - **Cascade Layer Order:** Native CSS `@layer` declaration enforcing strict override precedence without specificity conflicts:
+
   ```css
   @layer tokens, base, primitives, views, utilities;
   ```
@@ -490,28 +496,31 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ## 8. Testing & Quality Assurance
 
-The codebase maintains automated tests for domain algorithms and UI components using **Vitest**, **React Testing Library**, and **V8 Coverage Engine**, with static analysis governed by **Biome** and **Prettier**.
+The codebase maintains automated tests for domain algorithms and UI components using **Vitest**, **React Testing Library**, and **V8 Coverage Engine**, with static analysis governed by **Biome** and the strict **TypeScript** compiler.
 
 ### Quality & Test Suite Execution
 
 ```bash
-# Execute full unit test suite
+# Install the pinned toolchain and the git hooks
+mise install && mise run hooks
+
+# Execute full unit test suite (or watch mode with test:watch)
 npm run test
 
 # Execute test suite with V8 code coverage report
 npm run test:coverage
 
-# Static code linting with Biome
-npm run lint
+# Biome lint + format check (warnings fail)
+npm run check
 
-# Code formatting check with Prettier
-npm run format:check
-
-# Auto-format codebase
-npm run format
+# Auto-fix lint findings and format the codebase
+npm run check:fix
 
 # TypeScript strict type check
-npx tsc --noEmit
+npm run typecheck
+
+# Run every CI gate locally
+mise run validate
 ```
 
 ### Key Test Coverage Areas
@@ -546,11 +555,12 @@ npx tsc --noEmit
   npm run deploy # executes npm run build && wrangler pages deploy dist
   ```
 
-- **CI/CD Quality Gates:** Automated GitHub Actions workflows building and validating Pull Requests across four strict gates:
-  1. **Linting Check:** `npm run lint` (Biome Linter)
-  2. **Format Verification:** `npm run format:check` (Prettier)
+- **CI/CD Quality Gates:** The `ci` GitHub Actions workflow runs on every pull request and every push to `main`. It installs the toolchain from `.mise/config.toml` with `jdx/mise-action`, then runs:
+  1. **Dependency Install & Provenance:** `npm ci` and `npm audit signatures`
+  2. **Pre-commit Hooks:** `pre-commit run --all-files` (file hygiene, gitleaks secret scan, Biome lint and format, `tsc --noEmit`)
   3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
-  4. **TypeScript Strict Type Check:** `npx tsc --noEmit`
+  4. **Production Build:** `vite build`
+- **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
 
 ---
 

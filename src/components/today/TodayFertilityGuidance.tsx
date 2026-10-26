@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { StampType } from '../../types/crms';
+import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { Info, Sparkles } from 'lucide-react';
 
@@ -37,7 +37,6 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
         return language === 'fr'
           ? 'Compte Post-Sommet (+1, +2, +3). Fenêtre d hyper-fertilité post-ovulatoire.'
           : 'Post-Peak count (+1, +2, +3). High fertility transition window following Peak Day.';
-      case 'DARK_GREEN':
       default:
         return language === 'fr'
           ? 'Journée sèche / infertile. Continuez l observation quotidienne.'

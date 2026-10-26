@@ -14,16 +14,35 @@ export const getTodayStr = (): string => {
 };
 
 /**
+ * Splits a YYYY-MM-DD string into numeric parts. Returns null when a part is missing or not a number.
+ */
+const parseDateParts = (dateStr: string): [number, number, number] | null => {
+  const [year, month, day] = dateStr.split('-').map(Number);
+  if (
+    year === undefined ||
+    month === undefined ||
+    day === undefined ||
+    Number.isNaN(year) ||
+    Number.isNaN(month) ||
+    Number.isNaN(day)
+  ) {
+    return null;
+  }
+  return [year, month, day];
+};
+
+/**
  * Safely adds or subtracts days from a YYYY-MM-DD date string.
  * Uses pure UTC date math to avoid local timezone offset and DST shifts.
  */
 export const addDays = (dateStr: string, days: number): string => {
-  const [year, month, day] = dateStr.split('-').map(Number);
-  if (Number.isNaN(year) || Number.isNaN(month) || Number.isNaN(day)) {
+  const parts = parseDateParts(dateStr);
+  if (!parts) {
     return dateStr;
   }
+  const [year, month, day] = parts;
   const d = new Date(Date.UTC(year, month - 1, day + days));
-  return d.toISOString().split('T')[0];
+  return d.toISOString().slice(0, 10);
 };
 
 /**
@@ -40,7 +59,9 @@ export const formatDateDisplay = (
   }
 ): string => {
   try {
-    const [year, month, day] = dateStr.split('-').map(Number);
+    const parts = parseDateParts(dateStr);
+    if (!parts) return dateStr;
+    const [year, month, day] = parts;
     const d = new Date(year, month - 1, day);
     return d.toLocaleDateString(locale, options);
   } catch (_e) {
@@ -53,7 +74,9 @@ export const formatDateDisplay = (
  */
 export const formatDayOfWeek = (dateStr: string, locale: string = 'en-US'): string => {
   try {
-    const [year, month, day] = dateStr.split('-').map(Number);
+    const parts = parseDateParts(dateStr);
+    if (!parts) return '';
+    const [year, month, day] = parts;
     const d = new Date(year, month - 1, day);
     return d.toLocaleDateString(locale, { weekday: 'short' });
   } catch (_e) {
@@ -65,18 +88,13 @@ export const formatDayOfWeek = (dateStr: string, locale: string = 'en-US'): stri
  * Calculates day difference between two YYYY-MM-DD date strings (endDate - startDate).
  */
 export const getDaysDifference = (startDateStr: string, endDateStr: string): number => {
-  const [sYear, sMonth, sDay] = startDateStr.split('-').map(Number);
-  const [eYear, eMonth, eDay] = endDateStr.split('-').map(Number);
-  if (
-    Number.isNaN(sYear) ||
-    Number.isNaN(sMonth) ||
-    Number.isNaN(sDay) ||
-    Number.isNaN(eYear) ||
-    Number.isNaN(eMonth) ||
-    Number.isNaN(eDay)
-  ) {
+  const startParts = parseDateParts(startDateStr);
+  const endParts = parseDateParts(endDateStr);
+  if (!startParts || !endParts) {
     return 0;
   }
+  const [sYear, sMonth, sDay] = startParts;
+  const [eYear, eMonth, eDay] = endParts;
   const start = Date.UTC(sYear, sMonth - 1, sDay);
   const end = Date.UTC(eYear, eMonth - 1, eDay);
   return Math.round((end - start) / (1000 * 60 * 60 * 24));

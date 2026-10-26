@@ -1,5 +1,5 @@
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
-import { Observation } from '../types/crms';
+import type { Observation } from '../types/crms';
 
 export interface VersionRelease {
   version: string;
@@ -37,6 +37,32 @@ export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
 export const VERSION_HISTORY: VersionRelease[] = [
+  {
+    version: '1.13.0',
+    date: '2026-10-26',
+    title: 'Toolchain Upgrade, Pinned Dependencies & Stricter Static Analysis',
+    titleFr:
+      'Mise à Niveau de la Chaîne d’Outils, Dépendances Épinglées & Analyse Statique Renforcée',
+    tagline:
+      'Upgraded to Node 26.12.1 and the latest libraries with exact version pins, stricter TypeScript and Biome rules, and a single pinned toolchain for local hooks and CI',
+    taglineFr:
+      'Passage à Node 26.12.1 et aux dernières bibliothèques avec versions exactes, règles TypeScript et Biome renforcées, et une chaîne d’outils unique pour les hooks locaux et la CI',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Upgraded runtime to Node 26.12.1 and npm 12.2.1, and pinned every dependency, tool, hook and CI action to an exact version',
+      'Upgraded React 19.3, Vite 8.3, Vitest 5.0, Biome 2.6 and Wrangler 4.153',
+      'Enabled stricter TypeScript checks (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax) and fixed every finding',
+      'Replaced Prettier with Biome for linting and formatting of code, styles, JSON, YAML and Markdown',
+      'Added pre-commit hooks (hygiene, secret scanning, Biome, type check), CI on the mise toolchain, and Dependabot updates',
+    ],
+    highlightsFr: [
+      'Passage à Node 26.12.1 et npm 12.2.1, avec une version exacte pour chaque dépendance, outil, hook et action CI',
+      'Mise à niveau vers React 19.3, Vite 8.3, Vitest 5.0, Biome 2.6 et Wrangler 4.153',
+      'Activation de contrôles TypeScript plus stricts (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax) et correction de chaque erreur',
+      'Remplacement de Prettier par Biome pour l’analyse et le formatage du code, des styles, du JSON, du YAML et du Markdown',
+      'Ajout de hooks pre-commit (hygiène, détection de secrets, Biome, typage), d’une CI basée sur mise et des mises à jour Dependabot',
+    ],
+  },
   {
     version: '1.12.0',
     date: '2026-09-02',
@@ -466,14 +492,14 @@ export function getAppVersion(): string {
   if (typeof __APP_VERSION__ !== 'undefined') {
     return __APP_VERSION__;
   }
-  return '1.12.0';
+  return '1.13.0';
 }
 
 export function getBuildDate(): string {
   if (typeof __BUILD_DATE__ !== 'undefined') {
     return __BUILD_DATE__;
   }
-  return '2026-09-02T00:00:00.000Z';
+  return '2026-10-26T00:00:00.000Z';
 }
 
 export function getVersionInfo(): VersionInfo {
@@ -492,7 +518,9 @@ export function getVersionHistory(): VersionRelease[] {
 }
 
 export function getLatestRelease(): VersionRelease {
-  return VERSION_HISTORY[0];
+  const [latest] = VERSION_HISTORY;
+  if (!latest) throw new Error('VERSION_HISTORY must contain at least one release');
+  return latest;
 }
 
 export function checkAndRecordVersionSeen(): {

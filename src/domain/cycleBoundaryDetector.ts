@@ -1,4 +1,4 @@
-import { Observation, Cycle } from '../types/crms';
+import type { Observation, Cycle } from '../types/crms';
 import { processCycleObservations } from './peakDetector';
 
 /**
@@ -35,18 +35,17 @@ export function isFirstBleedingDayOfSeries(
  * or when an observation is explicitly marked as a cycle start.
  */
 export function groupObservationsIntoCycles(observations: Observation[]): Cycle[] {
-  if (observations.length === 0) return [];
-
   // Sort chronological (oldest to newest)
   const sorted = [...observations].sort((a, b) => a.date.localeCompare(b.date));
+  const [first] = sorted;
+  if (!first) return [];
 
   const cycles: Cycle[] = [];
   let currentCycleObs: Observation[] = [];
-  let currentCycleStartDate = sorted[0].date;
+  let currentCycleStartDate = first.date;
 
-  for (let i = 0; i < sorted.length; i++) {
-    const obs = sorted[i];
-    const prevObs = i > 0 ? sorted[i - 1] : null;
+  for (const [i, obs] of sorted.entries()) {
+    const prevObs = i > 0 ? sorted[i - 1] : undefined;
 
     // Detect if this observation starts a NEW cycle:
     // 1. Explicitly marked as manual cycle start (isCycleStart === true) -> true

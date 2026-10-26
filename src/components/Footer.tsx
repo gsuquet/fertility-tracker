@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { ShieldAlert, Info, Tag, BookOpen } from 'lucide-react';
 import { getAppVersion } from '../domain/versionTracker';
