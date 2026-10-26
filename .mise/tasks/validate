@@ -1,0 +1,7 @@
+#!/usr/bin/env bash
+#MISE description="Run every CI quality gate locally"
+set -euo pipefail
+
+pre-commit run --all-files
+npm run test:coverage
+npx --no-install vite build

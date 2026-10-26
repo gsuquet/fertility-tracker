@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Build and deploy application to Cloudflare Pages"
+set -euo pipefail
+
+npm run deploy

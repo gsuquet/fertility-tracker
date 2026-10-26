@@ -4,16 +4,7 @@
 [settings]
 lockfile = true
 
-[tasks]
-install = { run = "npm ci", description = "Install locked project dependencies" }
-hooks = { run = "pre-commit install", description = "Install the git pre-commit hooks" }
-dev = { run = "npm run dev", description = "Start Vite development server" }
-test = { run = "npm run test", description = "Run Vitest unit and integration test suite" }
-check = { run = "npm run check", description = "Run Biome lint and format checks" }
-validate = { run = "pre-commit run --all-files && npm run test:coverage && npx --no-install vite build", description = "Run every CI quality gate locally" }
-build = { run = "npm run build", description = "Type-check TypeScript and build production bundle" }
-preview = { run = "npm run preview", description = "Preview production build locally" }
-deploy = { run = "npm run deploy", description = "Build and deploy application to Cloudflare Pages" }
+# Tasks are shell scripts in .mise/tasks/ (run `mise tasks` to list them).
 
 [tools]
 gitleaks = '8.30.1'

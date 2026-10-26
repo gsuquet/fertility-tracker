@@ -519,7 +519,7 @@ npm run check:fix
 # TypeScript strict type check
 npm run typecheck
 
-# Run every CI gate locally
+# Run every CI gate locally (tasks live in .mise/tasks/)
 mise run validate
 ```
 
@@ -555,7 +555,7 @@ mise run validate
   npm run deploy # executes npm run build && wrangler pages deploy dist
   ```
 
-- **CI/CD Quality Gates:** The `ci` GitHub Actions workflow runs on every pull request and every push to `main`. It installs the toolchain from `.mise/config.toml` with `jdx/mise-action`, then runs:
+- **CI/CD Quality Gates:** The `ci` GitHub Actions workflow runs on every pull request that targets `main` (not on pushes to `main`). It installs the toolchain from `.mise/config.toml` with `jdx/mise-action`, then runs:
   1. **Dependency Install & Provenance:** `npm ci` and `npm audit signatures`
   2. **Pre-commit Hooks:** `pre-commit run --all-files` (file hygiene, gitleaks secret scan, Biome lint and format, `tsc --noEmit`)
   3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
