@@ -22,6 +22,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
+          fetch-depth: 0
           persist-credentials: false
 
       - name: Install pinned toolchain (node, npm, pre-commit, gitleaks)
@@ -37,7 +38,14 @@ jobs:
       - name: Verify registry signatures
         run: npm audit signatures
 
-      - name: Run pre-commit hooks (hygiene, secrets, Biome, types)
+      - name: Scan pull request commits for secrets
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: gitleaks git --redact --verbose --log-opts="origin/${BASE_REF}..HEAD" .
+
+      - name: Run pre-commit hooks (hygiene, Biome, types)
+        env:
+          SKIP: gitleaks
         run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Run unit tests with code coverage

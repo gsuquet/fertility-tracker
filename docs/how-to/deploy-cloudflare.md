@@ -26,7 +26,7 @@ If you need to deploy or test static builds locally without pushing to GitHub:
 ### Prerequisites
 
 - Cloudflare Account
-- Node.js $\ge 22.0.0$ and `npm` or `mise`
+- `mise`, or Node.js `26.12.1` with npm `12.2.1` (the versions pinned in `.mise/config.toml`)
 
 ### Steps
 
