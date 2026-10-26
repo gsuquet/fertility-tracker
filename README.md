@@ -55,7 +55,7 @@ This project is intended for:
 Before using **Fertility Tracker**, ensure your development environment includes:
 
 - **mise (Recommended):** [mise](https://mise.jdx.dev/) for managing tool versions (Node.js) and task automation.
-- **Node.js:** exactly v26.12.1 with npm v12.2.1 (pinned and installed automatically via `mise`).
+- **Node.js:** exactly v26.12.1 with its bundled npm v11.20.0 (pinned and installed automatically via `mise`).
 - **Package Manager:** `npm` v9.0.0 or higher (or `pnpm` / `yarn`).
 - **Modern Web Browser:** Google Chrome, Mozilla Firefox, Safari, or Microsoft Edge with ES2022+ support.
 
@@ -148,7 +148,7 @@ Get started with **Fertility Tracker** by cloning the repository and launching t
 
 | Issue                                                    | Solution                                                                                                                              |
 | :------------------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------------------ |
-| `npm install` fails with an engine or version error      | Run `mise install` so Node.js v26.12.1 and npm v12.2.1 are active, then run `npm ci`.                                                 |
+| `npm install` fails with an engine or version error      | Run `mise install` so Node.js v26.12.1 and npm v11.20.0 are active, then run `npm ci`.                                                |
 | Port `5173` is already in use when running `npm run dev` | Vite will automatically try the next available port (e.g., `5174`). Alternatively, specify a port explicitly: `npx vite --port 3000`. |
 | TypeScript check fails during `npm run build`            | Clear local Vite cache and re-run build: `rm -rf node_modules/.vite dist && npm run build`.                                           |
 | Tests fail in headless environment                       | Ensure `jsdom` is installed correctly and run `npm run test -- --update`.                                                             |

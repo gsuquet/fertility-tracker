@@ -49,14 +49,14 @@ export const VERSION_HISTORY: VersionRelease[] = [
       'Passage à Node 26.12.1 et aux dernières bibliothèques avec versions exactes, règles TypeScript et Biome renforcées, et une chaîne d’outils unique pour les hooks locaux et la CI',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'Upgraded runtime to Node 26.12.1 and npm 12.2.1, and pinned every dependency, tool, hook and CI action to an exact version',
+      'Upgraded runtime to Node 26.12.1 and npm 11.20.0 (bundled with Node), and pinned every dependency, tool, hook and CI action to an exact version',
       'Upgraded React 19.3, Vite 8.3, Vitest 5.0, Biome 2.6 and Wrangler 4.153',
       'Enabled stricter TypeScript checks (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax) and fixed every finding',
       'Replaced Prettier with Biome for linting and formatting of code, styles, JSON, YAML and Markdown',
       'Added pre-commit hooks (hygiene, secret scanning, Biome, type check), CI on the mise toolchain, and Dependabot updates',
     ],
     highlightsFr: [
-      'Passage à Node 26.12.1 et npm 12.2.1, avec une version exacte pour chaque dépendance, outil, hook et action CI',
+      'Passage à Node 26.12.1 et npm 11.20.0 (bundled with Node), avec une version exacte pour chaque dépendance, outil, hook et action CI',
       'Mise à niveau vers React 19.3, Vite 8.3, Vitest 5.0, Biome 2.6 et Wrangler 4.153',
       'Activation de contrôles TypeScript plus stricts (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax) et correction de chaque erreur',
       'Remplacement de Prettier par Biome pour l’analyse et le formatage du code, des styles, du JSON, du YAML et du Markdown',

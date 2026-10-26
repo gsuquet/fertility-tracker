@@ -87,7 +87,7 @@ Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an e
 
 | Layer                  | Technology                                 | Specification / Version                                                                          |
 | :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v12.2.1` (managed by mise `2026.10.19`)                                    |
+| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)       |
 | **UI Library**         | React                                      | `v19.3.1`                                                                                        |
 | **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)      |
 | **Build Tool**         | Vite                                       | `v8.3.5`                                                                                         |
