@@ -155,6 +155,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setObservations([]);
     setSelectedCycleId('all');
     removeStorage(STORAGE_KEY);
+    removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
   }, []);
 
   const applyObservations = useCallback((list: Observation[]) => {

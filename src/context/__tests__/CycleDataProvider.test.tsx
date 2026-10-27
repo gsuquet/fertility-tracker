@@ -94,6 +94,14 @@ describe('CycleDataProvider', () => {
     spy.mockRestore();
   });
 
+  it('deletes the recovery copy when all data is cleared', () => {
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    const { result } = renderData();
+    act(() => result.current.clearAllData());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+  });
+
   it('keeps the recovery copy from an earlier session and has none for valid data', () => {
     localStorage.setItem(RECOVERY_KEY, 'old text');
     const earlier = renderData().result.current;
