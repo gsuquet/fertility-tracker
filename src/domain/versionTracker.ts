@@ -65,6 +65,25 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.16.1',
+    date: '2026-10-27',
+    title: 'Self-Hosted Font',
+    titleFr: 'Police hébergée localement',
+    tagline: 'The app no longer contacts Google Fonts when you open it',
+    taglineFr: 'L’application ne contacte plus Google Fonts à l’ouverture',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The Plus Jakarta Sans font is now part of the app, so opening the app sends no request to Google',
+      'The font is cached with the other app files, so it also shows offline',
+      'Stricter security policy: styles and fonts load only from the app itself',
+    ],
+    highlightsFr: [
+      'La police Plus Jakarta Sans fait désormais partie de l’application : son ouverture n’envoie plus aucune requête à Google',
+      'La police est mise en cache avec les autres fichiers de l’application : elle s’affiche aussi hors ligne',
+      'Politique de sécurité renforcée : les styles et les polices ne se chargent que depuis l’application',
+    ],
+  },
+  {
     version: '1.16.0',
     date: '2026-10-27',
     title: 'Reliable Offline Use & Installable App',
