@@ -38,10 +38,9 @@ export const CalendarGrid: React.FC = () => {
     setCurrentMonth(new Date(year, month - 1, 1));
   };
 
+  // The next button is disabled from the current month onward
   const handleNextMonth = () => {
-    if (!isCurrentOrFutureMonth) {
-      setCurrentMonth(new Date(year, month + 1, 1));
-    }
+    setCurrentMonth(new Date(year, month + 1, 1));
   };
 
   const obsMap = new Map(observations.map(o => [o.date, o]));
@@ -129,20 +128,19 @@ export const CalendarGrid: React.FC = () => {
               aria-current={isToday ? 'date' : undefined}
               disabled={isFutureDay}
               onClick={() => {
-                if (!isFutureDay) {
-                  setSelectedObservation(
-                    obs || {
-                      id: '',
-                      date: dateStr,
-                      cycleDay: 1,
-                      stamp: 'DARK_GREEN',
-                      codeString: '',
-                      intercourse: false,
-                      symptoms: [],
-                    }
-                  );
-                  setIsDrawerOpen(true);
-                }
+                // Future days are disabled, so a click is always on a past day or today
+                setSelectedObservation(
+                  obs || {
+                    id: '',
+                    date: dateStr,
+                    cycleDay: 1,
+                    stamp: 'DARK_GREEN',
+                    codeString: '',
+                    intercourse: false,
+                    symptoms: [],
+                  }
+                );
+                setIsDrawerOpen(true);
               }}
               aria-label={`Date ${dateStr}, ${obs ? `Observation ${obs.codeString}` : 'No observation'}`}
             >
