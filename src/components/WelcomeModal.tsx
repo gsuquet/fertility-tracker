@@ -24,6 +24,7 @@ import {
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { writeStorage } from '../utils/storage';
 import { Modal } from './Modal';
+import { formatMessage } from '../i18n';
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -88,7 +89,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
 
       {/* Stepper Header / Progress */}
       <div className="welcome-stepper-bar">
-        <div className="stepper-dots" role="tablist" aria-label="Onboarding Steps">
+        <div className="stepper-dots" role="tablist" aria-label={welcomeT.stepsLabel}>
           {[1, 2, 3, 4].map(step => (
             <button
               key={step}
@@ -97,16 +98,14 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
               aria-selected={currentStep === step}
               className={`stepper-dot-btn ${currentStep === step ? 'active' : ''} ${step < currentStep ? 'completed' : ''}`}
               onClick={() => setCurrentStep(step)}
-              title={`Go to step ${step}`}
+              title={formatMessage(welcomeT.goToStep, { step })}
             >
               {step < currentStep ? <CheckCircle2 size={12} /> : step}
             </button>
           ))}
         </div>
         <span className="step-count-badge">
-          {welcomeT.stepCount
-            .replace('{current}', String(currentStep))
-            .replace('{total}', String(totalSteps))}
+          {formatMessage(welcomeT.stepCount, { current: currentStep, total: totalSteps })}
         </span>
       </div>
 
@@ -256,7 +255,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
                 </div>
                 <div className="code-example-badge form-mode-badge">
                   <CheckSquare size={13} />
-                  <span>Detailed Form</span>
+                  <span>{t.todayView.modeDetailed}</span>
                 </div>
               </div>
             </div>

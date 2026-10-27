@@ -39,5 +39,34 @@ describe('i18n Translation Modules & Schema Parity', () => {
     expect(Object.keys(fr.undoToast)).toEqual(Object.keys(en.undoToast));
     expect(Object.keys(fr.storageWarning)).toEqual(Object.keys(en.storageWarning));
     expect(Object.keys(fr.backupReminder)).toEqual(Object.keys(en.backupReminder));
+    expect(Object.keys(fr.menu)).toEqual(Object.keys(en.menu));
+    expect(Object.keys(fr.mobileTabs)).toEqual(Object.keys(en.mobileTabs));
+    expect(Object.keys(fr.common)).toEqual(Object.keys(en.common));
+    expect(Object.keys(fr.calendar)).toEqual(Object.keys(en.calendar));
+    expect(Object.keys(fr.cyclePicker)).toEqual(Object.keys(en.cyclePicker));
+    expect(Object.keys(fr.footer)).toEqual(Object.keys(en.footer));
+    expect(Object.keys(fr.drawer)).toEqual(Object.keys(en.drawer));
+    expect(Object.keys(fr.printExport)).toEqual(Object.keys(en.printExport));
+  });
+
+  it('gives 12 month names and 7 weekdays in each language', () => {
+    for (const locale of [en, fr]) {
+      expect(locale.calendar.months).toHaveLength(12);
+      expect(locale.calendar.weekdays).toHaveLength(7);
+    }
+  });
+
+  it('keeps the same placeholders in each French template', () => {
+    const placeholders = (text: string) => (text.match(/\{\w+\}/g) ?? []).sort();
+    const compare = (enNode: unknown, frNode: unknown, path: string) => {
+      if (typeof enNode === 'string') {
+        expect(placeholders(frNode as string), path).toEqual(placeholders(enNode));
+      } else if (enNode && typeof enNode === 'object') {
+        for (const [key, value] of Object.entries(enNode)) {
+          compare(value, (frNode as Record<string, unknown>)[key], `${path}.${key}`);
+        }
+      }
+    };
+    compare(en, fr, 'fr');
   });
 });

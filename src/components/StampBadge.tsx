@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useLanguage } from '../context/LanguageContext';
 import type { StampType } from '../types/crms';
 
 interface StampBadgeProps {
@@ -14,6 +15,7 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
   intercourse = false,
   size = 'md',
 }) => {
+  const { t } = useLanguage();
   const isLightGreen = stamp.startsWith('LIGHT_GREEN');
   const postPeakNumber = stamp.endsWith('1')
     ? '1'
@@ -38,7 +40,7 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
 
         {/* Intercourse 'I' overlay directly on the stamp */}
         {intercourse && (
-          <div className="intercourse-stamp-overlay" title="Intercourse (I)">
+          <div className="intercourse-stamp-overlay" title={t.labels.intercourse}>
             I
           </div>
         )}

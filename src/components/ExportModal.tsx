@@ -18,6 +18,7 @@ import { summarizeObservations } from '../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../domain/backupImport';
 import { ConfirmDialog } from './ConfirmDialog';
 import { Modal } from './Modal';
+import { formatMessage } from '../i18n';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -151,14 +152,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     if (action.kind === 'demo') {
       return {
         title: c.demoTitle,
-        messages: [c.demoMessage.replace('{count}', count)],
+        messages: [formatMessage(c.demoMessage, { count })],
         actions: [{ label: c.demoConfirm, onClick: () => runAction(action) }],
       };
     }
     if (action.kind === 'clear') {
       return {
         title: c.clearTitle,
-        messages: [c.clearMessage.replace('{count}', count)],
+        messages: [formatMessage(c.clearMessage, { count })],
         actions: [{ label: c.clearConfirm, onClick: () => runAction(action), danger: true }],
       };
     }
@@ -166,13 +167,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     const fileMessage =
       summary.count === 0
         ? c.importEmpty
-        : c.importSummary
-            .replace('{count}', String(summary.count))
-            .replace('{first}', String(summary.firstDate))
-            .replace('{last}', String(summary.lastDate));
+        : formatMessage(c.importSummary, {
+            count: summary.count,
+            first: String(summary.firstDate),
+            last: String(summary.lastDate),
+          });
     return {
       title: c.importTitle,
-      messages: [fileMessage, c.importChoice.replace('{count}', count)],
+      messages: [fileMessage, formatMessage(c.importChoice, { count })],
       actions: [
         { label: c.importMerge, onClick: () => runAction(action, 'merge') },
         { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
@@ -195,7 +197,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
           type="button"
           className="icon-button"
           onClick={onClose}
-          aria-label="Close export dialog"
+          aria-label={t.exportModal.close}
         >
           <X size={20} />
         </button>

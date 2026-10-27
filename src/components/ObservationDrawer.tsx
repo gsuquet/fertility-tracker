@@ -78,12 +78,12 @@ export const ObservationDrawer: React.FC = () => {
       panelClassName="drawer-container"
     >
       <div className="drawer-header">
-        <h2 id="drawer-title">{savedId ? 'Edit Observation' : t.actions.newEntry}</h2>
+        <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
         <button
           type="button"
           className="icon-button"
           onClick={() => setIsDrawerOpen(false)}
-          aria-label="Close entry panel"
+          aria-label={t.drawer.close}
         >
           <X size={20} />
         </button>
