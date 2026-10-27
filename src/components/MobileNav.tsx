@@ -45,8 +45,8 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
         type="button"
         className="mobile-nav-fab"
         onClick={handleQuickAdd}
-        aria-label={t.mobileTabs.log || t.actions.newEntry}
-        title={t.mobileTabs.log || t.actions.newEntry}
+        aria-label={t.mobileTabs.log}
+        title={t.mobileTabs.log}
       >
         <Plus size={22} />
       </button>
