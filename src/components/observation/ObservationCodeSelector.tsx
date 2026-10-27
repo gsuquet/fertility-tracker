@@ -66,14 +66,9 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
         <div className="form-group">
           <button
             type="button"
-            className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
+            className={`peak-toggle-btn cycle-start-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
             onClick={actions.toggleCycleStart}
             aria-pressed={isCycleStart === true}
-            style={{
-              borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
-              backgroundColor: isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
-              color: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
-            }}
           >
             <Calendar size={18} />
             <span>

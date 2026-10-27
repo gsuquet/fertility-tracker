@@ -29,6 +29,7 @@ This page lists the test rules, the test layers and the test helpers. For the re
 | Styles      | `src/styles/__tests__/`                   | Vitest                | CSS rules for problems that the tests cannot see, for example dark mode colors. |
 | PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Vitest                | Service worker cache strategies and the service worker registration.            |
 | Tools       | `scripts/**/__tests__/`                   | Vitest                | The docs checker and the service worker build plugin.                           |
+| End-to-end  | `e2e/`                                    | Playwright and axe    | Main flows and accessibility in Chromium, against the production build.         |
 
 ## Coverage scope
 
@@ -54,6 +55,34 @@ Options of `renderWithProviders`:
 | `selectedCycleId` | `'all'` | Selects a cycle after the first render. |
 
 The setup file `src/setupTests.ts` clears `localStorage` after each test.
+
+## End-to-end tests
+
+Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage report does not include them. The settings are in `playwright.config.ts`.
+
+| Item                | Value                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| Browser             | Chromium                                                                               |
+| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                |
+| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.   |
+| Type check          | `e2e/tsconfig.json`.`npm run typecheck` checks it.                                     |
+| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`.                                   |
+| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed. |
+| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                     |
+| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                          |
+
+| Test file                   | Flows                                                                                                                                                                         |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view. |
+| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                              |
+
+| Helper              | File              | Use                                                               |
+| ------------------- | ----------------- | ----------------------------------------------------------------- |
+| `openApp(page)`     | `e2e/fixtures.ts` | Opens the application on a fixed date, without the welcome guide. |
+| `fixClock(page)`    | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                          |
+| `skipWelcome(page)` | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                  |
+
+`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. When a correction is merged, remove its pairs from the list.
 
 ## Related documents
 

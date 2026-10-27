@@ -73,9 +73,9 @@ describe('ObservationDrawer flows', () => {
     fireEvent.change(within(drawer()).getByLabelText(en.labels.notes), {
       target: { value: 'note' },
     });
-    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KX3 I');
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KX3 I AP');
     press(en.actions.save);
-    expect(saved()).toBe('2026-09-15:10KX3 I:undefined');
+    expect(saved()).toBe('2026-09-15:10KX3 I AP:undefined');
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 

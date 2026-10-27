@@ -340,7 +340,7 @@
     background-color: var(--stamp-white-border, #94a3b8);
   }
   .bar-fertile {
-    background-color: var(--accent-primary, #4f46e5);
+    background-color: var(--accent-solid, #4f46e5);
   }
   .bar-peak {
     background-color: #ec4899;
