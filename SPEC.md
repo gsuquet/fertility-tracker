@@ -609,7 +609,7 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 - The suite covers these flows:
   1. The first visit shows the welcome guide, and the **Escape** key closes it.
   2. An observation logged in the **Today** view is still there after a reload.
-  3. A JSON backup, a reset and a restore of that backup keep the observations.
+  3. A JSON backup, a reset and a restore of that backup keep the observations. The reset goes through the confirm dialog (**Delete all data**) and shows the undo message. After a new observation, the restore shows the import preview, and **Replace** brings back the observations of the backup.
   4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
 - **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit list of rule id and target pairs for each screen in `e2e/accessibility.spec.ts` (all `color-contrast`, issue #49; see also #34 and #35). The test fails on a pair that is not in the list and on a listed pair that no longer occurs, so the list shrinks when a correction is merged.
 - Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.

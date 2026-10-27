@@ -3,7 +3,7 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/domain/versionTracker';
 import { en } from '../src/i18n/locales/en';
-import { fixClock, openApp } from './fixtures';
+import { TODAY, fixClock, openApp } from './fixtures';
 
 const directCode = (page: Page) => page.getByRole('textbox', { name: en.labels.directInput });
 
@@ -59,18 +59,39 @@ test.describe('Fertility Tracker in a browser', () => {
 
     // Clear the data, so that only the restore can bring the observation back.
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    page.once('dialog', dialog => dialog.accept());
     await exportDialog.getByRole('button', { name: en.actions.clearData }).click();
+    const clearConfirm = page.getByRole('dialog', { name: en.confirmDialog.clearTitle });
+    await expect(clearConfirm).toBeVisible();
+    await clearConfirm.getByRole('button', { name: en.confirmDialog.clearConfirm }).click();
+    await expect(clearConfirm).toBeHidden();
     await expect(exportDialog).toBeHidden();
     await expect(directCode(page)).toHaveValue('');
+    const undoToast = page.getByRole('status').filter({ hasText: en.undoToast.clear });
+    await expect(undoToast).toBeVisible();
+    await expect(undoToast.getByRole('button', { name: en.undoToast.undo })).toBeVisible();
+
+    // A new observation of the same day deletes the undo copy, and the restore must replace it.
+    await logObservation(page, '0AD');
+    await expect(undoToast).toBeHidden();
 
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    const restoreAlert = page.waitForEvent('dialog');
-    await exportDialog.getByLabel(en.actions.importJson).setInputFiles(backupPath);
-    const alert = await restoreAlert;
-    expect(alert.message()).toBe('Chart data restored successfully!');
-    await alert.accept();
+    const fileChooser = page.waitForEvent('filechooser');
+    await exportDialog.getByRole('button', { name: en.actions.importJson }).click();
+    await (await fileChooser).setFiles(backupPath);
+    const preview = page.getByRole('dialog', { name: en.confirmDialog.importTitle });
+    await expect(preview).toContainText(
+      en.confirmDialog.importSummary
+        .replace('{count}', '1')
+        .replace('{first}', TODAY)
+        .replace('{last}', TODAY)
+    );
+    await expect(preview).toContainText(en.confirmDialog.importChoice.replace('{count}', '1'));
+    await preview.getByRole('button', { name: en.confirmDialog.importReplace }).click();
+    await expect(preview).toBeHidden();
     await expect(exportDialog).toBeHidden();
+    await expect(page.getByRole('status').filter({ hasText: en.undoToast.import })).toBeVisible();
+    await expect(directCode(page)).toHaveValue('10KLX3 I');
+    expect(await savedObservations(page)).toBe(before);
 
     await page.reload();
     await expect(directCode(page)).toHaveValue('10KLX3 I');

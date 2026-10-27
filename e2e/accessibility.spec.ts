@@ -30,7 +30,7 @@ const KNOWN_VIOLATIONS: Record<Screen, readonly string[]> = {
     FOOTER_CONTRAST,
     'color-contrast .section-subtitle',
     'color-contrast .pdf-info-note',
-    'color-contrast .import-restore-section > .btn-danger.btn',
+    'color-contrast .import-restore-section > .btn-danger.btn[type="button"]',
   ],
 };
 
