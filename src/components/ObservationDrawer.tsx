@@ -2,12 +2,12 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import type {
-  BleedingCode,
-  MucusStretch,
-  MucusModifier,
-  FrequencyCode,
-  SymptomCode,
+import {
+  BLEEDING_CODES,
+  FREQUENCY_CODES,
+  MODIFIER_CODES,
+  STRETCH_CODES,
+  SYMPTOM_CODES,
 } from '../types/crms';
 import { needsCycleStartChoice } from '../domain/observationForm';
 import { useObservationForm } from '../hooks/useObservationForm';
@@ -168,7 +168,7 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.bleeding}</label>
             <div className="button-grid" role="group" aria-label={t.labels.bleeding}>
-              {(['H', 'M', 'L', 'VL', 'B'] as BleedingCode[]).map(code => (
+              {BLEEDING_CODES.map(code => (
                 <button
                   type="button"
                   key={code}
@@ -209,9 +209,7 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.stretch}</label>
             <div className="button-grid" role="group" aria-label={t.labels.stretch}>
-              {(
-                ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]
-              ).map(code => (
+              {STRETCH_CODES.map(code => (
                 <button
                   type="button"
                   key={code}
@@ -229,7 +227,7 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.modifiers}</label>
             <div className="button-grid" role="group" aria-label={t.labels.modifiers}>
-              {(['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as MucusModifier[]).map(mod => (
+              {MODIFIER_CODES.map(mod => (
                 <button
                   type="button"
                   key={mod}
@@ -247,7 +245,7 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.frequency}</label>
             <div className="button-grid" role="group" aria-label={t.labels.frequency}>
-              {(['X1', 'X2', 'X3', 'AD'] as FrequencyCode[]).map(code => (
+              {FREQUENCY_CODES.map(code => (
                 <button
                   type="button"
                   key={code}
@@ -265,7 +263,7 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <label>{t.labels.symptoms}</label>
             <div className="button-grid" role="group" aria-label={t.labels.symptoms}>
-              {(['AP', 'RAP', 'LAP'] as SymptomCode[]).map(sym => (
+              {SYMPTOM_CODES.map(sym => (
                 <button
                   type="button"
                   key={sym}

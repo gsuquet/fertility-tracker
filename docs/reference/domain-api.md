@@ -18,6 +18,14 @@ This page lists the exported functions of `src/domain/`. These functions are pur
 | `isPeakTypeMucus` | `(stretch?: MucusStretch, modifiers?: MucusModifier[]) => boolean`                            | `true` if the mucus is fertile.                   |
 | `calculateStamp`  | `(bleeding?: BleedingCode, stretch?: MucusStretch, modifiers?: MucusModifier[]) => StampType` | The stamp of one day, without the count of three. |
 
+## mucusScore.ts
+
+| Function        | Signature                                                      | Returns                                                                        |
+| --------------- | -------------------------------------------------------------- | ------------------------------------------------------------------------------ |
+| `getMucusScore` | `(obs: Pick<Observation, 'stretch' \| 'modifiers'>) => number` | The mucus score of one day, from 0 to 10. `K` or `L` gives 10. `C/K` does not. |
+
+The rules are in [Cycle and phase rules](cycle-and-phase-rules.md#mucus-score).
+
 ## peakDetector.ts
 
 | Function                   | Signature                                                                 | Returns                                                                        |

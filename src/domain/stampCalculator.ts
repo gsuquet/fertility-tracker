@@ -1,3 +1,9 @@
+import {
+  MENSES_BLEEDING_CODES,
+  PEAK_TYPE_MODIFIERS,
+  PEAK_TYPE_STRETCH_CODES,
+  isCodeIn,
+} from '../types/crms';
 import type { BleedingCode, MucusStretch, MucusModifier, StampType } from '../types/crms';
 
 /**
@@ -8,15 +14,8 @@ import type { BleedingCode, MucusStretch, MucusModifier, StampType } from '../ty
 export function isPeakTypeMucus(stretch?: MucusStretch, modifiers: MucusModifier[] = []): boolean {
   if (!stretch && modifiers.length === 0) return false;
 
-  const isStretchy =
-    stretch === '6' ||
-    stretch === '8' ||
-    stretch === '10' ||
-    stretch === '10DL' ||
-    stretch === '10SL' ||
-    stretch === '10WL';
-  const isClearOrLubricative =
-    modifiers.includes('K') || modifiers.includes('L') || modifiers.includes('C/K');
+  const isStretchy = isCodeIn(PEAK_TYPE_STRETCH_CODES, stretch);
+  const isClearOrLubricative = modifiers.some(m => isCodeIn(PEAK_TYPE_MODIFIERS, m));
 
   return isStretchy || isClearOrLubricative;
 }
@@ -35,7 +34,7 @@ export function calculateStamp(
   }
 
   // 2. Bleeding (Red Stamp)
-  if (bleeding && ['H', 'M', 'L', 'VL'].includes(bleeding)) {
+  if (isCodeIn(MENSES_BLEEDING_CODES, bleeding)) {
     return 'RED';
   }
   if (bleeding === 'B' && (!stretch || stretch === '0')) {

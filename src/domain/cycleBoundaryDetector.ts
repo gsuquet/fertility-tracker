@@ -1,3 +1,4 @@
+import { BLEEDING_CODES, MENSES_BLEEDING_CODES, isCodeIn } from '../types/crms';
 import type { Observation, Cycle } from '../types/crms';
 import { processCycleObservations } from './peakDetector';
 
@@ -9,7 +10,7 @@ export function isFirstBleedingDayOfSeries(
   obsData: { date: string; bleeding?: string | undefined },
   allObservations: Observation[]
 ): boolean {
-  if (!obsData.bleeding || !['H', 'M', 'L', 'VL', 'B'].includes(obsData.bleeding)) {
+  if (!isCodeIn(BLEEDING_CODES, obsData.bleeding)) {
     return false;
   }
 
@@ -55,7 +56,7 @@ export function groupObservationsIntoCycles(observations: Observation[]): Cycle[
     if (obs.isCycleStart !== undefined) {
       isNewCycle = i > 0 && obs.isCycleStart === true;
     } else {
-      const isMensesStart = Boolean(obs.bleeding && ['H', 'M', 'L', 'VL'].includes(obs.bleeding));
+      const isMensesStart = isCodeIn(MENSES_BLEEDING_CODES, obs.bleeding);
       isNewCycle = i > 0 && isMensesStart && (!prevObs?.bleeding || prevObs.bleeding === 'B');
     }
 
