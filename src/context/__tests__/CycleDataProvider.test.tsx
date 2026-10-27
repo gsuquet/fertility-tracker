@@ -3,6 +3,7 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
+import type { Observation } from '../../types/crms';
 import { validateObservation } from '../../domain/dataValidator';
 
 const STORAGE_KEY = 'fertility_care_observations';
@@ -235,6 +236,38 @@ describe('CycleDataProvider', () => {
     );
     const peaks = result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
     expect(peaks).toEqual(['2026-06-12']);
+  });
+
+  it('gives a saved demo day a new real id that delete and peaks match', () => {
+    const { result } = renderData();
+    act(() => result.current.saveObservation({ date: '2026-06-01', bleeding: 'H' }));
+    act(() => result.current.loadDemoData());
+    const demoDay = result.current.observations[10] as Observation;
+    expect(demoDay.id.startsWith('demo_')).toBe(true);
+    act(() =>
+      result.current.saveObservation({
+        id: demoDay.id,
+        date: demoDay.date,
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    const saved = result.current.observations.find(o => o.date === demoDay.date) as Observation;
+    expect(saved.id.startsWith('obs_')).toBe(true);
+    expect(saved.isManualPeak).toBe(true);
+    expect(result.current.observations).toHaveLength(56);
+    expect(result.current.observations.filter(o => o.id === saved.id)).toHaveLength(1);
+    act(() => result.current.deleteObservation(saved.id));
+    expect(result.current.observations.some(o => o.date === demoDay.date)).toBe(false);
+    expect(result.current.observations).toHaveLength(55);
+  });
+
+  it('keeps a real id when a real day is saved again', () => {
+    const { result } = renderData();
+    act(() => result.current.saveObservation({ id: 'obs_x', date: '2026-06-01', stretch: '0' }));
+    act(() => result.current.saveObservation({ id: 'obs_x', date: '2026-06-01', stretch: '2' }));
+    expect(result.current.observations.map(o => o.id)).toEqual(['obs_x']);
   });
 
   it('deletes an observation by id', () => {
@@ -604,13 +637,28 @@ describe('CycleDataProvider', () => {
       expect(renderData().result.current.lastBackupDate).toBeNull();
     });
 
-    it('starts the reminder period on the first load and keeps that date', () => {
+    it('starts the reminder period with the first real observation, not before', () => {
       vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 1, 12));
+      const { result } = renderData();
+      expect(result.current.backupReminderStart).toBeNull();
+      act(() => result.current.loadDemoData());
+      expect(result.current.backupReminderStart).toBeNull();
+      expect(localStorage.getItem(REMINDER_START_KEY)).toBeNull();
       vi.setSystemTime(new Date(2026, 9, 27, 12));
-      expect(renderData().result.current.backupReminderStart).toBe('2026-10-27');
+      act(() => result.current.saveObservation({ date: '2026-10-27', stretch: '0' }));
+      expect(result.current.backupReminderStart).toBe('2026-10-27');
       expect(localStorage.getItem(REMINDER_START_KEY)).toBe('2026-10-27');
       vi.setSystemTime(new Date(2026, 11, 1, 12));
       expect(renderData().result.current.backupReminderStart).toBe('2026-10-27');
+    });
+
+    it('starts the reminder period on the upgrade when real data exists', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+      expect(renderData().result.current.backupReminderStart).toBe('2026-10-27');
+      expect(localStorage.getItem(REMINDER_START_KEY)).toBe('2026-10-27');
     });
 
     it('snoozes the reminder for 7 days', () => {

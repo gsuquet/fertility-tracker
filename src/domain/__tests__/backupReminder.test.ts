@@ -1,5 +1,10 @@
 import { describe, it, expect } from 'vitest';
-import { BACKUP_REMINDER_DAYS, BACKUP_SNOOZE_DAYS, isBackupDue } from '../backupReminder';
+import {
+  BACKUP_REMINDER_DAYS,
+  BACKUP_SNOOZE_DAYS,
+  hasUserObservations,
+  isBackupDue,
+} from '../backupReminder';
 import { makeObservation } from '../../test/factories';
 import { buildDemoObservations } from '../demoData';
 
@@ -42,5 +47,13 @@ describe('isBackupDue', () => {
     expect(isBackupDue(dates, observations, '2026-11-02')).toBe(false);
     expect(isBackupDue(dates, observations, '2026-11-03')).toBe(true);
     expect(isBackupDue({ ...dates, snoozedUntil: 'x' }, observations, '2026-11-02')).toBe(true);
+  });
+});
+
+describe('hasUserObservations', () => {
+  it('ignores demo days', () => {
+    expect(hasUserObservations([])).toBe(false);
+    expect(hasUserObservations(buildDemoObservations('2026-10-27'))).toBe(false);
+    expect(hasUserObservations(observations)).toBe(true);
   });
 });

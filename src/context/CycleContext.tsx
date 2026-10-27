@@ -13,7 +13,7 @@ import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
 import { addDays, getTodayStr } from '../utils/dateUtils';
-import { BACKUP_SNOOZE_DAYS } from '../domain/backupReminder';
+import { BACKUP_SNOOZE_DAYS, DEMO_ID_PREFIX, hasUserObservations } from '../domain/backupReminder';
 import {
   readStorage,
   removeStorage,
@@ -89,15 +89,6 @@ const LAST_BACKUP_KEY = 'fertility_care_last_backup';
 const REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
 const SNOOZE_KEY = 'fertility_care_backup_snoozed_until';
 
-/** Reads the start of the reminder period, and stores today on the first load. */
-const loadReminderStart = (): string => {
-  const stored = readStorage(REMINDER_START_KEY);
-  if (stored !== null) return stored;
-  const today = getTodayStr();
-  writeStorage(REMINDER_START_KEY, today);
-  return today;
-};
-
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
@@ -160,10 +151,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [undo, setUndo] = useState<UndoState | null>(loadStoredUndo);
   const [saveFailed, setSaveFailed] = useState(false);
   const [lastBackupDate, setLastBackupDate] = useState(() => readStorage(LAST_BACKUP_KEY));
-  const [backupReminderStart] = useState(loadReminderStart);
+  const [backupReminderStart, setBackupReminderStart] = useState(() =>
+    readStorage(REMINDER_START_KEY)
+  );
   const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
   const persistRequested = useRef(false);
   const hasData = observations.length > 0;
+  const hasUserData = hasUserObservations(observations);
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -188,6 +182,14 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     persistRequested.current = true;
     void requestPersistentStorage();
   }, [hasData]);
+
+  // The reminder period starts with the first real observation (or on upgrade with real data).
+  useEffect(() => {
+    if (!hasUserData || backupReminderStart !== null) return;
+    const today = getTodayStr();
+    writeStorage(REMINDER_START_KEY, today);
+    setBackupReminderStart(today);
+  }, [hasUserData, backupReminderStart]);
 
   const markBackedUp = useCallback(() => {
     const today = getTodayStr();
@@ -218,7 +220,11 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const codeString = obsData.codeString || formatCodeString(obsData);
 
         const newObs: Observation = {
-          id: obsData.id || `obs_${date}_${Date.now()}`,
+          // A saved demo day becomes the user's own day, with a real id.
+          id:
+            obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
+              ? obsData.id
+              : `obs_${date}_${Date.now()}`,
           date,
           cycleDay: obsData.cycleDay || 1,
           bleeding: obsData.bleeding,

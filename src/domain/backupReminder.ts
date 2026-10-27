@@ -8,16 +8,24 @@ export const BACKUP_REMINDER_DAYS = 30;
 export const BACKUP_SNOOZE_DAYS = 7;
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
-const DEMO_ID_PREFIX = 'demo_';
+/** The id prefix of the demo observations. */
+export const DEMO_ID_PREFIX = 'demo_';
 
 export interface BackupReminderDates {
   /** The date of the last JSON backup. */
   lastBackupDate: string | null;
-  /** The date of the first load of a version with the reminder. */
+  /** The date when the first observation that is not demo data existed. */
   reminderStart: string | null;
   /** The reminder stays hidden before this date. */
   snoozedUntil: string | null;
 }
+
+/** True when an observation is not demo data: its id does not start with `demo_`. */
+export const isUserObservation = (obs: Observation): boolean => !obs.id.startsWith(DEMO_ID_PREFIX);
+
+/** True when at least one observation is not demo data. */
+export const hasUserObservations = (observations: Observation[]): boolean =>
+  observations.some(isUserObservation);
 
 const validDate = (date: string | null): string | null =>
   date !== null && DATE_REGEX.test(date) ? date : null;
@@ -32,7 +40,7 @@ export function isBackupDue(
   observations: Observation[],
   today: string
 ): boolean {
-  if (!observations.some(o => !o.id.startsWith(DEMO_ID_PREFIX))) return false;
+  if (!hasUserObservations(observations)) return false;
   const snoozedUntil = validDate(dates.snoozedUntil);
   if (snoozedUntil !== null && today < snoozedUntil) return false;
   const since = validDate(dates.lastBackupDate) ?? validDate(dates.reminderStart);
