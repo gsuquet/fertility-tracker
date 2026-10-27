@@ -1,5 +1,9 @@
 import { describe, it, expect } from 'vitest';
-import { groupObservationsIntoCycles, isFirstBleedingDayOfSeries } from '../cycleBoundaryDetector';
+import {
+  groupObservationsIntoCycles,
+  isFirstBleedingDayOfSeries,
+  getCycleEndDate,
+} from '../cycleBoundaryDetector';
 import type { Observation } from '../../types/crms';
 import { makeObservation } from '../../test/factories';
 
@@ -161,5 +165,21 @@ describe('cycleBoundaryDetector', () => {
       makeObservation({ date: '2026-07-02', bleeding: 'M' }),
     ]);
     expect(cycles).toHaveLength(1);
+  });
+});
+
+describe('getCycleEndDate', () => {
+  it('returns the date of the last observation', () => {
+    const [cycle] = groupObservationsIntoCycles([
+      makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-09-03', stretch: '0' }),
+    ]);
+    expect(cycle && getCycleEndDate(cycle)).toBe('2026-09-03');
+  });
+
+  it('returns the start date of an empty cycle', () => {
+    expect(getCycleEndDate({ id: 'c', startDate: '2026-09-01', observations: [] })).toBe(
+      '2026-09-01'
+    );
   });
 });

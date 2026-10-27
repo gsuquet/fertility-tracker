@@ -86,3 +86,8 @@ export function groupObservationsIntoCycles(observations: Observation[]): Cycle[
   // Return cycles ordered newest to oldest (most recent cycle first)
   return cycles.reverse();
 }
+
+/** Returns the date of the last observation of a cycle, or its start date when it is empty. */
+export function getCycleEndDate(cycle: Cycle): string {
+  return cycle.observations.at(-1)?.date ?? cycle.startDate;
+}

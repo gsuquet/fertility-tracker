@@ -6,6 +6,7 @@ import type { Cycle, Observation } from '../types/crms';
 import type { TranslationSchema } from '../i18n';
 import { StampBadge } from './StampBadge';
 import { addDays, formatDayOfWeek } from '../utils/dateUtils';
+import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
 import {
   Plus,
   ChevronLeft,
@@ -35,58 +36,53 @@ export const ChartRow: React.FC = () => {
   // Refs for scrolling rows
   const scrollRefs = useRef<{ [cycleId: string]: HTMLDivElement | null }>({});
 
-  const handleCellClick = (obs?: Observation, targetDate?: string, dayNum?: number) => {
-    if (obs) {
-      setSelectedObservation(obs);
-      setIsDrawerOpen(true);
-    } else if (targetDate) {
-      // Create new observation draft for clicked empty day slot
-      setSelectedObservation({
-        id: '',
-        date: targetDate,
-        cycleDay: dayNum || 1,
-        stamp: 'DARK_GREEN',
-        codeString: '0AD',
-        intercourse: false,
-        symptoms: [],
-      });
-      setIsDrawerOpen(true);
-    } else {
-      setSelectedObservation(null);
-      setIsDrawerOpen(true);
+  const openObservation = (obs: Observation) => {
+    setSelectedObservation(obs);
+    setIsDrawerOpen(true);
+  };
+
+  // Opens a draft observation for an empty day slot
+  const openEmptyDay = (date: string, dayNum: number) => {
+    openObservation({
+      id: '',
+      date,
+      cycleDay: dayNum,
+      stamp: 'DARK_GREEN',
+      codeString: '0AD',
+      intercourse: false,
+      symptoms: [],
+    });
+  };
+
+  // Opens a cell with the keyboard like a button
+  const onActivateKey = (open: () => void) => (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' || e.key === ' ') {
+      e.preventDefault();
+      open();
     }
   };
 
+  // The scroll controls render with their row, so the row element exists
   const scrollRow = (cycleId: string, direction: 'left' | 'right') => {
-    const el = scrollRefs.current[cycleId];
-    if (el) {
-      const scrollAmount = direction === 'left' ? -320 : 320;
-      el.scrollBy({ left: scrollAmount, behavior: 'smooth' });
-    }
+    scrollRefs.current[cycleId]?.scrollBy({
+      left: direction === 'left' ? -320 : 320,
+      behavior: 'smooth',
+    });
   };
 
   const jumpToPeak = (cycleId: string) => {
-    const el = scrollRefs.current[cycleId];
-    if (el) {
-      const peakEl = el.querySelector(`.peak-cell`);
-      if (peakEl) {
-        peakEl.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-      }
-    }
+    scrollRefs.current[cycleId]
+      ?.querySelector('.peak-cell')
+      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
   };
 
   const jumpToStart = (cycleId: string) => {
-    const el = scrollRefs.current[cycleId];
-    if (el) {
-      el.scrollTo({ left: 0, behavior: 'smooth' });
-    }
+    scrollRefs.current[cycleId]?.scrollTo({ left: 0, behavior: 'smooth' });
   };
 
   const jumpToEnd = (cycleId: string) => {
     const el = scrollRefs.current[cycleId];
-    if (el) {
-      el.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
-    }
+    el?.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
   };
 
   const filteredCycles =
@@ -137,12 +133,7 @@ export const ChartRow: React.FC = () => {
             </span>
           </div>
 
-          <div
-            className="chart-row-scroll"
-            ref={el => {
-              scrollRefs.current.empty = el;
-            }}
-          >
+          <div className="chart-row-scroll">
             <div className="chart-row-strip paper-grid-strip">
               {Array.from({ length: 35 }).map((_, idx) => {
                 const dayNum = idx + 1;
@@ -152,10 +143,10 @@ export const ChartRow: React.FC = () => {
                   <div
                     key={idx}
                     className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
-                    onClick={() => handleCellClick(undefined, dateStr, dayNum)}
+                    onClick={() => openEmptyDay(dateStr, dayNum)}
                     tabIndex={0}
                     role="button"
-                    aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}`}
+                    aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}`}
                   >
                     <div className="cell-header">
                       {isToday && (
@@ -164,7 +155,7 @@ export const ChartRow: React.FC = () => {
                         </span>
                       )}
                       <span className="cell-day-num">{dayNum}</span>
-                      {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
+                      <span className="cell-date">{dateStr.slice(5)}</span>
                     </div>
                     <div className="cell-placeholder">
                       <Plus size={16} className="add-icon" />
@@ -237,8 +228,8 @@ export const ChartRow: React.FC = () => {
       {/* Cycle Rows */}
       {filteredCycles.map((cycle, cycleIndex) => {
         const cycleNum = cycles.length - cycleIndex; // 1-based cycle number
-        const startDate = cycle.observations[0]?.date || cycle.startDate;
-        const endDate = cycle.observations[cycle.observations.length - 1]?.date || startDate;
+        const startDate = cycle.startDate;
+        const endDate = getCycleEndDate(cycle);
         const daysCount = cycle.observations.length;
 
         const peakObs = cycle.observations.find(o => o.isPeakDay);
@@ -354,10 +345,10 @@ export const ChartRow: React.FC = () => {
                   if (obs) {
                     return (
                       <div
-                        key={obs.id || dayNum}
+                        key={dayNum}
                         className={`chart-cell filled-cell paper-cell ${isPeak ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''}`}
                         aria-current={isToday ? 'date' : undefined}
-                        onClick={() => handleCellClick(obs)}
+                        onClick={() => openObservation(obs)}
                         onMouseEnter={() => setHoveredCellKey(cellKey)}
                         onMouseLeave={() => setHoveredCellKey(null)}
                         onFocus={() => setHoveredCellKey(cellKey)}
@@ -365,12 +356,7 @@ export const ChartRow: React.FC = () => {
                         tabIndex={0}
                         role="button"
                         aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}${isToday ? ', Today' : ''}`}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleCellClick(obs);
-                          }
-                        }}
+                        onKeyDown={onActivateKey(() => openObservation(obs))}
                       >
                         {/* Day Header */}
                         <div className="cell-header">
@@ -396,7 +382,7 @@ export const ChartRow: React.FC = () => {
 
                         {/* CrMS Code (Symptoms excluded, shown in tag below) */}
                         {(() => {
-                          const cleanCode = (obs.codeString || '')
+                          const cleanCode = obs.codeString
                             .replace(/\b(AP|RAP|LAP)\b/g, '')
                             .trim()
                             .replace(/\s+/g, ' ');
@@ -479,16 +465,11 @@ export const ChartRow: React.FC = () => {
                         key={`empty_${dayNum}`}
                         className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
                         aria-current={isToday ? 'date' : undefined}
-                        onClick={() => handleCellClick(undefined, dateStr, dayNum)}
+                        onClick={() => openEmptyDay(dateStr, dayNum)}
                         tabIndex={0}
                         role="button"
-                        aria-label={`Day ${dayNum}${dateStr ? ` (${dateStr})` : ''} - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
-                        onKeyDown={e => {
-                          if (e.key === 'Enter' || e.key === ' ') {
-                            e.preventDefault();
-                            handleCellClick(undefined, dateStr, dayNum);
-                          }
-                        }}
+                        aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
+                        onKeyDown={onActivateKey(() => openEmptyDay(dateStr, dayNum))}
                       >
                         <div className="cell-header">
                           {isToday && (
@@ -497,7 +478,7 @@ export const ChartRow: React.FC = () => {
                             </span>
                           )}
                           <span className="cell-day-num">{dayNum}</span>
-                          {dateStr && <span className="cell-date">{dateStr.slice(5)}</span>}
+                          <span className="cell-date">{dateStr.slice(5)}</span>
                         </div>
 
                         <div className="cell-placeholder">
@@ -603,12 +584,9 @@ const CyclePhaseTimeline: React.FC<{
             } else if (obs.stamp === 'WHITE_BABY') {
               phaseClass = 'phase-fertile';
               title = `Day ${dayNum}: Fertile Mucus`;
-            } else if (obs.stamp === 'DARK_GREEN') {
-              phaseClass = 'phase-infertile';
-              title = `Day ${dayNum}: Dry / Infertile`;
             } else {
               phaseClass = 'phase-infertile';
-              title = `Day ${dayNum}`;
+              title = `Day ${dayNum}: Dry / Infertile`;
             }
           }
 
