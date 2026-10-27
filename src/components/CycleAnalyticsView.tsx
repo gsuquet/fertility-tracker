@@ -12,8 +12,8 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import type { Observation } from '../types/crms';
 import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
+import { getMucusScore } from '../domain/mucusScore';
 
 export const CycleAnalyticsView: React.FC = () => {
   const { observations, cycles, selectedCycleId } = useCycle();
@@ -58,23 +58,6 @@ export const CycleAnalyticsView: React.FC = () => {
   const fertileMucusDays = targetObs.filter(o => o.stamp === 'WHITE_BABY').length;
   const postPeakDays = targetObs.filter(o => o.stamp.startsWith('LIGHT_GREEN')).length;
   const intercourseCount = targetObs.filter(o => o.intercourse).length;
-
-  const getMucusScore = (obs: Observation): number => {
-    if (
-      obs.stretch === '10' ||
-      obs.stretch === '10DL' ||
-      obs.stretch === '10SL' ||
-      obs.stretch === '10WL' ||
-      obs.modifiers?.some(m => m === 'K' || m === 'L')
-    ) {
-      return 10;
-    }
-    if (obs.stretch === '8') return 8;
-    if (obs.stretch === '6') return 6;
-    if (obs.stretch === '4') return 4;
-    if (obs.stretch === '2' || obs.stretch === '2W') return 2;
-    return 0;
-  };
 
   // A cycle always holds at least one observation, so totalDays is never 0
   const percentOf = (days: number) => (days / totalDays) * 100;

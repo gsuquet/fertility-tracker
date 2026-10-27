@@ -46,7 +46,7 @@ The **All Cycles** view shows the average of each value per cycle.
 
 ## Mucus score
 
-The **Cycle Analytics** page gives each day a mucus score from 0 to 10. The average mucus score is the mean of the scores of all the days in the selection.
+The **Cycle Analytics** page gives each day a mucus score from 0 to 10. The average mucus score is the mean of the scores of all the days in the selection. The source is `getMucusScore` in `src/domain/mucusScore.ts`.
 
 | Observation                                                      | Score |
 | ---------------------------------------------------------------- | ----- |
@@ -56,6 +56,8 @@ The **Cycle Analytics** page gives each day a mucus score from 0 to 10. The aver
 | Stretch `4`                                                      | 4     |
 | Stretch `2` or `2W`                                              | 2     |
 | All other days                                                   | 0     |
+
+The appearance code `C/K` alone does not give the score 10. This is different from the Peak-type mucus rule, which includes `C/K`.
 
 ## Related documents
 

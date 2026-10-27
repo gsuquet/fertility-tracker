@@ -5,6 +5,7 @@ import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
 
 const STORAGE_KEY = 'fertility_care_observations';
+const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CycleProvider>{children}</CycleProvider>
 );
@@ -38,6 +39,77 @@ describe('CycleDataProvider', () => {
     const { result } = renderData();
     expect(result.current.observations).toEqual([]);
     expect(result.current.selectedCycleId).toBe('all');
+  });
+
+  it('copies unreadable stored data to the recovery key before it saves', () => {
+    localStorage.setItem(STORAGE_KEY, '[{"date": "2026-06-01"');
+    const { result } = renderData();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
+    expect(result.current.recoveryData).toBe('[{"date": "2026-06-01"');
+    expect(result.current.recoveryKept).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('[]');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
+  });
+
+  it('copies stored data that is not an array and deletes the copy on dismiss', () => {
+    const raw = JSON.stringify({ date: '2026-06-01' });
+    localStorage.setItem(STORAGE_KEY, raw);
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe(raw);
+    act(() => result.current.dismissRecovery());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+  });
+
+  it('keeps a pending recovery copy and the original data when the data is unreadable again', () => {
+    localStorage.setItem(RECOVERY_KEY, 'old copy');
+    localStorage.setItem(STORAGE_KEY, 'new unreadable');
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe('new unreadable');
+    expect(result.current.recoveryKept).toBe(false);
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('new unreadable');
+    act(() => result.current.dismissRecovery());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+  });
+
+  it('does not overwrite the original data when the recovery copy fails', () => {
+    const setItem = localStorage.setItem.bind(localStorage);
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === RECOVERY_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe('{corrupt');
+    expect(result.current.recoveryKept).toBe(false);
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('{corrupt');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    spy.mockRestore();
+  });
+
+  it('deletes the recovery copy when all data is cleared', () => {
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    const { result } = renderData();
+    act(() => result.current.clearAllData());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+  });
+
+  it('keeps the recovery copy from an earlier session and has none for valid data', () => {
+    localStorage.setItem(RECOVERY_KEY, 'old text');
+    const earlier = renderData().result.current;
+    expect(earlier.recoveryData).toBe('old text');
+    expect(earlier.recoveryKept).toBe(true);
+    localStorage.clear();
+    localStorage.setItem(STORAGE_KEY, '[]');
+    expect(renderData().result.current.recoveryData).toBeNull();
   });
 
   it('saves today when no date is given and fills default fields', () => {
@@ -82,18 +154,73 @@ describe('CycleDataProvider', () => {
     });
   });
 
-  it('moves the manual Peak Day to the toggled date and clears it on a second toggle', () => {
+  it('keeps one manual Peak Day per cycle when a Peak Day is saved', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+        makeObservation({
+          date: '2026-06-10',
+          stretch: '10',
+          modifiers: ['K'],
+          isManualPeak: true,
+        }),
+        makeObservation({ date: '2026-06-29', bleeding: 'H' }),
+        makeObservation({ date: '2026-07-08', stretch: '10', modifiers: ['K'] }),
+      ])
+    );
+    const { result } = renderData();
+    const manualPeaks = () =>
+      result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
+    const peakDays = () => result.current.observations.filter(o => o.isPeakDay).map(o => o.date);
+    act(() =>
+      result.current.saveObservation({
+        date: '2026-07-08',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    expect(manualPeaks()).toEqual(['2026-06-10', '2026-07-08']);
+    act(() =>
+      result.current.saveObservation({
+        date: '2026-07-10',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    expect(manualPeaks()).toEqual(['2026-06-10', '2026-07-10']);
+    expect(peakDays()).toEqual(['2026-06-10', '2026-07-10']);
+    act(() => result.current.saveObservation({ date: '2026-07-10', stretch: '0' }));
+    expect(manualPeaks()).toEqual(['2026-06-10']);
+  });
+
+  it('clears the manual Peak Day of the cycle that a saved day joins', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+        makeObservation({
+          date: '2026-06-10',
+          stretch: '10',
+          modifiers: ['K'],
+          isManualPeak: true,
+        }),
+        makeObservation({ date: '2026-06-29', bleeding: 'H' }),
+      ])
+    );
     const { result } = renderData();
     act(() =>
-      result.current.saveObservation({ date: '2026-09-01', stretch: '10', modifiers: ['K'] })
+      result.current.saveObservation({
+        date: '2026-06-12',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
     );
-    act(() =>
-      result.current.saveObservation({ date: '2026-09-02', stretch: '10', modifiers: ['K'] })
-    );
-    act(() => result.current.toggleManualPeak('2026-09-01'));
-    expect(result.current.observations.map(o => o.isManualPeak)).toEqual([true, false]);
-    act(() => result.current.toggleManualPeak('2026-09-01'));
-    expect(result.current.observations.map(o => o.isManualPeak)).toEqual([false, false]);
+    const peaks = result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
+    expect(peaks).toEqual(['2026-06-12']);
   });
 
   it('deletes an observation by id', () => {

@@ -13,6 +13,8 @@ import { CalendarGrid } from './components/CalendarGrid';
 import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
+import { ErrorBoundary } from './components/ErrorBoundary';
+import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
 
 const CycleAnalyticsView = React.lazy(() =>
   import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
@@ -84,14 +86,18 @@ const MainApp: React.FC = () => {
       <main
         className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
       >
+        <StorageRecoveryNotice />
         <CycleStatsHeader />
 
-        <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
-          {activeTab === 'today' && <TodayView />}
-          {activeTab === 'chart' && <ChartRow />}
-          {activeTab === 'calendar' && <CalendarGrid />}
-          {activeTab === 'analytics' && <CycleAnalyticsView />}
-        </React.Suspense>
+        {/* The key resets the alert of a failed page when the tab changes */}
+        <ErrorBoundary key={activeTab}>
+          <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
+            {activeTab === 'today' && <TodayView />}
+            {activeTab === 'chart' && <ChartRow />}
+            {activeTab === 'calendar' && <CalendarGrid />}
+            {activeTab === 'analytics' && <CycleAnalyticsView />}
+          </React.Suspense>
+        </ErrorBoundary>
 
         <Footer
           onOpenVersion={() => setIsVersionModalOpen(true)}
@@ -101,19 +107,21 @@ const MainApp: React.FC = () => {
 
       <ObservationDrawer />
 
-      <React.Suspense fallback={null}>
-        <ExportModal
-          isOpen={isExportModalOpen}
-          onClose={() => setIsExportModalOpen(false)}
-          onPreparePrint={handlePreparePrint}
-        />
+      <ErrorBoundary>
+        <React.Suspense fallback={null}>
+          <ExportModal
+            isOpen={isExportModalOpen}
+            onClose={() => setIsExportModalOpen(false)}
+            onPreparePrint={handlePreparePrint}
+          />
 
-        <VersionModal isOpen={isVersionModalOpen} onClose={() => setIsVersionModalOpen(false)} />
+          <VersionModal isOpen={isVersionModalOpen} onClose={() => setIsVersionModalOpen(false)} />
 
-        <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
+          <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
 
-        <PrintExportView selectedCycleIds={printCycleIds} />
-      </React.Suspense>
+          <PrintExportView selectedCycleIds={printCycleIds} />
+        </React.Suspense>
+      </ErrorBoundary>
 
       {toastMessage && (
         <div className="today-toast" role="status" aria-live="polite">
