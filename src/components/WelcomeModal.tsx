@@ -119,9 +119,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
             ))}
           </div>
           <span className="step-count-badge">
-            {welcomeT.stepCount
-              .replace('{current}', String(currentStep))
-              .replace('{total}', String(totalSteps))}
+            {formatMessage(welcomeT.stepCount, { current: currentStep, total: totalSteps })}
           </span>
         </div>
 

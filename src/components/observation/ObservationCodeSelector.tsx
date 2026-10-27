@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatMessage } from '../../i18n';
 import {
   BLEEDING_CODES,
   FREQUENCY_CODES,
@@ -76,8 +77,14 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
           >
             <Calendar size={18} />
             <span>
-              {t.cycleStartModal.isCycleStartLabel}
-              {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
+              {isCycleStart === undefined
+                ? t.cycleStartModal.isCycleStartLabel
+                : formatMessage(
+                    isCycleStart
+                      ? t.cycleStartModal.isCycleStartYes
+                      : t.cycleStartModal.isCycleStartNo,
+                    { label: t.cycleStartModal.isCycleStartLabel }
+                  )}
             </span>
           </button>
         </div>

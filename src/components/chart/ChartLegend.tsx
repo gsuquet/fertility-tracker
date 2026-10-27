@@ -17,9 +17,7 @@ export const ChartLegend: React.FC<{ t: TranslationSchema }> = ({ t }) => (
     <div className="legend-items">
       <div className="legend-item">
         <span className="legend-badge stamp-red"></span>
-        <span className="legend-label">
-          {t.chartStrip.phaseMenses} {t.chartStrip.legendBleeding}
-        </span>
+        <span className="legend-label">{t.chartStrip.legendMenses}</span>
       </div>
       <div className="legend-item">
         <span className="legend-badge stamp-dark_green"></span>
@@ -29,24 +27,18 @@ export const ChartLegend: React.FC<{ t: TranslationSchema }> = ({ t }) => (
         <span className="legend-badge stamp-white_baby">
           <BabyIcon size={12} />
         </span>
-        <span className="legend-label">
-          {t.chartStrip.phaseFollicular} {t.chartStrip.legendFertileMucus}
-        </span>
+        <span className="legend-label">{t.chartStrip.legendFertile}</span>
       </div>
       <div className="legend-item">
         <span className="legend-badge stamp-light_green_baby_1">
           <BabyIcon size={10} />
           <span className="num">1,2,3</span>
         </span>
-        <span className="legend-label">
-          {t.chartStrip.phasePostPeak} {t.chartStrip.legendCount}
-        </span>
+        <span className="legend-label">{t.chartStrip.legendPostPeak}</span>
       </div>
       <div className="legend-item">
         <span className="legend-badge peak-legend">P</span>
-        <span className="legend-label">
-          {t.chartStrip.phasePeak} {t.chartStrip.legendPeak}
-        </span>
+        <span className="legend-label">{t.chartStrip.legendPeakDay}</span>
       </div>
       <div className="legend-item">
         <span className="legend-badge intercourse-legend">I</span>

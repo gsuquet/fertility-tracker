@@ -13,4 +13,10 @@ describe('formatMessage', () => {
   it('keeps a placeholder that has no value', () => {
     expect(formatMessage('Cycle {n} ({date})', { n: 1 })).toBe('Cycle 1 ({date})');
   });
+
+  it('keeps a placeholder named like an inherited object property', () => {
+    expect(formatMessage('{toString} {constructor} {n}', { n: 1 })).toBe(
+      '{toString} {constructor} 1'
+    );
+  });
 });

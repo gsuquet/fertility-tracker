@@ -29,7 +29,9 @@ export const CycleStatsHeader: React.FC = () => {
     intercourseCount = selectedCycle.observations.filter(o => o.intercourse).length;
   } else {
     // All Cycles view
-    cycleLengthText = `${(observations.length / cycles.length).toFixed(1)} ${t.stats.days} ${t.stats.averageSuffix}`;
+    cycleLengthText = formatMessage(t.stats.averageDays, {
+      value: (observations.length / cycles.length).toFixed(1),
+    });
 
     // Cycles are ordered newest first, so the first peak is the latest one
     const latestPeak = cycles.map(c => getCyclePhases(c).peak).find(Boolean);
@@ -39,7 +41,7 @@ export const CycleStatsHeader: React.FC = () => {
         date: latestPeak.date,
       });
       const { lutealDays } = averagePhases(cycles);
-      lutealPhaseText = `${lutealDays.toFixed(1)} ${t.stats.days} ${t.stats.averageSuffix}`;
+      lutealPhaseText = formatMessage(t.stats.averageDays, { value: lutealDays.toFixed(1) });
     } else {
       lutealPhaseText = `0 ${t.stats.days}`;
     }

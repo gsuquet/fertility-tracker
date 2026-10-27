@@ -14,6 +14,9 @@ interface PrintExportViewProps {
 export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleIds }) => {
   const { cycles } = useCycle();
   const { t } = useLanguage();
+  /** The month and day of a YYYY-MM-DD date, in the order of the language */
+  const monthDay = (date: string) =>
+    formatMessage(t.common.monthDay, { month: date.slice(5, 7), day: date.slice(8, 10) });
 
   const displayCycles =
     cycles.length > 0
@@ -133,7 +136,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                               />
                             </div>
 
-                            <div className="print-date">{obs.date.slice(5)}</div>
+                            <div className="print-date">{monthDay(obs.date)}</div>
 
                             <div className="print-cell-header">
                               <span className="print-day-num">{obs.cycleDay}</span>
@@ -161,7 +164,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                       return (
                         <div key={`empty_${dayNum}`} className="print-cell empty-cell">
                           <div className="print-cell-placeholder" />
-                          <div className="print-date">{dateStr.slice(5)}</div>
+                          <div className="print-date">{monthDay(dateStr)}</div>
                           <div className="print-cell-header">
                             <span className="print-day-num">{dayNum}</span>
                           </div>
@@ -183,9 +186,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
         <div className="print-legend-items">
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-red"></span>
-            <span>
-              {t.chartStrip.phaseMenses} {t.chartStrip.legendBleeding}
-            </span>
+            <span>{t.chartStrip.legendMenses}</span>
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-dark_green"></span>
@@ -203,23 +204,17 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                 <path d="M12 2a4 4 0 0 1 4 4c0 1.5-.8 2.8-2 3.5V11c0 2.2-1.8 4-4 4s-4-1.8-4-4V9.5C4.8 8.8 4 7.5 4 6a4 4 0 0 1 4-4h4zm0 2a2 2 0 0 0-2 2v1h4V6a2 2 0 0 0-2-2zM8 17h8a1 1 0 0 1 1 1v1a3 3 0 0 1-3 3H10a3 3 0 0 1-3-3v-1a1 1 0 0 1 1-1z" />
               </svg>
             </span>
-            <span>
-              {t.chartStrip.phaseFollicular} {t.chartStrip.legendFertileMucus}
-            </span>
+            <span>{t.chartStrip.legendFertile}</span>
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-light_green_baby_1">
               <span className="num">1,2,3</span>
             </span>
-            <span>
-              {t.chartStrip.phasePostPeak} {t.chartStrip.legendCount}
-            </span>
+            <span>{t.chartStrip.legendPostPeak}</span>
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample peak-legend">P</span>
-            <span>
-              {t.chartStrip.phasePeak} {t.chartStrip.legendPeak}
-            </span>
+            <span>{t.chartStrip.legendPeakDay}</span>
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample intercourse-legend">I</span>

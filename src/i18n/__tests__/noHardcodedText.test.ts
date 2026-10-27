@@ -11,6 +11,21 @@ import { describe, it, expect } from 'vitest';
 /** Attributes that a browser shows or reads aloud */
 const TEXT_ATTRIBUTES = new Set(['aria-label', 'aria-description', 'title', 'placeholder', 'alt']);
 
+/**
+ * Props of the app components that never hold user-visible text. Every other string prop of a
+ * component (a name that starts with a capital letter) must come from the locale files.
+ */
+const NON_TEXT_PROPS = new Set([
+  'className',
+  'id',
+  'key',
+  'stamp',
+  'size',
+  'variant',
+  'fill',
+  'aria-hidden',
+]);
+
 /** Codes and symbols that are the same in each language */
 const ALLOWED_TEXT = new Set([
   'P', // Peak Day code
@@ -38,6 +53,13 @@ const literalTexts = (node: unknown): string[] => {
       return typeof node.value === 'string' ? [node.value] : [];
     case 'TemplateLiteral':
       return (node.quasis as { value: { cooked: string } }[]).map(q => q.value.cooked);
+    case 'ParenthesizedExpression':
+    case 'TSAsExpression':
+    case 'TSSatisfiesExpression':
+    case 'TSNonNullExpression':
+      return literalTexts(node.expression);
+    case 'ArrayExpression':
+      return (node.elements as unknown[]).flatMap(literalTexts);
     case 'ConditionalExpression':
       return [...literalTexts(node.consequent), ...literalTexts(node.alternate)];
     case 'LogicalExpression':
@@ -55,6 +77,12 @@ interface Finding {
   kind: string;
   text: string;
 }
+
+/** True for the opening tag of a component, for example <ChartToolbar>, not of an HTML element */
+const isComponent = (node: AstNode | null) =>
+  node?.type === 'JSXOpeningElement' &&
+  isNode(node.name) &&
+  (node.name.type === 'JSXMemberExpression' || /^[A-Z]/.test(String(node.name.name)));
 
 /** Finds the hardcoded user-visible texts of one TSX source */
 const findHardcodedText = (fileName: string, source: string): Finding[] => {
@@ -75,7 +103,7 @@ const findHardcodedText = (fileName: string, source: string): Finding[] => {
     }
     if (node.type === 'JSXAttribute' && isNode(node.name)) {
       const name = String(node.name.name);
-      if (TEXT_ATTRIBUTES.has(name)) {
+      if (TEXT_ATTRIBUTES.has(name) || (isComponent(parent) && !NON_TEXT_PROPS.has(name))) {
         const value = node.value;
         const texts =
           isNode(value) && value.type === 'JSXExpressionContainer'
@@ -116,6 +144,8 @@ describe('No hardcoded user-visible text', () => {
       '    Some text',
       `    {\`Day \${1}\`}`,
       '    {"Total: " + 2}',
+      '    {on ? (on ? " (Yes)" : " (No)") : ""}',
+      '    <Toolbar subtitle="Creighton Model" messages={["Hello"]} className="x-y" size="sm" />',
       '    <input placeholder={"Type here"} alt="Picture" />',
       '  </div>',
       ');',
@@ -127,6 +157,10 @@ describe('No hardcoded user-visible text', () => {
       'JSX text: Some text',
       'JSX expression: Day',
       'JSX expression: Total:',
+      'JSX expression: (Yes)',
+      'JSX expression: (No)',
+      'subtitle: Creighton Model',
+      'messages: Hello',
       'placeholder: Type here',
       'alt: Picture',
     ]);

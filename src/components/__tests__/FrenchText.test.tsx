@@ -10,6 +10,7 @@ import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { MobileNav } from '../MobileNav';
 import { ObservationDrawer } from '../ObservationDrawer';
+import { ObservationCodeSelector } from '../observation/ObservationCodeSelector';
 import { PrintExportView } from '../PrintExportView';
 import { StampBadge } from '../StampBadge';
 import { TodayView } from '../TodayView';
@@ -17,7 +18,7 @@ import { VersionModal } from '../VersionModal';
 import { WelcomeModal } from '../WelcomeModal';
 import { useCycleUi } from '../../context/CycleContext';
 import { buildDemoObservations } from '../../domain/demoData';
-import { fr, formatMessage } from '../../i18n';
+import { en, fr, formatMessage } from '../../i18n';
 import { makeObservation } from '../../test/factories';
 import { renderWithProviders } from '../../test/render';
 import type { Observation } from '../../types/crms';
@@ -242,9 +243,7 @@ describe('French text of the components', () => {
     ).toBeInTheDocument();
     expect(screen.getByText(fr.chartStrip.legendTitle)).toBeInTheDocument();
     expect(screen.getByText(fr.chartStrip.legendDry)).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fr.chartStrip.phaseMenses} ${fr.chartStrip.legendBleeding}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(fr.chartStrip.legendMenses)).toBeInTheDocument();
     expect(screen.getByText(fr.labels.intercourse)).toBeInTheDocument();
     expect(screen.getAllByText(/^Jour Sommet \(P\) : jour \d+$/).length).toBeGreaterThan(0);
   });
@@ -280,9 +279,7 @@ describe('French text of the components', () => {
 
     fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.showLegend }));
     expect(screen.getByText(fr.chartStrip.legendTitle)).toBeInTheDocument();
-    expect(
-      screen.getByText(`${fr.chartStrip.phasePeak} ${fr.chartStrip.legendPeak}`)
-    ).toBeInTheDocument();
+    expect(screen.getByText(fr.chartStrip.legendPeakDay)).toBeInTheDocument();
   });
 
   it('translates the popover rows of stretch, modifiers, intercourse and symptoms', () => {
@@ -333,7 +330,7 @@ describe('French text of the components', () => {
 
   it('translates the stats header', () => {
     renderWithProviders(<CycleStatsHeader />, inFrench(demo(), 'all'));
-    expect(screen.getAllByText(/\(moy\.\)$/).length).toBe(2);
+    expect(screen.getAllByText(/^\d+\.\d jours \(moy\.\)$/).length).toBe(2);
     expect(screen.getByText(/^JC \d+ \(/)).toBeInTheDocument();
   });
 
@@ -369,5 +366,75 @@ describe('French text of the components', () => {
       inFrench()
     );
     expect(screen.getByRole('button', { name: fr.exportModal.close })).toBeInTheDocument();
+  });
+  it('writes each print legend label once, in both languages', () => {
+    for (const [language, locale] of [
+      ['en', en],
+      ['fr', fr],
+    ] as const) {
+      const { unmount } = renderWithProviders(<PrintExportView selectedCycleIds={['all']} />, {
+        language,
+        observations: demo(),
+      });
+      for (const label of [
+        locale.chartStrip.legendMenses,
+        locale.chartStrip.legendFertile,
+        locale.chartStrip.legendPostPeak,
+        locale.chartStrip.legendPeakDay,
+      ]) {
+        expect(screen.getByText(label)).toBeInTheDocument();
+      }
+      expect(screen.queryByText(/\(P\) \(/)).toBeNull();
+      unmount();
+    }
+    expect(en.chartStrip.legendPeakDay).toBe('Peak Day (P)');
+    expect(fr.chartStrip.legendFertile).toBe('Pré-Sommet (glaire fertile)');
+  });
+
+  it('prints the day dates as DD/MM in French and MM-DD in English', () => {
+    const observations = [makeObservation({ date: '2026-09-03', codeString: '0' })];
+    const { unmount } = renderWithProviders(
+      <PrintExportView selectedCycleIds={['all']} />,
+      inFrench(observations)
+    );
+    expect(screen.getByText('03/09')).toBeInTheDocument();
+    expect(screen.getByText('04/09')).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<PrintExportView selectedCycleIds={['all']} />, { observations });
+    expect(screen.getByText('09-03')).toBeInTheDocument();
+    expect(screen.getByText('09-04')).toBeInTheDocument();
+  });
+
+  it('translates the chart toolbar subtitle', () => {
+    const { unmount } = renderWithProviders(<ChartRow />, inFrench());
+    expect(screen.getByText(fr.chartStrip.subtitleBlank)).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<ChartRow />, inFrench(demo()));
+    expect(screen.getByText(fr.chartStrip.subtitle)).toBeInTheDocument();
+  });
+
+  it.each([
+    [true, fr.cycleStartModal.isCycleStartYes],
+    [false, fr.cycleStartModal.isCycleStartNo],
+  ])('translates the cycle start choice %s', (isCycleStart, template) => {
+    renderWithProviders(
+      <ObservationCodeSelector
+        fields={{ bleeding: 'M', isCycleStart, modifiers: [], symptoms: [] }}
+        actions={{
+          selectBleeding: () => {},
+          toggleCycleStart: () => {},
+          selectStretch: () => {},
+          toggleModifier: () => {},
+          selectFrequency: () => {},
+          toggleSymptom: () => {},
+        }}
+      />,
+      inFrench()
+    );
+    expect(
+      screen.getByRole('button', {
+        name: formatMessage(template, { label: fr.cycleStartModal.isCycleStartLabel }),
+      })
+    ).toBeInTheDocument();
   });
 });
