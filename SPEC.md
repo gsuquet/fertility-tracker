@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.16.2  
+**Document Version:** 1.16.3  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -351,6 +351,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - [TodayDateNav.tsx](./src/components/today/TodayDateNav.tsx): Compact date navigation bar with previous/next day stepping, native date picker trigger, formatted date display, and status badges (Today indicator, Cycle Day, Recorded/Pending status).
 - [TodayHistoryList.tsx](./src/components/today/TodayHistoryList.tsx): Recent 5-day observation timeline card with aligned 3-column layout (date label, stamp badge slot, and truncated code string).
 - [TodayObservationForm.tsx](./src/components/today/TodayObservationForm.tsx): Observation logging form supporting dual entry modes (Direct Code Entry and Detailed Selectors for bleeding, stretch, modifiers, frequency, symptoms, intercourse, notes, and cycle start).
+- [ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx): The code buttons (bleeding, cycle start toggle, stretch, modifiers, frequency, symptoms). The Today form and the Observation Drawer both use it (see [5.7](#57-observation-drawer)).
 - [TodayFertilityGuidance.tsx](./src/components/today/TodayFertilityGuidance.tsx): Real-time CrMS stamp preview badge, formatted code text, and clinical fertility guidance message (rendered in top mobile banner and desktop status card).
 
 - **Daily Status Card:** Hero summary card displaying active date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
@@ -424,6 +425,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
 2. **Natural Language String Input:** Freeform text field with real-time parser validation.
 3. **Live Stamp & Code Preview:** Real-time preview of the resulting stamp color and code string prior to saving.
 4. **Mobile Footer:** On screens of 640px or less, the footer buttons shrink to fit, and the delete button shows only its icon.
+
+**Shared code buttons:** [src/components/observation/ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx) renders the button groups for Bleeding, the cycle start toggle (shown only when a bleeding code is selected), Stretch, Modifiers, Frequency and Symptoms, in this sequence. It reads the field values and callbacks of `useObservationForm`. The drawer and the Today form show the same markup, classes, ARIA attributes and labels for these buttons.
 
 ---
 
