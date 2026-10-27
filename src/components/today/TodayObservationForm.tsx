@@ -45,9 +45,9 @@ interface TodayObservationFormProps {
   notes: string;
   onNotesChange: (notes: string) => void;
   hasUnsavedChanges: boolean;
-  hasExistingObs: boolean;
   onSave: (e: React.FormEvent) => void;
-  onDelete: () => void;
+  /** Deletes the saved observation. Leave it out for a day without one. */
+  onDelete?: (() => void) | undefined;
 }
 
 export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
@@ -76,7 +76,6 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
   notes,
   onNotesChange,
   hasUnsavedChanges,
-  hasExistingObs,
   onSave,
   onDelete,
 }) => {
@@ -307,7 +306,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
 
       {/* Action Bar with Submit Button Grayed Out when Unchanged */}
       <div className="today-form-actions">
-        {hasExistingObs ? (
+        {onDelete ? (
           <button
             type="button"
             className="btn btn-danger"
@@ -330,9 +329,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           aria-disabled={!hasUnsavedChanges}
         >
           <Save size={18} />
-          <span>
-            {hasUnsavedChanges ? t.actions.save : hasExistingObs ? 'Saved' : t.actions.save}
-          </span>
+          <span>{hasUnsavedChanges ? t.actions.save : onDelete ? 'Saved' : t.actions.save}</span>
         </button>
       </div>
     </form>

@@ -2,23 +2,19 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import type {
-  BleedingCode,
-  MucusStretch,
-  MucusModifier,
-  FrequencyCode,
-  SymptomCode,
-} from '../types/crms';
-import { parseCodeString, formatCodeString } from '../domain/codeParser';
-import { calculateStamp } from '../domain/stampCalculator';
-import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
+import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { TodayDateNav } from './today/TodayDateNav';
 import { TodayHistoryList } from './today/TodayHistoryList';
 import { TodayObservationForm } from './today/TodayObservationForm';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { getTodayStr, addDays } from '../utils/dateUtils';
+import { readStorage, writeStorage } from '../utils/storage';
 import { CheckCircle2 } from 'lucide-react';
+
+const ENTRY_MODE_STORAGE_KEY = 'fertility_care_entry_mode';
+type EntryMode = 'direct' | 'detailed';
 
 export const TodayView: React.FC = () => {
   const {
@@ -31,81 +27,41 @@ export const TodayView: React.FC = () => {
   const { t } = useLanguage();
 
   // User preference for entry mode: 'direct' or 'detailed'
-  const [entryMode, setEntryMode] = useState<'direct' | 'detailed'>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const saved = localStorage.getItem('fertility_care_entry_mode');
-        if (saved === 'direct' || saved === 'detailed') return saved;
-      }
-    } catch (_e) {}
-    return 'detailed';
-  });
+  const [entryMode, setEntryMode] = useState<EntryMode>(() =>
+    readStorage(ENTRY_MODE_STORAGE_KEY) === 'direct' ? 'direct' : 'detailed'
+  );
 
   // Direct mode override toggle to show/hide detailed button grids on demand
   const [showDetailedOverride, setShowDetailedOverride] = useState(false);
 
-  const handleSetEntryMode = (mode: 'direct' | 'detailed') => {
+  const handleSetEntryMode = (mode: EntryMode) => {
     setEntryMode(mode);
     setShowDetailedOverride(false);
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('fertility_care_entry_mode', mode);
-      }
-    } catch (_e) {}
+    writeStorage(ENTRY_MODE_STORAGE_KEY, mode);
   };
 
   // Selected date state (defaults to Today, but user can navigate)
-  const [selectedDate, setSelectedDate] = useState<string>(() => {
-    return selectedObservation?.date || getTodayStr();
-  });
+  const [selectedDate, setSelectedDate] = useState<string>(
+    () => selectedObservation?.date ?? getTodayStr()
+  );
 
-  // Form states
-  const [bleeding, setBleeding] = useState<BleedingCode | undefined>();
-  const [stretch, setStretch] = useState<MucusStretch | undefined>();
-  const [modifiers, setModifiers] = useState<MucusModifier[]>([]);
-  const [frequency, setFrequency] = useState<FrequencyCode | undefined>();
-  const [symptoms, setSymptoms] = useState<SymptomCode[]>([]);
-  const [intercourse, setIntercourse] = useState(false);
-  const [notes, setNotes] = useState('');
-  const [isManualPeak, setIsManualPeak] = useState(false);
-  const [isCycleStart, setIsCycleStart] = useState<boolean | undefined>(undefined);
-  const [directInputText, setDirectInputText] = useState('');
+  const form = useObservationForm();
+  const { fields, load } = form;
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // Toast feedback state
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
-  // Sync form when selectedDate or observations array changes
+  const currentObs = observations.find(o => o.date === selectedDate);
+
+  // Load the saved observation of the selected date into the form
   useEffect(() => {
-    const existingObs = observations.find(o => o.date === selectedDate);
-    if (existingObs) {
-      setBleeding(existingObs.bleeding);
-      setStretch(existingObs.stretch);
-      setModifiers(existingObs.modifiers || []);
-      setFrequency(existingObs.frequency);
-      setSymptoms(existingObs.symptoms || []);
-      setIntercourse(existingObs.intercourse || false);
-      setNotes(existingObs.notes || '');
-      setIsManualPeak(existingObs.isManualPeak || false);
-      setIsCycleStart(existingObs.isCycleStart);
-      setDirectInputText(existingObs.codeString || '');
-    } else {
-      setBleeding(undefined);
-      setStretch(undefined);
-      setModifiers([]);
-      setFrequency(undefined);
-      setSymptoms([]);
-      setIntercourse(false);
-      setNotes('');
-      setIsManualPeak(false);
-      setIsCycleStart(undefined);
-      setDirectInputText('');
-    }
-  }, [selectedDate, observations]);
+    load(currentObs);
+  }, [currentObs, load]);
 
   // Handle selectedObservation external overrides
   useEffect(() => {
-    if (selectedObservation?.date) {
+    if (selectedObservation) {
       setSelectedDate(selectedObservation.date);
     }
   }, [selectedObservation]);
@@ -122,208 +78,33 @@ export const TodayView: React.FC = () => {
   const handleNextDay = () => setSelectedDate(prev => addDays(prev, 1));
   const handleGoToToday = () => setSelectedDate(getTodayStr());
 
-  const calculatedStamp = calculateStamp(bleeding, stretch, modifiers);
-  const currentCode = formatCodeString({
-    bleeding,
-    stretch,
-    modifiers,
-    frequency,
-    symptoms,
-    intercourse,
-  });
+  const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
 
-  const handleDirectTextChange = (text: string) => {
-    setDirectInputText(text);
-    const parsed = parseCodeString(text);
-    setBleeding(parsed.bleeding);
-    setStretch(parsed.stretch);
-    setModifiers(parsed.modifiers);
-    setFrequency(parsed.frequency);
-    setSymptoms(parsed.symptoms);
-    setIntercourse(parsed.intercourse);
-  };
-
-  const toggleModifier = (mod: MucusModifier) => {
-    setModifiers(prev => {
-      const next = prev.includes(mod) ? prev.filter(m => m !== mod) : [...prev, mod];
-      const updatedCode = formatCodeString({
-        bleeding,
-        stretch,
-        modifiers: next,
-        frequency,
-        symptoms,
-        intercourse,
-      });
-      setDirectInputText(updatedCode);
-      return next;
-    });
-  };
-
-  const toggleSymptom = (sym: SymptomCode) => {
-    setSymptoms(prev => {
-      const next = prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym];
-      const updatedCode = formatCodeString({
-        bleeding,
-        stretch,
-        modifiers,
-        frequency,
-        symptoms: next,
-        intercourse,
-      });
-      setDirectInputText(updatedCode);
-      return next;
-    });
-  };
-
-  const handleBleedingSelect = (b?: BleedingCode) => {
-    setBleeding(b);
-    const updatedCode = formatCodeString({
-      bleeding: b,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleStretchSelect = (s?: MucusStretch) => {
-    setStretch(s);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch: s,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleFrequencySelect = (f?: FrequencyCode) => {
-    setFrequency(f);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch,
-      modifiers,
-      frequency: f,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleIntercourseToggle = () => {
-    const next = !intercourse;
-    setIntercourse(next);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse: next,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const currentObs = observations.find(o => o.date === selectedDate);
-
-  // Check if current form has unsaved changes relative to existing observation
-  const hasUnsavedChanges = (() => {
-    if (!currentObs) {
-      return (
-        bleeding !== undefined ||
-        stretch !== undefined ||
-        modifiers.length > 0 ||
-        frequency !== undefined ||
-        symptoms.length > 0 ||
-        intercourse ||
-        notes.trim() !== '' ||
-        isManualPeak
-      );
-    }
-    const sameBleeding = currentObs.bleeding === bleeding;
-    const sameStretch = currentObs.stretch === stretch;
-    const sameFrequency = currentObs.frequency === frequency;
-    const sameIntercourse = (currentObs.intercourse || false) === intercourse;
-    const samePeak = (currentObs.isManualPeak || false) === isManualPeak;
-    const sameCycleStart = currentObs.isCycleStart === isCycleStart;
-    const sameNotes = (currentObs.notes || '') === notes;
-
-    const sameModifiers =
-      (currentObs.modifiers || []).length === modifiers.length &&
-      modifiers.every(m => (currentObs.modifiers || []).includes(m));
-
-    const sameSymptoms =
-      (currentObs.symptoms || []).length === symptoms.length &&
-      symptoms.every(s => (currentObs.symptoms || []).includes(s));
-
-    return !(
-      sameBleeding &&
-      sameStretch &&
-      sameFrequency &&
-      sameIntercourse &&
-      samePeak &&
-      sameCycleStart &&
-      sameNotes &&
-      sameModifiers &&
-      sameSymptoms
-    );
-  })();
-
-  const executeSave = (explicitCycleStart?: boolean) => {
-    const finalCycleStart = explicitCycleStart !== undefined ? explicitCycleStart : isCycleStart;
-    saveObservation({
-      id: currentObs?.id,
-      date: selectedDate,
-      bleeding,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-      notes,
-      isManualPeak,
-      isCycleStart: finalCycleStart,
-      codeString: currentCode,
-    });
+  const executeSave = (isCycleStart: boolean | undefined) => {
+    saveObservation(form.toInput(selectedDate, currentObs?.id, isCycleStart));
     showToast(t.todayView.savedNotice);
     setShowCycleStartModal(false);
   };
 
+  // The save button is disabled while nothing changed
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!hasUnsavedChanges) return;
-
-    if (
-      bleeding &&
-      isCycleStart === undefined &&
-      isFirstBleedingDayOfSeries({ date: selectedDate, bleeding }, observations)
-    ) {
+    if (needsCycleStartChoice(fields, selectedDate, observations)) {
       setShowCycleStartModal(true);
       return;
     }
-
-    executeSave();
+    executeSave(fields.isCycleStart);
   };
 
   const handleModalConfirm = (choice: boolean) => {
-    setIsCycleStart(choice);
+    form.setCycleStart(choice);
     executeSave(choice);
   };
 
-  const handleModalCancel = () => {
-    setShowCycleStartModal(false);
-  };
-
-  const handleDelete = () => {
-    if (currentObs?.id) {
-      deleteObservation(currentObs.id);
-      setSelectedObservation(null);
-      showToast(t.todayView.deletedNotice);
-    }
+  const handleDelete = (id: string) => {
+    deleteObservation(id);
+    setSelectedObservation(null);
+    showToast(t.todayView.deletedNotice);
   };
 
   return (
@@ -354,10 +135,10 @@ export const TodayView: React.FC = () => {
 
       {/* Top Stamp & Status Banner (Mobile Viewport) */}
       <TodayFertilityGuidance
-        stamp={calculatedStamp}
-        currentCode={currentCode}
-        isManualPeak={isManualPeak}
-        intercourse={intercourse}
+        stamp={form.calculatedStamp}
+        currentCode={form.currentCode}
+        isManualPeak={fields.isManualPeak}
+        intercourse={fields.intercourse}
         variant="banner"
       />
 
@@ -376,38 +157,37 @@ export const TodayView: React.FC = () => {
           showDetailedOverride={showDetailedOverride}
           onSetEntryMode={handleSetEntryMode}
           onToggleDetailedOverride={() => setShowDetailedOverride(!showDetailedOverride)}
-          directInputText={directInputText}
-          onDirectTextChange={handleDirectTextChange}
-          intercourse={intercourse}
-          onIntercourseToggle={handleIntercourseToggle}
-          bleeding={bleeding}
-          onBleedingSelect={handleBleedingSelect}
-          isCycleStart={isCycleStart}
-          onToggleCycleStart={() => setIsCycleStart(prev => prev !== true)}
-          stretch={stretch}
-          onStretchSelect={handleStretchSelect}
-          modifiers={modifiers}
-          onToggleModifier={toggleModifier}
-          frequency={frequency}
-          onFrequencySelect={handleFrequencySelect}
-          symptoms={symptoms}
-          onToggleSymptom={toggleSymptom}
-          isManualPeak={isManualPeak}
-          onToggleManualPeak={() => setIsManualPeak(!isManualPeak)}
-          notes={notes}
-          onNotesChange={setNotes}
+          directInputText={form.directInputText}
+          onDirectTextChange={form.setDirectText}
+          intercourse={fields.intercourse}
+          onIntercourseToggle={form.toggleIntercourse}
+          bleeding={fields.bleeding}
+          onBleedingSelect={form.selectBleeding}
+          isCycleStart={fields.isCycleStart}
+          onToggleCycleStart={form.toggleCycleStart}
+          stretch={fields.stretch}
+          onStretchSelect={form.selectStretch}
+          modifiers={fields.modifiers}
+          onToggleModifier={form.toggleModifier}
+          frequency={fields.frequency}
+          onFrequencySelect={form.selectFrequency}
+          symptoms={fields.symptoms}
+          onToggleSymptom={form.toggleSymptom}
+          isManualPeak={fields.isManualPeak}
+          onToggleManualPeak={form.toggleManualPeak}
+          notes={fields.notes}
+          onNotesChange={form.setNotes}
           hasUnsavedChanges={hasUnsavedChanges}
-          hasExistingObs={Boolean(currentObs?.id)}
           onSave={handleSave}
-          onDelete={handleDelete}
+          onDelete={currentObs ? () => handleDelete(currentObs.id) : undefined}
         />
 
         {/* Column 3: Real-time Stamp Preview & Guidance (Desktop Viewport) */}
         <TodayFertilityGuidance
-          stamp={calculatedStamp}
-          currentCode={currentCode}
-          isManualPeak={isManualPeak}
-          intercourse={intercourse}
+          stamp={form.calculatedStamp}
+          currentCode={form.currentCode}
+          isManualPeak={fields.isManualPeak}
+          intercourse={fields.intercourse}
           variant="card"
         />
       </div>
@@ -416,7 +196,7 @@ export const TodayView: React.FC = () => {
         isOpen={showCycleStartModal}
         date={selectedDate}
         onConfirm={handleModalConfirm}
-        onCancel={handleModalCancel}
+        onCancel={() => setShowCycleStartModal(false)}
       />
     </div>
   );

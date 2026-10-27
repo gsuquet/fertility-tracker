@@ -6,7 +6,7 @@ import { processCycleObservations } from './peakDetector';
  * is the first bleeding day of a series (i.e., has a bleeding code and is preceded by a non-bleeding day or no observation).
  */
 export function isFirstBleedingDayOfSeries(
-  obsData: { date: string; bleeding?: string },
+  obsData: { date: string; bleeding?: string | undefined },
   allObservations: Observation[]
 ): boolean {
   if (!obsData.bleeding || !['H', 'M', 'L', 'VL', 'B'].includes(obsData.bleeding)) {

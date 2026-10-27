@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import type {
@@ -8,9 +9,8 @@ import type {
   FrequencyCode,
   SymptomCode,
 } from '../types/crms';
-import { parseCodeString, formatCodeString } from '../domain/codeParser';
-import { calculateStamp } from '../domain/stampCalculator';
-import { isFirstBleedingDayOfSeries } from '../domain/cycleBoundaryDetector';
+import { needsCycleStartChoice } from '../domain/observationForm';
+import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { StampBadge } from './StampBadge';
 import { X, Save, Trash2, Heart, Flag, Calendar } from 'lucide-react';
@@ -29,48 +29,16 @@ export const ObservationDrawer: React.FC = () => {
   const { t } = useLanguage();
 
   const [date, setDate] = useState(() => getTodayStr());
-  const [bleeding, setBleeding] = useState<BleedingCode | undefined>();
-  const [stretch, setStretch] = useState<MucusStretch | undefined>();
-  const [modifiers, setModifiers] = useState<MucusModifier[]>([]);
-  const [frequency, setFrequency] = useState<FrequencyCode | undefined>();
-  const [symptoms, setSymptoms] = useState<SymptomCode[]>([]);
-  const [intercourse, setIntercourse] = useState(false);
-  const [notes, setNotes] = useState('');
-  const [isManualPeak, setIsManualPeak] = useState(false);
-  const [isCycleStart, setIsCycleStart] = useState<boolean | undefined>(undefined);
-  const [directInputText, setDirectInputText] = useState('');
+  const form = useObservationForm();
+  const { fields, load } = form;
+  const { bleeding, stretch, modifiers, frequency, symptoms, intercourse, isCycleStart } = fields;
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens
   useEffect(() => {
-    if (selectedObservation) {
-      setDate(selectedObservation.date);
-      setBleeding(selectedObservation.bleeding);
-      setStretch(selectedObservation.stretch);
-      setModifiers(selectedObservation.modifiers || []);
-      setFrequency(selectedObservation.frequency);
-      setSymptoms(selectedObservation.symptoms || []);
-      setIntercourse(selectedObservation.intercourse || false);
-      setNotes(selectedObservation.notes || '');
-      setIsManualPeak(selectedObservation.isManualPeak || false);
-      setIsCycleStart(selectedObservation.isCycleStart);
-      setDirectInputText(selectedObservation.codeString || '');
-    } else {
-      setDate(getTodayStr());
-      setBleeding(undefined);
-      setStretch(undefined);
-      setModifiers([]);
-      setFrequency(undefined);
-      setSymptoms([]);
-      setIntercourse(false);
-      setNotes('');
-      setIsManualPeak(false);
-      setIsCycleStart(undefined);
-      setDirectInputText('');
-    }
-  }, [selectedObservation, isDrawerOpen]);
-
-  const drawerRef = React.useRef<HTMLDivElement>(null);
+    setDate(selectedObservation?.date ?? getTodayStr());
+    load(selectedObservation ?? undefined);
+  }, [selectedObservation, isDrawerOpen, load]);
 
   useEffect(() => {
     if (!isDrawerOpen) return;
@@ -87,164 +55,37 @@ export const ObservationDrawer: React.FC = () => {
 
   if (!isDrawerOpen) return null;
 
-  const calculatedStamp = calculateStamp(bleeding, stretch, modifiers);
-  const currentCode = formatCodeString({
-    bleeding,
-    stretch,
-    modifiers,
-    frequency,
-    symptoms,
-    intercourse,
-  });
+  // The calendar opens empty days with a blank id
+  const savedId = selectedObservation?.id || undefined;
 
-  const handleDirectTextChange = (text: string) => {
-    setDirectInputText(text);
-    const parsed = parseCodeString(text);
-    setBleeding(parsed.bleeding);
-    setStretch(parsed.stretch);
-    setModifiers(parsed.modifiers);
-    setFrequency(parsed.frequency);
-    setSymptoms(parsed.symptoms);
-    setIntercourse(parsed.intercourse);
-  };
-
-  const toggleModifier = (mod: MucusModifier) => {
-    setModifiers(prev => {
-      const next = prev.includes(mod) ? prev.filter(m => m !== mod) : [...prev, mod];
-      const updatedCode = formatCodeString({
-        bleeding,
-        stretch,
-        modifiers: next,
-        frequency,
-        symptoms,
-        intercourse,
-      });
-      setDirectInputText(updatedCode);
-      return next;
-    });
-  };
-
-  const toggleSymptom = (sym: SymptomCode) => {
-    setSymptoms(prev => {
-      const next = prev.includes(sym) ? prev.filter(s => s !== sym) : [...prev, sym];
-      const updatedCode = formatCodeString({
-        bleeding,
-        stretch,
-        modifiers,
-        frequency,
-        symptoms: next,
-        intercourse,
-      });
-      setDirectInputText(updatedCode);
-      return next;
-    });
-  };
-
-  const handleBleedingSelect = (b?: BleedingCode) => {
-    setBleeding(b);
-    const updatedCode = formatCodeString({
-      bleeding: b,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleStretchSelect = (s?: MucusStretch) => {
-    setStretch(s);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch: s,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleFrequencySelect = (f?: FrequencyCode) => {
-    setFrequency(f);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch,
-      modifiers,
-      frequency: f,
-      symptoms,
-      intercourse,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const handleIntercourseToggle = () => {
-    const next = !intercourse;
-    setIntercourse(next);
-    const updatedCode = formatCodeString({
-      bleeding,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse: next,
-    });
-    setDirectInputText(updatedCode);
-  };
-
-  const executeSave = (explicitCycleStart?: boolean) => {
-    const finalCycleStart = explicitCycleStart !== undefined ? explicitCycleStart : isCycleStart;
-    saveObservation({
-      id: selectedObservation?.id,
-      date,
-      bleeding,
-      stretch,
-      modifiers,
-      frequency,
-      symptoms,
-      intercourse,
-      notes,
-      isManualPeak,
-      isCycleStart: finalCycleStart,
-      codeString: currentCode,
-    });
+  const closeDrawer = () => {
     setIsDrawerOpen(false);
     setSelectedObservation(null);
+  };
+
+  const executeSave = (cycleStart: boolean | undefined) => {
+    saveObservation(form.toInput(date, savedId, cycleStart));
+    closeDrawer();
     setShowCycleStartModal(false);
   };
 
   const handleSave = (e: React.FormEvent) => {
     e.preventDefault();
-
-    // Check if this is the first bleeding day of a series and cycle start choice is unconfirmed
-    if (
-      bleeding &&
-      isCycleStart === undefined &&
-      isFirstBleedingDayOfSeries({ date, bleeding }, observations)
-    ) {
+    if (needsCycleStartChoice(fields, date, observations)) {
       setShowCycleStartModal(true);
       return;
     }
-
-    executeSave();
+    executeSave(isCycleStart);
   };
 
   const handleModalConfirm = (choice: boolean) => {
-    setIsCycleStart(choice);
+    form.setCycleStart(choice);
     executeSave(choice);
   };
 
-  const handleModalCancel = () => {
-    setShowCycleStartModal(false);
-  };
-
-  const handleDelete = () => {
-    if (selectedObservation?.id) {
-      deleteObservation(selectedObservation.id);
-      setIsDrawerOpen(false);
-      setSelectedObservation(null);
-    }
+  const handleDelete = (id: string) => {
+    deleteObservation(id);
+    closeDrawer();
   };
 
   return (
@@ -255,11 +96,9 @@ export const ObservationDrawer: React.FC = () => {
       aria-modal="true"
       aria-labelledby="drawer-title"
     >
-      <div className="drawer-container" ref={drawerRef} onClick={e => e.stopPropagation()}>
+      <div className="drawer-container" onClick={e => e.stopPropagation()}>
         <div className="drawer-header">
-          <h2 id="drawer-title">
-            {selectedObservation?.id ? 'Edit Observation' : t.actions.newEntry}
-          </h2>
+          <h2 id="drawer-title">{savedId ? 'Edit Observation' : t.actions.newEntry}</h2>
           <button
             className="icon-button"
             onClick={() => setIsDrawerOpen(false)}
@@ -274,15 +113,15 @@ export const ObservationDrawer: React.FC = () => {
           <div className="preview-card" aria-live="polite">
             <div className="preview-stamp">
               <StampBadge
-                stamp={calculatedStamp}
-                isPeakDay={isManualPeak}
+                stamp={form.calculatedStamp}
+                isPeakDay={fields.isManualPeak}
                 intercourse={intercourse}
                 size="lg"
               />
             </div>
             <div className="preview-details">
               <span className="preview-label">{t.labels.stampPreview}</span>
-              <div className="preview-code-display">{currentCode || '---'}</div>
+              <div className="preview-code-display">{form.currentCode || '---'}</div>
             </div>
           </div>
 
@@ -307,8 +146,8 @@ export const ObservationDrawer: React.FC = () => {
               type="text"
               className="form-input direct-code-input"
               placeholder={t.labels.directInputPlaceholder}
-              value={directInputText}
-              onChange={e => handleDirectTextChange(e.target.value)}
+              value={form.directInputText}
+              onChange={e => form.setDirectText(e.target.value)}
             />
           </div>
 
@@ -317,7 +156,7 @@ export const ObservationDrawer: React.FC = () => {
             <button
               type="button"
               className={`intercourse-toggle-btn ${intercourse ? 'active' : ''}`}
-              onClick={handleIntercourseToggle}
+              onClick={form.toggleIntercourse}
               aria-pressed={intercourse}
             >
               <Heart size={18} fill={intercourse ? 'currentColor' : 'none'} />
@@ -334,7 +173,7 @@ export const ObservationDrawer: React.FC = () => {
                   type="button"
                   key={code}
                   className={`option-btn ${bleeding === code ? 'active bleeding' : ''}`}
-                  onClick={() => handleBleedingSelect(bleeding === code ? undefined : code)}
+                  onClick={() => form.selectBleeding(bleeding === code ? undefined : code)}
                   aria-pressed={bleeding === code}
                 >
                   {t.codes.bleeding[code]}
@@ -349,7 +188,7 @@ export const ObservationDrawer: React.FC = () => {
               <button
                 type="button"
                 className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
-                onClick={() => setIsCycleStart(prev => prev !== true)}
+                onClick={form.toggleCycleStart}
                 aria-pressed={isCycleStart === true}
                 style={{
                   borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
@@ -377,7 +216,7 @@ export const ObservationDrawer: React.FC = () => {
                   type="button"
                   key={code}
                   className={`option-btn ${stretch === code ? 'active stretch' : ''}`}
-                  onClick={() => handleStretchSelect(stretch === code ? undefined : code)}
+                  onClick={() => form.selectStretch(stretch === code ? undefined : code)}
                   aria-pressed={stretch === code}
                 >
                   {t.codes.stretch[code]}
@@ -395,7 +234,7 @@ export const ObservationDrawer: React.FC = () => {
                   type="button"
                   key={mod}
                   className={`option-btn ${modifiers.includes(mod) ? 'active modifier' : ''}`}
-                  onClick={() => toggleModifier(mod)}
+                  onClick={() => form.toggleModifier(mod)}
                   aria-pressed={modifiers.includes(mod)}
                 >
                   {t.codes.modifiers[mod]}
@@ -413,7 +252,7 @@ export const ObservationDrawer: React.FC = () => {
                   type="button"
                   key={code}
                   className={`option-btn ${frequency === code ? 'active frequency' : ''}`}
-                  onClick={() => handleFrequencySelect(frequency === code ? undefined : code)}
+                  onClick={() => form.selectFrequency(frequency === code ? undefined : code)}
                   aria-pressed={frequency === code}
                 >
                   {t.codes.frequency[code]}
@@ -431,7 +270,7 @@ export const ObservationDrawer: React.FC = () => {
                   type="button"
                   key={sym}
                   className={`option-btn ${symptoms.includes(sym) ? 'active symptom' : ''}`}
-                  onClick={() => toggleSymptom(sym)}
+                  onClick={() => form.toggleSymptom(sym)}
                   aria-pressed={symptoms.includes(sym)}
                 >
                   {t.codes.symptoms[sym]}
@@ -444,12 +283,12 @@ export const ObservationDrawer: React.FC = () => {
           <div className="form-group">
             <button
               type="button"
-              className={`peak-toggle-btn ${isManualPeak ? 'active' : ''}`}
-              onClick={() => setIsManualPeak(!isManualPeak)}
-              aria-pressed={isManualPeak}
+              className={`peak-toggle-btn ${fields.isManualPeak ? 'active' : ''}`}
+              onClick={form.toggleManualPeak}
+              aria-pressed={fields.isManualPeak}
             >
               <Flag size={18} />
-              <span>{isManualPeak ? t.actions.removePeak : t.actions.setPeak}</span>
+              <span>{fields.isManualPeak ? t.actions.removePeak : t.actions.setPeak}</span>
             </button>
           </div>
 
@@ -460,18 +299,18 @@ export const ObservationDrawer: React.FC = () => {
               id="obs-notes"
               className="form-input form-textarea"
               rows={3}
-              value={notes}
-              onChange={e => setNotes(e.target.value)}
+              value={fields.notes}
+              onChange={e => form.setNotes(e.target.value)}
             />
           </div>
 
           {/* Footer Actions */}
           <div className="drawer-footer">
-            {selectedObservation?.id ? (
+            {savedId ? (
               <button
                 type="button"
                 className="btn btn-danger"
-                onClick={handleDelete}
+                onClick={() => handleDelete(savedId)}
                 aria-label={t.actions.delete}
               >
                 <Trash2 size={16} />
@@ -501,7 +340,7 @@ export const ObservationDrawer: React.FC = () => {
         isOpen={showCycleStartModal}
         date={date}
         onConfirm={handleModalConfirm}
-        onCancel={handleModalCancel}
+        onCancel={() => setShowCycleStartModal(false)}
       />
     </div>
   );

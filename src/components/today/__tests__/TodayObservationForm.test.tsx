@@ -30,9 +30,7 @@ const renderForm = (overrides: Partial<FormProps> = {}) => {
     notes: '',
     onNotesChange: vi.fn(),
     hasUnsavedChanges: true,
-    hasExistingObs: false,
     onSave: vi.fn(e => e.preventDefault()),
-    onDelete: vi.fn(),
     ...overrides,
   };
   renderWithProviders(<TodayObservationForm {...props} />);
@@ -144,10 +142,11 @@ describe('TodayObservationForm', () => {
   });
 
   it('deletes an existing observation and shows it as saved', () => {
-    const props = renderForm({ hasExistingObs: true, hasUnsavedChanges: false });
+    const onDelete = vi.fn();
+    renderForm({ onDelete, hasUnsavedChanges: false });
     expect(button('Saved')).toBeDisabled();
     fireEvent.click(button(en.actions.delete));
-    expect(props.onDelete).toHaveBeenCalledOnce();
+    expect(onDelete).toHaveBeenCalledOnce();
   });
 
   it('disables saving a blank new observation', () => {
