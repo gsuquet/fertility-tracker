@@ -35,7 +35,11 @@ export function processCycleObservations(
 
   // The three days after the last fertile day (white stamp or Peak Day) count as
   // post-peak days. Only a day that is otherwise green gets the light green stamp.
-  const POST_PEAK_STAMPS = ['LIGHT_GREEN_BABY_1', 'LIGHT_GREEN_BABY_2', 'LIGHT_GREEN_BABY_3'] as const;
+  const POST_PEAK_STAMPS = [
+    'LIGHT_GREEN_BABY_1',
+    'LIGHT_GREEN_BABY_2',
+    'LIGHT_GREEN_BABY_3',
+  ] as const;
   let lastFertileDate: string | undefined;
 
   return sorted.map((obs, idx) => {

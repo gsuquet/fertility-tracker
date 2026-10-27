@@ -124,12 +124,10 @@ describe('processCycleObservations', () => {
 
     it('starts the count after a manual Peak Day on a dry day', () => {
       expect(
-        processCycleObservations(
-          [
-            makeObservation({ date: '2026-07-01', stretch: '0', isManualPeak: true }),
-            makeObservation({ date: '2026-07-02', stretch: '0' }),
-          ]
-        ).map(o => o.stamp)
+        processCycleObservations([
+          makeObservation({ date: '2026-07-01', stretch: '0', isManualPeak: true }),
+          makeObservation({ date: '2026-07-02', stretch: '0' }),
+        ]).map(o => o.stamp)
       ).toEqual(['DARK_GREEN', 'LIGHT_GREEN_BABY_1']);
     });
   });

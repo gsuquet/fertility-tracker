@@ -13,6 +13,7 @@ import {
   ChevronUp,
 } from 'lucide-react';
 import type { Observation } from '../types/crms';
+import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
 
 export const CycleAnalyticsView: React.FC = () => {
   const { observations, cycles, selectedCycleId } = useCycle();
@@ -40,14 +41,17 @@ export const CycleAnalyticsView: React.FC = () => {
   const targetCycles = isAll ? cycles : [activeCycle];
 
   const totalDays = targetObs.length;
-  const peakObs = targetObs.find(o => o.isPeakDay);
 
-  let lutealPhaseDays = 0;
-  let follicularPhaseDays = 0;
-  if (peakObs) {
-    follicularPhaseDays = peakObs.cycleDay;
-    lutealPhaseDays = targetObs.filter(o => o.cycleDay > peakObs.cycleDay).length;
-  }
+  // The combined view averages the phases per cycle. Cycles are listed newest first,
+  // so the first cycle with a Peak Day holds the latest one.
+  const singlePhases = getCyclePhases(activeCycle);
+  const average = averagePhases(cycles);
+  const phases = isAll ? average : singlePhases;
+  const peakObs = isAll ? cycles.map(c => getCyclePhases(c).peak).find(Boolean) : singlePhases.peak;
+  const hasPeak = isAll ? average.cyclesWithPeak > 0 : peakObs !== undefined;
+  const lutealPhaseDays = phases.lutealDays;
+  const formatDays = (days: number) => (Number.isInteger(days) ? String(days) : days.toFixed(1));
+  const phasePercent = (days: number) => (days / phases.lengthDays) * 100;
 
   const mensesDays = targetObs.filter(o => o.stamp === 'RED').length;
   const dryDays = targetObs.filter(o => o.stamp === 'DARK_GREEN').length;
@@ -139,39 +143,40 @@ export const CycleAnalyticsView: React.FC = () => {
             <div className="phase-row">
               <span>{t.analytics.mensesPhase}</span>
               <strong>
-                {mensesDays} {t.stats.days}
+                {formatDays(phases.mensesDays)} {t.stats.days}
               </strong>
             </div>
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-menses"
-                style={{ width: `${percentOf(mensesDays)}%` }}
+                style={{ width: `${phasePercent(phases.mensesDays)}%` }}
               />
             </div>
 
             <div className="phase-row">
               <span>{t.analytics.follicularPhase}</span>
               <strong>
-                {follicularPhaseDays} {t.stats.days}
+                {formatDays(phases.follicularDays)} {t.stats.days}
+                {hasPeak ? '' : ` (${t.analytics.inProgress})`}
               </strong>
             </div>
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-follicular"
-                style={{ width: `${percentOf(follicularPhaseDays)}%` }}
+                style={{ width: `${phasePercent(phases.follicularDays)}%` }}
               />
             </div>
 
             <div className="phase-row">
               <span>{t.analytics.lutealPhase}</span>
               <strong>
-                {lutealPhaseDays} {t.stats.days}
+                {formatDays(lutealPhaseDays)} {t.stats.days}
               </strong>
             </div>
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-luteal"
-                style={{ width: `${percentOf(lutealPhaseDays)}%` }}
+                style={{ width: `${phasePercent(lutealPhaseDays)}%` }}
               />
             </div>
           </div>

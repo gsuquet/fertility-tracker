@@ -93,4 +93,42 @@ describe('CycleAnalyticsView details', () => {
     fireEvent.click(toggle);
     expect(screen.queryByText(en.analytics.mcsGuideText)).toBeNull();
   });
+
+  const phaseValue = (label: string) => screen.getByText(label).nextElementSibling?.textContent;
+
+  it('counts the follicular phase so far before the Peak Day', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
+    expect(phaseValue(en.analytics.follicularPhase)).toBe(`4 days (${en.analytics.inProgress})`);
+    expect(phaseValue(en.analytics.lutealPhase)).toBe('0 days');
+  });
+
+  it('averages the phases per cycle in the combined view', () => {
+    renderWithProviders(<CycleAnalyticsView />, {
+      observations: buildDemoObservations('2026-09-30'),
+      selectedCycleId: 'all',
+    });
+    expect(phaseValue(en.analytics.mensesPhase)).toBe('4 days');
+    expect(phaseValue(en.analytics.follicularPhase)).toBe('13 days');
+    expect(phaseValue(en.analytics.lutealPhase)).toBe('15 days');
+    expect(summary()).toHaveTextContent(en.analytics.normalLuteal);
+    expect(screen.getByText(`${en.labels.peakDay}:`).parentElement).toHaveTextContent(
+      'CD 13 (2026-09-15)'
+    );
+  });
+
+  it('shows decimals and a pending peak when the combined averages need them', () => {
+    renderWithProviders(<CycleAnalyticsView />, {
+      // Two cycles of two and one days, neither with a Peak Day
+      observations: [
+        makeObservation({ date: '2026-08-01', bleeding: 'H' }),
+        makeObservation({ date: '2026-08-02', stretch: '0' }),
+        makeObservation({ date: '2026-08-03', bleeding: 'H' }),
+      ],
+      selectedCycleId: 'all',
+    });
+    expect(phaseValue(en.analytics.follicularPhase)).toBe(`1.5 days (${en.analytics.inProgress})`);
+    expect(screen.getByText(`${en.labels.peakDay}:`).parentElement).toHaveTextContent(
+      en.analytics.pendingPeak
+    );
+  });
 });

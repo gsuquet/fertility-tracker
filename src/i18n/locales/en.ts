@@ -150,6 +150,7 @@ export const en = {
     lutealHealth: 'Luteal Phase Health',
     normalLuteal: 'Normal (9-17 days)',
     abnormalLuteal: 'Short/Extended luteal phase',
+    inProgress: 'in progress',
     pendingPeak: 'Pending Peak Day',
   },
   chartStrip: {
