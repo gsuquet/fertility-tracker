@@ -208,6 +208,10 @@ export const fr: TranslationSchema = {
     clearTitle: 'Supprimer toutes les données du graphique ?',
     clearMessage: 'Cette action supprime les {count} observations de ce navigateur.',
     clearConfirm: 'Tout supprimer',
+    recoveryTitle: 'Supprimer les données illisibles ?',
+    recoveryMessage:
+      "L'application ne garde aucune autre copie de ces données. Téléchargez-les d'abord si vous voulez les garder.",
+    recoveryConfirm: 'Supprimer la copie',
   },
   undoToast: {
     demo: 'Les données de démo ont remplacé vos observations.',

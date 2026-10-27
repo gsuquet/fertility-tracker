@@ -1,12 +1,15 @@
 import type React from 'react';
+import { useState } from 'react';
 import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getTodayStr } from '../utils/dateUtils';
+import { ConfirmDialog } from './ConfirmDialog';
 
 /** Lets the user save the stored data that the app could not read, then delete the copy or close. */
 export const StorageRecoveryNotice: React.FC = () => {
   const { recoveryData, recoveryKept, dismissRecovery } = useCycleData();
   const { t } = useLanguage();
+  const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
   if (recoveryData === null) return null;
 
@@ -26,10 +29,25 @@ export const StorageRecoveryNotice: React.FC = () => {
         <button type="button" className="btn btn-primary" onClick={handleDownload}>
           {t.storageRecovery.download}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={dismissRecovery}>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={recoveryKept ? () => setIsConfirmOpen(true) : dismissRecovery}
+        >
           {recoveryKept ? t.storageRecovery.dismiss : t.storageRecovery.close}
         </button>
       </div>
+      {isConfirmOpen && (
+        <ConfirmDialog
+          title={t.confirmDialog.recoveryTitle}
+          actions={[
+            { label: t.confirmDialog.recoveryConfirm, onClick: dismissRecovery, danger: true },
+          ]}
+          onCancel={() => setIsConfirmOpen(false)}
+        >
+          <p>{t.confirmDialog.recoveryMessage}</p>
+        </ConfirmDialog>
+      )}
     </div>
   );
 };

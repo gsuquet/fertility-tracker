@@ -206,6 +206,10 @@ export const en = {
     clearTitle: 'Delete all chart data?',
     clearMessage: 'This deletes the {count} observations in this browser.',
     clearConfirm: 'Delete all data',
+    recoveryTitle: 'Delete the unreadable data?',
+    recoveryMessage:
+      'The application keeps no other copy of this data. Download it first if you want to keep it.',
+    recoveryConfirm: 'Delete the copy',
   },
   undoToast: {
     demo: 'The demo data replaced your observations.',

@@ -62,15 +62,16 @@ If the file is not a valid backup, the dialog shows an error. The observations d
 
 ## Confirmation dialog
 
-The confirmation dialog opens over the export dialog before an action replaces or deletes observations. The focus starts on **Cancel**. For a backup file, the dialog shows the number of observations in the file and the first and last date.
+The confirmation dialog opens before an action replaces or deletes data. The focus starts on **Cancel**. For a backup file, the dialog shows the number of observations in the file and the first and last date.
 
-| Dialog                               | Opens from              | Button that continues    |
-| ------------------------------------ | ----------------------- | ------------------------ |
-| **Restore this backup?**             | **Restore Data (JSON)** | **Merge** or **Replace** |
-| **Replace your data with the demo?** | **Load Demo Cycle**     | **Load the demo**        |
-| **Delete all chart data?**           | **Clear Data / Reset**  | **Delete all data**      |
+| Dialog                               | Opens from                                        | Button that continues    |
+| ------------------------------------ | ------------------------------------------------- | ------------------------ |
+| **Restore this backup?**             | **Restore Data (JSON)**                           | **Merge** or **Replace** |
+| **Replace your data with the demo?** | **Load Demo Cycle**                               | **Load the demo**        |
+| **Delete all chart data?**           | **Clear Data / Reset**                            | **Delete all data**      |
+| **Delete the unreadable data?**      | **Delete the copy** in the unreadable data notice | **Delete the copy**      |
 
-**Cancel**, the `Escape` key and a click outside the dialog close it. The observations do not change.
+**Cancel**, the `Escape` key and a click outside the dialog close it. The data does not change.
 
 ## Undo toast
 
@@ -85,11 +86,11 @@ The undo toast shows at the bottom of the page after a restore, a demo load or a
 
 The notice shows above the pages when the application cannot read the saved observations. It shows until you delete the copy or close the notice.
 
-| Button                       | Action                                                                       |
-| ---------------------------- | ---------------------------------------------------------------------------- |
-| **Download unreadable data** | Downloads the original data in a text file.                                  |
-| **Delete the copy**          | Deletes the copy of the original data and closes the notice.                 |
-| **Close**                    | Closes the notice. This button shows when the application has no new copy.   |
+| Button                       | Action                                                                                   |
+| ---------------------------- | ---------------------------------------------------------------------------------------- |
+| **Download unreadable data** | Downloads the original data in a text file.                                              |
+| **Delete the copy**          | Asks for confirmation. Then deletes the copy of the original data and closes the notice. |
+| **Close**                    | Closes the notice. This button shows when the application has no new copy.               |
 
 ## Dialogs
 
