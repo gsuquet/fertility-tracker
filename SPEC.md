@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.15.3  
+**Document Version:** 1.16.0  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -30,10 +30,13 @@
    - [5.8 Export & Printing System](#58-export--printing-system)
    - [5.9 Version Tracker & System Info Modal](#59-version-tracker--system-info-modal)
    - [5.10 Welcome Screen & Onboarding Guide Modal](#510-welcome-screen--onboarding-guide-modal)
+   - [5.11 Error Boundary](#511-error-boundary)
 6. [State Management & Data Persistence](#6-state-management--data-persistence)
 7. [Internationalization & Design System](#7-internationalization--design-system)
 8. [Testing & Quality Assurance](#8-testing--quality-assurance)
 9. [Deployment & CI/CD Pipeline](#9-deployment--cicd-pipeline)
+   - [9.1 Offline Support & Installable App](#91-offline-support--installable-app)
+   - [9.2 Security Headers](#92-security-headers)
 10. [Legal, Privacy & Medical Compliance](#10-legal-privacy--medical-compliance)
 
 ---
@@ -453,6 +456,14 @@ Interactive slide-over drawer for entering and editing observations with two syn
   4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
 - **Accessible Design & Navigation:** Keyboard navigation (`Escape` close, tab trap), step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
 
+### 5.11 Error Boundary
+
+**Module:** [src/components/ErrorBoundary.tsx](./src/components/ErrorBoundary.tsx)
+
+- `App.tsx` wraps each `React.Suspense` (the four pages and the lazy dialogs) in an `ErrorBoundary`. The boundary around the pages has `key={activeTab}`, so a tab change removes the alert and loads the new page again.
+- When a child throws during render, or a lazy chunk fails to load (for example offline, before the service worker has cached it), the boundary replaces the failed part with an alert (`role="alert"`) instead of a blank screen. The rest of the layout (header, footer, navigation) stays visible.
+- The alert shows a translated title and message (`errorBoundary.title`, `errorBoundary.message`) and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
+
 ---
 
 ## 6. State Management & Data Persistence
@@ -544,16 +555,17 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### Test Layers
 
-| Layer       | Location                       | Purpose                                                                                                   |
-| ----------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
-| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                                     |
-| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                                     |
-| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                                          |
-| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                                      |
-| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                                           |
-| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
-| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                                |
+| Layer       | Location                                  | Purpose                                                                                                   |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access.                                                     |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                                      |
+| Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.                           |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                                    |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
+| Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                                            |
 
 ### Test Helpers (`src/test/`)
 
@@ -624,6 +636,31 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
   3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
   4. **Production Build:** `vite build`
 - **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
+
+### 9.1 Offline Support & Installable App
+
+**Modules:** [src/sw/serviceWorker.ts](./src/sw/serviceWorker.ts), [src/sw/entry.ts](./src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](./src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](./scripts/pwa/serviceWorkerPlugin.ts)
+
+- **Build-time precache list:** The Vite plugin `serviceWorkerPlugin` (build only) bundles `src/sw/entry.ts` to `dist/sw.js`. It injects the precache list and the cache name into it:
+  - **Precache list:** `./` (the app shell; the server answers it with `index.html`) and every other file of the build output (all hashed files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons). `index.html` is not listed under its own name: `./` stores it. Source maps, `sw.js` and `_headers` are excluded.
+  - **Cache name:** `fertility-tracker-<app version>-<build hash>`. The build hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the precached files. Thus each build with a different output installs a new cache.
+- **Service worker events:**
+  - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
+  - `activate`: Deletes every cache whose name starts with `fertility-tracker-` and is not the current cache, then calls `clients.claim()`.
+  - `fetch`: Ignores requests that are not `GET` or not same-origin (for example Google Fonts).
+    - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
+    - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response whose `Content-Type` is not `text/html`. After a deploy, the server answers an old file name with `index.html` (SPA fallback); this response is returned but never stored under the asset URL.
+    - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached app shell (`./`). Without a cached response, returns a network error.
+- **Registration:** `src/main.tsx` calls `registerServiceWorker()` after the first render. It registers `./sw.js` only in a production build (`import.meta.env.PROD`), in a secure context (`https:` or `localhost`) and when the browser supports service workers. A registration failure is ignored. There is no inline script in `index.html`.
+- **Web App Manifest ([public/manifest.webmanifest](./public/manifest.webmanifest)):** PNG icons `icons/icon-192.png` (192×192, `any`), `icons/icon-512.png` (512×512, `any`) and `icons/icon-maskable-512.png` (512×512, `maskable`, glyph inside the 80% safe zone). `index.html` links `icons/icon-192.png` as the `apple-touch-icon`.
+- **Data:** The service worker caches only application files. It never reads or caches observations, which stay in `localStorage`.
+
+### 9.2 Security Headers
+
+**Configuration:** [public/\_headers](./public/_headers)
+
+- `Content-Security-Policy` uses `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not contain an inline script.
+- `sw.js` is served with `Cache-Control: no-cache, no-store, must-revalidate`, so the browser always checks for a new service worker. Files in `assets/` are immutable for one year.
 
 ---
 
