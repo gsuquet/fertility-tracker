@@ -439,7 +439,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 **Module:** [src/components/ErrorBoundary.tsx](./src/components/ErrorBoundary.tsx)
 
-- `App.tsx` wraps each `React.Suspense` (the four pages and the lazy dialogs) in an `ErrorBoundary`.
+- `App.tsx` wraps each `React.Suspense` (the four pages and the lazy dialogs) in an `ErrorBoundary`. The boundary around the pages has `key={activeTab}`, so a tab change removes the alert and loads the new page again.
 - When a child throws during render, or a lazy chunk fails to load (for example offline, before the service worker has cached it), the boundary replaces the failed part with an alert (`role="alert"`) instead of a blank screen. The rest of the layout (header, footer, navigation) stays visible.
 - The alert shows a translated title and message (`errorBoundary.title`, `errorBoundary.message`) and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
 

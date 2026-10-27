@@ -87,7 +87,8 @@ const MainApp: React.FC = () => {
       >
         <CycleStatsHeader />
 
-        <ErrorBoundary>
+        {/* The key resets the alert of a failed page when the tab changes */}
+        <ErrorBoundary key={activeTab}>
           <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
             {activeTab === 'today' && <TodayView />}
             {activeTab === 'chart' && <ChartRow />}

@@ -35,6 +35,17 @@ describe('App error boundaries', () => {
     expect(screen.getByRole('contentinfo')).toBeInTheDocument();
   });
 
+  it('removes the page alert when the tab changes', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<App />);
+    const tabs = within(screen.getByRole('banner'));
+    fireEvent.click(tabs.getByRole('tab', { name: en.tabs.analytics }));
+    expect(await screen.findByRole('alert')).toBeInTheDocument();
+    fireEvent.click(tabs.getByRole('tab', { name: en.tabs.today }));
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument();
+  });
+
   it('shows a reload alert when a lazy dialog fails', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
