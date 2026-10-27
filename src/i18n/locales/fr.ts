@@ -206,7 +206,8 @@ export const fr: TranslationSchema = {
     importReplace: 'Remplacer',
     importMerge: 'Fusionner',
     clearTitle: 'Supprimer toutes les données du graphique ?',
-    clearMessage: 'Cette action supprime les {count} observations de ce navigateur.',
+    clearMessage:
+      "Cette action supprime les {count} observations de ce navigateur. Une copie reste sur cet appareil jusqu'à ce que vous cliquiez sur Supprimer la copie dans le message d'annulation.",
     clearConfirm: 'Tout supprimer',
     recoveryTitle: 'Supprimer les données illisibles ?',
     recoveryMessage:

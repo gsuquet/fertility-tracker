@@ -204,7 +204,8 @@ export const en = {
     importReplace: 'Replace',
     importMerge: 'Merge',
     clearTitle: 'Delete all chart data?',
-    clearMessage: 'This deletes the {count} observations in this browser.',
+    clearMessage:
+      'This deletes the {count} observations in this browser. A copy stays on this device until you click Delete the copy in the undo message.',
     clearConfirm: 'Delete all data',
     recoveryTitle: 'Delete the unreadable data?',
     recoveryMessage:

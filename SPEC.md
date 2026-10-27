@@ -404,6 +404,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
   - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it.
   - All its text is translated (`confirmDialog.*`, `actions.cancel`).
+  - The clear-all message says that a copy stays on this device until the user deletes it with **Delete the copy** in the undo toast.
   - **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist. When no observations exist, **Load Demo Cycle** and **Restore Data (JSON)** act at once, and **Clear Data / Reset** is disabled.
   - **Import Preview & Merge:** Before a backup changes existing observations, the dialog shows the number of observations in the file and its date range (first and last date, `YYYY-MM-DD`), or that the file has no observations. It offers two actions:
     - **Replace** (`importDataJson(text, 'replace')`): the file replaces all the current observations.

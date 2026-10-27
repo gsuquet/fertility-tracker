@@ -293,6 +293,11 @@ describe('ExportModal', () => {
     screen.getByRole('button', { name: en.actions.clearData }).focus();
     click(en.actions.clearData);
     expect(confirmDialog()).toHaveAccessibleName(en.confirmDialog.clearTitle);
+    // The message tells that a copy stays and names the toast button that deletes it
+    expect(confirmDialog()).toHaveAccessibleDescription(
+      en.confirmDialog.clearMessage.replace('{count}', '6')
+    );
+    expect(en.confirmDialog.clearMessage).toContain(en.undoToast.dismiss);
     fireEvent.keyDown(withinConfirm(en.actions.cancel), { key: 'Escape' });
     expect(screen.getByTestId('count')).toHaveTextContent('6');
     expect(props.onClose).not.toHaveBeenCalled();
@@ -316,7 +321,9 @@ describe('ExportModal', () => {
       observations: threeCycles,
     });
     fireEvent.click(screen.getByRole('button', { name: fr.actions.clearData }));
-    expect(screen.getByRole('dialog', { name: fr.confirmDialog.clearTitle })).toBeInTheDocument();
+    expect(screen.getByRole('dialog', { name: fr.confirmDialog.clearTitle })).toHaveTextContent(
+      fr.undoToast.dismiss
+    );
     expect(screen.getByRole('button', { name: fr.confirmDialog.clearConfirm })).toBeInTheDocument();
   });
 
