@@ -1,3 +1,11 @@
+import {
+  FREQUENCY_CODES,
+  MENSES_BLEEDING_CODES,
+  MODIFIER_CODES,
+  STRETCH_CODES,
+  SYMPTOM_CODES,
+  isCodeIn,
+} from '../types/crms';
 import type {
   BleedingCode,
   MucusStretch,
@@ -6,6 +14,11 @@ import type {
   SymptomCode,
   ObservationInput,
 } from '../types/crms';
+
+/** Stretch codes, longest first, so that `10WL` matches before `10`. */
+const STRETCH_CODES_LONGEST_FIRST: readonly MucusStretch[] = [...STRETCH_CODES].sort(
+  (a, b) => b.length - a.length
+);
 
 export interface ParsedCodeResult {
   bleeding?: BleedingCode | undefined;
@@ -74,57 +87,40 @@ export function parseCodeString(input: string): ParsedCodeResult {
   const symptoms: SymptomCode[] = [];
   let intercourse = false;
 
-  const validBleeding: BleedingCode[] = ['H', 'M', 'L', 'VL'];
-  const validStretches: MucusStretch[] = [
-    '10WL',
-    '10SL',
-    '10DL',
-    '2W',
-    '10',
-    '8',
-    '6',
-    '4',
-    '2',
-    '0',
-  ];
-  const validModifiers: MucusModifier[] = ['C/K', 'B', 'C', 'G', 'K', 'L', 'P', 'Y'];
-  const validFreqs: FrequencyCode[] = ['X1', 'X2', 'X3', 'AD'];
-  const validSymptoms: SymptomCode[] = ['RAP', 'LAP', 'AP'];
-
   for (const token of tokens) {
     if (token === 'I') {
       intercourse = true;
       continue;
     }
 
-    if (validFreqs.includes(token as FrequencyCode)) {
-      frequency = token as FrequencyCode;
+    if (isCodeIn(FREQUENCY_CODES, token)) {
+      frequency = token;
       continue;
     }
 
-    if (validSymptoms.includes(token as SymptomCode)) {
-      if (!symptoms.includes(token as SymptomCode)) {
-        symptoms.push(token as SymptomCode);
+    if (isCodeIn(SYMPTOM_CODES, token)) {
+      if (!symptoms.includes(token)) {
+        symptoms.push(token);
       }
       continue;
     }
 
-    if (validBleeding.includes(token as BleedingCode) && !bleeding) {
-      bleeding = token as BleedingCode;
+    if (isCodeIn(MENSES_BLEEDING_CODES, token) && !bleeding) {
+      bleeding = token;
       continue;
     }
 
     let remaining = token;
 
     // Check if token ends with a valid frequency code (e.g. 10KLX3 -> frequency X3, remaining 10KL)
-    const matchedFreq = validFreqs.find(f => remaining.endsWith(f));
+    const matchedFreq = FREQUENCY_CODES.find(f => remaining.endsWith(f));
     if (matchedFreq) {
       frequency = matchedFreq;
       remaining = remaining.slice(0, remaining.length - matchedFreq.length);
     }
 
     // Check stretch prefix
-    const matchedStretch = validStretches.find(s => remaining.startsWith(s));
+    const matchedStretch = STRETCH_CODES_LONGEST_FIRST.find(s => remaining.startsWith(s));
 
     if (matchedStretch) {
       stretch = matchedStretch;
@@ -141,8 +137,8 @@ export function parseCodeString(input: string): ParsedCodeResult {
         continue;
       }
 
-      const singleMod = remaining.slice(modIdx, modIdx + 1) as MucusModifier;
-      if (validModifiers.includes(singleMod) && !modifiers.includes(singleMod)) {
+      const singleMod = remaining.slice(modIdx, modIdx + 1);
+      if (isCodeIn(MODIFIER_CODES, singleMod) && !modifiers.includes(singleMod)) {
         modifiers.push(singleMod);
       }
       modIdx += 1;

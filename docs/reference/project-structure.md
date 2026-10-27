@@ -25,7 +25,7 @@ fertility-tracker/
 │   │   └── locales/             # en.ts (reference) and fr.ts
 │   ├── styles/                  # CSS in cascade layers
 │   ├── test/                    # Test helpers
-│   ├── types/                   # TypeScript types of the domain
+│   ├── types/                   # TypeScript types and code lists of the domain
 │   ├── utils/                   # Dates, export file names, safe storage
 │   ├── App.tsx                  # Application layout
 │   └── main.tsx                 # Entry point
@@ -47,6 +47,7 @@ fertility-tracker/
 | `peakDetector.ts`          | Peak Day, count of three and cycle days.       |
 | `cycleBoundaryDetector.ts` | Puts the days into cycles.                     |
 | `cyclePhases.ts`           | Phase lengths and averages.                    |
+| `mucusScore.ts`            | Mucus score of one day.                        |
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |

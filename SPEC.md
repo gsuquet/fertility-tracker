@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.15.2  
+**Document Version:** 1.15.3  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -107,7 +107,20 @@ The Domain Engine is isolated in `src/domain/` with pure, deterministic logic in
 
 ### 3.1 Biomarker Codes Catalog
 
-The Creighton Model system uses standardized alphanumeric tokens to record daily observations:
+The Creighton Model system uses standardized alphanumeric tokens to record daily observations.
+
+**Single source of truth:** [src/types/crms.ts](./src/types/crms.ts) exports each code list as an `as const` array, and the code types are derived from these arrays. The parser, the validator, the stamp calculator, the cycle boundary detector and the observation forms read the lists from this file. No other file repeats a code list.
+
+| Constant                  | Codes                                                       |
+| ------------------------- | ----------------------------------------------------------- |
+| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    |
+| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         |
+| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` |
+| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      |
+| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    |
+| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             |
+| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      |
+| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          |
 
 #### Bleeding Codes
 
@@ -168,7 +181,7 @@ The parser operates in two directions:
    `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
    _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
    _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
@@ -239,15 +252,22 @@ flowchart TD
 **Module:** [src/types/crms.ts](./src/types/crms.ts)
 
 ```typescript
-export type BleedingCode = 'H' | 'M' | 'L' | 'VL' | 'B';
+export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
+export type BleedingCode = (typeof BLEEDING_CODES)[number];
 
-export type MucusStretch = '0' | '2' | '2W' | '4' | '6' | '8' | '10' | '10DL' | '10SL' | '10WL';
+export const STRETCH_CODES = ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as const;
+export type MucusStretch = (typeof STRETCH_CODES)[number];
 
-export type MucusModifier = 'B' | 'C' | 'C/K' | 'G' | 'K' | 'L' | 'P' | 'Y';
+export const MODIFIER_CODES = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as const;
+export type MucusModifier = (typeof MODIFIER_CODES)[number];
 
-export type FrequencyCode = 'X1' | 'X2' | 'X3' | 'AD';
+export const FREQUENCY_CODES = ['X1', 'X2', 'X3', 'AD'] as const;
+export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
 
-export type SymptomCode = 'AP' | 'RAP' | 'LAP';
+export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
+export type SymptomCode = (typeof SYMPTOM_CODES)[number];
+
+// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (see 3.1)
 
 export type StampType =
   | 'RED' // Bleeding menses
@@ -374,7 +394,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
     - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
     - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
     - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
-  - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
+  - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
@@ -524,16 +544,16 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### Test Layers
 
-| Layer       | Location                       | Purpose                                                                                      |
-| ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values. |
-| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                        |
-| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                        |
-| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                             |
-| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                         |
-| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
-| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
-| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                   |
+| Layer       | Location                       | Purpose                                                                                                   |
+| ----------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                                     |
+| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                                      |
+| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                                           |
+| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
+| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                                |
 
 ### Test Helpers (`src/test/`)
 
