@@ -1,7 +1,8 @@
 import { screen, fireEvent, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { StorageRecoveryNotice } from '../StorageRecoveryNotice';
-import { renderWithProviders, OBSERVATIONS_STORAGE_KEY } from '../../test/render';
+import { renderWithProviders } from '../../test/render';
+import { STORAGE_OBSERVATIONS_KEY } from '../../domain/versionTracker';
 import { getTodayStr } from '../../utils/dateUtils';
 import { en, fr } from '../../i18n';
 
@@ -22,7 +23,7 @@ describe('StorageRecoveryNotice', () => {
   });
 
   it('shows the notice and downloads the original text', async () => {
-    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, RAW);
     const createObjectURL = vi.fn((_blob: Blob) => 'blob:recovery');
     const revokeObjectURL = vi.fn();
     Object.assign(URL, { createObjectURL, revokeObjectURL });
@@ -42,7 +43,7 @@ describe('StorageRecoveryNotice', () => {
   });
 
   it('asks before it deletes the only copy', () => {
-    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, RAW);
     renderWithProviders(<StorageRecoveryNotice />);
     fireEvent.click(screen.getByRole('button', { name: en.storageRecovery.dismiss }));
     const dialog = screen.getByRole('dialog', { name: en.confirmDialog.recoveryTitle });
@@ -54,7 +55,7 @@ describe('StorageRecoveryNotice', () => {
   });
 
   it('deletes the copy and hides the notice after confirmation, in French', () => {
-    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, RAW);
     renderWithProviders(<StorageRecoveryNotice />, { language: 'fr' });
     expect(screen.getByRole('alert')).toHaveTextContent(fr.storageRecovery.message);
     fireEvent.click(screen.getByRole('button', { name: fr.storageRecovery.dismiss }));
@@ -67,7 +68,7 @@ describe('StorageRecoveryNotice', () => {
 
   it('says that no copy is kept and closes without deleting the earlier copy', () => {
     localStorage.setItem('fertility_care_observations_recovery', 'old copy');
-    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, RAW);
     renderWithProviders(<StorageRecoveryNotice />);
     expect(screen.getByRole('alert')).toHaveTextContent(en.storageRecovery.messageNoCopy);
     expect(screen.queryByRole('button', { name: en.storageRecovery.dismiss })).toBeNull();

@@ -5,8 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { LanguageProvider } from '../context/LanguageContext';
 import { CycleProvider, useCycleData } from '../context/CycleContext';
 import type { Language, Observation } from '../types/crms';
-
-export const OBSERVATIONS_STORAGE_KEY = 'fertility_care_observations';
+import { STORAGE_LANGUAGE_KEY, STORAGE_OBSERVATIONS_KEY } from '../domain/versionTracker';
 
 interface ProviderOptions {
   language?: Language;
@@ -28,9 +27,9 @@ export const renderWithProviders = (
   ui: ReactElement,
   { language = 'en', observations, selectedCycleId }: ProviderOptions = {}
 ) => {
-  localStorage.setItem('fertility_care_lang', language);
+  localStorage.setItem(STORAGE_LANGUAGE_KEY, language);
   if (observations) {
-    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, JSON.stringify(observations));
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, JSON.stringify(observations));
   }
   return render(
     <ThemeProvider>

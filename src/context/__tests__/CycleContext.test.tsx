@@ -21,6 +21,7 @@ const TestDataConsumer: React.FC = () => {
       <button
         onClick={() =>
           saveObservation({
+            id: 'obs-1',
             date: '2026-09-02',
             bleeding: 'M',
           })
@@ -28,7 +29,7 @@ const TestDataConsumer: React.FC = () => {
       >
         Add Obs
       </button>
-      <button onClick={() => deleteObservation('2026-09-02')}>Delete Obs</button>
+      <button onClick={() => deleteObservation('obs-1')}>Delete Obs</button>
       <button onClick={loadDemoData}>Load Demo</button>
       <button onClick={clearAllData}>Clear All</button>
       <button

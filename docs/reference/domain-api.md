@@ -28,9 +28,9 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md#mucus-score).
 
 ## peakDetector.ts
 
-| Function                   | Signature                                                                 | Returns                                                                        |
-| -------------------------- | ------------------------------------------------------------------------- | ------------------------------------------------------------------------------ |
-| `processCycleObservations` | `(observations: Observation[], manualPeakDate?: string) => Observation[]` | The days of one cycle in date order, with `cycleDay`, `stamp` and `isPeakDay`. |
+| Function                   | Signature                                        | Returns                                                                        |
+| -------------------------- | ------------------------------------------------ | ------------------------------------------------------------------------------ |
+| `processCycleObservations` | `(observations: Observation[]) => Observation[]` | The days of one cycle in date order, with `cycleDay`, `stamp` and `isPeakDay`. |
 
 The rules are in [Stamp and Peak Day rules](stamp-and-peak-rules.md).
 

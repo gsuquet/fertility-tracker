@@ -34,6 +34,8 @@ export interface StorageStats {
 export const LAST_SEEN_VERSION_KEY = 'fertility_tracker_last_seen_version';
 export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome';
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
+export const STORAGE_LANGUAGE_KEY = 'fertility_care_lang';
+export const STORAGE_THEME_KEY = 'fertility_care_theme';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
 /** Release notes, newest first. The tuple type guarantees at least one release. */
@@ -777,8 +779,8 @@ export function getStorageStats(): StorageStats {
         STORAGE_OBSERVATIONS_KEY,
         LAST_SEEN_VERSION_KEY,
         STORAGE_HAS_SEEN_WELCOME_KEY,
-        'fertility_care_lang',
-        'fertility_care_theme',
+        STORAGE_LANGUAGE_KEY,
+        STORAGE_THEME_KEY,
       ];
       const keysSet = new Set<string>(knownKeys);
       try {

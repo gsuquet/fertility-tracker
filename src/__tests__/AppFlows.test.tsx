@@ -71,6 +71,20 @@ describe('App flows', () => {
     act(() => vi.advanceTimersByTime(2500));
     expect(screen.queryByRole('status')).toBeNull();
   });
+
+  it('cancels the title and toast timers when the app unmounts', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    vi.spyOn(window, 'print').mockImplementation(() => {});
+    const { unmount } = render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
   it('confirms the demo data over saved data and undoes it from the toast', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     localStorage.setItem(

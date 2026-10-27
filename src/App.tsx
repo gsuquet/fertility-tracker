@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
@@ -46,6 +46,9 @@ const MainApp: React.FC = () => {
   // The PDF file name detail of a pending print, or null when nothing waits to print
   const [pendingPrintDetail, setPendingPrintDetail] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
+  // The pending title restore of the last print, cancelled when the app unmounts
+  const titleTimer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
+  useEffect(() => () => clearTimeout(titleTimer.current), []);
 
   useEffect(() => {
     checkAndRecordVersionSeen();
@@ -62,16 +65,22 @@ const MainApp: React.FC = () => {
     document.title = getExportFilename('pdf', pendingPrintDetail);
     window.print();
     setPendingPrintDetail(null);
-    setTimeout(() => {
+    titleTimer.current = setTimeout(() => {
       document.title = originalTitle;
     }, 1000);
   }, [pendingPrintDetail]);
+
+  // Hide the toast 3.5 seconds after it is shown
+  useEffect(() => {
+    if (toastMessage === null) return;
+    const timer = setTimeout(() => setToastMessage(null), 3500);
+    return () => clearTimeout(timer);
+  }, [toastMessage]);
 
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
     setPendingPrintDetail(fileDetail);
     setToastMessage(t.exportModal.exportSuccess);
-    setTimeout(() => setToastMessage(null), 3500);
   };
 
   return (

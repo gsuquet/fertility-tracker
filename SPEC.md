@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.17.0  
+**Document Version:** 1.18.2  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -212,7 +212,7 @@ flowchart TD
 
 1. **Peak Day ($P$) Determination:**
    - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
-   - **Manual Override Mode:** Respects user-set `isManualPeak` flag or cycle-level `manualPeakDate`.
+   - **Manual Override Mode:** Respects the user-set `isManualPeak` flag of an observation.
    - **One Manual Peak per Cycle:** When `saveObservation` saves an observation with `isManualPeak` set, it clears `isManualPeak` on the other days of the cycle that contains the saved day (the cycle is found after the saved day is added). The manual Peak Days of other cycles stay.
 2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
    - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
@@ -303,7 +303,6 @@ export interface Cycle {
   id: string;
   startDate: string; // YYYY-MM-DD
   observations: Observation[];
-  manualPeakDate?: string;
   notes?: string;
 }
 
@@ -436,7 +435,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
-  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
+  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later. When the app unmounts, it cancels the pending title and toast timers (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
   - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
   - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it. It traps the focus: `Tab` on the last button moves to the first, and `Shift+Tab` on the first moves to the last, so the dialog under it cannot get the focus.
@@ -452,7 +451,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
   - Observation codes (`codeString`) have spaces removed and support 2-line word wrapping for long codes.
   - Adds a dedicated horizontal line under the observation code at the bottom of each cell for free-form user notes (`obs.notes`).
-  - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification.
+  - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification. The toast closes 3.5 seconds after the last print request.
+  - When there are no cycles, the print view shows one empty cycle that starts on the local date of today (`getTodayStr()`).
 
 ---
 
@@ -498,8 +498,10 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, etc.).
   - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
+  - `deleteObservation(id)` deletes only the observation with that `id`. A date string does not match an observation.
+  - `LanguageProvider` and `ThemeProvider` memoize their context values, so a re-render of a parent with the same language or theme does not give consumers a new value.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state. [versionTracker.ts](./src/domain/versionTracker.ts) defines each of these keys one time (`STORAGE_OBSERVATIONS_KEY`, `STORAGE_LANGUAGE_KEY`, `STORAGE_THEME_KEY`, `LAST_SEEN_VERSION_KEY`, `STORAGE_HAS_SEEN_WELCOME_KEY`), and the providers import them.
 - **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
   - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
   - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
