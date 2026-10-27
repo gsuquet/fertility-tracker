@@ -20,6 +20,7 @@
 @import './primitives/badges.css';
 @import './primitives/forms.css';
 @import './primitives/dialogs.css';
+@import './primitives/toast.css';
 
 /* 4. Domain Views & Features */
 @import './views/header.css';

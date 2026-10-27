@@ -189,6 +189,38 @@ export const en = {
     pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
     jsonDescription:
       'Download all your observations as a JSON file. The file is not encrypted: keep it private.',
+    importError:
+      'This file is not a valid backup. Select a JSON backup file from Fertility Tracker.',
+  },
+  confirmDialog: {
+    demoTitle: 'Replace your data with the demo?',
+    demoMessage: 'The demo cycles replace the {count} observations in this browser.',
+    demoConfirm: 'Load the demo',
+    importTitle: 'Restore this backup?',
+    importSummary: 'The file has {count} observations, from {first} to {last}.',
+    importEmpty: 'The file has no observations.',
+    importChoice:
+      'You have {count} observations. Replace deletes them and keeps only the file. Merge keeps them, and the file replaces the days with the same date.',
+    importReplace: 'Replace',
+    importMerge: 'Merge',
+    clearTitle: 'Delete all chart data?',
+    clearMessage:
+      'This deletes the {count} observations in this browser. A copy stays on this device until you click Delete the copy in the undo message.',
+    clearConfirm: 'Delete all data',
+    recoveryTitle: 'Delete the unreadable data?',
+    recoveryMessage:
+      'The application keeps no other copy of this data. Download it first if you want to keep it.',
+    recoveryConfirm: 'Delete the copy',
+  },
+  undoToast: {
+    demo: 'The demo data replaced your observations.',
+    import: 'The backup replaced your observations.',
+    merge: 'The backup is merged into your observations.',
+    clear: 'All observations are deleted.',
+    earlier: 'The app keeps a copy of your observations from before the last change.',
+    undo: 'Undo',
+    dismiss: 'Delete the copy',
+    notSaved: 'The browser could not save the copy. Undo works only until you reload the page.',
   },
   storageRecovery: {
     message:

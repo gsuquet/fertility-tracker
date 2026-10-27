@@ -63,6 +63,32 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.17.0',
+    date: '2026-10-27',
+    title: 'Confirm, Preview and Undo Data Changes',
+    titleFr: 'Confirmer, prévisualiser et annuler les changements de données',
+    tagline: 'Restoring a backup, loading the demo or clearing your chart can now be undone',
+    taglineFr:
+      'La restauration d’une sauvegarde, le chargement de la démo ou l’effacement du graphique peuvent maintenant être annulés',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app asks in its own dialog before a restore, the demo or a clear replaces your observations',
+      'An Undo button puts back your observations after a restore, the demo or a clear',
+      'The restore dialog shows the number of observations and the dates of the backup file',
+      'Merge adds a backup to your observations: a day of the file replaces the same day',
+      'An invalid backup file shows a translated error in the export dialog',
+      'The app asks before it deletes the copy of unreadable data',
+    ],
+    highlightsFr: [
+      'L’application demande confirmation dans sa propre fenêtre avant qu’une restauration, la démo ou un effacement remplace vos observations',
+      'Un bouton Annuler remet vos observations après une restauration, la démo ou un effacement',
+      'La fenêtre de restauration indique le nombre d’observations et les dates du fichier de sauvegarde',
+      'Fusionner ajoute une sauvegarde à vos observations : un jour du fichier remplace le même jour',
+      'Un fichier de sauvegarde invalide affiche une erreur traduite dans la fenêtre d’export',
+      'L’application demande confirmation avant de supprimer la copie des données illisibles',
+    ],
+  },
+  {
     version: '1.16.3',
     date: '2026-10-27',
     title: 'Shared Code Buttons',

@@ -59,6 +59,7 @@ fertility-tracker/
 | `mucusScore.ts`            | Mucus score of one day.                        |
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
+| `backupImport.ts`          | Preview and merge of a restored backup file.   |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
 | `versionTracker.ts`        | Release notes, version and storage statistics. |
 
@@ -79,6 +80,8 @@ fertility-tracker/
 | `CycleStartModal.tsx`                     | The **New Cycle Start?** dialog.                               |
 | `StampBadge.tsx`                          | One stamp.                                                     |
 | `ExportModal.tsx`                         | The export and backup dialog.                                  |
+| `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.    |
+| `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.  |
 | `PrintExportView.tsx`                     | The 35-day chart for printing.                                 |
 | `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                        |
 | `WelcomeModal.tsx`                        | The welcome guide.                                             |
