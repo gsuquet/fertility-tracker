@@ -196,7 +196,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
               >
                 <CalendarIcon size={18} />
                 <span>
-                  {t.cycleStartModal?.isCycleStartLabel || 'Start of New Cycle'}
+                  {t.cycleStartModal.isCycleStartLabel}
                   {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
                 </span>
               </button>

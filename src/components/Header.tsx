@@ -220,7 +220,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="mobile-action-sheet-header">
                   <div className="sheet-header-title">
                     <Sparkles size={16} className="sheet-icon" />
-                    <span>{language === 'fr' ? 'Menu & Options' : 'Menu & Options'}</span>
+                    <span>{t.menu.title}</span>
                   </div>
                   <button
                     type="button"
@@ -247,11 +247,7 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                     <div className="sheet-action-content">
                       <strong>{t.actions.exportPdf}</strong>
-                      <span>
-                        {language === 'fr'
-                          ? 'Imprimer ou exporter en PDF / JSON'
-                          : 'Print or export PDF / JSON charts'}
-                      </span>
+                      <span>{t.menu.exportHint}</span>
                     </div>
                   </button>
 
@@ -270,11 +266,7 @@ export const Header: React.FC<HeaderProps> = ({
                       </div>
                       <div className="sheet-action-content">
                         <strong>{t.welcomeModal.title}</strong>
-                        <span>
-                          {language === 'fr'
-                            ? 'Tutoriel et guide des biomarqueurs'
-                            : 'Interactive guide & biomarker chart tutorial'}
-                        </span>
+                        <span>{t.menu.guideHint}</span>
                       </div>
                     </button>
                   )}
@@ -297,11 +289,7 @@ export const Header: React.FC<HeaderProps> = ({
                           <strong>{t.versionTracker.title}</strong>
                           <span className="sheet-version-badge">v{currentVersion}</span>
                         </div>
-                        <span>
-                          {language === 'fr'
-                            ? 'Notes de version & stockage local'
-                            : 'Release notes & system storage diagnostics'}
-                        </span>
+                        <span>{t.menu.versionHint}</span>
                       </div>
                     </button>
                   )}
@@ -316,20 +304,12 @@ export const Header: React.FC<HeaderProps> = ({
                       onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
                     >
                       <Globe size={16} />
-                      <span>{language === 'fr' ? 'Langue : Français' : 'Language : English'}</span>
+                      <span>{t.menu.languageToggle}</span>
                     </button>
 
                     <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
                       {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                      <span>
-                        {theme === 'dark'
-                          ? language === 'fr'
-                            ? 'Thème : Sombre'
-                            : 'Theme : Dark'
-                          : language === 'fr'
-                            ? 'Thème : Clair'
-                            : 'Theme : Light'}
-                      </span>
+                      <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
                     </button>
                   </div>
                 </div>

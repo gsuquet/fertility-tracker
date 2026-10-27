@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import type { Observation } from '../../types/crms';
 import { formatDateDisplay } from '../../utils/dateUtils';
@@ -32,25 +31,22 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   onGoToToday,
   onDateChange,
 }) => {
-  const { t, language } = useLanguage();
-  const datePickerRef = useRef<HTMLInputElement>(null);
+  const { t } = useLanguage();
 
-  const handleOpenPicker = () => {
-    const inputEl = datePickerRef.current;
-    if (inputEl) {
-      if (typeof inputEl.showPicker === 'function') {
-        try {
-          inputEl.showPicker();
-        } catch (_e) {
-          inputEl.focus();
-        }
-      } else {
+  // The wrapper is a label, so a click anywhere on it reaches the date input
+  const handleOpenPicker = (inputEl: HTMLInputElement) => {
+    if (typeof inputEl.showPicker === 'function') {
+      try {
+        inputEl.showPicker();
+      } catch (_e) {
         inputEl.focus();
       }
+    } else {
+      inputEl.focus();
     }
   };
 
-  const formattedDateTitle = formatDateDisplay(selectedDate, language === 'fr' ? 'fr-FR' : 'en-US');
+  const formattedDateTitle = formatDateDisplay(selectedDate, t.locale);
 
   return (
     <div className="today-header-card compact-date-bar">
@@ -65,12 +61,12 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           <ChevronLeft size={18} />
         </button>
 
-        <div className="today-picker-wrapper compact-picker-inline" onClick={handleOpenPicker}>
+        <label className="today-picker-wrapper compact-picker-inline">
           <CalendarIcon size={15} className="date-picker-icon" />
           <span className="today-formatted-date-text">{formattedDateTitle}</span>
           <input
-            ref={datePickerRef}
             type="date"
+            onClick={e => handleOpenPicker(e.currentTarget)}
             className="today-date-picker-input compact-picker-input"
             value={selectedDate}
             onChange={e => {
@@ -80,7 +76,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
             }}
             aria-label={t.labels.date}
           />
-        </div>
+        </label>
 
         <button
           type="button"

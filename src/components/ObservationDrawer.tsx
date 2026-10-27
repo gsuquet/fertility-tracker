@@ -359,7 +359,7 @@ export const ObservationDrawer: React.FC = () => {
               >
                 <Calendar size={18} />
                 <span>
-                  {t.cycleStartModal?.isCycleStartLabel || 'Start of New Cycle'}
+                  {t.cycleStartModal.isCycleStartLabel}
                   {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
                 </span>
               </button>

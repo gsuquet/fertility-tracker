@@ -15,7 +15,7 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
   observations,
   onSelectDate,
 }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const getRecentDays = () => {
     const list: { dateStr: string; obs?: Observation | undefined }[] = [];
@@ -33,7 +33,7 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
       <div className="recent-days-list">
         {getRecentDays().map(({ dateStr, obs }) => {
           const isSelected = dateStr === selectedDate;
-          const dayLabel = formatDateDisplay(dateStr, language === 'fr' ? 'fr-FR' : 'en-US', {
+          const dayLabel = formatDateDisplay(dateStr, t.locale, {
             weekday: 'short',
             month: 'numeric',
             day: 'numeric',

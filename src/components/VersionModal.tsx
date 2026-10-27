@@ -81,14 +81,11 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
   const getReleaseHighlights = (rel: VersionRelease) =>
     language === 'fr' && rel.highlightsFr ? rel.highlightsFr : rel.highlights;
 
-  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(
-    language === 'fr' ? 'fr-FR' : 'en-US',
-    {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }
-  );
+  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(t.locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
     <div
