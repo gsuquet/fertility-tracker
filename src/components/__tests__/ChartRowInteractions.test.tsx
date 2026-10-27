@@ -62,6 +62,23 @@ describe('ChartRow interactions', () => {
     expect(drawer()).toBe('2026-09-17 day 3 0AD');
   });
 
+  it('opens an empty day of the empty grid with Enter and ignores other keys', () => {
+    renderChart();
+    const cell = screen.getByRole('button', { name: 'Day 2 (2026-09-16) - Empty' });
+    fireEvent.keyDown(cell, { key: 'a' });
+    expect(drawer()).toBe('closed');
+    fireEvent.keyDown(cell, { key: 'Enter' });
+    expect(drawer()).toBe('2026-09-16 day 2 0AD');
+  });
+
+  it('opens an empty day of the empty grid with Space', () => {
+    renderChart();
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Day 4 (2026-09-18) - Empty' }), {
+      key: ' ',
+    });
+    expect(drawer()).toBe('2026-09-18 day 4 0AD');
+  });
+
   it('toggles the legend of the empty grid', () => {
     renderChart();
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.showLegend }));

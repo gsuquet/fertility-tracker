@@ -20,6 +20,7 @@ fertility-tracker/
 │   ├── __tests__/               # Application flow tests
 │   ├── components/              # React components
 │   │   ├── __tests__/           # Component tests
+│   │   ├── chart/               # Parts of the Chart page
 │   │   ├── observation/         # Parts of the two observation forms
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
