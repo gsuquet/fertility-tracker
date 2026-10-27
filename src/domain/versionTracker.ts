@@ -39,6 +39,32 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.18.0',
+    date: '2026-10-27',
+    title: 'Safer Data Storage',
+    titleFr: 'Stockage des données plus sûr',
+    tagline: 'The app now warns you when it cannot save and reminds you to back up',
+    taglineFr:
+      'L’application vous avertit maintenant quand elle ne peut pas enregistrer et vous rappelle de sauvegarder',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A warning stays at the top of the page when the browser does not save your observations',
+      'The app asks the browser to keep your data, so that it is not deleted when space is low',
+      'A reminder shows when you have no backup or your last backup is more than 30 days old',
+      'Saved data and backup files now have a format version. Your data and old backup files still load',
+      'Saved records that cannot be read are kept in a copy, and a message tells you how many',
+      'The code of each day is calculated again from its fields when the app loads your data',
+    ],
+    highlightsFr: [
+      'Un avertissement reste en haut de la page quand le navigateur n’enregistre pas vos observations',
+      'L’application demande au navigateur de garder vos données, pour qu’elles ne soient pas supprimées quand l’espace manque',
+      'Un rappel s’affiche quand vous n’avez aucune sauvegarde ou que votre dernière sauvegarde date de plus de 30 jours',
+      'Les données enregistrées et les fichiers de sauvegarde ont maintenant une version de format. Vos données et vos anciennes sauvegardes se chargent toujours',
+      'Les enregistrements illisibles sont gardés dans une copie, et un message indique leur nombre',
+      'Le code de chaque jour est recalculé à partir de ses champs quand l’application charge vos données',
+    ],
+  },
+  {
     version: '1.17.0',
     date: '2026-10-27',
     title: 'Confirm, Preview and Undo Data Changes',
