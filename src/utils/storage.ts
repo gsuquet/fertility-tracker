@@ -23,6 +23,18 @@ export const writeStorage = (key: string, value: string): boolean => {
   }
 };
 
+/**
+ * Asks the browser not to evict the stored data (`navigator.storage.persist()`).
+ * Resolves to false when the API is missing, the browser refuses or the call fails.
+ */
+export const requestPersistentStorage = async (): Promise<boolean> => {
+  try {
+    return (await navigator.storage?.persist?.()) === true;
+  } catch {
+    return false;
+  }
+};
+
 /** Removes a value. Does nothing when storage is unavailable. */
 export const removeStorage = (key: string): void => {
   try {

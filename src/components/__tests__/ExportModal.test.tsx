@@ -7,6 +7,7 @@ import { makeObservation } from '../../test/factories';
 import { buildDemoObservations } from '../../domain/demoData';
 import { en, fr } from '../../i18n';
 import type { Observation } from '../../types/crms';
+import { getTodayStr } from '../../utils/dateUtils';
 
 // Three short cycles, newest first in the app: 2026-09-11, 2026-09-06, 2026-09-01
 const threeCycles = ['2026-09-01', '2026-09-06', '2026-09-11'].flatMap(start => {
@@ -158,6 +159,7 @@ describe('ExportModal', () => {
     expect(clickSpy).toHaveBeenCalledOnce();
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:backup');
     expect(props.onClose).toHaveBeenCalledOnce();
+    expect(localStorage.getItem('fertility_care_last_backup')).toBe(getTodayStr());
   });
 
   const upload = (files: File[]) => {
@@ -179,6 +181,14 @@ describe('ExportModal', () => {
   it('restores a backup at once when there is no data', async () => {
     const props = renderModal();
     upload([new File([JSON.stringify(threeCycles)], 'backup.json')]);
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(screen.getByTestId('count')).toHaveTextContent('6');
+  });
+
+  it('restores a backup in the versioned envelope', async () => {
+    const props = renderModal();
+    const envelope = JSON.stringify({ schemaVersion: 1, observations: threeCycles });
+    upload([new File([envelope], 'backup.json')]);
     await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
     expect(screen.getByTestId('count')).toHaveTextContent('6');
   });

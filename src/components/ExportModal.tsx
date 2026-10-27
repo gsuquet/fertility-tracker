@@ -13,7 +13,7 @@ import {
   Square,
 } from 'lucide-react';
 import { getExportFilename } from '../utils/exportUtils';
-import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { parseObservationData } from '../domain/storageFormat';
 import { summarizeObservations } from '../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../domain/backupImport';
 import { ConfirmDialog } from './ConfirmDialog';
@@ -41,6 +41,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     importDataJson,
     loadDemoData,
     clearAllData,
+    markBackedUp,
   } = useCycle();
   const { t } = useLanguage();
 
@@ -109,6 +110,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     a.download = getExportFilename('backup');
     a.click();
     URL.revokeObjectURL(url);
+    markBackedUp();
     onClose();
   };
 
@@ -136,9 +138,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     if (!file) return;
     const text = await file.text();
     e.target.value = '';
-    const imported = parseAndValidateObservationsJson(text);
+    const imported = parseObservationData(text);
     setImportError(imported === null);
-    if (imported) runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported) });
+    if (imported) {
+      runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported.observations) });
+    }
   };
 
   const confirmContent = (action: PendingAction) => {

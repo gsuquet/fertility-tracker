@@ -15,6 +15,8 @@ import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
 import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
+import { StorageSaveWarning } from './components/StorageSaveWarning';
+import { BackupReminder } from './components/BackupReminder';
 import { UndoToast } from './components/UndoToast';
 
 const CycleAnalyticsView = React.lazy(() =>
@@ -87,7 +89,9 @@ const MainApp: React.FC = () => {
       <main
         className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
       >
+        <StorageSaveWarning onOpenExport={() => setIsExportModalOpen(true)} />
         <StorageRecoveryNotice />
+        <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
         <CycleStatsHeader />
 
         {/* The key resets the alert of a failed page when the tab changes */}
