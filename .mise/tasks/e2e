@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run the Playwright end-to-end and accessibility tests against the production build"
+set -euo pipefail
+
+npm run test:e2e -- "$@"
