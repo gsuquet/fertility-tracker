@@ -57,12 +57,19 @@ async function deleteOldCaches(scope: ServiceWorkerScopeLike, cacheName: string)
   await scope.clients.claim();
 }
 
+/**
+ * After a deploy, the server answers an old hashed file name with index.html (SPA fallback).
+ * Storing that HTML under the asset URL would break the asset until the next deploy.
+ */
+const isHtml = (response: Response) =>
+  String(response.headers.get('Content-Type')).includes('text/html');
+
 async function cacheFirst(scope: ServiceWorkerScopeLike, cacheName: string, request: Request) {
   const cache = await scope.caches.open(cacheName);
   const cached = await cache.match(request, MATCH_OPTIONS);
   if (cached) return cached;
   const response = await scope.fetch(request);
-  if (response.ok) await cache.put(request, response.clone());
+  if (response.ok && !isHtml(response)) await cache.put(request, response.clone());
   return response;
 }
 

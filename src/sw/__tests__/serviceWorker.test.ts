@@ -148,6 +148,14 @@ describe('service worker', () => {
     expect(caches.stores.get(CACHE)?.entries.has(`${ORIGIN}/assets/b-2.js`)).toBe(true);
   });
 
+  it('does not store the HTML fallback that the server returns for an old asset name', async () => {
+    const html = { headers: { 'Content-Type': 'text/html; charset=utf-8' } };
+    const { scope, caches } = makeScope(async () => new Response('<!doctype html>', html));
+    const response = await handleFetch(scope, CACHE, request('/assets/old-9.js'));
+    expect(response?.headers.get('Content-Type')).toContain('text/html');
+    expect(caches.stores.get(CACHE)?.entries.has(`${ORIGIN}/assets/old-9.js`)).toBe(false);
+  });
+
   it('does not store a failed response', async () => {
     const { scope, caches } = makeScope(async () => new Response('missing', { status: 404 }));
     const response = await handleFetch(scope, CACHE, request('/assets/c-3.js'));
