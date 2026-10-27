@@ -16,8 +16,11 @@ class FakeCache {
   async put(request: Request, response: Response) {
     this.entries.set(request.url, response);
   }
-  async match(request: Request | string) {
-    return this.entries.get(typeof request === 'string' ? request : request.url)?.clone();
+  /** Like a browser cache, a stored response with a Vary header misses unless ignoreVary is set. */
+  async match(request: Request | string, options: CacheQueryOptions = {}) {
+    const response = this.entries.get(typeof request === 'string' ? request : request.url);
+    if (response?.headers.has('Vary') && !options.ignoreVary) return undefined;
+    return response?.clone();
   }
 }
 
@@ -124,6 +127,18 @@ describe('service worker', () => {
     const response = await handleFetch(scope, CACHE, request('/assets/a-1.js'));
     expect(await response?.text()).toBe('cached');
     expect(scope.fetch).not.toHaveBeenCalled();
+  });
+
+  it('serves precached files from the cache even when the server sends Vary: Origin', async () => {
+    const { scope, caches } = makeScope(offline);
+    const cache = await caches.open(CACHE);
+    const vary = { headers: { Vary: 'Origin' } };
+    cache.entries.set(`${ORIGIN}/assets/a-1.js`, new Response('asset', vary));
+    cache.entries.set(`${ORIGIN}/`, new Response('shell', vary));
+    const asset = await handleFetch(scope, CACHE, request('/assets/a-1.js'));
+    expect(await asset?.text()).toBe('asset');
+    const page = await handleFetch(scope, CACHE, request('/', { navigate: true }));
+    expect(await page?.text()).toBe('shell');
   });
 
   it('fetches and stores a hashed asset that is not cached yet', async () => {

@@ -35,6 +35,12 @@ export interface ServiceWorkerScopeLike {
   addEventListener(type: 'fetch', listener: (event: FetchEventLike) => void): void;
 }
 
+/**
+ * Precache requests have no Origin header, but module scripts are CORS requests. A server that
+ * sends `Vary: Origin` would make every match miss, so the URL alone selects the response.
+ */
+const MATCH_OPTIONS: CacheQueryOptions = { ignoreVary: true };
+
 async function precacheAll(scope: ServiceWorkerScopeLike, config: ServiceWorkerConfig) {
   const cache = await scope.caches.open(config.cacheName);
   await cache.addAll(config.precache.map(url => new URL(url, scope.location.href).href));
@@ -53,7 +59,7 @@ async function deleteOldCaches(scope: ServiceWorkerScopeLike, cacheName: string)
 
 async function cacheFirst(scope: ServiceWorkerScopeLike, cacheName: string, request: Request) {
   const cache = await scope.caches.open(cacheName);
-  const cached = await cache.match(request);
+  const cached = await cache.match(request, MATCH_OPTIONS);
   if (cached) return cached;
   const response = await scope.fetch(request);
   if (response.ok) await cache.put(request, response.clone());
@@ -73,7 +79,8 @@ async function networkFirst(
     return response;
   } catch {
     const cached =
-      (await cache.match(request)) ?? (fallbackUrl ? await cache.match(fallbackUrl) : undefined);
+      (await cache.match(request, MATCH_OPTIONS)) ??
+      (fallbackUrl ? await cache.match(fallbackUrl, MATCH_OPTIONS) : undefined);
     return cached ?? Response.error();
   }
 }
