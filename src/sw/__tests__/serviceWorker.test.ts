@@ -116,7 +116,7 @@ describe('service worker', () => {
   it('ignores requests that are not GET or go to another origin', () => {
     const { scope } = makeScope(online);
     expect(handleFetch(scope, CACHE, request('/', { method: 'POST' }))).toBeUndefined();
-    const font = new Request('https://fonts.gstatic.com/font.woff2');
+    const font = new Request('https://example.com/font.woff2');
     expect(handleFetch(scope, CACHE, font)).toBeUndefined();
   });
 

@@ -27,7 +27,7 @@ fertility-tracker/
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
 │   ├── pwa/                     # Service worker registration
-│   ├── styles/                  # CSS in cascade layers
+│   ├── styles/                  # CSS in cascade layers and the self-hosted font
 │   ├── sw/                      # Service worker: precache and cache strategies
 │   ├── test/                    # Test helpers
 │   ├── types/                   # TypeScript types and code lists of the domain
