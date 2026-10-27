@@ -41,6 +41,32 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.18.2',
+    date: '2026-10-27',
+    title: 'Code Cleanup',
+    titleFr: 'Nettoyage du code',
+    tagline: 'Removes unused code and makes internal APIs clearer, with no change to your data',
+    taglineFr:
+      'Supprime du code inutilisé et clarifie les API internes, sans changement pour vos données',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Removes the unused cycle-level manual Peak Day date',
+      'Deleting an observation now matches its id only',
+      'Each browser storage key is defined in one place',
+      'The print view uses the local date of today when there are no cycles',
+      'The app cancels its title and toast timers when it closes',
+      'The language and theme settings no longer re-render the whole app without a change',
+    ],
+    highlightsFr: [
+      'Supprime la date de Jour Sommet manuel inutilisée au niveau du cycle',
+      'La suppression d’une observation utilise maintenant son identifiant uniquement',
+      'Chaque clé de stockage du navigateur est définie à un seul endroit',
+      'La vue d’impression utilise la date locale du jour quand il n’y a pas de cycle',
+      'L’application annule ses minuteurs de titre et de notification quand elle se ferme',
+      'Les réglages de langue et de thème ne font plus re-rendre toute l’application sans changement',
+    ],
+  },
+  {
     version: '1.17.0',
     date: '2026-10-27',
     title: 'Confirm, Preview and Undo Data Changes',
