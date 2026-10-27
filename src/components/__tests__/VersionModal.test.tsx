@@ -60,8 +60,16 @@ describe('VersionModal Component', () => {
     fireEvent.click(closeBtn);
     expect(handleClose).toHaveBeenCalledTimes(1);
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(handleClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('is a native modal dialog with the focus on the close button', () => {
+    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />);
+    const dialog = screen.getByRole('dialog', { name: /About & Version Tracker/i });
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getAllByRole('button', { name: /Close/i })[0]).toHaveFocus();
   });
 
   it('shows the release notes in French', () => {
@@ -94,7 +102,7 @@ describe('VersionModal Component', () => {
   it('closes from the overlay but not from the dialog body or other keys', () => {
     const handleClose = vi.fn();
     renderWithProviders(<VersionModal isOpen={true} onClose={handleClose} />);
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     fireEvent.click(screen.getByText(getLatestRelease().title));
     expect(handleClose).not.toHaveBeenCalled();
     fireEvent.click(screen.getByRole('dialog'));

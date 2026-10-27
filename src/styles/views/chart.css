@@ -476,6 +476,13 @@
     outline-offset: 2px;
   }
 
+  /* Each cell is a native button: keep the text style of the chart */
+  button.chart-cell {
+    color: inherit;
+    text-align: inherit;
+    line-height: inherit;
+  }
+
   .chart-cell.peak-cell {
     border-color: #f59e0b !important;
     box-shadow:

@@ -24,6 +24,9 @@ const NON_TEXT_PROPS = new Set([
   'variant',
   'fill',
   'aria-hidden',
+  'labelledBy',
+  'describedBy',
+  'panelClassName',
 ]);
 
 /** Codes and symbols that are the same in each language */

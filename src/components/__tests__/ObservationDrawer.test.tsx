@@ -9,7 +9,9 @@ const TestWrapper: React.FC = () => {
   const { setIsDrawerOpen } = useCycle();
   return (
     <div>
-      <button onClick={() => setIsDrawerOpen(true)}>Open Drawer</button>
+      <button type="button" onClick={() => setIsDrawerOpen(true)}>
+        Open Drawer
+      </button>
       <ObservationDrawer />
     </div>
   );

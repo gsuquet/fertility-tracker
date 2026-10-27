@@ -57,6 +57,7 @@ export const CalendarGrid: React.FC = () => {
     >
       <div className="calendar-header">
         <button
+          type="button"
           className="icon-button"
           onClick={handlePrevMonth}
           title={t.calendar.prevMonth}
@@ -68,6 +69,7 @@ export const CalendarGrid: React.FC = () => {
           {monthNames[month]} {year}
         </h2>
         <button
+          type="button"
           className={`icon-button ${isCurrentOrFutureMonth ? 'disabled' : ''}`}
           onClick={handleNextMonth}
           disabled={isCurrentOrFutureMonth}

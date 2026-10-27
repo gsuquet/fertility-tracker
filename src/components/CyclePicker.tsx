@@ -13,6 +13,7 @@ export const CyclePicker: React.FC = () => {
   const [menuCoords, setMenuCoords] = useState<{ top: number; right: number } | null>(null);
   const isOpen = menuCoords !== null;
   const buttonRef = useRef<HTMLButtonElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
 
   const updateCoords = useCallback((button: HTMLElement) => {
     const rect = button.getBoundingClientRect();
@@ -32,7 +33,8 @@ export const CyclePicker: React.FC = () => {
     }
   };
 
-  // While the menu is open, a full-screen backdrop catches clicks outside it
+  // While the menu is open, a click outside it and outside the toggle closes it.
+  // The full-screen backdrop only dims the page on mobile.
   useEffect(() => {
     const button = buttonRef.current;
     if (!isOpen || !button) return;
@@ -45,11 +47,20 @@ export const CyclePicker: React.FC = () => {
       }
     };
 
+    const handleClick = (event: MouseEvent) => {
+      const target = event.target as Node;
+      if (!menuRef.current?.contains(target) && !button.contains(target)) {
+        setMenuCoords(null);
+      }
+    };
+
     document.addEventListener('keydown', handleKeyDown);
+    document.addEventListener('click', handleClick);
     window.addEventListener('scroll', handleScrollOrResize, true);
     window.addEventListener('resize', handleScrollOrResize);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
+      document.removeEventListener('click', handleClick);
       window.removeEventListener('scroll', handleScrollOrResize, true);
       window.removeEventListener('resize', handleScrollOrResize);
     };
@@ -83,8 +94,9 @@ export const CyclePicker: React.FC = () => {
 
   const menuContent = menuCoords ? (
     <>
-      <div className="cycle-dropdown-backdrop" onClick={close} />
+      <div className="cycle-dropdown-backdrop" />
       <div
+        ref={menuRef}
         className="cycle-dropdown-menu"
         role="listbox"
         tabIndex={-1}

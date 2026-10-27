@@ -77,6 +77,14 @@ describe('CyclePicker menu', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
   });
 
+  it('closes on a click outside the menu only', () => {
+    renderWithProviders(<CyclePicker />, { observations: demo });
+    fireEvent.click(within(openMenu()).getByText('Filter Cycle View'));
+    expect(screen.getByRole('listbox')).toBeInTheDocument();
+    fireEvent.click(document.body);
+    expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
   it('places the menu under the button on desktop and follows it on scroll and resize', () => {
     renderWithProviders(<CyclePicker />, { observations: demo });
     const menu = openMenu();

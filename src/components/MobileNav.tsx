@@ -21,6 +21,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
   return (
     <nav className="mobile-nav-bar" aria-label={t.mobileTabs.navLabel}>
       <button
+        type="button"
         className={`mobile-nav-item ${activeTab === 'today' ? 'active' : ''}`}
         onClick={() => {
           setSelectedObservation(null);
@@ -33,6 +34,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
       </button>
 
       <button
+        type="button"
         className={`mobile-nav-item ${activeTab === 'chart' ? 'active' : ''}`}
         onClick={() => setActiveTab('chart')}
         aria-label={t.mobileTabs.chart}
@@ -52,6 +54,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
       </button>
 
       <button
+        type="button"
         className={`mobile-nav-item ${activeTab === 'calendar' ? 'active' : ''}`}
         onClick={() => setActiveTab('calendar')}
         aria-label={t.mobileTabs.calendar}
@@ -61,6 +64,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
       </button>
 
       <button
+        type="button"
         className={`mobile-nav-item ${activeTab === 'analytics' ? 'active' : ''}`}
         onClick={() => setActiveTab('analytics')}
         aria-label={t.mobileTabs.analytics}

@@ -38,6 +38,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
       {controls && (
         <div className="view-mode-toggle">
           <button
+            type="button"
             className={`toggle-btn ${controls.viewMode === '35-day' ? 'active' : ''}`}
             onClick={() => controls.onViewModeChange('35-day')}
             title={t.chartStrip.fullGrid}
@@ -46,6 +47,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
             <span>{t.chartStrip.fullGrid}</span>
           </button>
           <button
+            type="button"
             className={`toggle-btn ${controls.viewMode === 'compact' ? 'active' : ''}`}
             onClick={() => controls.onViewModeChange('compact')}
             title={t.chartStrip.compactGrid}
@@ -60,6 +62,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     <div className="toolbar-right">
       {controls && (
         <button
+          type="button"
           className={`toolbar-btn ${controls.showPhaseBar ? 'active-toggle' : ''}`}
           onClick={controls.onTogglePhaseBar}
           title={t.chartStrip.togglePhases}
@@ -70,6 +73,7 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
       )}
 
       <button
+        type="button"
         className={controls ? `toolbar-btn ${showLegend ? 'active-toggle' : ''}` : 'toolbar-btn'}
         onClick={onToggleLegend}
         title={t.chartStrip.showLegend}

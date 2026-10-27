@@ -130,14 +130,33 @@ describe('WelcomeModal Component', () => {
     fireEvent.click(screen.getByText(/Start Fresh/i));
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
     fireEvent.click(screen.getByRole('dialog'));
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(handleClose).toHaveBeenCalledTimes(4);
+  });
+
+  it('is a native modal dialog with the focus on the close button', () => {
+    renderWithProviders(<WelcomeModal isOpen={true} onClose={vi.fn()} />);
+    const dialog = screen.getByRole('dialog', { name: /Welcome to Fertility Tracker/i });
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
+  });
+
+  it('lets the keyboard focus and scroll the slide body, named by the slide title', () => {
+    renderWithProviders(<WelcomeModal isOpen={true} onClose={vi.fn()} />);
+    const body = screen.getByRole('region', { name: /Clinical Charting, Privacy First/i });
+    expect(body).toHaveClass('welcome-modal-body');
+    expect(body).toHaveAttribute('tabindex', '0');
+    fireEvent.click(screen.getByTitle('Go to step 2'));
+    expect(screen.getByRole('region')).toHaveAccessibleName(
+      screen.getByRole('heading', { level: 3 }).textContent as string
+    );
   });
 
   it('ignores other keys and clicks inside the dialog', () => {
     const handleClose = vi.fn();
     renderWithProviders(<WelcomeModal isOpen={true} onClose={handleClose} />);
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     fireEvent.click(screen.getByText(/Step 1 of 4/i));
     expect(handleClose).not.toHaveBeenCalled();
   });

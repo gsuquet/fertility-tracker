@@ -42,7 +42,7 @@ describe('App flows', () => {
     render(<App />);
     fireEvent.click(within(footer()).getByRole('button', { name: en.welcomeModal.title }));
     expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
 
     fireEvent.click(within(footer()).getByRole('button', { name: en.versionTracker.title }));
     const notes = await screen.findByRole('dialog', { name: en.versionTracker.title });

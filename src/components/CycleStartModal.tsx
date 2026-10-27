@@ -1,7 +1,7 @@
 import type React from 'react';
-import { useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Calendar } from 'lucide-react';
+import { Modal } from './Modal';
 
 interface CycleStartModalProps {
   isOpen: boolean;
@@ -18,78 +18,50 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  useEffect(() => {
-    if (!isOpen) return;
-
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        onCancel();
-      }
-    };
-
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isOpen, onCancel]);
-
   if (!isOpen) return null;
 
   return (
-    <div
+    <Modal
+      labelledBy="cycle-start-modal-title"
+      onClose={onCancel}
       className="modal-overlay cycle-start-modal-overlay"
-      onClick={onCancel}
-      role="dialog"
-      aria-modal="true"
-      aria-labelledby="cycle-start-modal-title"
+      panelClassName="modal-container cycle-start-modal-container"
     >
-      <div
-        className="modal-container cycle-start-modal-container"
-        onClick={e => e.stopPropagation()}
-      >
-        <div className="cycle-start-header">
-          <div className="cycle-start-header-left">
-            <div className="cycle-start-icon-box">
-              <Calendar size={22} />
-            </div>
-            <div>
-              <h2 id="cycle-start-modal-title" className="cycle-start-title">
-                {t.cycleStartModal.title}
-              </h2>
-              <span className="cycle-start-date">{date}</span>
-            </div>
+      <div className="cycle-start-header">
+        <div className="cycle-start-header-left">
+          <div className="cycle-start-icon-box">
+            <Calendar size={22} />
           </div>
-          <button
-            type="button"
-            onClick={onCancel}
-            className="btn-icon"
-            aria-label={t.actions.close}
-          >
-            <X size={20} />
-          </button>
+          <div>
+            <h2 id="cycle-start-modal-title" className="cycle-start-title">
+              {t.cycleStartModal.title}
+            </h2>
+            <span className="cycle-start-date">{date}</span>
+          </div>
         </div>
-
-        <div className="cycle-start-body">
-          <p className="cycle-start-question">{t.cycleStartModal.question}</p>
-          <p className="cycle-start-description">{t.cycleStartModal.description}</p>
-        </div>
-
-        <div className="cycle-start-actions">
-          <button type="button" onClick={() => onConfirm(true)} className="btn btn-primary btn-lg">
-            {t.cycleStartModal.yesBtn}
-          </button>
-
-          <button
-            type="button"
-            onClick={() => onConfirm(false)}
-            className="btn btn-secondary btn-lg"
-          >
-            {t.cycleStartModal.noBtn}
-          </button>
-
-          <button type="button" onClick={onCancel} className="cycle-start-cancel-link">
-            {t.cycleStartModal.cancelBtn}
-          </button>
-        </div>
+        <button type="button" onClick={onCancel} className="btn-icon" aria-label={t.actions.close}>
+          <X size={20} />
+        </button>
       </div>
-    </div>
+
+      <div className="cycle-start-body">
+        <p className="cycle-start-question">{t.cycleStartModal.question}</p>
+        <p className="cycle-start-description">{t.cycleStartModal.description}</p>
+      </div>
+
+      <div className="cycle-start-actions">
+        <button type="button" onClick={() => onConfirm(true)} className="btn btn-primary btn-lg">
+          {t.cycleStartModal.yesBtn}
+        </button>
+
+        <button type="button" onClick={() => onConfirm(false)} className="btn btn-secondary btn-lg">
+          {t.cycleStartModal.noBtn}
+        </button>
+
+        <button type="button" onClick={onCancel} className="cycle-start-cancel-link">
+          {t.cycleStartModal.cancelBtn}
+        </button>
+      </div>
+    </Modal>
   );
 };

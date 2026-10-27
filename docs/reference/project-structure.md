@@ -83,6 +83,7 @@ fertility-tracker/
 | `StampBadge.tsx`                          | One stamp.                                                     |
 | `ExportModal.tsx`                         | The export and backup dialog.                                  |
 | `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.    |
+| `Modal.tsx`                               | The accessible modal dialog that all dialogs and drawers use.  |
 | `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.  |
 | `StorageRecoveryNotice.tsx`               | The alert for saved data that the application cannot read.     |
 | `StorageSaveWarning.tsx`                  | The alert when the browser does not save the observations.     |

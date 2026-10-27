@@ -9,8 +9,12 @@ const TestComponent = () => {
       <span data-testid="current-lang">{language}</span>
       <span data-testid="app-title">{t.appTitle}</span>
       <span data-testid="today-tab">{t.tabs.today}</span>
-      <button onClick={() => setLanguage('fr')}>Switch to FR</button>
-      <button onClick={() => setLanguage('en')}>Switch to EN</button>
+      <button type="button" onClick={() => setLanguage('fr')}>
+        Switch to FR
+      </button>
+      <button type="button" onClick={() => setLanguage('en')}>
+        Switch to EN
+      </button>
     </div>
   );
 };
