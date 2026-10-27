@@ -5,6 +5,9 @@
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const STORAGE_RECOVERY_KEY = 'fertility_care_observations_recovery';
 export const STORAGE_UNDO_KEY = 'fertility_care_observations_undo';
+export const STORAGE_LAST_BACKUP_KEY = 'fertility_care_last_backup';
+export const STORAGE_BACKUP_REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
+export const STORAGE_BACKUP_SNOOZED_UNTIL_KEY = 'fertility_care_backup_snoozed_until';
 export const STORAGE_LANGUAGE_KEY = 'fertility_care_lang';
 export const STORAGE_THEME_KEY = 'fertility_care_theme';
 export const STORAGE_ENTRY_MODE_KEY = 'fertility_care_entry_mode';

@@ -3,14 +3,28 @@ import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import { act, renderHook } from '@testing-library/react';
 import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
+import type { Observation } from '../../types/crms';
+import { validateObservation } from '../../domain/dataValidator';
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const UNDO_KEY = 'fertility_care_observations_undo';
+const LAST_BACKUP_KEY = 'fertility_care_last_backup';
+const REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
+const SNOOZE_KEY = 'fertility_care_backup_snoozed_until';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CycleProvider>{children}</CycleProvider>
 );
 const renderData = () => renderHook(() => useCycleData(), { wrapper });
+/** The stored observations: a bare array, which 1.17 and older versions read. */
+const storedList = (key = STORAGE_KEY): { date: string }[] =>
+  JSON.parse(localStorage.getItem(key) ?? 'null');
+
+/** The loader of version 1.17.x: it accepts only a JSON array of valid records. */
+const legacyLoaderAccepts = (text: string): boolean => {
+  const parsed: unknown = JSON.parse(text);
+  return Array.isArray(parsed) && parsed.every(item => validateObservation(item) !== null);
+};
 
 describe('CycleDataProvider', () => {
   beforeEach(() => {
@@ -75,7 +89,7 @@ describe('CycleDataProvider', () => {
     expect(result.current.recoveryData).toBeNull();
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
   });
 
   it('does not overwrite the original data when the recovery copy fails', () => {
@@ -91,7 +105,7 @@ describe('CycleDataProvider', () => {
     expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_KEY)).toBe('{corrupt');
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
     spy.mockRestore();
   });
 
@@ -128,7 +142,7 @@ describe('CycleDataProvider', () => {
       codeString: '0',
       stamp: 'DARK_GREEN',
     });
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
   });
 
   it('replaces the observation for an existing date and keeps a given id and code string', () => {
@@ -224,6 +238,38 @@ describe('CycleDataProvider', () => {
     expect(peaks).toEqual(['2026-06-12']);
   });
 
+  it('gives a saved demo day a new real id that delete and peaks match', () => {
+    const { result } = renderData();
+    act(() => result.current.saveObservation({ date: '2026-06-01', bleeding: 'H' }));
+    act(() => result.current.loadDemoData());
+    const demoDay = result.current.observations[10] as Observation;
+    expect(demoDay.id.startsWith('demo_')).toBe(true);
+    act(() =>
+      result.current.saveObservation({
+        id: demoDay.id,
+        date: demoDay.date,
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    const saved = result.current.observations.find(o => o.date === demoDay.date) as Observation;
+    expect(saved.id.startsWith('obs_')).toBe(true);
+    expect(saved.isManualPeak).toBe(true);
+    expect(result.current.observations).toHaveLength(56);
+    expect(result.current.observations.filter(o => o.id === saved.id)).toHaveLength(1);
+    act(() => result.current.deleteObservation(saved.id));
+    expect(result.current.observations.some(o => o.date === demoDay.date)).toBe(false);
+    expect(result.current.observations).toHaveLength(55);
+  });
+
+  it('keeps a real id when a real day is saved again', () => {
+    const { result } = renderData();
+    act(() => result.current.saveObservation({ id: 'obs_x', date: '2026-06-01', stretch: '0' }));
+    act(() => result.current.saveObservation({ id: 'obs_x', date: '2026-06-01', stretch: '2' }));
+    expect(result.current.observations.map(o => o.id)).toEqual(['obs_x']);
+  });
+
   it('deletes an observation by id', () => {
     const { result } = renderData();
     act(() =>
@@ -285,8 +331,7 @@ describe('CycleDataProvider', () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
       return renderData();
     };
-    const storedUndoDates = () =>
-      (JSON.parse(localStorage.getItem(UNDO_KEY) as string) as { date: string }[]).map(o => o.date);
+    const storedUndoDates = () => storedList(UNDO_KEY).map(o => o.date);
 
     it('has nothing to undo at the start', () => {
       const { result } = renderSaved();
@@ -409,6 +454,14 @@ describe('CycleDataProvider', () => {
       expect(result.current.observations).toHaveLength(2);
     });
 
+    it('offers a copy in the versioned envelope', () => {
+      localStorage.setItem(UNDO_KEY, JSON.stringify({ schemaVersion: 1, observations: saved }));
+      const { result } = renderData();
+      expect(result.current.undoChange).toBe('earlier');
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations).toHaveLength(2);
+    });
+
     it('ignores a copy that it cannot read', () => {
       localStorage.setItem(UNDO_KEY, 'not json');
       const { result } = renderData();
@@ -419,6 +472,211 @@ describe('CycleDataProvider', () => {
       const { result } = renderSaved();
       act(() => result.current.undoLastChange());
       expect(result.current.observations).toHaveLength(2);
+    });
+  });
+
+  describe('storage format', () => {
+    const legacy = [
+      makeObservation({ date: '2026-06-01', bleeding: 'H', codeString: 'H' }),
+      makeObservation({ date: '2026-06-02', stretch: '10', modifiers: ['K'], notes: 'n' }),
+    ];
+
+    it('loads the bare array of an older version without loss and writes a bare array', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      expect(result.current.observations.map(o => [o.date, o.stretch, o.notes])).toEqual([
+        ['2026-06-01', undefined, ''],
+        ['2026-06-02', '10', 'n'],
+      ]);
+      expect(storedList().map(o => o.date)).toEqual(['2026-06-01', '2026-06-02']);
+      expect(result.current.recoveryData).toBeNull();
+      expect(result.current.droppedCount).toBe(0);
+    });
+
+    it('calculates the code string again on load', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      expect(result.current.observations.map(o => o.codeString)).toEqual(['H', '10K']);
+    });
+
+    it('treats a newer schema version as unreadable and keeps it', () => {
+      const newer = JSON.stringify({ schemaVersion: 2, observations: legacy });
+      localStorage.setItem(STORAGE_KEY, newer);
+      const { result } = renderData();
+      expect(result.current.observations).toEqual([]);
+      expect(result.current.recoveryData).toBe(newer);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe(newer);
+    });
+
+    it('loads the versioned envelope and writes it back as a bare array', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ schemaVersion: 1, observations: legacy }));
+      const { result } = renderData();
+      expect(result.current.observations).toHaveLength(2);
+      expect(storedList()).toHaveLength(2);
+    });
+
+    it('writes the stored value, the undo copy and the backup in a format that 1.17 reads', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify({ schemaVersion: 1, observations: legacy }));
+      const { result } = renderData();
+      const backup = result.current.exportDataJson();
+      expect(legacyLoaderAccepts(backup)).toBe(true);
+      expect(JSON.parse(backup)).toHaveLength(2);
+      act(() => result.current.loadDemoData());
+      expect(legacyLoaderAccepts(localStorage.getItem(STORAGE_KEY) as string)).toBe(true);
+      expect(legacyLoaderAccepts(localStorage.getItem(UNDO_KEY) as string)).toBe(true);
+      expect(storedList(UNDO_KEY)).toHaveLength(2);
+      expect(storedList()).toHaveLength(56);
+    });
+
+    it('imports a backup in the envelope and an old bare-array backup', () => {
+      const { result } = renderData();
+      act(() => {
+        result.current.importDataJson(JSON.stringify({ schemaVersion: 1, observations: legacy }));
+      });
+      expect(result.current.observations).toHaveLength(2);
+      act(() => {
+        result.current.importDataJson(JSON.stringify([legacy[0]]));
+      });
+      expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01']);
+    });
+  });
+
+  describe('dropped records', () => {
+    const withInvalid = JSON.stringify([
+      makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+      { date: 'broken' },
+      makeObservation({ date: '2026-06-02', stretch: '0' }),
+    ]);
+
+    it('shows the valid records and keeps a copy of the original text', () => {
+      localStorage.setItem(STORAGE_KEY, withInvalid);
+      const { result } = renderData();
+      expect(result.current.observations).toHaveLength(2);
+      expect(result.current.droppedCount).toBe(1);
+      expect(result.current.recoveryData).toBe(withInvalid);
+      expect(result.current.recoveryKept).toBe(true);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe(withInvalid);
+      expect(storedList()).toHaveLength(2);
+    });
+
+    it('still gives the number of dropped records after a reload', () => {
+      localStorage.setItem(STORAGE_KEY, withInvalid);
+      renderData().unmount();
+      const { result } = renderData();
+      expect(result.current.recoveryData).toBe(withInvalid);
+      expect(result.current.recoveryKept).toBe(true);
+      expect(result.current.droppedCount).toBe(1);
+    });
+
+    it('gives no dropped records for a kept copy that is not readable', () => {
+      localStorage.setItem(RECOVERY_KEY, '{corrupt');
+      expect(renderData().result.current.droppedCount).toBe(0);
+    });
+
+    it('keeps the original text in its key when the copy cannot be kept', () => {
+      localStorage.setItem(RECOVERY_KEY, 'old copy');
+      localStorage.setItem(STORAGE_KEY, withInvalid);
+      const { result } = renderData();
+      expect(result.current.droppedCount).toBe(1);
+      expect(result.current.recoveryKept).toBe(false);
+      expect(localStorage.getItem(STORAGE_KEY)).toBe(withInvalid);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+      act(() => result.current.saveObservation({ date: '2026-06-03', stretch: '0' }));
+      expect(storedList()).toHaveLength(3);
+    });
+  });
+
+  describe('save failures', () => {
+    it('reports a refused write and clears the report after a write that succeeds', () => {
+      const setItem = localStorage.setItem.bind(localStorage);
+      let refuse = true;
+      const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+        if (key === STORAGE_KEY && refuse) throw new Error('QuotaExceededError');
+        setItem(key, value);
+      });
+      const { result } = renderData();
+      expect(result.current.saveFailed).toBe(true);
+      act(() => result.current.saveObservation({ date: '2026-06-01', stretch: '0' }));
+      expect(result.current.saveFailed).toBe(true);
+      expect(result.current.observations).toHaveLength(1);
+      refuse = false;
+      act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+      expect(result.current.saveFailed).toBe(false);
+      expect(storedList()).toHaveLength(2);
+      spy.mockRestore();
+    });
+
+    it('has no failure when the writes succeed', () => {
+      expect(renderData().result.current.saveFailed).toBe(false);
+    });
+  });
+
+  describe('persistent storage', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'storage');
+    });
+
+    it('asks the browser once to keep the data when observations exist', () => {
+      const persist = vi.fn().mockResolvedValue(true);
+      Object.defineProperty(navigator, 'storage', { value: { persist }, configurable: true });
+      const { result } = renderData();
+      expect(persist).not.toHaveBeenCalled();
+      act(() => result.current.saveObservation({ date: '2026-06-01', stretch: '0' }));
+      act(() => result.current.clearAllData());
+      act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+      expect(persist).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('last backup date', () => {
+    it('reads the stored date and records a new backup with the date of today', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      localStorage.setItem(LAST_BACKUP_KEY, '2026-09-01');
+      const { result } = renderData();
+      expect(result.current.lastBackupDate).toBe('2026-09-01');
+      act(() => result.current.markBackedUp());
+      expect(result.current.lastBackupDate).toBe('2026-10-27');
+      expect(localStorage.getItem(LAST_BACKUP_KEY)).toBe('2026-10-27');
+    });
+
+    it('has no date before the first backup', () => {
+      expect(renderData().result.current.lastBackupDate).toBeNull();
+    });
+
+    it('starts the reminder period with the first real observation, not before', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 1, 12));
+      const { result } = renderData();
+      expect(result.current.backupReminderStart).toBeNull();
+      act(() => result.current.loadDemoData());
+      expect(result.current.backupReminderStart).toBeNull();
+      expect(localStorage.getItem(REMINDER_START_KEY)).toBeNull();
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      act(() => result.current.saveObservation({ date: '2026-10-27', stretch: '0' }));
+      expect(result.current.backupReminderStart).toBe('2026-10-27');
+      expect(localStorage.getItem(REMINDER_START_KEY)).toBe('2026-10-27');
+      vi.setSystemTime(new Date(2026, 11, 1, 12));
+      expect(renderData().result.current.backupReminderStart).toBe('2026-10-27');
+    });
+
+    it('starts the reminder period on the upgrade when real data exists', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+      expect(renderData().result.current.backupReminderStart).toBe('2026-10-27');
+      expect(localStorage.getItem(REMINDER_START_KEY)).toBe('2026-10-27');
+    });
+
+    it('snoozes the reminder for 7 days', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      const { result } = renderData();
+      expect(result.current.backupSnoozedUntil).toBeNull();
+      act(() => result.current.snoozeBackupReminder());
+      expect(result.current.backupSnoozedUntil).toBe('2026-11-03');
+      expect(localStorage.getItem(SNOOZE_KEY)).toBe('2026-11-03');
+      expect(renderData().result.current.backupSnoozedUntil).toBe('2026-11-03');
     });
   });
 });

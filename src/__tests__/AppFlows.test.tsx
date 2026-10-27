@@ -136,8 +136,31 @@ describe('App flows', () => {
 
     fireEvent.click(screen.getByRole('button', { name: en.undoToast.undo }));
     expect(screen.queryByRole('status')).toBeNull();
-    expect(JSON.parse(localStorage.getItem('fertility_care_observations') as string)).toHaveLength(
-      1
+    const stored = JSON.parse(localStorage.getItem('fertility_care_observations') as string);
+    expect(stored).toHaveLength(1);
+  });
+
+  it('opens the export dialog from the save warning and from the backup reminder', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem('fertility_care_backup_reminder_start', '2026-01-01');
+    localStorage.setItem(
+      'fertility_care_observations',
+      JSON.stringify([{ date: '2026-06-01', bleeding: 'H' }])
     );
+    const setItem = localStorage.setItem.bind(localStorage);
+    vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === 'fertility_care_observations') throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    render(<App />);
+    const warning = screen.getByRole('alert');
+    fireEvent.click(within(warning).getByRole('button', { name: en.storageWarning.backUpNow }));
+    const exportDialog = await screen.findByRole('dialog', { name: en.exportModal.title });
+    fireEvent.click(within(exportDialog).getByRole('button', { name: /close/i }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    const reminder = screen.getByRole('note');
+    fireEvent.click(within(reminder).getByRole('button', { name: en.backupReminder.backUpNow }));
+    expect(await screen.findByRole('dialog', { name: en.exportModal.title })).toBeInTheDocument();
   });
 });

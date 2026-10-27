@@ -230,6 +230,27 @@ export const en = {
     messageNoCopy:
       'The saved observations could not be read, and the application could not keep a copy. Download the original data now. Your next change replaces it.',
     close: 'Close',
+    messagePartial:
+      '{count} saved records could not be read. The application shows the other observations and keeps a copy of the original data. Download the copy before you delete it.',
+    messagePartialNoCopy:
+      '{count} saved records could not be read, and the application could not keep a copy. The application shows the other observations. Download the original data now. Your next change replaces it.',
+    messagePartialOne:
+      '1 saved record could not be read. The application shows the other observations and keeps a copy of the original data. Download the copy before you delete it.',
+    messagePartialNoCopyOne:
+      '1 saved record could not be read, and the application could not keep a copy. The application shows the other observations. Download the original data now. Your next change replaces it.',
+  },
+  storageWarning: {
+    saveFailed:
+      'The browser could not save your observations. Your changes stay only until you close or reload the page. Back up your data now.',
+    backUpNow: 'Back up now',
+  },
+  backupReminder: {
+    message:
+      'Your last backup is more than {days} days old. Download a backup to keep a copy of your observations.',
+    messageNever:
+      'You have no backup of your observations. Download a backup to keep a copy of them.',
+    backUpNow: 'Back up now',
+    later: 'Later',
   },
   disclaimer: {
     trademark:
