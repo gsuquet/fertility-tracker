@@ -69,6 +69,25 @@
     flex-shrink: 0;
   }
 
+  /* Confirmation Dialog: opens over another dialog */
+  .confirm-overlay {
+    z-index: var(--z-popover);
+  }
+
+  .confirm-dialog {
+    max-width: 420px;
+  }
+
+  .confirm-dialog .modal-body {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .confirm-dialog .modal-footer {
+    flex-wrap: wrap;
+  }
+
   /* Responsive Mobile Bottom-Sheet */
   @media (max-width: 640px) {
     .modal-overlay {

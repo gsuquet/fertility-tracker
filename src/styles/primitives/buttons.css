@@ -35,6 +35,12 @@
     outline-offset: 2px;
   }
 
+  .btn:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+    transform: none;
+  }
+
   /* Primary Button */
   .btn-primary {
     background-color: var(--accent-solid);

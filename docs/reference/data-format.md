@@ -6,19 +6,22 @@ This page gives the format of the data that the application keeps in the browser
 
 The application uses `localStorage`. It sends no data to a server.
 
-| Key                                    | Content                                                      |
-| -------------------------------------- | ------------------------------------------------------------ |
-| `fertility_care_observations`          | All observations, as a JSON array.                           |
-| `fertility_care_observations_recovery` | A copy of observation data that the application cannot read. |
-| `fertility_care_theme`                 | `light` or `dark`.                                           |
-| `fertility_care_lang`                  | `en` or `fr`.                                                |
-| `fertility_care_entry_mode`            | The last entry mode of the **Today** page.                   |
-| `fertility_tracker_has_seen_welcome`   | Set when you close the welcome guide.                        |
-| `fertility_tracker_last_seen_version`  | The last application version that you opened.                |
+| Key                                    | Content                                                                       |
+| -------------------------------------- | ----------------------------------------------------------------------------- |
+| `fertility_care_observations`          | All observations, as a JSON array.                                            |
+| `fertility_care_observations_recovery` | A copy of observation data that the application cannot read.                  |
+| `fertility_care_observations_undo`     | A copy of the observations from before the last restore, demo load or delete. |
+| `fertility_care_theme`                 | `light` or `dark`.                                                            |
+| `fertility_care_lang`                  | `en` or `fr`.                                                                 |
+| `fertility_care_entry_mode`            | The last entry mode of the **Today** page.                                    |
+| `fertility_tracker_has_seen_welcome`   | Set when you close the welcome guide.                                         |
+| `fertility_tracker_last_seen_version`  | The last application version that you opened.                                 |
 
 If the value of `fertility_care_observations` is not a JSON array, the application starts with no observations. Before it saves, it copies the value to `fertility_care_observations_recovery`.
 
 The application does not replace a copy that is already in `fertility_care_observations_recovery`. If the application cannot write the copy, it keeps the original value in `fertility_care_observations`. Your next change replaces that value.
+
+Before a restore, a demo load or a delete of all data, the application copies the observations to `fertility_care_observations_undo`. If a copy already exists, the application keeps the older copy. **Undo**, **Delete the copy**, a saved observation and a deleted observation delete the copy.
 
 ## Backup file
 
@@ -73,6 +76,12 @@ When you restore a file, the application does these checks:
 - It ignores a code that is not in the lists of [Observation codes](observation-codes.md).
 - If two items have the same date, it keeps the last item.
 - It calculates `stamp`, `cycleDay` and `isPeakDay` again.
+
+If you have observations, you select **Replace** or **Merge**:
+
+- **Replace** deletes the current observations and keeps only the file.
+- **Merge** keeps the current observations. A day of the file replaces the current day with the same date.
+- If a day of the file is a manual Peak Day, **Merge** removes the other manual Peak Days of that cycle.
 
 The validation is in `src/domain/dataValidator.ts`.
 

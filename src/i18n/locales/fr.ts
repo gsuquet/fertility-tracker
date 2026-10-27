@@ -191,6 +191,39 @@ export const fr: TranslationSchema = {
     pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
     jsonDescription:
       "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
+    importError:
+      "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde JSON de Fertility Tracker.",
+  },
+  confirmDialog: {
+    demoTitle: 'Remplacer vos données par la démo ?',
+    demoMessage: 'Les cycles de démo remplacent les {count} observations de ce navigateur.',
+    demoConfirm: 'Charger la démo',
+    importTitle: 'Restaurer cette sauvegarde ?',
+    importSummary: 'Le fichier contient {count} observations, du {first} au {last}.',
+    importEmpty: 'Le fichier ne contient aucune observation.',
+    importChoice:
+      'Vous avez {count} observations. Remplacer les supprime et garde seulement le fichier. Fusionner les garde, et le fichier remplace les jours de même date.',
+    importReplace: 'Remplacer',
+    importMerge: 'Fusionner',
+    clearTitle: 'Supprimer toutes les données du graphique ?',
+    clearMessage:
+      "Cette action supprime les {count} observations de ce navigateur. Une copie reste sur cet appareil jusqu'à ce que vous cliquiez sur Supprimer la copie dans le message d'annulation.",
+    clearConfirm: 'Tout supprimer',
+    recoveryTitle: 'Supprimer les données illisibles ?',
+    recoveryMessage:
+      "L'application ne garde aucune autre copie de ces données. Téléchargez-les d'abord si vous voulez les garder.",
+    recoveryConfirm: 'Supprimer la copie',
+  },
+  undoToast: {
+    demo: 'Les données de démo ont remplacé vos observations.',
+    import: 'La sauvegarde a remplacé vos observations.',
+    merge: 'La sauvegarde est fusionnée avec vos observations.',
+    clear: 'Toutes les observations sont supprimées.',
+    earlier: "L'application garde une copie de vos observations d'avant la dernière modification.",
+    undo: 'Annuler la modification',
+    dismiss: 'Supprimer la copie',
+    notSaved:
+      "Le navigateur n'a pas pu enregistrer la copie. L'annulation fonctionne seulement jusqu'au rechargement de la page.",
   },
   storageRecovery: {
     message:
