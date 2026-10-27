@@ -9,7 +9,6 @@ const TestDataConsumer: React.FC = () => {
     observations,
     saveObservation,
     deleteObservation,
-    toggleManualPeak,
     importDataJson,
     exportDataJson,
     clearAllData,
@@ -30,7 +29,6 @@ const TestDataConsumer: React.FC = () => {
         Add Obs
       </button>
       <button onClick={() => deleteObservation('2026-09-02')}>Delete Obs</button>
-      <button onClick={() => toggleManualPeak('2026-09-02')}>Toggle Peak</button>
       <button onClick={loadDemoData}>Load Demo</button>
       <button onClick={clearAllData}>Clear All</button>
       <button
@@ -104,10 +102,6 @@ describe('CycleContext Decoupled Providers and Hooks', () => {
     expect(screen.getByTestId('obs-count').textContent).toBe('1');
     expect(screen.getByTestId('drawer-state').textContent).toBe('closed');
     expect(screen.getByTestId('unified-state').textContent).toBe('1-closed');
-
-    // Toggle peak
-    await user.click(screen.getByText('Toggle Peak'));
-    expect(screen.getByTestId('obs-count').textContent).toBe('1');
 
     // Toggle drawer
     await user.click(screen.getByText('Open Drawer'));

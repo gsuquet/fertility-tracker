@@ -58,6 +58,16 @@ The **Today** page and the observation drawer have the same fields.
 | **Load Demo Cycle**     | Replaces all observations with two demo cycles.            |
 | **Clear Data / Reset**  | Deletes all observations after a confirmation.             |
 
+## Unreadable data notice
+
+The notice shows above the pages when the application cannot read the saved observations. It shows until you delete the copy or close the notice.
+
+| Button                       | Action                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| **Download unreadable data** | Downloads the original data in a text file.                                |
+| **Delete the copy**          | Deletes the copy of the original data and closes the notice.               |
+| **Close**                    | Closes the notice. This button shows when the application has no new copy. |
+
 ## Dialogs
 
 | Dialog                      | When it opens                                                         |
