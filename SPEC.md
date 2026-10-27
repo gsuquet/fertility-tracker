@@ -354,6 +354,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - [TodayFertilityGuidance.tsx](./src/components/today/TodayFertilityGuidance.tsx): Real-time CrMS stamp preview badge, formatted code text, and clinical fertility guidance message (rendered in top mobile banner and desktop status card).
 
 - **Daily Status Card:** Hero summary card displaying active date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
+- **Saved and Deleted Notices:** A save or a delete shows a toast (`role="status"`). The toast closes 3 seconds after the last save or delete. The view cancels the timer when it unmounts.
 - **Recent 5-Day Observation History Card:** Aligned 3-column layout featuring a fixed-width date column, aligned `.recent-stamp-slot` for stamp badges, and single-line observation code string with ellipsis truncation.
 
 ---
@@ -390,7 +391,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 - Monthly grid layout displaying observations on their actual calendar date.
 - Shows stamp badge color, day code snippet, and intercourse indicator on calendar tiles.
-- **Current Day Highlighting:** Automatically highlights the current date tile (`.calendar-day.is-today`) with a 2px accent border ring (`var(--accent-primary)`), soft theme-aware background tint (`var(--accent-soft)`), a circular date number badge (`.calendar-day-num`), and `aria-current="date"` attribute.
+- **Current Day Highlighting:** Automatically highlights the current date tile (`.calendar-day.is-today`) with a 2px accent border ring (`var(--accent-primary)`), soft theme-aware background tint (`var(--accent-soft)`), a circular date number badge (`.calendar-day-num`), and `aria-current="date"` attribute. The view gets the date of today from `getTodayStr()`.
 - Clicking any tile opens the Observation Drawer pre-populated for that date.
 - **Theme:** Tile text uses the theme tokens (`--text-primary`, `--text-secondary`), so it stays readable in dark mode.
 - **Mobile (≤ 640px):** A long observation code wraps onto more lines, and the tile grows to fit it. The code is never cut.
@@ -435,7 +436,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
-  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later. When the app unmounts, it cancels the pending title and toast timers (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
+  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later. A second print within that second restores the original title, not the title of the first print. When the app unmounts, it cancels the pending title and toast timers (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
   - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
   - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it. It traps the focus: `Tab` on the last button moves to the first, and `Shift+Tab` on the first moves to the last, so the dialog under it cannot get the focus.
@@ -501,7 +502,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `deleteObservation(id)` deletes only the observation with that `id`. A date string does not match an observation.
   - `LanguageProvider` and `ThemeProvider` memoize their context values, so a re-render of a parent with the same language or theme does not give consumers a new value.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state. [versionTracker.ts](./src/domain/versionTracker.ts) defines each of these keys one time (`STORAGE_OBSERVATIONS_KEY`, `STORAGE_LANGUAGE_KEY`, `STORAGE_THEME_KEY`, `LAST_SEEN_VERSION_KEY`, `STORAGE_HAS_SEEN_WELCOME_KEY`), and the providers import them.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state. The app also uses `fertility_care_observations_recovery` for unreadable data and `fertility_care_entry_mode` for the last entry mode of the Today view.
+  - [storageKeys.ts](./src/utils/storageKeys.ts) defines each key one time, and all modules import it from there: `STORAGE_OBSERVATIONS_KEY`, `STORAGE_RECOVERY_KEY`, `STORAGE_UNDO_KEY`, `STORAGE_LANGUAGE_KEY`, `STORAGE_THEME_KEY`, `STORAGE_ENTRY_MODE_KEY`, `LAST_SEEN_VERSION_KEY` and `STORAGE_HAS_SEEN_WELCOME_KEY`.
 - **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
   - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
   - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
@@ -594,8 +596,8 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 | Layer       | Location                                  | Purpose                                                                                                   |
 | ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
 | Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access.                                                     |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access, storage key names.                                  |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm` (the form state that Today and the drawer share) and `useToast`.                     |
 | Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
 | Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                                      |
 | Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.                           |

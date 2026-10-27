@@ -9,7 +9,11 @@ import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { buildDemoObservations } from '../domain/demoData';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
 import { mergeObservations } from '../domain/backupImport';
-import { STORAGE_OBSERVATIONS_KEY as STORAGE_KEY } from '../domain/versionTracker';
+import {
+  STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
+  STORAGE_RECOVERY_KEY as RECOVERY_KEY,
+  STORAGE_UNDO_KEY as UNDO_KEY,
+} from '../utils/storageKeys';
 import type { ImportMode } from '../domain/backupImport';
 
 /** A change that replaced the observations and that the saved copy can undo. */
@@ -54,9 +58,6 @@ export type CycleContextType = CycleDataContextType & CycleUiContextType;
 
 const CycleDataContext = createContext<CycleDataContextType | undefined>(undefined);
 const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
-
-const RECOVERY_KEY = 'fertility_care_observations_recovery';
-const UNDO_KEY = 'fertility_care_observations_undo';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);

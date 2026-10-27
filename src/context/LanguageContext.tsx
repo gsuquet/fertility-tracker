@@ -4,7 +4,7 @@ import type { Language } from '../types/crms';
 import type { TranslationSchema } from '../i18n';
 import { translations } from '../i18n';
 import { readStorage, writeStorage } from '../utils/storage';
-import { STORAGE_LANGUAGE_KEY as LANGUAGE_STORAGE_KEY } from '../domain/versionTracker';
+import { STORAGE_LANGUAGE_KEY as LANGUAGE_STORAGE_KEY } from '../utils/storageKeys';
 
 interface LanguageContextType {
   language: Language;

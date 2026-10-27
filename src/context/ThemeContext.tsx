@@ -2,7 +2,7 @@ import type React from 'react';
 import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Theme } from '../types/crms';
 import { readStorage, writeStorage } from '../utils/storage';
-import { STORAGE_THEME_KEY as THEME_STORAGE_KEY } from '../domain/versionTracker';
+import { STORAGE_THEME_KEY as THEME_STORAGE_KEY } from '../utils/storageKeys';
 
 interface ThemeContextType {
   theme: Theme;

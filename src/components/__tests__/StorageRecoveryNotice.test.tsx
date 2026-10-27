@@ -2,7 +2,7 @@ import { screen, fireEvent, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { StorageRecoveryNotice } from '../StorageRecoveryNotice';
 import { renderWithProviders } from '../../test/render';
-import { STORAGE_OBSERVATIONS_KEY } from '../../domain/versionTracker';
+import { STORAGE_OBSERVATIONS_KEY } from '../../utils/storageKeys';
 import { getTodayStr } from '../../utils/dateUtils';
 import { en, fr } from '../../i18n';
 

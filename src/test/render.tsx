@@ -5,7 +5,7 @@ import { ThemeProvider } from '../context/ThemeContext';
 import { LanguageProvider } from '../context/LanguageContext';
 import { CycleProvider, useCycleData } from '../context/CycleContext';
 import type { Language, Observation } from '../types/crms';
-import { STORAGE_LANGUAGE_KEY, STORAGE_OBSERVATIONS_KEY } from '../domain/versionTracker';
+import { STORAGE_LANGUAGE_KEY, STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
 
 interface ProviderOptions {
   language?: Language;
