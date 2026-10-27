@@ -12,21 +12,27 @@ fertility-tracker/
 │   └── tasks/                   # mise tasks, one shell file for each task
 ├── docs/                        # Documentation (Diátaxis) and decision records
 ├── e2e/                         # Playwright end-to-end and accessibility tests
-├── public/                      # Static files: manifest, service worker, headers
-├── scripts/docs/                # Docs checker and its tests
+├── public/                      # Static files: manifest, icons, headers
+│   └── icons/                   # PWA icons (192, 512 and maskable 512)
+├── scripts/
+│   ├── docs/                    # Docs checker and its tests
+│   └── pwa/                     # Vite plugin that builds sw.js with the precache list
 ├── src/
 │   ├── __tests__/               # Application flow tests
 │   ├── components/              # React components
 │   │   ├── __tests__/           # Component tests
+│   │   ├── chart/               # Parts of the Chart page
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
 │   ├── domain/                  # Pure CrMS rules and data functions
 │   ├── hooks/                   # Shared React hooks
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
-│   ├── styles/                  # CSS in cascade layers
+│   ├── pwa/                     # Service worker registration
+│   ├── styles/                  # CSS in cascade layers and the self-hosted font
+│   ├── sw/                      # Service worker: precache and cache strategies
 │   ├── test/                    # Test helpers
-│   ├── types/                   # TypeScript types of the domain
+│   ├── types/                   # TypeScript types and code lists of the domain
 │   ├── utils/                   # Dates, export file names, safe storage
 │   ├── App.tsx                  # Application layout
 │   └── main.tsx                 # Entry point
@@ -49,6 +55,7 @@ fertility-tracker/
 | `peakDetector.ts`          | Peak Day, count of three and cycle days.       |
 | `cycleBoundaryDetector.ts` | Puts the days into cycles.                     |
 | `cyclePhases.ts`           | Phase lengths and averages.                    |
+| `mucusScore.ts`            | Mucus score of one day.                        |
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
@@ -74,6 +81,7 @@ fertility-tracker/
 | `VersionModal.tsx`       | The **About & Version Tracker** dialog.                        |
 | `WelcomeModal.tsx`       | The welcome guide.                                             |
 | `Footer.tsx`             | Legal text, guide link and version.                            |
+| `ErrorBoundary.tsx`      | Message and **Reload** button when a part cannot load.         |
 
 ## Related documents
 

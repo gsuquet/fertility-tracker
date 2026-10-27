@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.15.5  
+**Document Version:** 1.17.1  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -30,10 +30,13 @@
    - [5.8 Export & Printing System](#58-export--printing-system)
    - [5.9 Version Tracker & System Info Modal](#59-version-tracker--system-info-modal)
    - [5.10 Welcome Screen & Onboarding Guide Modal](#510-welcome-screen--onboarding-guide-modal)
+   - [5.11 Error Boundary](#511-error-boundary)
 6. [State Management & Data Persistence](#6-state-management--data-persistence)
 7. [Internationalization & Design System](#7-internationalization--design-system)
 8. [Testing & Quality Assurance](#8-testing--quality-assurance)
 9. [Deployment & CI/CD Pipeline](#9-deployment--cicd-pipeline)
+   - [9.1 Offline Support & Installable App](#91-offline-support--installable-app)
+   - [9.2 Security Headers](#92-security-headers)
 10. [Legal, Privacy & Medical Compliance](#10-legal-privacy--medical-compliance)
 
 ---
@@ -85,19 +88,20 @@ graph TD
 
 Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an exact version. `.npmrc` sets `save-exact=true` and `engine-strict=true`; `package.json` declares `engines`, `devEngines` and `packageManager`; `.mise/config.toml` and `.mise/mise.lock` pin the toolchain with checksums.
 
-| Layer                  | Technology                                 | Specification / Version                                                                          |
-| :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)       |
-| **UI Library**         | React                                      | `v19.3.1`                                                                                        |
-| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)      |
-| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                         |
-| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)            |
-| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks  |
-| **Icons**              | Lucide React                               | `v1.61.0`                                                                                        |
-| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                           |
-| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3` |
-| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                             |
-| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                |
+| Layer                  | Technology                                 | Specification / Version                                                                           |
+| :--------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)        |
+| **UI Library**         | React                                      | `v19.3.1`                                                                                         |
+| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)       |
+| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                          |
+| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)             |
+| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks   |
+| **Icons**              | Lucide React                               | `v1.61.0`                                                                                         |
+| **Font**               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans v5.3.0` (self-hosted variable woff2, no third-party host) |
+| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                            |
+| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3`  |
+| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                              |
+| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                 |
 
 ---
 
@@ -107,7 +111,20 @@ The Domain Engine is isolated in `src/domain/` with pure, deterministic logic in
 
 ### 3.1 Biomarker Codes Catalog
 
-The Creighton Model system uses standardized alphanumeric tokens to record daily observations:
+The Creighton Model system uses standardized alphanumeric tokens to record daily observations.
+
+**Single source of truth:** [src/types/crms.ts](./src/types/crms.ts) exports each code list as an `as const` array, and the code types are derived from these arrays. The parser, the validator, the stamp calculator, the cycle boundary detector and the observation forms read the lists from this file. No other file repeats a code list.
+
+| Constant                  | Codes                                                       |
+| ------------------------- | ----------------------------------------------------------- |
+| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    |
+| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         |
+| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` |
+| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      |
+| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    |
+| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             |
+| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      |
+| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          |
 
 #### Bleeding Codes
 
@@ -168,7 +185,7 @@ The parser operates in two directions:
    `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
    _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
    _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
@@ -196,6 +213,7 @@ flowchart TD
 1. **Peak Day ($P$) Determination:**
    - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
    - **Manual Override Mode:** Respects user-set `isManualPeak` flag or cycle-level `manualPeakDate`.
+   - **One Manual Peak per Cycle:** When `saveObservation` saves an observation with `isManualPeak` set, it clears `isManualPeak` on the other days of the cycle that contains the saved day (the cycle is found after the saved day is added). The manual Peak Days of other cycles stay.
 2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
    - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
      - $+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
@@ -238,15 +256,22 @@ flowchart TD
 **Module:** [src/types/crms.ts](./src/types/crms.ts)
 
 ```typescript
-export type BleedingCode = 'H' | 'M' | 'L' | 'VL' | 'B';
+export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
+export type BleedingCode = (typeof BLEEDING_CODES)[number];
 
-export type MucusStretch = '0' | '2' | '2W' | '4' | '6' | '8' | '10' | '10DL' | '10SL' | '10WL';
+export const STRETCH_CODES = ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as const;
+export type MucusStretch = (typeof STRETCH_CODES)[number];
 
-export type MucusModifier = 'B' | 'C' | 'C/K' | 'G' | 'K' | 'L' | 'P' | 'Y';
+export const MODIFIER_CODES = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as const;
+export type MucusModifier = (typeof MODIFIER_CODES)[number];
 
-export type FrequencyCode = 'X1' | 'X2' | 'X3' | 'AD';
+export const FREQUENCY_CODES = ['X1', 'X2', 'X3', 'AD'] as const;
+export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
 
-export type SymptomCode = 'AP' | 'RAP' | 'LAP';
+export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
+export type SymptomCode = (typeof SYMPTOM_CODES)[number];
+
+// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (see 3.1)
 
 export type StampType =
   | 'RED' // Bleeding menses
@@ -335,8 +360,18 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 ### 5.4 Paper Chart Row View
 
-**Module:** [src/components/ChartRow.tsx](./src/components/ChartRow.tsx)
+**Module:** [src/components/ChartRow.tsx](./src/components/ChartRow.tsx)  
+**Decomposed Subcomponents:**
 
+- [ChartToolbar.tsx](./src/components/chart/ChartToolbar.tsx): Title, view mode toggle (35-day grid or compact strip), phase bar toggle and legend toggle. The empty chart shows only the title and the legend toggle.
+- [ChartLegend.tsx](./src/components/chart/ChartLegend.tsx): Stamp legend key.
+- [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today. Each blank cell opens a draft observation with a click, `Enter` or `Space`.
+- [ChartCycleRow.tsx](./src/components/chart/ChartCycleRow.tsx): One cycle row: header (cycle number, date range, length, Peak Day), scroll and jump controls, phase timeline and the cell strip. The row keeps its own scroll element.
+- [ChartPhaseTimeline.tsx](./src/components/chart/ChartPhaseTimeline.tsx): Phase bar above the cells of a cycle.
+- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell opens with a click, `Enter` or `Space`.
+- [ChartCellPopover.tsx](./src/components/chart/ChartCellPopover.tsx): Detail popover of a filled cell (code, bleeding, stretch, modifiers, intercourse, notes).
+
+- **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again. Because the state is per cell, two popovers can show at the same time: one on the focused cell and one on the hovered cell.
 - Recreates the visual aesthetic of official Creighton paper chart strips.
 - Renders 35 days per row with color-coded stamp blocks:
   - **Red:** Menses bleeding
@@ -344,8 +379,8 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
   - **White with Baby Icon:** Fertile mucus day
   - **Light Green with Baby & Number (1, 2, 3):** Post-peak count days
 - Displays day numbers, formatted code strings, intercourse (`I`) flags, and Peak (`P`) markers.
-- Allows toggling manual Peak Day designation directly on individual stamp cells.
-- **Current Day Highlighting:** Automatically detects today's date (`todayStr`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
+- A click on a stamp cell opens the observation drawer for that day. The manual Peak Day is set or removed there with **Designate Peak Day (P)**.
+- **Current Day Highlighting:** Automatically detects today's date (`getTodayStr()` from `src/utils/dateUtils.ts`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
 
 ---
 
@@ -373,7 +408,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
     - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
     - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
     - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
-  - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
+  - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
@@ -397,7 +432,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx), [exportUtils.ts](./src/utils/exportUtils.ts)
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
-  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`.
+  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
@@ -432,6 +467,14 @@ Interactive slide-over drawer for entering and editing observations with two syn
   4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
 - **Accessible Design & Navigation:** Keyboard navigation (`Escape` close, tab trap), step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
 
+### 5.11 Error Boundary
+
+**Module:** [src/components/ErrorBoundary.tsx](./src/components/ErrorBoundary.tsx)
+
+- `App.tsx` wraps each `React.Suspense` (the four pages and the lazy dialogs) in an `ErrorBoundary`. The boundary around the pages has `key={activeTab}`, so a tab change removes the alert and loads the new page again.
+- When a child throws during render, or a lazy chunk fails to load (for example offline, before the service worker has cached it), the boundary replaces the failed part with an alert (`role="alert"`) instead of a blank screen. The rest of the layout (header, footer, navigation) stays visible.
+- The alert shows a translated title and message (`errorBoundary.title`, `errorBoundary.message`) and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
+
 ---
 
 ## 6. State Management & Data Persistence
@@ -439,12 +482,17 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
 
 - **Decoupled Context Architecture:**
-  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, `toggleManualPeak`, etc.).
+  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, etc.).
   - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
 - **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
-- **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
+- **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
+  - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
+  - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
+  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`.
+  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
+- **Automatic Reprocessing:** Any modification (addition, update including a manual Peak Day, deletion) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
 ---
@@ -482,6 +530,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
+    - `fonts.css`: `@font-face` rules for **Plus Jakarta Sans** (variable weight `200 800`, `font-display: swap`). Only the `latin` and `latin-ext` woff2 subsets of `@fontsource-variable/plus-jakarta-sans` are declared. The `url()` values are package paths, so Vite copies the files to `assets/` with a content hash and the service worker precaches them. No font or stylesheet loads from a third-party host such as Google Fonts.
     - `reset.css`: Modern CSS box-sizing resets, zero-margin defaults, font smoothing.
     - `layout.css`: App shell container (`.app-layout`, `.main-content`), mobile bottom bar offsets, global focus outlines.
   - `src/styles/primitives/`:
@@ -518,17 +567,18 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### Test Layers
 
-| Layer       | Location                       | Purpose                                                                                      |
-| ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values. |
-| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                        |
-| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                        |
-| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                             |
-| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                         |
-| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
-| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
-| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                   |
-| End-to-end  | `e2e/`                         | Playwright flows and axe accessibility checks in Chromium, against the production build.     |
+| Layer       | Location                                  | Purpose                                                                                                   |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access.                                                     |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                                      |
+| Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.                           |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                                    |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
+| Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                                            |
+| End-to-end  | `e2e/`                                    | Playwright flows and axe accessibility checks in Chromium, against the production build.                  |
 
 ### End-to-End Tests (`e2e/`)
 
@@ -616,13 +666,39 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
 - **End-to-End Job:** A second job, `e2e`, runs on pull requests only. It installs the same toolchain with mise, runs `npm ci`, installs Chromium with `npx playwright install --with-deps chromium`, then runs `npm run test:e2e`. It uploads the Playwright report when a test fails.
 - **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
 
+### 9.1 Offline Support & Installable App
+
+**Modules:** [src/sw/serviceWorker.ts](./src/sw/serviceWorker.ts), [src/sw/entry.ts](./src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](./src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](./scripts/pwa/serviceWorkerPlugin.ts)
+
+- **Build-time precache list:** The Vite plugin `serviceWorkerPlugin` (build only) bundles `src/sw/entry.ts` to `dist/sw.js`. It injects the precache list and the cache name into it:
+  - **Precache list:** `./` (the app shell; the server answers it with `index.html`) and every other file of the build output (all hashed files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons). `index.html` is not listed under its own name: `./` stores it. Source maps, `sw.js` and `_headers` are excluded.
+  - **Cache name:** `fertility-tracker-<app version>-<build hash>`. The build hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the precached files. Thus each build with a different output installs a new cache.
+- **Service worker events:**
+  - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
+  - `activate`: Deletes every cache whose name starts with `fertility-tracker-` and is not the current cache, then calls `clients.claim()`.
+  - `fetch`: Ignores requests that are not `GET` or not same-origin.
+    - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
+    - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response whose `Content-Type` is not `text/html`. After a deploy, the server answers an old file name with `index.html` (SPA fallback); this response is returned but never stored under the asset URL.
+    - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached app shell (`./`). Without a cached response, returns a network error.
+- **Registration:** `src/main.tsx` calls `registerServiceWorker()` after the first render. It registers `./sw.js` only in a production build (`import.meta.env.PROD`), in a secure context (`https:` or `localhost`) and when the browser supports service workers. A registration failure is ignored. There is no inline script in `index.html`.
+- **Web App Manifest ([public/manifest.webmanifest](./public/manifest.webmanifest)):** PNG icons `icons/icon-192.png` (192×192, `any`), `icons/icon-512.png` (512×512, `any`) and `icons/icon-maskable-512.png` (512×512, `maskable`, glyph inside the 80% safe zone). `index.html` links `icons/icon-192.png` as the `apple-touch-icon`.
+- **Data:** The service worker caches only application files. It never reads or caches observations, which stay in `localStorage`.
+
+### 9.2 Security Headers
+
+**Configuration:** [public/\_headers](./public/_headers)
+
+- `Content-Security-Policy` uses `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not contain an inline script.
+- `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`: no third-party host. `index.html` loads no stylesheet, font or preconnect from another origin.
+- `sw.js` is served with `Cache-Control: no-cache, no-store, must-revalidate`, so the browser always checks for a new service worker. Files in `assets/` are immutable for one year.
+
 ---
 
 ## 10. Legal, Privacy & Medical Compliance
 
 ### Privacy
 
-Fertility Tracker operates with a 100% client-side execution model. All biomarker observations and health data remain strictly within the user's browser local storage. No health data is ever transmitted to remote servers.
+Fertility Tracker operates with a 100% client-side execution model. All biomarker observations and health data remain strictly within the user's browser local storage. No health data is ever transmitted to remote servers. The application loads all its files (scripts, styles and fonts) from its own origin, so no third party (for example Google Fonts) receives a request when a user opens it.
 
 ### Trademark Notice
 

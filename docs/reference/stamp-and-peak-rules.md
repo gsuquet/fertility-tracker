@@ -33,6 +33,8 @@ Each cycle has a maximum of one Peak Day. The application uses the first rule th
 
 The Peak Day can change when you record more days. A new day with fertile mucus moves the Peak Day to that day.
 
+You can set one Peak Day in each cycle. When you save a new Peak Day, the application removes the old Peak Day of that cycle. The Peak Days that you set in other cycles do not change.
+
 ## Count of three
 
 After each run of fertile days, the three subsequent calendar days are the count of three. The Peak Day is also a fertile day for this rule.

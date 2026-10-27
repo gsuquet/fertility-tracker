@@ -17,17 +17,18 @@ This page lists the test rules, the test layers and the test helpers. For the re
 
 ## Test layers
 
-| Layer       | Location                       | Tool                  | Content                                                                         |
-| ----------- | ------------------------------ | --------------------- | ------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`        | Vitest                | Pure functions: code parser, stamp rules, Peak Day, cycles, phases, validation. |
-| Utilities   | `src/utils/__tests__/`         | Vitest                | Dates, export file names, safe storage.                                         |
-| Hooks       | `src/hooks/__tests__/`         | `renderHook`          | Form state that more than one component uses.                                   |
-| Contexts    | `src/context/__tests__/`       | `renderHook`          | Saved data, language and theme.                                                 |
-| Components  | `src/components/**/__tests__/` | React Testing Library | Rendered output and user actions.                                               |
-| Application | `src/__tests__/`               | React Testing Library | Flows across many components, for example print.                                |
-| Styles      | `src/styles/__tests__/`        | Vitest                | CSS rules for problems that the tests cannot see, for example dark mode colors. |
-| Tools       | `scripts/docs/__tests__/`      | Vitest                | The docs checker.                                                               |
-| End-to-end  | `e2e/`                         | Playwright and axe    | Main flows and accessibility in Chromium, against the production build.         |
+| Layer       | Location                                  | Tool                  | Content                                                                         |
+| ----------- | ----------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Vitest                | Pure functions: code parser, stamp rules, Peak Day, cycles, phases, validation. |
+| Utilities   | `src/utils/__tests__/`                    | Vitest                | Dates, export file names, safe storage.                                         |
+| Hooks       | `src/hooks/__tests__/`                    | `renderHook`          | Form state that more than one component uses.                                   |
+| Contexts    | `src/context/__tests__/`                  | `renderHook`          | Saved data, language and theme.                                                 |
+| Components  | `src/components/**/__tests__/`            | React Testing Library | Rendered output and user actions.                                               |
+| Application | `src/__tests__/`                          | React Testing Library | Flows across many components, for example print.                                |
+| Styles      | `src/styles/__tests__/`                   | Vitest                | CSS rules for problems that the tests cannot see, for example dark mode colors. |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Vitest                | Service worker cache strategies and the service worker registration.            |
+| Tools       | `scripts/**/__tests__/`                   | Vitest                | The docs checker and the service worker build plugin.                           |
+| End-to-end  | `e2e/`                                    | Playwright and axe    | Main flows and accessibility in Chromium, against the production build.         |
 
 ## Coverage scope
 

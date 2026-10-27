@@ -1,5 +1,6 @@
 import { describe, it, expect } from 'vitest';
 import { formatCodeString, parseCodeString } from '../codeParser';
+import { STRETCH_CODES } from '../../types/crms';
 
 describe('formatCodeString', () => {
   it('returns an empty string when no field is set', () => {
@@ -73,5 +74,13 @@ describe('parseCodeString', () => {
     expect(result.frequency).toBe('X1');
     expect(result.intercourse).toBe(true);
     expect(result.formattedCode).toBe('VL 2WX1 I');
+  });
+});
+
+describe('parseCodeString stretch codes', () => {
+  it.each(STRETCH_CODES)('reads stretch %s with the longest match before modifier K', code => {
+    const result = parseCodeString(`${code}K`);
+    expect(result.stretch).toBe(code);
+    expect(result.modifiers).toEqual(['K']);
   });
 });

@@ -58,6 +58,16 @@ The **Today** page and the observation drawer have the same fields.
 | **Load Demo Cycle**     | Replaces all observations with two demo cycles.            |
 | **Clear Data / Reset**  | Deletes all observations after a confirmation.             |
 
+## Unreadable data notice
+
+The notice shows above the pages when the application cannot read the saved observations. It shows until you delete the copy or close the notice.
+
+| Button                       | Action                                                                     |
+| ---------------------------- | -------------------------------------------------------------------------- |
+| **Download unreadable data** | Downloads the original data in a text file.                                |
+| **Delete the copy**          | Deletes the copy of the original data and closes the notice.               |
+| **Close**                    | Closes the notice. This button shows when the application has no new copy. |
+
 ## Dialogs
 
 | Dialog                      | When it opens                                                         |
@@ -65,6 +75,10 @@ The **Today** page and the observation drawer have the same fields.
 | Welcome guide               | At the first visit, and from the header.                              |
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
 | **About & Version Tracker** | From the header.                                                      |
+
+## Error message
+
+If a page or a dialog cannot load, the application shows the message **This part did not load** in its place. The header and the footer stay available. Click **Reload** to load the page again. Your observations stay in the browser.
 
 ## Related documents
 
