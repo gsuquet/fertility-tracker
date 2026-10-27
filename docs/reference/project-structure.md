@@ -34,6 +34,7 @@ fertility-tracker/
 │   │   ├── TodayView.tsx      # Main Today view container & orchestrator
 │   │   ├── VersionModal.tsx   # Release notes, system info & diagnostics dialog
 │   │   └── WelcomeModal.tsx   # Interactive 4-slide onboarding guide
+│   ├── __tests__/             # Application flow tests (App, main entry point)
 │   ├── context/               # React Context Providers (Decoupled Data & UI)
 │   │   ├── CycleContext.tsx   # CycleDataContext, CycleUiContext & unified useCycle
 │   │   ├── LanguageContext.tsx# i18n locale state & translation helper
@@ -42,9 +43,14 @@ fertility-tracker/
 │   │   ├── __tests__/         # Unit tests for domain logic
 │   │   ├── codeParser.ts      # CrMS code parsing & formatting
 │   │   ├── cycleBoundaryDetector.ts # Automatic cycle boundary detection
+│   │   ├── dataValidator.ts   # Validation of saved and imported observations
+│   │   ├── demoData.ts        # Demo data generator (two 28-day cycles)
+│   │   ├── observationForm.ts # Form values, change check and cycle start question
 │   │   ├── peakDetector.ts    # Automated Peak Day calculation (P, P+1..P+3)
 │   │   ├── stampCalculator.ts # CrMS stamp color & modifier calculator
 │   │   └── versionTracker.ts  # Version history, release tracking & diagnostics
+│   ├── hooks/                 # Shared React hooks
+│   │   └── useObservationForm.ts # Form state shared by Today and the drawer
 │   ├── i18n/                  # Modular translation system
 │   │   ├── locales/
 │   │   │   ├── en.ts          # Canonical English dictionary
@@ -52,8 +58,9 @@ fertility-tracker/
 │   │   ├── index.ts           # Unified export for translations & schemas
 │   │   └── types.ts           # TranslationSchema strict TypeScript type
 │   ├── styles/                # Layered CSS design system (@layer tokens, primitives, views)
+│   ├── test/                  # Test helpers (factories, renderWithProviders)
 │   ├── types/                 # TypeScript interfaces & domain types
-│   ├── utils/                 # Date and export utility helpers
+│   ├── utils/                 # Date, export and safe storage helpers
 │   ├── App.tsx                # Main application component & layout wrapper
 │   └── main.tsx               # DOM entry point
 ├── biome.json                 # Biome linter and formatter configuration
