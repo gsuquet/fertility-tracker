@@ -126,4 +126,37 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(analytics).toContainText(en.analytics.normalLuteal);
     await expect(analytics).toContainText('CD 13 (2026-10-12)');
   });
+
+  test('sets and clears a manual Peak Day in the drawer', async ({ page }) => {
+    await openApp(page);
+    await page.getByRole('button', { name: en.actions.exportPdf }).click();
+    await page.getByRole('button', { name: en.actions.loadDemo }).click();
+    await page.getByRole('tab', { name: en.tabs.chart }).click();
+    const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
+    const peakStat = (text: string) => page.getByTitle(`${en.stats.peakDay}: ${text}`);
+    const cell = (date: string, stamp: string) =>
+      chart.getByRole('button', { name: new RegExp(`Date ${date}, Stamp ${stamp},`) });
+    const drawer = page.getByRole('dialog', { name: 'Edit Observation' });
+
+    // The detected Peak Day is cycle day 13. Cycle day 18 is a dry day after the post-peak days.
+    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+    await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
+
+    await cell('2026-10-16', 'DARK_GREEN').click();
+    await drawer.getByRole('button', { name: en.actions.setPeak }).click();
+    await drawer.getByRole('button', { name: en.actions.save }).click();
+    await expect(drawer).toBeHidden();
+    await expect(peakStat('CD 17 (2026-10-16)')).toBeVisible();
+    await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
+
+    await cell('2026-10-16', 'DARK_GREEN').click();
+    await drawer.getByRole('button', { name: en.actions.removePeak }).click();
+    await drawer.getByRole('button', { name: en.actions.save }).click();
+    await expect(drawer).toBeHidden();
+    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+    await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
+
+    await page.reload();
+    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+  });
 });
