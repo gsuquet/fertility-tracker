@@ -8,7 +8,7 @@ describe('storage', () => {
   });
 
   it('writes, reads and removes a value', () => {
-    writeStorage('key', 'value');
+    expect(writeStorage('key', 'value')).toBe(true);
     expect(readStorage('key')).toBe('value');
     removeStorage('key');
     expect(readStorage('key')).toBeNull();
@@ -17,7 +17,7 @@ describe('storage', () => {
   it('fails quietly when localStorage is not available', () => {
     vi.stubGlobal('localStorage', undefined);
     expect(readStorage('key')).toBeNull();
-    expect(() => writeStorage('key', 'value')).not.toThrow();
+    expect(writeStorage('key', 'value')).toBe(false);
     expect(() => removeStorage('key')).not.toThrow();
   });
 });

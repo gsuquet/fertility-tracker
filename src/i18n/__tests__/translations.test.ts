@@ -33,5 +33,6 @@ describe('i18n Translation Modules & Schema Parity', () => {
     expect(Object.keys(fr.versionTracker)).toEqual(Object.keys(en.versionTracker));
     expect(Object.keys(fr.welcomeModal)).toEqual(Object.keys(en.welcomeModal));
     expect(Object.keys(fr.cycleStartModal)).toEqual(Object.keys(en.cycleStartModal));
+    expect(Object.keys(fr.storageRecovery)).toEqual(Object.keys(en.storageRecovery));
   });
 });

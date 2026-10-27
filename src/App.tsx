@@ -13,6 +13,7 @@ import { CalendarGrid } from './components/CalendarGrid';
 import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
+import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
 
 const CycleAnalyticsView = React.lazy(() =>
   import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
@@ -84,6 +85,7 @@ const MainApp: React.FC = () => {
       <main
         className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
       >
+        <StorageRecoveryNotice />
         <CycleStatsHeader />
 
         <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
