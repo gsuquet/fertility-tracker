@@ -107,11 +107,14 @@ Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an e
 
 The main chunk holds only the code of the first screen. The other parts load with `React.lazy` when the user needs them:
 
-- **Lazy pages and dialogs:** `CycleAnalyticsView` (the Analytics tab), `ExportModal`, `VersionModal` and `WelcomeModal`. `App.tsx` renders each dialog only while it is open, so its chunk loads when the user opens it for the first time. Thus each opening starts a new dialog: the About dialog opens on the **Release Notes** tab, and the welcome guide opens on step 1.
+- **Lazy pages and dialogs:** `CycleAnalyticsView` (the Analytics tab), `ExportModal`, `VersionModal` and `WelcomeModal`. `App.tsx` renders each dialog only while it is open, so its chunk loads when the user opens it for the first time. Thus each opening starts a new dialog: the About dialog opens on the **Release Notes** tab, the welcome guide opens on step 1, and the export dialog opens in **Single Cycle** mode with the selection of the cycle picker.
 - **Release notes:** `VERSION_HISTORY` (in `versionTracker.ts`) is in the `VersionModal` chunk only. The main chunk gets the version and the last-seen check from `appVersion.ts`, which does not import the release notes. A unit test follows the static imports from `main.tsx` and fails if they reach `versionTracker.ts` or a lazy component.
-- **Print view:** `PrintExportView` is a lazy chunk that the app renders from the start, so **Ctrl+P** prints the same report as before. The app calls `window.print()` only after the print view chunk has loaded and rendered the selected cycles. A print request before that waits for the chunk, so the browser never prints a blank page.
+- **Print view:** `PrintExportView` is a lazy chunk that the app renders from the start, so **Ctrl+P** prints the same report as before. The **Print / Save as PDF** button calls `window.print()` only after the print view chunk has loaded and rendered the selected cycles. A click before that waits for the chunk. The browser print command (**Ctrl+P**) does not wait: before the chunk loads, it prints an empty page, as in 1.18.3.
+- **Print view failure:** When the print view chunk fails to load, the **Print / Save as PDF** button does not print and does not show the success toast. The toast shows the translated error `exportModal.printError` instead.
 - **Separate boundaries:** Each dialog and the print view has its own `React.Suspense`, so a dialog that loads does not hide the print view.
 - **Accessible fallbacks:** While a page or a dialog loads, a visually hidden `role="status"` element announces the translated text `common.loading`. Nothing visible appears for a dialog, so there is no flash. The page fallback keeps a minimum height, so the footer does not jump.
+- **Idle preload:** After the first render, when the browser is idle (`requestIdleCallback`, or `setTimeout` in a browser without it), the app imports the chunks of `CycleAnalyticsView`, `ExportModal`, `VersionModal` and `WelcomeModal`. The main chunk stays small, and a tab that is open during a new deploy does not need the old chunks from the network later. A failed preload has no effect: the part tries again when the user opens it.
+- **Dialog failure:** Each lazy dialog has its own `ErrorBoundary` (section 5.11), inside the condition that renders it. When its chunk fails to load, a visible dialog shows the translated error with **Reload** and **Close**. Close, `Escape` or a click on the backdrop closes the dialog and removes the boundary, so the next opening tries again, and a failure does not block the other dialogs.
 - **Offline:** The service worker precaches all the lazy chunks (section 9.1), so each lazy part also opens offline.
 
 ---
@@ -519,6 +522,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - `App.tsx` wraps each `React.Suspense` (the four pages, the lazy dialogs and the print view) in an `ErrorBoundary`. The boundary around the pages has `key={activeTab}`, so a tab change removes the alert and loads the new page again.
 - When a child throws during render, or a lazy chunk fails to load (for example offline, before the service worker has cached it), the boundary replaces the failed part with an alert (`role="alert"`) instead of a blank screen. The rest of the layout (header, footer, navigation) stays visible.
 - The alert shows a translated title and message (`errorBoundary.title`, `errorBoundary.message`) and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
+- **Dialog mode:** An `ErrorBoundary` with an `onClose` prop shows the alert in the [modal dialog primitive](#51-navigation--global-controls), named by the alert title, with a **Close** button (`errorBoundary.close`) that calls `onClose`. `Escape` and the backdrop also call `onClose`. Each lazy dialog uses this mode, so the error shows where the dialog shows.
+- **Error callback:** An `ErrorBoundary` with an `onError` prop calls it once when a child fails. The print view boundary uses it to show `exportModal.printError` instead of printing.
 
 ---
 

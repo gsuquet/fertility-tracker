@@ -45,13 +45,41 @@ describe('App error boundaries', () => {
     expect(screen.queryByRole('alert')).not.toBeInTheDocument();
   });
 
-  it('shows a reload alert when a lazy dialog fails', async () => {
+  it('shows a lazy dialog failure in a visible dialog with Reload and Close', async () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
-    const alert = await screen.findByRole('alert');
-    expect(
-      within(alert).getByRole('button', { name: en.errorBoundary.reload })
-    ).toBeInTheDocument();
+    const failed = await screen.findByRole('dialog', { name: en.errorBoundary.title });
+    const alert = within(failed).getByRole('alert');
+    expect(alert).toHaveTextContent(en.errorBoundary.message);
+    expect(within(alert).getByRole('button', { name: en.errorBoundary.reload })).toBeVisible();
     expect(screen.getByRole('banner')).toBeInTheDocument();
+
+    fireEvent.click(within(alert).getByRole('button', { name: en.errorBoundary.close }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('resets a failed dialog when it closes, so the other dialogs still open', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    render(<App />);
+    const footer = within(screen.getByRole('contentinfo'));
+
+    fireEvent.click(footer.getByRole('button', { name: en.welcomeModal.title }));
+    const failed = await screen.findByRole('dialog', { name: en.errorBoundary.title });
+    fireEvent.keyDown(failed, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    fireEvent.click(footer.getByRole('button', { name: en.versionTracker.title }));
+    const notes = await screen.findByRole(
+      'dialog',
+      { name: en.versionTracker.title },
+      { timeout: 5000 }
+    );
+    fireEvent.keyDown(notes, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+
+    // The next opening tries again
+    fireEvent.click(footer.getByRole('button', { name: en.welcomeModal.title }));
+    expect(await screen.findByRole('dialog', { name: en.errorBoundary.title })).toBeInTheDocument();
   });
 });

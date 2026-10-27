@@ -67,7 +67,11 @@ The first screen needs only a part of the code. Thus, the main JavaScript file c
 - The **Cycle Analytics** page loads when you open it.
 - Each dialog loads when you open it for the first time. The application shows a dialog only while it is open.
 - The release notes are in `versionTracker.ts`, and only the **About & Version Tracker** dialog imports this file. The header and the footer get the version from `appVersion.ts`, which is a small file.
-- The print view loads when the application starts. The application starts the print only after the print view has loaded. Thus, the printed page is never blank.
+- The print view loads when the application starts. The **Print / Save as PDF** button starts the print only after the print view has loaded. The browser print command (Ctrl+P) does not wait.
+
+When the browser is idle after the first render, the application also loads the chunks of the page and the dialogs. Thus, the first screen is fast, and a dialog opens without a network later. This is important after a new deploy: the new service worker deletes the old files, and an old tab cannot get them again.
+
+If a chunk does not load, the part shows an error with a **Reload** button. Each dialog has its own error boundary, and a failed dialog shows the error in a dialog. When you close it, the next opening tries again. A failed print view shows an error toast and does not print.
 
 A smaller main file makes the first start faster, mainly on a slow phone. A unit test in `src/__tests__/mainChunk.test.ts` makes sure that the main file does not import the lazy parts.
 

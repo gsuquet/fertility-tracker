@@ -45,6 +45,18 @@
     color: var(--text-primary);
   }
 
+  .error-boundary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  /* In a dialog, the panel gives the border and the background */
+  .error-boundary-dialog .error-boundary {
+    margin: 0;
+    border: none;
+  }
+
   .storage-recovery-notice {
     display: flex;
     flex-direction: column;

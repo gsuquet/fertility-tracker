@@ -256,6 +256,7 @@ export const fr: TranslationSchema = {
     oldestToNewestNote:
       'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
     exportSuccess: 'Rapport PDF généré avec succès !',
+    printError: 'La vue d’impression ne s’est pas chargée. Rechargez la page pour réessayer.',
     pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
     jsonDescription:
       "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
@@ -460,6 +461,7 @@ export const fr: TranslationSchema = {
     message:
       'Une erreur s’est produite ou vous êtes hors ligne. Vos observations sont en sécurité dans ce navigateur. Rechargez la page pour réessayer.',
     reload: 'Recharger',
+    close: 'Fermer',
   },
   common: {
     dayNumber: 'Jour {day}',
