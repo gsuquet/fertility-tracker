@@ -43,6 +43,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.18.4',
+    date: '2026-10-27',
+    title: 'More Browser Tests',
+    titleFr: 'Plus de tests dans le navigateur',
+    tagline: 'New browser tests check the Peak Day, damaged data, save errors and offline use',
+    taglineFr:
+      'De nouveaux tests dans le navigateur vérifient le Jour Sommet, les données endommagées, les erreurs d’enregistrement et l’usage hors ligne',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A browser test sets and removes a manual Peak Day and checks the chart',
+      'Browser tests check that the app keeps a copy of saved data that it cannot read',
+      'A browser test checks the warning when the browser cannot save your observations',
+      'A browser test reloads the app without a network after the first visit',
+      'A browser test uses the Undo button with the keyboard while the entry panel is open',
+    ],
+    highlightsFr: [
+      'Un test dans le navigateur définit puis retire un Jour Sommet manuel et vérifie le tableau',
+      'Des tests dans le navigateur vérifient que l’application garde une copie des données qu’elle ne peut pas lire',
+      'Un test dans le navigateur vérifie l’avertissement quand le navigateur ne peut pas enregistrer vos observations',
+      'Un test dans le navigateur recharge l’application sans réseau après la première visite',
+      'Un test dans le navigateur utilise le bouton « Annuler la modification » au clavier quand le panneau de saisie est ouvert',
+    ],
+  },
+  {
     version: '1.18.3',
     date: '2026-10-27',
     title: 'Full French Translation',

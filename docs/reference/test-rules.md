@@ -71,16 +71,19 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                     |
 | Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                          |
 
-| Test file                   | Flows                                                                                                                                                                         |
-| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view. |
-| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                              |
+| Test file                   | Flows                                                                                                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view, manual Peak Day, the undo toast in the drawer dialog. |
+| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                                                                                    |
+| `e2e/resilience.spec.ts`    | Saved data that is not JSON, a list with one record that is not valid, a save that fails, and a reload without a network.                                                                                                           |
 
-| Helper              | File              | Use                                                               |
-| ------------------- | ----------------- | ----------------------------------------------------------------- |
-| `openApp(page)`     | `e2e/fixtures.ts` | Opens the application on a fixed date, without the welcome guide. |
-| `fixClock(page)`    | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                          |
-| `skipWelcome(page)` | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                  |
+| Helper                           | File              | Use                                                                                     |
+| -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
+| `openApp(page)`                  | `e2e/fixtures.ts` | Opens the application on a fixed date, without the welcome guide.                       |
+| `fixClock(page)`                 | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                                                |
+| `skipWelcome(page)`              | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                                        |
+| `labelPattern(template, values)` | `e2e/fixtures.ts` | Makes a pattern from a locale template. A placeholder without a value matches all text. |
+| `escapeRegExp(text)`             | `e2e/fixtures.ts` | Escapes the special characters of a regular expression in a text.                       |
 
 `KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. When a correction is merged, remove its pairs from the list.
 
