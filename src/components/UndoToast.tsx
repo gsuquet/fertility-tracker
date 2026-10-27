@@ -15,6 +15,13 @@ export const UndoToast: React.FC = () => {
 
   if (undoChange === null) return null;
 
+  // The buttons go away with the toast. In a dialog, the focus then goes to the dialog,
+  // because the page under it is inert.
+  const runAndKeepFocus = (action: () => void) => () => {
+    action();
+    topDialog?.focus();
+  };
+
   const toast = (
     <div className="undo-toast" role="status">
       <span>
@@ -22,10 +29,18 @@ export const UndoToast: React.FC = () => {
         {!undoPersisted && ` ${t.undoToast.notSaved}`}
       </span>
       <div className="undo-toast-actions">
-        <button type="button" className="btn btn-primary btn-sm" onClick={undoLastChange}>
+        <button
+          type="button"
+          className="btn btn-primary btn-sm"
+          onClick={runAndKeepFocus(undoLastChange)}
+        >
           {t.undoToast.undo}
         </button>
-        <button type="button" className="btn btn-ghost btn-sm" onClick={dismissUndo}>
+        <button
+          type="button"
+          className="btn btn-ghost btn-sm"
+          onClick={runAndKeepFocus(dismissUndo)}
+        >
           {t.undoToast.dismiss}
         </button>
       </div>

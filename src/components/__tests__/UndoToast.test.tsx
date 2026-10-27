@@ -156,10 +156,30 @@ describe('UndoToast', () => {
     fireEvent.keyDown(dismiss, { key: 'Tab' });
     expect(screen.getByRole('button', { name: 'Inside' })).toHaveFocus();
 
+    screen.getByRole('button', { name: en.undoToast.undo }).focus();
     click(en.undoToast.undo);
     expect(screen.getByTestId('count')).toHaveTextContent('1');
     expect(screen.queryByRole('status')).toBeNull();
     expect(dialog).toBeInTheDocument();
+    // The toast goes away, so the focus goes to the dialog and not to the inert body
+    expect(dialog).toHaveFocus();
+  });
+
+  it('gives the focus to the top dialog after Delete the copy too', () => {
+    renderWithProviders(
+      <>
+        <Actions />
+        <DialogOpener />
+        <UndoToast />
+      </>,
+      { observations: saved }
+    );
+    click('clear');
+    click('open dialog');
+    screen.getByRole('button', { name: en.undoToast.dismiss }).focus();
+    click(en.undoToast.dismiss);
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByRole('dialog', { name: 'Some dialog' })).toHaveFocus();
   });
 
   it('goes back to the page when the dialog closes', () => {
