@@ -62,7 +62,7 @@ If the file is not a valid backup, the dialog shows an error. The observations d
 
 ## Confirmation dialog
 
-The confirmation dialog opens before an action replaces or deletes data. The focus starts on **Cancel**. For a backup file, the dialog shows the number of observations in the file and the first and last date.
+The confirmation dialog opens before an action replaces or deletes data. The focus starts on **Cancel** and stays in the dialog when you press `Tab`. For a backup file, the dialog shows the number of observations in the file and the first and last date.
 
 | Dialog                               | Opens from                                        | Button that continues    |
 | ------------------------------------ | ------------------------------------------------- | ------------------------ |

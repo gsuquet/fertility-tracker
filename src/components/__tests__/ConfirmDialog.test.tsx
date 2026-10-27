@@ -75,6 +75,25 @@ describe('ConfirmDialog', () => {
     document.removeEventListener('keydown', outerKeyDown);
   });
 
+  it('keeps the focus in the dialog with Tab and Shift+Tab', () => {
+    renderDialog();
+    const cancel = screen.getByRole('button', { name: en.actions.cancel });
+    const replace = screen.getByRole('button', { name: 'Replace' });
+    const remove = screen.getByRole('button', { name: 'Delete' });
+
+    fireEvent.keyDown(cancel, { key: 'Tab', shiftKey: true });
+    expect(remove).toHaveFocus();
+    fireEvent.keyDown(remove, { key: 'Tab' });
+    expect(cancel).toHaveFocus();
+
+    // Inside the list, the browser moves the focus: the dialog does not prevent it
+    replace.focus();
+    const event = new KeyboardEvent('keydown', { key: 'Tab', bubbles: true, cancelable: true });
+    replace.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(replace).toHaveFocus();
+  });
+
   it('moves the focus back to the trigger when it closes', () => {
     renderWithProviders(<Opener />);
     const trigger = screen.getByRole('button', { name: 'Open' });

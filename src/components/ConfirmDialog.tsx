@@ -38,10 +38,21 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     return () => trigger.focus();
   }, []);
 
-  const handleKeyDown = (e: React.KeyboardEvent) => {
+  const handleKeyDown = (e: React.KeyboardEvent<HTMLDivElement>) => {
     if (e.key === 'Escape') {
       e.stopPropagation();
       onCancel();
+    }
+    if (e.key === 'Tab') {
+      // Trap the focus: the dialog holds only buttons, so cycle between the first and the last.
+      const buttons = e.currentTarget.querySelectorAll('button');
+      const first = buttons[0] as HTMLButtonElement;
+      const last = buttons[buttons.length - 1] as HTMLButtonElement;
+      const edge = e.shiftKey ? first : last;
+      if (document.activeElement === edge) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
     }
   };
 
