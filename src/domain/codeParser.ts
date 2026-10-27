@@ -57,7 +57,22 @@ export function formatCodeString(obs: ObservationInput): string {
     parts.push('I');
   }
 
+  // 5. Symptoms (AP, RAP, LAP), each as its own token
+  if (obs.symptoms) {
+    parts.push(...obs.symptoms);
+  }
+
   return parts.join(' ').trim();
+}
+
+/**
+ * Appends each symptom code that a stored code string does not show yet.
+ * Code strings saved before symptoms were formatted lack them.
+ */
+export function appendMissingSymptoms(codeString: string, symptoms: SymptomCode[]): string {
+  const tokens = codeString.trim().split(/\s+/);
+  const missing = symptoms.filter(sym => !tokens.includes(sym));
+  return [codeString.trim(), ...missing].join(' ');
 }
 
 /**

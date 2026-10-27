@@ -7,7 +7,7 @@ import type {
   SymptomCode,
 } from '../types/crms';
 import { calculateStamp } from './stampCalculator';
-import { formatCodeString } from './codeParser';
+import { appendMissingSymptoms, formatCodeString } from './codeParser';
 
 const VALID_BLEEDING: ReadonlySet<string> = new Set<BleedingCode>(['H', 'M', 'L', 'VL', 'B']);
 const VALID_STRETCH: ReadonlySet<string> = new Set<MucusStretch>([
@@ -87,7 +87,7 @@ export function validateObservation(raw: unknown): Observation | null {
   const stamp = calculateStamp(bleeding, stretch, modifiers);
   const codeString =
     typeof obj.codeString === 'string' && obj.codeString.trim().length > 0
-      ? obj.codeString
+      ? appendMissingSymptoms(obj.codeString, symptoms)
       : formatCodeString({
           bleeding,
           stretch,

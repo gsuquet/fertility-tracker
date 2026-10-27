@@ -12,10 +12,15 @@ The application writes the code of a day in this sequence:
 | Mucus       | `10KL`  | The stretch code, then the appearance codes.                           |
 | Frequency   | `X3`    | Directly after the mucus code. If there is no mucus code, it is alone. |
 | Intercourse | `I`     | Optional. A space comes before it.                                     |
+| Symptoms    | `AP`    | Optional. Each symptom code is a token. A space comes before it.       |
 
-Examples: `M`, `0AD`, `10KLX3 I`, `L 6CX1`.
+Examples: `M`, `0AD`, `10KLX3 I AP`, `L 6CX1`.
 
-In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. It also accepts the symptom codes. The code string does not show the symptoms.
+In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. The parser gives the same fields back from each code string that the application writes.
+
+The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
+
+Data from versions before 1.15.8 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string.
 
 ## Bleeding codes
 

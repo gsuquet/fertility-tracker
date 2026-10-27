@@ -165,10 +165,11 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 The parser operates in two directions:
 
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
-   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
-   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
-   _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse] [Symptoms]`  
+   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) come last, separated by spaces, so that `parseCodeString(formatCodeString(obs))` keeps every field. The Paper Chart Row cell and the practitioner print layout remove them from the displayed code and show them in a dedicated symptom tag instead.  
+   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.
+2. **Stored data repair (`appendMissingSymptoms`):** When the data validator loads an observation whose stored `codeString` lacks one of its `symptoms` (data written before version 1.15.8), it appends each missing symptom code to the end of the stored `codeString`. The rest of the stored code is kept as is.
+3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
