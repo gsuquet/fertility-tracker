@@ -21,6 +21,7 @@ fertility-tracker/
 │   ├── components/              # React components
 │   │   ├── __tests__/           # Component tests
 │   │   ├── chart/               # Parts of the Chart page
+│   │   ├── observation/         # Parts of the two observation forms
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
 │   ├── domain/                  # Pure CrMS rules and data functions
@@ -56,30 +57,34 @@ fertility-tracker/
 | `mucusScore.ts`            | Mucus score of one day.                        |
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
+| `backupImport.ts`          | Preview and merge of a restored backup file.   |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
 | `versionTracker.ts`        | Release notes, version and storage statistics. |
 
 ## Components
 
-| Component                | Content                                                        |
-| ------------------------ | -------------------------------------------------------------- |
-| `Header.tsx`             | Page buttons, cycle picker, header buttons and the phone menu. |
-| `MobileNav.tsx`          | Page buttons at the bottom of a phone screen.                  |
-| `CycleStatsHeader.tsx`   | Four statistics cards above the pages.                         |
-| `CyclePicker.tsx`        | Selects one cycle or all cycles.                               |
-| `TodayView.tsx`          | The **Today** page. Uses the files in `today/`.                |
-| `ChartRow.tsx`           | The **Paper Chart Strip** page.                                |
-| `CalendarGrid.tsx`       | The **Monthly Calendar** page.                                 |
-| `CycleAnalyticsView.tsx` | The **Cycle Analytics** page.                                  |
-| `ObservationDrawer.tsx`  | The observation drawer.                                        |
-| `CycleStartModal.tsx`    | The **New Cycle Start?** dialog.                               |
-| `StampBadge.tsx`         | One stamp.                                                     |
-| `ExportModal.tsx`        | The export and backup dialog.                                  |
-| `PrintExportView.tsx`    | The 35-day chart for printing.                                 |
-| `VersionModal.tsx`       | The **About & Version Tracker** dialog.                        |
-| `WelcomeModal.tsx`       | The welcome guide.                                             |
-| `Footer.tsx`             | Legal text, guide link and version.                            |
-| `ErrorBoundary.tsx`      | Message and **Reload** button when a part cannot load.         |
+| Component                                 | Content                                                        |
+| ----------------------------------------- | -------------------------------------------------------------- |
+| `Header.tsx`                              | Page buttons, cycle picker, header buttons and the phone menu. |
+| `MobileNav.tsx`                           | Page buttons at the bottom of a phone screen.                  |
+| `CycleStatsHeader.tsx`                    | Four statistics cards above the pages.                         |
+| `CyclePicker.tsx`                         | Selects one cycle or all cycles.                               |
+| `TodayView.tsx`                           | The **Today** page. Uses the files in `today/`.                |
+| `ChartRow.tsx`                            | The **Paper Chart Strip** page.                                |
+| `CalendarGrid.tsx`                        | The **Monthly Calendar** page.                                 |
+| `CycleAnalyticsView.tsx`                  | The **Cycle Analytics** page.                                  |
+| `ObservationDrawer.tsx`                   | The observation drawer.                                        |
+| `observation/ObservationCodeSelector.tsx` | The code buttons of the Today form and of the drawer.          |
+| `CycleStartModal.tsx`                     | The **New Cycle Start?** dialog.                               |
+| `StampBadge.tsx`                          | One stamp.                                                     |
+| `ExportModal.tsx`                         | The export and backup dialog.                                  |
+| `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.    |
+| `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.  |
+| `PrintExportView.tsx`                     | The 35-day chart for printing.                                 |
+| `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                        |
+| `WelcomeModal.tsx`                        | The welcome guide.                                             |
+| `Footer.tsx`                              | Legal text, guide link and version.                            |
+| `ErrorBoundary.tsx`                       | Message and **Reload** button when a part cannot load.         |
 
 ## Related documents
 

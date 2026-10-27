@@ -8,6 +8,11 @@ import { getTodayStr } from '../utils/dateUtils';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { buildDemoObservations } from '../domain/demoData';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { mergeObservations } from '../domain/backupImport';
+import type { ImportMode } from '../domain/backupImport';
+
+/** A change that replaced the observations and that the saved copy can undo. */
+export type DataChange = 'demo' | 'import' | 'merge' | 'clear' | 'earlier';
 
 export interface CycleDataContextType {
   observations: Observation[];
@@ -17,7 +22,8 @@ export interface CycleDataContextType {
   saveObservation: (obsData: ObservationInput) => void;
   deleteObservation: (id: string) => void;
   exportDataJson: () => string;
-  importDataJson: (jsonStr: string) => boolean;
+  /** Replaces the observations with a backup, or merges the backup into them. */
+  importDataJson: (jsonStr: string, mode?: ImportMode) => boolean;
   clearAllData: () => void;
   loadDemoData: () => void;
   /** The original text of stored data that could not be read, or null. */
@@ -26,6 +32,14 @@ export interface CycleDataContextType {
   recoveryKept: boolean;
   /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
   dismissRecovery: () => void;
+  /** The last change that the saved copy can undo, or null when there is no copy. */
+  undoChange: DataChange | null;
+  /** Restores the observations from before the last replacing change. */
+  undoLastChange: () => void;
+  /** Deletes the copy and keeps the change. */
+  dismissUndo: () => void;
+  /** False when the browser refused to store the undo copy: undo then works until a reload. */
+  undoPersisted: boolean;
 }
 
 export interface CycleUiContextType {
@@ -42,6 +56,7 @@ const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
+const UNDO_KEY = 'fertility_care_observations_undo';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
@@ -79,11 +94,24 @@ const loadStoredState = () => {
   };
 };
 
+interface UndoState {
+  change: DataChange;
+  observations: Observation[];
+  persisted: boolean;
+}
+
+/** Reads the copy that an earlier session kept before a replacing change. */
+const loadStoredUndo = (): UndoState | null => {
+  const saved = parseAndValidateObservationsJson(readStorage(UNDO_KEY) ?? 'null');
+  return saved ? { change: 'earlier', observations: saved, persisted: true } : null;
+};
+
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [initialState] = useState(loadStoredState);
   const [observations, setObservations] = useState<Observation[]>(initialState.observations);
   const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
   const { recoveryKept } = initialState;
+  const [undo, setUndo] = useState<UndoState | null>(loadStoredUndo);
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -102,62 +130,68 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     writeStorage(STORAGE_KEY, JSON.stringify(observations));
   }, [observations, recoveryKept, initialState.observations]);
 
-  const saveObservation = useCallback((obsData: ObservationInput) => {
-    setObservations(prev => {
-      const date = obsData.date || getTodayStr();
-      const existingIdx = prev.findIndex(o => o.date === date);
-
-      const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
-      const codeString = obsData.codeString || formatCodeString(obsData);
-
-      const newObs: Observation = {
-        id: obsData.id || `obs_${date}_${Date.now()}`,
-        date,
-        cycleDay: obsData.cycleDay || 1,
-        bleeding: obsData.bleeding,
-        stretch: obsData.stretch,
-        modifiers: obsData.modifiers || [],
-        frequency: obsData.frequency,
-        symptoms: obsData.symptoms || [],
-        intercourse: obsData.intercourse || false,
-        notes: obsData.notes || '',
-        isManualPeak: obsData.isManualPeak || false,
-        isCycleStart: obsData.isCycleStart,
-        stamp,
-        codeString,
-      };
-
-      const updatedList = [...prev];
-      if (existingIdx !== -1) {
-        updatedList[existingIdx] = newObs;
-      } else {
-        updatedList.push(newObs);
-      }
-
-      return reprocessObservations(
-        newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
-      );
-    });
+  const dismissUndo = useCallback(() => {
+    removeStorage(UNDO_KEY);
+    setUndo(null);
   }, []);
 
-  const deleteObservation = useCallback((idOrDate: string) => {
-    setObservations(prev => {
-      const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
-      return reprocessObservations(filtered);
-    });
-  }, []);
+  const saveObservation = useCallback(
+    (obsData: ObservationInput) => {
+      // A day saved after a replacing change would be lost on undo, so the copy goes.
+      dismissUndo();
+      setObservations(prev => {
+        const date = obsData.date || getTodayStr();
+        const existingIdx = prev.findIndex(o => o.date === date);
+
+        const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
+        const codeString = obsData.codeString || formatCodeString(obsData);
+
+        const newObs: Observation = {
+          id: obsData.id || `obs_${date}_${Date.now()}`,
+          date,
+          cycleDay: obsData.cycleDay || 1,
+          bleeding: obsData.bleeding,
+          stretch: obsData.stretch,
+          modifiers: obsData.modifiers || [],
+          frequency: obsData.frequency,
+          symptoms: obsData.symptoms || [],
+          intercourse: obsData.intercourse || false,
+          notes: obsData.notes || '',
+          isManualPeak: obsData.isManualPeak || false,
+          isCycleStart: obsData.isCycleStart,
+          stamp,
+          codeString,
+        };
+
+        const updatedList = [...prev];
+        if (existingIdx !== -1) {
+          updatedList[existingIdx] = newObs;
+        } else {
+          updatedList.push(newObs);
+        }
+
+        return reprocessObservations(
+          newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
+        );
+      });
+    },
+    [dismissUndo]
+  );
+
+  const deleteObservation = useCallback(
+    (idOrDate: string) => {
+      dismissUndo();
+      setObservations(prev => {
+        const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
+        return reprocessObservations(filtered);
+      });
+    },
+    [dismissUndo]
+  );
 
   const exportDataJson = useCallback(() => {
     return JSON.stringify(observations, null, 2);
   }, [observations]);
-
-  const clearAllData = useCallback(() => {
-    setObservations([]);
-    setSelectedCycleId('all');
-    removeStorage(STORAGE_KEY);
-    removeStorage(RECOVERY_KEY);
-    setRecoveryData(null);
-  }, []);
 
   const applyObservations = useCallback((list: Observation[]) => {
     const processed = reprocessObservations(list);
@@ -165,19 +199,53 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setSelectedCycleId(groupObservationsIntoCycles(processed)[0]?.id ?? 'all');
   }, []);
 
+  /**
+   * Keeps a copy of the current observations, then replaces them. An existing copy stays:
+   * it holds the oldest data, which a second change must not overwrite.
+   */
+  const replaceObservations = useCallback(
+    (change: DataChange, list: Observation[]) => {
+      if (undo) {
+        setUndo({ ...undo, change });
+      } else {
+        const persisted = writeStorage(UNDO_KEY, JSON.stringify(observations));
+        setUndo({ change, observations, persisted });
+      }
+      applyObservations(list);
+    },
+    [undo, observations, applyObservations]
+  );
+
+  /** Deletes all observations and the copy of unreadable data. The undo copy stays. */
+  const clearAllData = useCallback(() => {
+    replaceObservations('clear', []);
+    removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
+  }, [replaceObservations]);
+
   const importDataJson = useCallback(
-    (jsonStr: string): boolean => {
+    (jsonStr: string, mode: ImportMode = 'replace'): boolean => {
       const validated = parseAndValidateObservationsJson(jsonStr);
       if (!validated) return false;
-      applyObservations(validated);
+      if (mode === 'merge') {
+        replaceObservations('merge', mergeObservations(observations, validated));
+      } else {
+        replaceObservations('import', validated);
+      }
       return true;
     },
-    [applyObservations]
+    [observations, replaceObservations]
   );
 
   const loadDemoData = useCallback(() => {
-    applyObservations(buildDemoObservations(getTodayStr()));
-  }, [applyObservations]);
+    replaceObservations('demo', buildDemoObservations(getTodayStr()));
+  }, [replaceObservations]);
+
+  const undoLastChange = useCallback(() => {
+    if (!undo) return;
+    applyObservations(undo.observations);
+    dismissUndo();
+  }, [undo, applyObservations, dismissUndo]);
 
   const dismissRecovery = useCallback(() => {
     if (recoveryKept) removeStorage(RECOVERY_KEY);
@@ -199,6 +267,10 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       recoveryData,
       recoveryKept,
       dismissRecovery,
+      undoChange: undo ? undo.change : null,
+      undoLastChange,
+      dismissUndo,
+      undoPersisted: undo ? undo.persisted : true,
     }),
     [
       observations,
@@ -213,6 +285,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       recoveryData,
       recoveryKept,
       dismissRecovery,
+      undo,
+      undoLastChange,
+      dismissUndo,
     ]
   );
 
