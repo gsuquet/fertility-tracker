@@ -1,133 +1,60 @@
-import { render, screen } from '@testing-library/react';
-import { describe, it, expect, vi } from 'vitest';
+import { screen } from '@testing-library/react';
+import { describe, it, expect } from 'vitest';
 import { CycleStatsHeader } from '../CycleStatsHeader';
-import { LanguageProvider } from '../../context/LanguageContext';
-import { CycleDataProvider, CycleUiProvider } from '../../context/CycleContext';
-import * as CycleContextModule from '../../context/CycleContext';
+import { renderWithProviders } from '../../test/render';
+import { makeObservation } from '../../test/factories';
+import { buildDemoObservations } from '../../domain/demoData';
+import { en } from '../../i18n';
 
-describe('CycleStatsHeader Component', () => {
-  it('renders stats for selected cycle and all cycles', () => {
-    render(
-      <LanguageProvider>
-        <CycleDataProvider>
-          <CycleUiProvider>
-            <CycleStatsHeader />
-          </CycleUiProvider>
-        </CycleDataProvider>
-      </LanguageProvider>
-    );
+const demo = buildDemoObservations('2026-09-30');
+const dryDays = [
+  makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+  makeObservation({ date: '2026-09-02', stretch: '0', intercourse: true }),
+];
 
-    // Initial state with empty cycles returns null
-    expect(screen.queryByText(/Cycle Length/i)).toBeNull();
+const LABELS = {
+  'Cycle Length': en.stats.cycleLength,
+  'Peak Day': en.stats.peakDay,
+  'Luteal Phase': en.stats.lutealPhase,
+  Intercourse: en.stats.intercourseCount,
+};
+
+const statValue = (stat: keyof typeof LABELS) =>
+  screen.getByTitle(new RegExp(`^${LABELS[stat]}: `)).querySelector('.stat-value')?.textContent;
+
+describe('CycleStatsHeader', () => {
+  it('renders nothing without observations', () => {
+    const { container } = renderWithProviders(<CycleStatsHeader />);
+    expect(container).toBeEmptyDOMElement();
   });
 
-  it('renders stats when cycles are populated', () => {
-    const mockUseCycle = vi.spyOn(CycleContextModule, 'useCycle').mockReturnValue({
-      observations: [
-        {
-          id: '1',
-          date: '2026-09-01',
-          cycleDay: 1,
-          bleeding: 'H',
-          stamp: 'RED',
-          codeString: 'H',
-          modifiers: [],
-          symptoms: [],
-          notes: '',
-        },
-        {
-          id: '2',
-          date: '2026-09-02',
-          cycleDay: 2,
-          stretch: '10',
-          modifiers: ['K', 'L'],
-          isPeakDay: true,
-          intercourse: true,
-          stamp: 'WHITE_BABY',
-          codeString: '10KL',
-          symptoms: [],
-          notes: '',
-        },
-        {
-          id: '3',
-          date: '2026-09-03',
-          cycleDay: 3,
-          stretch: '0',
-          stamp: 'DARK_GREEN',
-          codeString: '0',
-          modifiers: [],
-          symptoms: [],
-          notes: '',
-        },
-      ],
-      cycles: [
-        {
-          id: 'cycle-1',
-          startDate: '2026-09-01',
-          observations: [
-            {
-              id: '1',
-              date: '2026-09-01',
-              cycleDay: 1,
-              bleeding: 'H',
-              stamp: 'RED',
-              codeString: 'H',
-              modifiers: [],
-              symptoms: [],
-              notes: '',
-            },
-            {
-              id: '2',
-              date: '2026-09-02',
-              cycleDay: 2,
-              stretch: '10',
-              modifiers: ['K', 'L'],
-              isPeakDay: true,
-              intercourse: true,
-              stamp: 'WHITE_BABY',
-              codeString: '10KL',
-              symptoms: [],
-              notes: '',
-            },
-            {
-              id: '3',
-              date: '2026-09-03',
-              cycleDay: 3,
-              stretch: '0',
-              stamp: 'DARK_GREEN',
-              codeString: '0',
-              modifiers: [],
-              symptoms: [],
-              notes: '',
-            },
-          ],
-        },
-      ],
-      selectedCycleId: 'cycle-1',
-      setSelectedCycleId: vi.fn(),
-      saveObservation: vi.fn(),
-      deleteObservation: vi.fn(),
-      toggleManualPeak: vi.fn(),
-      exportDataJson: vi.fn(),
-      importDataJson: vi.fn(),
-      clearAllData: vi.fn(),
-      loadDemoData: vi.fn(),
-      selectedObservation: null,
-      setSelectedObservation: vi.fn(),
-      isDrawerOpen: false,
-      setIsDrawerOpen: vi.fn(),
-    });
+  it('shows the stats of the selected cycle', () => {
+    renderWithProviders(<CycleStatsHeader />, { observations: demo });
+    expect(statValue('Cycle Length')).toBe('28 days');
+    expect(statValue('Peak Day')).toBe('CD 13 (2026-09-15)');
+    expect(statValue('Luteal Phase')).toBe('15 days');
+    expect(statValue('Intercourse')).toBe('3');
+  });
 
-    render(
-      <LanguageProvider>
-        <CycleStatsHeader />
-      </LanguageProvider>
-    );
+  it('shows placeholders for a selected cycle without a peak', () => {
+    renderWithProviders(<CycleStatsHeader />, { observations: dryDays });
+    expect(statValue('Peak Day')).toBe('---');
+    expect(statValue('Luteal Phase')).toBe('0 days');
+    expect(statValue('Intercourse')).toBe('1');
+  });
 
-    expect(screen.getByText(/3 days/i)).toBeInTheDocument();
-    expect(screen.getByText(/CD 2 \(2026-09-02\)/i)).toBeInTheDocument();
-    expect(screen.getByText(/1 days/i)).toBeInTheDocument();
+  it('shows averages and the latest peak for all cycles', () => {
+    renderWithProviders(<CycleStatsHeader />, { observations: demo, selectedCycleId: 'all' });
+    expect(statValue('Cycle Length')).toBe('28.0 days (avg)');
+    expect(statValue('Peak Day')).toBe('CD 13 (2026-09-15)');
+    expect(statValue('Luteal Phase')).toBe('15.0 days (avg)');
+    expect(statValue('Intercourse')).toBe(String(demo.filter(o => o.intercourse).length));
+  });
 
-    mockUseCycle.mockRestore();
+  it('shows placeholders for all cycles without a peak', () => {
+    renderWithProviders(<CycleStatsHeader />, { observations: dryDays, selectedCycleId: 'all' });
+    expect(statValue('Cycle Length')).toBe('2.0 days (avg)');
+    expect(statValue('Peak Day')).toBe('---');
+    expect(statValue('Luteal Phase')).toBe('0 days');
   });
 });

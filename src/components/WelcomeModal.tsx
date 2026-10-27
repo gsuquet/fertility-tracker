@@ -22,6 +22,7 @@ import {
   CheckCircle2,
 } from 'lucide-react';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../domain/versionTracker';
+import { writeStorage } from '../utils/storage';
 
 interface WelcomeModalProps {
   isOpen: boolean;
@@ -35,13 +36,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
   const totalSteps = 4;
 
   const handleDismiss = useCallback(() => {
-    try {
-      if (typeof localStorage !== 'undefined') {
-        localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
-      }
-    } catch {
-      // Ignore storage errors
-    }
+    writeStorage(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     onClose();
   }, [onClose]);
 
@@ -60,19 +55,9 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) =
 
   if (!isOpen) return null;
 
-  const handleNext = () => {
-    if (currentStep < totalSteps) {
-      setCurrentStep(prev => prev + 1);
-    } else {
-      handleDismiss();
-    }
-  };
-
-  const handlePrev = () => {
-    if (currentStep > 1) {
-      setCurrentStep(prev => prev - 1);
-    }
-  };
+  // The footer shows Previous only after step 1 and Next only before the last step
+  const handleNext = () => setCurrentStep(prev => prev + 1);
+  const handlePrev = () => setCurrentStep(prev => prev - 1);
 
   const handleLoadDemo = () => {
     loadDemoData();

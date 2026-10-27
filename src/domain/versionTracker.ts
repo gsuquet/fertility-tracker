@@ -5,11 +5,11 @@ export interface VersionRelease {
   version: string;
   date: string;
   title: string;
-  titleFr?: string;
-  tagline?: string;
-  taglineFr?: string;
+  titleFr: string;
+  tagline: string;
+  taglineFr: string;
   highlights: string[];
-  highlightsFr?: string[];
+  highlightsFr: string[];
   crmsSpecVersion: string;
   breakingChanges?: boolean;
 }

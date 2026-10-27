@@ -2,6 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { VersionModal } from '../VersionModal';
 import { LanguageProvider } from '../../context/LanguageContext';
+import { renderWithProviders } from '../../test/render';
+import { getLatestRelease, getVersionHistory } from '../../domain/versionTracker';
 
 describe('VersionModal Component', () => {
   it('does not render when isOpen is false', () => {
@@ -60,5 +62,42 @@ describe('VersionModal Component', () => {
 
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(handleClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('shows the release notes in French', () => {
+    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />, { language: 'fr' });
+    const latest = getLatestRelease();
+    expect(screen.getByText(latest.titleFr)).toBeInTheDocument();
+    expect(screen.getByText(latest.taglineFr)).toBeInTheDocument();
+    expect(screen.getByText(latest.highlightsFr[0] as string)).toBeInTheDocument();
+  });
+
+  it('collapses an expanded release and returns to the notes tab', () => {
+    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />);
+    const older = getVersionHistory()[1];
+    if (!older) throw new Error('expected an older release');
+    const header = screen.getByRole('button', { name: new RegExp(`v${older.version}`) });
+    fireEvent.click(header);
+    expect(header).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(older.tagline)).toBeInTheDocument();
+    fireEvent.click(header);
+    expect(header).toHaveAttribute('aria-expanded', 'false');
+
+    fireEvent.click(screen.getByRole('tab', { name: /System Information/i }));
+    fireEvent.click(screen.getByRole('tab', { name: /Release Notes/i }));
+    expect(screen.getByRole('tab', { name: /Release Notes/i })).toHaveAttribute(
+      'aria-selected',
+      'true'
+    );
+  });
+
+  it('closes from the overlay but not from the dialog body or other keys', () => {
+    const handleClose = vi.fn();
+    renderWithProviders(<VersionModal isOpen={true} onClose={handleClose} />);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.click(screen.getByText(getLatestRelease().title));
+    expect(handleClose).not.toHaveBeenCalled();
+    fireEvent.click(screen.getByRole('dialog'));
+    expect(handleClose).toHaveBeenCalledOnce();
   });
 });

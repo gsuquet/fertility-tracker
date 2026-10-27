@@ -47,7 +47,7 @@ describe('TodayObservationForm', () => {
     const props = renderForm({ entryMode: 'direct' });
     fireEvent.click(screen.getByRole('radio', { name: /Detailed Form/ }));
     fireEvent.click(screen.getByRole('radio', { name: /Direct Code/ }));
-    expect(props.onSetEntryMode.mock.calls).toEqual([['detailed'], ['direct']]);
+    expect(vi.mocked(props.onSetEntryMode).mock.calls).toEqual([['detailed'], ['direct']]);
   });
 
   it('hides the detailed selectors in direct mode until they are expanded', () => {
@@ -83,7 +83,7 @@ describe('TodayObservationForm', () => {
     const props = renderForm({ bleeding: 'H' });
     fireEvent.click(button(en.codes.bleeding.M));
     fireEvent.click(button(en.codes.bleeding.H));
-    expect(props.onBleedingSelect.mock.calls).toEqual([['M'], [undefined]]);
+    expect(vi.mocked(props.onBleedingSelect).mock.calls).toEqual([['M'], [undefined]]);
   });
 
   it('hides the cycle start toggle without bleeding', () => {
@@ -107,7 +107,7 @@ describe('TodayObservationForm', () => {
     const props = renderForm({ stretch: '10' });
     fireEvent.click(button(en.codes.stretch['2']));
     fireEvent.click(button(en.codes.stretch['10']));
-    expect(props.onStretchSelect.mock.calls).toEqual([['2'], [undefined]]);
+    expect(vi.mocked(props.onStretchSelect).mock.calls).toEqual([['2'], [undefined]]);
   });
 
   it('toggles modifiers and symptoms', () => {
@@ -124,7 +124,7 @@ describe('TodayObservationForm', () => {
     const props = renderForm({ frequency: 'X1' });
     fireEvent.click(button(en.codes.frequency.AD));
     fireEvent.click(button(en.codes.frequency.X1));
-    expect(props.onFrequencySelect.mock.calls).toEqual([['AD'], [undefined]]);
+    expect(vi.mocked(props.onFrequencySelect).mock.calls).toEqual([['AD'], [undefined]]);
   });
 
   it.each([

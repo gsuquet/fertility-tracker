@@ -2,7 +2,8 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { WelcomeModal } from '../WelcomeModal';
 import { LanguageProvider } from '../../context/LanguageContext';
-import { CycleProvider } from '../../context/CycleContext';
+import { CycleProvider, useCycleData } from '../../context/CycleContext';
+import { renderWithProviders } from '../../test/render';
 
 describe('WelcomeModal Component', () => {
   it('does not render when isOpen is false', () => {
@@ -101,5 +102,42 @@ describe('WelcomeModal Component', () => {
 
     expect(screen.getByText(/Explore Demo Data/i)).toBeInTheDocument();
     expect(screen.getByText(/Start Fresh/i)).toBeInTheDocument();
+  });
+
+  it('loads the demo data and closes from the last step', () => {
+    const handleClose = vi.fn();
+    const ObservationCount = () => (
+      <span data-testid="count">{useCycleData().observations.length}</span>
+    );
+    renderWithProviders(
+      <>
+        <WelcomeModal isOpen={true} onClose={handleClose} />
+        <ObservationCount />
+      </>
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    expect(screen.queryByRole('button', { name: /Next/i })).toBeNull();
+    fireEvent.click(screen.getByText(/Explore Demo Data/i));
+    expect(screen.getByTestId('count')).toHaveTextContent('56');
+    expect(handleClose).toHaveBeenCalledOnce();
+  });
+
+  it('closes with Start Fresh, the close button, the overlay and Escape', () => {
+    const handleClose = vi.fn();
+    renderWithProviders(<WelcomeModal isOpen={true} onClose={handleClose} />);
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    fireEvent.click(screen.getByText(/Start Fresh/i));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.click(screen.getByRole('dialog'));
+    fireEvent.keyDown(document, { key: 'Escape' });
+    expect(handleClose).toHaveBeenCalledTimes(4);
+  });
+
+  it('ignores other keys and clicks inside the dialog', () => {
+    const handleClose = vi.fn();
+    renderWithProviders(<WelcomeModal isOpen={true} onClose={handleClose} />);
+    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.click(screen.getByText(/Step 1 of 4/i));
+    expect(handleClose).not.toHaveBeenCalled();
   });
 });
