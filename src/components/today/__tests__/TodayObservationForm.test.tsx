@@ -41,11 +41,25 @@ const button = (name: string) => screen.getByRole('button', { name });
 const cycleStartLabel = en.cycleStartModal.isCycleStartLabel;
 
 describe('TodayObservationForm', () => {
-  it('switches the entry mode', () => {
+  it('switches the entry mode with native radio inputs', () => {
     const props = renderForm({ entryMode: 'direct' });
-    fireEvent.click(screen.getByRole('radio', { name: /Detailed Form/ }));
+    const direct = screen.getByRole('radio', { name: /Direct Code/ });
+    const detailed = screen.getByRole('radio', { name: /Detailed Form/ });
+    expect(direct).toHaveAttribute('type', 'radio');
+    expect(direct).toBeChecked();
+    expect(detailed).not.toBeChecked();
+    expect(screen.getByRole('radiogroup', { name: en.todayView.entryMode })).toContainElement(
+      detailed
+    );
+    fireEvent.click(detailed);
+    expect(vi.mocked(props.onSetEntryMode).mock.calls).toEqual([['detailed']]);
+  });
+
+  it('selects the direct mode from the detailed mode', () => {
+    const props = renderForm({ entryMode: 'detailed' });
+    expect(screen.getByRole('radio', { name: /Detailed Form/ })).toBeChecked();
     fireEvent.click(screen.getByRole('radio', { name: /Direct Code/ }));
-    expect(vi.mocked(props.onSetEntryMode).mock.calls).toEqual([['detailed'], ['direct']]);
+    expect(props.onSetEntryMode).toHaveBeenCalledWith('direct');
   });
 
   it('hides the detailed selectors in direct mode until they are expanded', () => {

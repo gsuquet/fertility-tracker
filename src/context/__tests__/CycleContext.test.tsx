@@ -19,6 +19,7 @@ const TestDataConsumer: React.FC = () => {
     <div>
       <span data-testid="obs-count">{observations.length}</span>
       <button
+        type="button"
         onClick={() =>
           saveObservation({
             id: 'obs-1',
@@ -29,10 +30,17 @@ const TestDataConsumer: React.FC = () => {
       >
         Add Obs
       </button>
-      <button onClick={() => deleteObservation('obs-1')}>Delete Obs</button>
-      <button onClick={loadDemoData}>Load Demo</button>
-      <button onClick={clearAllData}>Clear All</button>
+      <button type="button" onClick={() => deleteObservation('obs-1')}>
+        Delete Obs
+      </button>
+      <button type="button" onClick={loadDemoData}>
+        Load Demo
+      </button>
+      <button type="button" onClick={clearAllData}>
+        Clear All
+      </button>
       <button
+        type="button"
         onClick={() =>
           importDataJson(
             JSON.stringify([
@@ -44,8 +52,11 @@ const TestDataConsumer: React.FC = () => {
       >
         Import Valid
       </button>
-      <button onClick={() => importDataJson('malformed-json')}>Import Invalid</button>
+      <button type="button" onClick={() => importDataJson('malformed-json')}>
+        Import Invalid
+      </button>
       <button
+        type="button"
         onClick={() => {
           const exported = exportDataJson();
           localStorage.setItem('test_exported', exported);
@@ -62,8 +73,12 @@ const TestUiConsumer: React.FC = () => {
   return (
     <div>
       <span data-testid="drawer-state">{isDrawerOpen ? 'open' : 'closed'}</span>
-      <button onClick={() => setIsDrawerOpen(true)}>Open Drawer</button>
-      <button onClick={() => setIsDrawerOpen(false)}>Close Drawer</button>
+      <button type="button" onClick={() => setIsDrawerOpen(true)}>
+        Open Drawer
+      </button>
+      <button type="button" onClick={() => setIsDrawerOpen(false)}>
+        Close Drawer
+      </button>
     </div>
   );
 };

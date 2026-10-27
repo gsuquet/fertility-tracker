@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CalendarGrid } from '../CalendarGrid';
 import { LanguageProvider } from '../../context/LanguageContext';
@@ -32,7 +32,7 @@ describe('CalendarGrid Component', () => {
   });
 
   it('opens observation drawer with clicked date when clicking an empty calendar day', () => {
-    const { container } = renderCalendarGrid();
+    renderCalendarGrid();
     const now = new Date();
     const dateStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-01`;
     const dayElement = screen.getByRole('button', { name: new RegExp(`Date ${dateStr}`) });
@@ -41,10 +41,9 @@ describe('CalendarGrid Component', () => {
     // Click on day 1
     fireEvent.click(dayElement);
 
-    // Verify Observation Drawer opened with date set to dateStr
-    const dateInput = container.querySelector('#obs-date') as HTMLInputElement;
-    expect(dateInput).toBeInTheDocument();
-    expect(dateInput.value).toBe(dateStr);
+    // The drawer dialog opens in a portal, with the date set to dateStr
+    const drawer = screen.getByRole('dialog');
+    expect(within(drawer).getByLabelText(/date/i)).toHaveValue(dateStr);
   });
 
   it('highlights current day with is-today class and aria-current attribute', () => {

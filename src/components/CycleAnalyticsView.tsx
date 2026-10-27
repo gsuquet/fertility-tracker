@@ -25,7 +25,12 @@ export const CycleAnalyticsView: React.FC = () => {
   // No cycle exists without observations
   if (!activeCycle) {
     return (
-      <div className="analytics-empty-state">
+      <div
+        className="analytics-empty-state"
+        id="analytics-panel"
+        role="tabpanel"
+        aria-labelledby="tab-analytics"
+      >
         <Activity size={48} className="icon-muted" />
         <h3>No Observations Logged</h3>
         <p>
@@ -75,7 +80,11 @@ export const CycleAnalyticsView: React.FC = () => {
     >
       {/* Interactive MCS Explanation Guide Card */}
       <div className="analytics-card mcs-guide-card full-width">
-        <button className="mcs-guide-header" onClick={() => setShowMcsGuide(!showMcsGuide)}>
+        <button
+          type="button"
+          className="mcs-guide-header"
+          onClick={() => setShowMcsGuide(!showMcsGuide)}
+        >
           <div className="mcs-guide-title">
             <HelpCircle size={20} className="icon-indigo" />
             <span>{t.analytics.mcsGuideTitle}</span>
@@ -218,9 +227,15 @@ export const CycleAnalyticsView: React.FC = () => {
         <div className="analytics-card full-width">
           <div className="card-header">
             <Flame size={20} className="icon-rose" />
-            <h3>{t.analytics.trendTitle}</h3>
+            <h3 id="mucus-trend-title">{t.analytics.trendTitle}</h3>
           </div>
-          <div className="mucus-trend-wrapper">
+          {/* It scrolls on narrow screens, so the keyboard can focus it */}
+          <section
+            className="mucus-trend-wrapper"
+            aria-labelledby="mucus-trend-title"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable needs a focusable scrolling chart
+            tabIndex={0}
+          >
             {targetCycles.map(cycle => {
               const cycleNum = cycles.length - cycles.findIndex(c => c.id === cycle.id);
               return (
@@ -253,7 +268,7 @@ export const CycleAnalyticsView: React.FC = () => {
                 </div>
               );
             })}
-          </div>
+          </section>
         </div>
 
         {/* Practitioner Clinical Overview */}

@@ -43,6 +43,31 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.18.2',
+    date: '2026-10-27',
+    title: 'Accessible Dialogs',
+    titleFr: 'Fenêtres accessibles',
+    tagline: 'All dialogs and panels now keep the keyboard focus inside them',
+    taglineFr: 'Toutes les fenêtres et tous les panneaux gardent maintenant le focus du clavier',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'All dialogs, the observation panel and the mobile menu use one native modal dialog',
+      'A dialog moves the focus into it when it opens, and back to its button when it closes',
+      'Tab and Shift+Tab stay in the open dialog, and Escape closes only the top dialog',
+      'The welcome guide slides and the mucus trend chart can scroll with the keyboard',
+      'The chart days are real buttons, and the entry mode uses real radio buttons',
+      'The Undo toast stays visible and usable while a dialog is open',
+    ],
+    highlightsFr: [
+      'Toutes les fenêtres, le panneau d’observation et le menu mobile utilisent une même fenêtre modale native',
+      'Une fenêtre prend le focus à l’ouverture et le rend à son bouton à la fermeture',
+      'Tab et Maj+Tab restent dans la fenêtre ouverte, et Échap ferme seulement la fenêtre du dessus',
+      'Les diapositives du guide et le graphique de tendance de la glaire défilent au clavier',
+      'Les jours du graphique sont de vrais boutons, et le mode de saisie utilise de vrais boutons radio',
+      'Le message Annuler reste visible et utilisable quand une fenêtre est ouverte',
+    ],
+  },
+  {
     version: '1.18.1',
     date: '2026-10-27',
     title: 'Code Cleanup',

@@ -75,7 +75,7 @@ The confirmation dialog opens before an action replaces or deletes data. The foc
 
 ## Undo toast
 
-The undo toast shows at the bottom of the page after a restore, a demo load or a delete of all data. It also shows after a reload if the copy of the old observations is still in the browser. It stays until you click a button, or until you save or delete an observation. If you make two changes, **Undo** puts back the observations from before the first change. If the browser cannot save the copy, the toast says that **Undo** works only until you reload the page.
+The undo toast shows at the bottom of the page after a restore, a demo load or a delete of all data. It also shows after a reload if the copy of the old observations is still in the browser. It stays until you click a button, or until you save or delete an observation. If you make two changes, **Undo** puts back the observations from before the first change. If the browser cannot save the copy, the toast says that **Undo** works only until you reload the page. When a dialog is open, the toast shows above the dialog, and you can click its buttons or move to them with `Tab`.
 
 | Button              | Action                                                         |
 | ------------------- | -------------------------------------------------------------- |
@@ -99,6 +99,16 @@ The notice shows above the pages when the application cannot read the saved obse
 | Welcome guide               | At the first visit, and from the header.                              |
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
 | **About & Version Tracker** | From the header.                                                      |
+
+All the dialogs, the observation drawer and the mobile menu use the same keyboard rules:
+
+| Key or action              | Result                                                               |
+| -------------------------- | -------------------------------------------------------------------- |
+| The dialog opens           | The focus goes to the first button of the dialog.                    |
+| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page. |
+| `Escape`                   | Closes the top dialog only. A dialog under it stays open.            |
+| A click outside the dialog | Closes the dialog.                                                   |
+| The dialog closes          | The focus goes back to the button that opened the dialog.            |
 
 ## Error message
 
