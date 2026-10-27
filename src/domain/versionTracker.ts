@@ -39,6 +39,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.3',
+    date: '2026-10-27',
+    title: 'Shared CrMS Code Lists',
+    titleFr: 'Listes de Codes CrMS Partagées',
+    tagline: 'Each CrMS code list is now defined once and used everywhere',
+    taglineFr:
+      'Chaque liste de codes CrMS est maintenant définie une seule fois et utilisée partout',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Defined the bleeding, stretch, appearance, frequency and symptom codes in one place',
+      'The parser, the validator, the stamps and the forms now use the same code lists',
+      'Moved the mucus score into the domain rules, with tests',
+    ],
+    highlightsFr: [
+      'Codes de saignement, d’étirement, d’aspect, de fréquence et de symptômes définis à un seul endroit',
+      'L’analyseur, le validateur, les tampons et les formulaires utilisent les mêmes listes de codes',
+      'Score de glaire déplacé dans les règles du domaine, avec des tests',
+    ],
+  },
+  {
     version: '1.15.1',
     date: '2026-10-27',
     title: 'Documentation in Simplified Technical English',
