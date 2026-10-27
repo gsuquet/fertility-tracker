@@ -340,13 +340,13 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 - [ChartToolbar.tsx](./src/components/chart/ChartToolbar.tsx): Title, view mode toggle (35-day grid or compact strip), phase bar toggle and legend toggle. The empty chart shows only the title and the legend toggle.
 - [ChartLegend.tsx](./src/components/chart/ChartLegend.tsx): Stamp legend key.
-- [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today.
+- [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today. Each blank cell opens a draft observation with a click, `Enter` or `Space`.
 - [ChartCycleRow.tsx](./src/components/chart/ChartCycleRow.tsx): One cycle row: header (cycle number, date range, length, Peak Day), scroll and jump controls, phase timeline and the cell strip. The row keeps its own scroll element.
 - [ChartPhaseTimeline.tsx](./src/components/chart/ChartPhaseTimeline.tsx): Phase bar above the cells of a cycle.
-- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell and empty day cell. Each cell opens with a click, `Enter` or `Space`.
+- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell opens with a click, `Enter` or `Space`.
 - [ChartCellPopover.tsx](./src/components/chart/ChartCellPopover.tsx): Detail popover of a filled cell (code, bleeding, stretch, modifiers, intercourse, notes).
 
-- **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again.
+- **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again. Because the state is per cell, two popovers can show at the same time: one on the focused cell and one on the hovered cell.
 - Recreates the visual aesthetic of official Creighton paper chart strips.
 - Renders 35 days per row with color-coded stamp blocks:
   - **Red:** Menses bleeding

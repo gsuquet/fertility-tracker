@@ -146,22 +146,26 @@ export const ChartBlankCell: React.FC<ChartBlankCellProps> = ({
   isToday,
   addLabel,
   onOpen,
-}) => (
-  <div
-    className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
-    onClick={() => onOpen(dateStr, dayNum)}
-    tabIndex={0}
-    role="button"
-    aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}`}
-  >
-    <div className="cell-header">
-      {isToday && <TodayPill />}
-      <span className="cell-day-num">{dayNum}</span>
-      <span className="cell-date">{dateStr.slice(5)}</span>
+}) => {
+  const open = () => onOpen(dateStr, dayNum);
+  return (
+    <div
+      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
+      onClick={open}
+      tabIndex={0}
+      role="button"
+      aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}`}
+      onKeyDown={onActivateKey(open)}
+    >
+      <div className="cell-header">
+        {isToday && <TodayPill />}
+        <span className="cell-day-num">{dayNum}</span>
+        <span className="cell-date">{dateStr.slice(5)}</span>
+      </div>
+      <div className="cell-placeholder">
+        <Plus size={16} className="add-icon" />
+        <span className="add-label">{addLabel}</span>
+      </div>
     </div>
-    <div className="cell-placeholder">
-      <Plus size={16} className="add-icon" />
-      <span className="add-label">{addLabel}</span>
-    </div>
-  </div>
-);
+  );
+};
