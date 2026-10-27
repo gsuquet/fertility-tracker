@@ -8,6 +8,10 @@ The application keeps all observations in the `localStorage` of your browser. It
 
 Fertility data is very personal health data. Data that is not on a server cannot leak from a server. This is the most important reason for the design.
 
+## Offline use and the cache
+
+The service worker keeps a copy of the application files in the browser cache, so that the application works offline. The cache contains only the application files. It does not contain your observations. Your observations stay in `localStorage`.
+
 ## The limits of this design
 
 This design has costs. You must know them:

@@ -39,7 +39,7 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.15.6',
+    version: '1.16.3',
     date: '2026-10-27',
     title: 'Shared Code Buttons',
     titleFr: 'Boutons de Codes Partagés',
@@ -54,6 +54,32 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlightsFr: [
       'Les boutons de saignement, d’étirement, d’aspect, de fréquence et de symptômes forment un seul composant partagé',
       'Le formulaire du jour et le panneau d’observation s’affichent et fonctionnent comme avant',
+    ],
+  },
+  {
+    version: '1.16.0',
+    date: '2026-10-27',
+    title: 'Reliable Offline Use & Installable App',
+    titleFr: 'Utilisation hors ligne fiable et application installable',
+    tagline: 'The app opens offline after the first visit, with every page, and can be installed',
+    taglineFr:
+      'L’application s’ouvre hors ligne après la première visite, avec toutes les pages, et peut être installée',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The service worker now caches every application file at the first visit, so the app no longer opens blank offline',
+      'Pages that you did not open online, such as Cycle Analytics, now also open offline',
+      'Each new version replaces the old cached files automatically',
+      'Added app icons, so you can install the app on your phone or computer',
+      'If a part of the app cannot load, a message with a Reload button replaces the blank screen',
+      'Stricter security policy: the page no longer permits inline scripts',
+    ],
+    highlightsFr: [
+      'Le service worker met désormais en cache tous les fichiers de l’application dès la première visite : l’application ne s’ouvre plus vide hors ligne',
+      'Les pages jamais ouvertes en ligne, comme l’Analyse des cycles, s’ouvrent aussi hors ligne',
+      'Chaque nouvelle version remplace automatiquement les anciens fichiers en cache',
+      'Ajout d’icônes : vous pouvez installer l’application sur votre téléphone ou votre ordinateur',
+      'Si une partie de l’application ne peut pas se charger, un message avec un bouton Recharger remplace l’écran vide',
+      'Politique de sécurité renforcée : la page n’autorise plus les scripts intégrés',
     ],
   },
   {
