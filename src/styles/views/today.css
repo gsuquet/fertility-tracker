@@ -150,7 +150,7 @@
   }
 
   .date-nav-btn:hover {
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     border-color: var(--accent-primary);
     transform: scale(1.05);

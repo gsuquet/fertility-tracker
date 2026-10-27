@@ -478,7 +478,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   ```
 - **Modular Directory Organization:**
   - `src/styles/tokens/`:
-    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-info`, `--color-white`, `--color-black`).
+    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), accent tokens (`--accent-primary`, `--accent-solid`, `--accent-solid-hover`, `--accent-light`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-warning-text`, `--color-warning-surface`, `--color-info`, `--color-white`, `--color-black`).
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
@@ -503,6 +503,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `print.css`: High-resolution export layouts and `@media print` rules.
   - `src/styles/utilities/`:
     - `utilities.css`: Layout helpers (`.flex-center`, `.gap-2`, `.items-center`), text helpers (`.text-truncate`, `.sr-only`).
+- **Text Contrast (WCAG 2 AA):** In both themes, each text token meets a contrast ratio of at least 4.5:1 on the surfaces that show it. `--text-primary`, `--text-secondary`, `--text-muted` and `--accent-primary` are text colors on `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`. `--accent-primary` is also a text color on `--accent-light`. `--accent-solid` and `--accent-solid-hover` are the fill colors behind white text, for example `.btn-primary`. A rule that puts white text on an accent fill uses `--accent-solid`, not `--accent-primary`. `--color-danger` and `--color-danger-hover` are the fills of `.btn-danger` behind white text. `--color-warning-text` on `--color-warning-surface` is the symptom tag of the chart (`.cell-symptom-tag`). The footer copyright text has no opacity, so it keeps the contrast of `--text-muted`. The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
 
 ---
 

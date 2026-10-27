@@ -37,14 +37,14 @@
 
   /* Primary Button */
   .btn-primary {
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     border-color: rgba(255, 255, 255, 0.1);
     box-shadow: var(--shadow-sm), var(--accent-glow);
   }
 
   .btn-primary:hover {
-    background-color: var(--accent-primary-hover);
+    background-color: var(--accent-solid-hover);
     box-shadow: var(--shadow-md), var(--shadow-glow);
     transform: translateY(-1px);
   }

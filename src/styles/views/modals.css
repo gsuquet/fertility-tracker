@@ -189,7 +189,7 @@
   }
 
   .segmented-btn.active {
-    background: var(--accent-primary);
+    background: var(--accent-solid);
     color: #ffffff;
     font-weight: 600;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
@@ -316,7 +316,7 @@
   }
 
   .primary-export-btn {
-    background: var(--accent-primary);
+    background: var(--accent-solid);
     color: #ffffff !important;
     border-color: var(--accent-primary);
   }
@@ -328,7 +328,7 @@
   }
 
   .primary-export-btn:hover {
-    background: var(--accent-primary-hover);
+    background: var(--accent-solid-hover);
   }
 
   /* Version Tracker & Version Modal Styles */
@@ -464,7 +464,7 @@
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    background: var(--accent-primary, #10b981);
+    background: var(--accent-solid, #10b981);
     color: #ffffff;
     font-weight: 700;
     font-size: 0.78rem;
@@ -843,7 +843,7 @@
   }
 
   .stepper-dot-btn.active {
-    background-color: var(--accent-primary, #10b981);
+    background-color: var(--accent-solid, #10b981);
     color: #ffffff;
     border-color: var(--accent-primary, #10b981);
     box-shadow: 0 0 8px rgba(16, 185, 129, 0.35);

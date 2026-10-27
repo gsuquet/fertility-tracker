@@ -107,7 +107,7 @@
     height: 22px;
     padding: 0 4px;
     border-radius: 9999px;
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     font-weight: 800;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);

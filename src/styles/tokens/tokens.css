@@ -20,10 +20,13 @@
 
     --text-primary: #0f172a;
     --text-secondary: #334155;
-    --text-muted: #64748b;
+    --text-muted: #5b6b80;
 
+    /* Accent as text, icons and borders */
     --accent-primary: #4f46e5;
-    --accent-primary-hover: #4338ca;
+    /* Accent fills behind white text */
+    --accent-solid: #4f46e5;
+    --accent-solid-hover: #4338ca;
     --accent-light: #e0e7ff;
     --accent-glow: rgba(79, 70, 229, 0.15);
 
@@ -38,10 +41,12 @@
     --stamp-light-green-text: #064e3b;
 
     /* Semantic Feedback Colors */
-    --color-danger: #ef4444;
-    --color-danger-hover: #dc2626;
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
     --color-success: #10b981;
     --color-warning: #f59e0b;
+    --color-warning-text: #a54b08;
+    --color-warning-surface: #fef3c7;
     --color-info: #6366f1;
     --color-white: #ffffff;
     --color-black: #000000;
@@ -73,20 +78,23 @@
 
     --text-primary: #f8fafc;
     --text-secondary: #cbd5e1;
-    --text-muted: #788aa3;
+    --text-muted: #8494ab;
 
-    --accent-primary: #6366f1;
-    --accent-primary-hover: #4f46e5;
+    --accent-primary: #818cf8;
+    --accent-solid: #4f46e5;
+    --accent-solid-hover: #4338ca;
     --accent-light: rgba(99, 102, 241, 0.18);
     --accent-glow: rgba(99, 102, 241, 0.25);
 
     --stamp-white-border: #475569;
 
     /* Semantic Feedback Colors */
-    --color-danger: #f87171;
-    --color-danger-hover: #ef4444;
+    --color-danger: #dc2626;
+    --color-danger-hover: #b91c1c;
     --color-success: #34d399;
     --color-warning: #fbbf24;
+    --color-warning-text: #fbbf24;
+    --color-warning-surface: rgba(245, 158, 11, 0.2);
     --color-info: #818cf8;
 
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
