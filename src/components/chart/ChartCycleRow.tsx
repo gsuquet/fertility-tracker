@@ -3,6 +3,7 @@ import { useRef } from 'react';
 import { ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import type { Cycle, Observation } from '../../types/crms';
 import type { TranslationSchema } from '../../i18n';
+import { formatMessage } from '../../i18n';
 import { addDays } from '../../utils/dateUtils';
 import { getCycleEndDate } from '../../domain/cycleBoundaryDetector';
 import { ChartPhaseTimeline } from './ChartPhaseTimeline';
@@ -97,7 +98,11 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
 
           {peakDayNum && (
             <span className="cycle-peak-pill" title={t.chartStrip.jumpToPeak}>
-              <Target size={12} /> {t.chartStrip.phasePeak}: Day {peakDayNum}
+              <Target size={12} />{' '}
+              {formatMessage(t.chartStrip.peakOnDay, {
+                peak: t.chartStrip.phasePeak,
+                day: peakDayNum,
+              })}
             </span>
           )}
         </div>
@@ -125,14 +130,14 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
             <button
               className="scroll-btn"
               onClick={() => scrollRow('left')}
-              aria-label="Scroll left"
+              aria-label={t.chartStrip.scrollLeft}
             >
               <ChevronLeft size={16} />
             </button>
             <button
               className="scroll-btn"
               onClick={() => scrollRow('right')}
-              aria-label="Scroll right"
+              aria-label={t.chartStrip.scrollRight}
             >
               <ChevronRight size={16} />
             </button>

@@ -62,10 +62,10 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
         <button
           className={`toolbar-btn ${controls.showPhaseBar ? 'active-toggle' : ''}`}
           onClick={controls.onTogglePhaseBar}
-          title="Toggle phase timeline bar"
+          title={t.chartStrip.togglePhases}
         >
           <Layers size={14} />
-          <span>Phases</span>
+          <span>{t.chartStrip.phases}</span>
         </button>
       )}
 

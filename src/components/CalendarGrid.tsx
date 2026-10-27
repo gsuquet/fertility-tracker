@@ -1,11 +1,14 @@
 import type React from 'react';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatMessage } from '../i18n';
 import { StampBadge } from './StampBadge';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 export const CalendarGrid: React.FC = () => {
   const { observations, setSelectedObservation, setIsDrawerOpen } = useCycle();
+  const { t } = useLanguage();
 
   const [currentMonth, setCurrentMonth] = useState(new Date());
 
@@ -19,20 +22,7 @@ export const CalendarGrid: React.FC = () => {
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-  const monthNames = [
-    'January',
-    'February',
-    'March',
-    'April',
-    'May',
-    'June',
-    'July',
-    'August',
-    'September',
-    'October',
-    'November',
-    'December',
-  ];
+  const monthNames = t.calendar.months;
 
   const handlePrevMonth = () => {
     setCurrentMonth(new Date(year, month - 1, 1));
@@ -68,8 +58,8 @@ export const CalendarGrid: React.FC = () => {
         <button
           className="icon-button"
           onClick={handlePrevMonth}
-          title="Previous month"
-          aria-label="Previous month"
+          title={t.calendar.prevMonth}
+          aria-label={t.calendar.prevMonth}
         >
           <ChevronLeft size={20} />
         </button>
@@ -80,8 +70,8 @@ export const CalendarGrid: React.FC = () => {
           className={`icon-button ${isCurrentOrFutureMonth ? 'disabled' : ''}`}
           onClick={handleNextMonth}
           disabled={isCurrentOrFutureMonth}
-          title={isCurrentOrFutureMonth ? 'Future months disabled' : 'Next month'}
-          aria-label={isCurrentOrFutureMonth ? 'Future months disabled' : 'Next month'}
+          title={isCurrentOrFutureMonth ? t.calendar.futureDisabled : t.calendar.nextMonth}
+          aria-label={isCurrentOrFutureMonth ? t.calendar.futureDisabled : t.calendar.nextMonth}
           style={{
             opacity: isCurrentOrFutureMonth ? 0.4 : 1,
             cursor: isCurrentOrFutureMonth ? 'not-allowed' : 'pointer',
@@ -92,15 +82,7 @@ export const CalendarGrid: React.FC = () => {
       </div>
 
       <div className="calendar-grid">
-        {[
-          { full: 'Mon', short: 'M' },
-          { full: 'Tue', short: 'T' },
-          { full: 'Wed', short: 'W' },
-          { full: 'Thu', short: 'T' },
-          { full: 'Fri', short: 'F' },
-          { full: 'Sat', short: 'S' },
-          { full: 'Sun', short: 'S' },
-        ].map(d => (
+        {t.calendar.weekdays.map(d => (
           <div key={d.full} className="calendar-weekday-header">
             <span className="weekday-full">{d.full}</span>
             <span className="weekday-short">{d.short}</span>
@@ -142,7 +124,12 @@ export const CalendarGrid: React.FC = () => {
                 );
                 setIsDrawerOpen(true);
               }}
-              aria-label={`Date ${dateStr}, ${obs ? `Observation ${obs.codeString}` : 'No observation'}`}
+              aria-label={formatMessage(t.calendar.dayLabel, {
+                date: dateStr,
+                status: obs
+                  ? formatMessage(t.calendar.observationStatus, { code: obs.codeString })
+                  : t.calendar.noObservation,
+              })}
             >
               <div className="calendar-day-num">{dayNum}</div>
               {obs ? (
@@ -159,9 +146,9 @@ export const CalendarGrid: React.FC = () => {
                 </div>
               ) : !isFutureDay ? (
                 <div className="calendar-add-slot">
-                  <div className="calendar-add-pill" title="Click to add observation">
+                  <div className="calendar-add-pill" title={t.calendar.clickToAdd}>
                     <Plus size={12} className="add-icon" />
-                    <span className="add-text">Add</span>
+                    <span className="add-text">{t.calendar.add}</span>
                   </div>
                 </div>
               ) : null}

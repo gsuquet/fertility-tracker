@@ -1,6 +1,7 @@
 import type React from 'react';
 import type { Cycle } from '../../types/crms';
 import type { TranslationSchema } from '../../i18n';
+import { formatMessage } from '../../i18n';
 
 interface ChartPhaseTimelineProps {
   cycle: Cycle;
@@ -17,24 +18,26 @@ export const ChartPhaseTimeline: React.FC<ChartPhaseTimelineProps> = ({ cycle, t
         const obs = cycle.observations.find(o => o.cycleDay === dayNum);
 
         let phaseClass = 'phase-unknown';
-        let title = `Day ${dayNum}`;
+        const dayTitle = (phase: string) =>
+          formatMessage(t.chartStrip.dayPhase, { day: dayNum, phase });
+        let title = formatMessage(t.common.dayNumber, { day: dayNum });
 
         if (obs) {
           if (obs.isPeakDay) {
             phaseClass = 'phase-peak';
-            title = `Day ${dayNum}: ${t.chartStrip.phasePeak} (P)`;
+            title = dayTitle(`${t.chartStrip.phasePeak} (P)`);
           } else if (obs.stamp === 'RED' || obs.bleeding) {
             phaseClass = 'phase-menses';
-            title = `Day ${dayNum}: ${t.chartStrip.phaseMenses}`;
+            title = dayTitle(t.chartStrip.phaseMenses);
           } else if (obs.stamp.startsWith('LIGHT_GREEN')) {
             phaseClass = 'phase-post-peak';
-            title = `Day ${dayNum}: ${t.chartStrip.phasePostPeak}`;
+            title = dayTitle(t.chartStrip.phasePostPeak);
           } else if (obs.stamp === 'WHITE_BABY') {
             phaseClass = 'phase-fertile';
-            title = `Day ${dayNum}: Fertile Mucus`;
+            title = dayTitle(t.chartStrip.phaseFertileMucus);
           } else {
             phaseClass = 'phase-infertile';
-            title = `Day ${dayNum}: Dry / Infertile`;
+            title = dayTitle(t.chartStrip.legendDry);
           }
         }
 

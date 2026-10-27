@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.17.0  
+**Document Version:** 1.18.3  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -453,6 +453,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - Observation codes (`codeString`) have spaces removed and support 2-line word wrapping for long codes.
   - Adds a dedicated horizontal line under the observation code at the bottom of each cell for free-form user notes (`obs.notes`).
   - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification.
+  - **Print Language:** The printed report follows the language of the interface. Its title, subtitle, export date, cycle count, Peak Day badge and stamp key come from the dictionary (`printExport.*`, `chartStrip.*`), and the export date uses `t.locale`. CrMS observation codes (for example `10KLX3`, `P`, `I`) and the stamp colors stay the same in each language, so a practitioner reads the same codes on an English or a French report.
 
 ---
 
@@ -533,6 +534,10 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
 - TypeScript compiler strictly enforces key parity across all language modules (`TranslationSchema`).
 - Components read every user-facing string and the date locale (`t.locale`: `en-US` or `fr-FR`) from the dictionary. Components do not branch on `language === 'fr'` and do not keep fallback strings, because each key always exists.
+- `src/i18n/format.ts` exports `formatMessage(template, values)`. It replaces each `{name}` in a translated template with its value and keeps a placeholder that has no value. Templates hold the full sentence (for example `Day {day}: {phase}`), so each language can put the values in its own word order.
+- **No hardcoded text:** every user-visible string of the components comes from the dictionary: JSX text, the `aria-label`, `aria-description`, `title`, `placeholder` and `alt` attributes, the chart cell labels and popover, the legends, the calendar month and weekday names, the cycle picker, the footer, the analytics empty state and the printed report. The English text stays byte-identical to the text before the move.
+- **Untranslated domain text:** CrMS observation codes (`10KLX3 I AP`, `P`, `I`), stamp enum names in the chart cell labels and the version prefix `v` stay the same in each language. The cycle-day abbreviation is translated: `CD` in English, `JC` (_jour du cycle_) in French.
+- **Guard test:** `src/i18n/__tests__/noHardcodedText.test.ts` parses each `.tsx` file of `src/` (not the tests) with the parser of Vite. It fails when a JSX text, a string or template literal in a JSX expression, or a string in an `aria-label`, `aria-description`, `title`, `placeholder` or `alt` attribute has a letter, unless the text is in its short allowlist of codes and symbols (`P`, `I`, `v`, `10KLX3 I AP`).
 - Release notes in `VERSION_HISTORY` require both languages (`title`/`titleFr`, `tagline`/`taglineFr`, `highlights`/`highlightsFr`).
 
 ### 7.2 Design System & Layered CSS Architecture

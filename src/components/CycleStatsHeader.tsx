@@ -2,6 +2,7 @@ import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
+import { formatMessage } from '../i18n';
 import { Calendar, Flame, Heart, Activity } from 'lucide-react';
 
 export const CycleStatsHeader: React.FC = () => {
@@ -15,25 +16,30 @@ export const CycleStatsHeader: React.FC = () => {
 
   let cycleLengthText = '';
   let peakDayText = '---';
-  let lutealPhaseText = '0 days';
+  let lutealPhaseText: string;
   let intercourseCount = 0;
 
   if (selectedCycle) {
     const { peak, lutealDays } = getCyclePhases(selectedCycle);
     cycleLengthText = `${selectedCycle.observations.length} ${t.stats.days}`;
-    peakDayText = peak ? `CD ${peak.cycleDay} (${peak.date})` : '---';
+    peakDayText = peak
+      ? formatMessage(t.common.cycleDayDate, { day: peak.cycleDay, date: peak.date })
+      : '---';
     lutealPhaseText = `${lutealDays} ${t.stats.days}`;
     intercourseCount = selectedCycle.observations.filter(o => o.intercourse).length;
   } else {
     // All Cycles view
-    cycleLengthText = `${(observations.length / cycles.length).toFixed(1)} ${t.stats.days} (avg)`;
+    cycleLengthText = `${(observations.length / cycles.length).toFixed(1)} ${t.stats.days} ${t.stats.averageSuffix}`;
 
     // Cycles are ordered newest first, so the first peak is the latest one
     const latestPeak = cycles.map(c => getCyclePhases(c).peak).find(Boolean);
     if (latestPeak) {
-      peakDayText = `CD ${latestPeak.cycleDay} (${latestPeak.date})`;
+      peakDayText = formatMessage(t.common.cycleDayDate, {
+        day: latestPeak.cycleDay,
+        date: latestPeak.date,
+      });
       const { lutealDays } = averagePhases(cycles);
-      lutealPhaseText = `${lutealDays.toFixed(1)} ${t.stats.days} (avg)`;
+      lutealPhaseText = `${lutealDays.toFixed(1)} ${t.stats.days} ${t.stats.averageSuffix}`;
     } else {
       lutealPhaseText = `0 ${t.stats.days}`;
     }

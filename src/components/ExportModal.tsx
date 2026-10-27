@@ -201,7 +201,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
       <div className="modal-container export-modal-enhanced" onClick={e => e.stopPropagation()}>
         <div className="modal-header">
           <h2 id="modal-title">{t.exportModal.title}</h2>
-          <button className="icon-button" onClick={onClose} aria-label="Close export dialog">
+          <button className="icon-button" onClick={onClose} aria-label={t.exportModal.close}>
             <X size={20} />
           </button>
         </div>

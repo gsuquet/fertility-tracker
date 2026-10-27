@@ -2,10 +2,13 @@ import type React from 'react';
 import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useCycle } from '../context/CycleContext';
+import { useLanguage } from '../context/LanguageContext';
+import { formatMessage } from '../i18n';
 import { Layers, ChevronDown, Check, X, Calendar } from 'lucide-react';
 
 export const CyclePicker: React.FC = () => {
   const { cycles, selectedCycleId, setSelectedCycleId } = useCycle();
+  const { t } = useLanguage();
   // The menu is open while it has a position
   const [menuCoords, setMenuCoords] = useState<{ top: number; right: number } | null>(null);
   const isOpen = menuCoords !== null;
@@ -60,12 +63,15 @@ export const CyclePicker: React.FC = () => {
 
   const getButtonLabel = (isMobile: boolean) => {
     if (!activeCycle) {
-      return isMobile ? `All (${cycles.length})` : `All Cycles (${cycles.length})`;
+      return formatMessage(isMobile ? t.cyclePicker.allShort : t.cyclePicker.allCyclesCount, {
+        count: cycles.length,
+      });
     }
     const activeCycleNumber = cycles.length - activeCycleIndex;
-    return isMobile
-      ? `Cycle ${activeCycleNumber}`
-      : `Cycle ${activeCycleNumber} (${activeCycle.startDate})`;
+    return formatMessage(isMobile ? t.common.cycleNumber : t.cyclePicker.cycleWithDate, {
+      number: activeCycleNumber,
+      date: activeCycle.startDate,
+    });
   };
 
   const handleSelect = (id: string) => {
@@ -95,12 +101,12 @@ export const CyclePicker: React.FC = () => {
         }
       >
         <div className="cycle-dropdown-header">
-          <span>Filter Cycle View</span>
+          <span>{t.cyclePicker.menuTitle}</span>
           <button
             type="button"
             className="cycle-dropdown-close"
             onClick={close}
-            aria-label="Close cycle menu"
+            aria-label={t.cyclePicker.closeMenu}
           >
             <X size={16} />
           </button>
@@ -116,10 +122,10 @@ export const CyclePicker: React.FC = () => {
             <div className="cycle-option-info">
               <div className="cycle-option-title">
                 <Layers size={16} className="cycle-item-icon" />
-                <strong>All Cycles</strong>
+                <strong>{t.cyclePicker.allCycles}</strong>
               </div>
               <span className="cycle-option-subtitle">
-                Display all {cycles.length} recorded cycles
+                {formatMessage(t.cyclePicker.displayAll, { count: cycles.length })}
               </span>
             </div>
             {selectedCycleId === 'all' && <Check size={18} className="cycle-check-icon" />}
@@ -141,11 +147,16 @@ export const CyclePicker: React.FC = () => {
                 <div className="cycle-option-info">
                   <div className="cycle-option-title">
                     <Calendar size={16} className="cycle-item-icon" />
-                    <strong>Cycle {cycleNum}</strong>
-                    {idx === 0 && <span className="current-cycle-badge">Current</span>}
+                    <strong>{formatMessage(t.common.cycleNumber, { number: cycleNum })}</strong>
+                    {idx === 0 && (
+                      <span className="current-cycle-badge">{t.cyclePicker.current}</span>
+                    )}
                   </div>
                   <span className="cycle-option-subtitle">
-                    Started {cycle.startDate} • {obsCount} day{obsCount !== 1 ? 's' : ''} logged
+                    {formatMessage(
+                      obsCount !== 1 ? t.cyclePicker.startedDays : t.cyclePicker.startedOneDay,
+                      { date: cycle.startDate, count: obsCount }
+                    )}
                   </span>
                 </div>
                 {isSelected && <Check size={18} className="cycle-check-icon" />}
@@ -166,8 +177,8 @@ export const CyclePicker: React.FC = () => {
         onClick={toggleOpen}
         aria-haspopup="listbox"
         aria-expanded={isOpen}
-        aria-label="Filter cycle view"
-        title="Filter / View Cycle History"
+        aria-label={t.cyclePicker.buttonLabel}
+        title={t.cyclePicker.buttonTitle}
       >
         <Layers size={16} className="cycle-selector-icon" aria-hidden="true" />
         <span className="cycle-selector-text desktop-text">{getButtonLabel(false)}</span>

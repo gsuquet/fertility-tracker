@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
+import { formatMessage } from '../i18n';
 import {
   X,
   Tag,
@@ -116,7 +117,9 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
                 </span>
                 <span className="version-pill secondary-pill">
                   <Layers size={12} />
-                  CrMS Spec v{versionInfo.crmsSpecVersion}
+                  {formatMessage(t.versionTracker.crmsSpecPill, {
+                    version: versionInfo.crmsSpecVersion,
+                  })}
                 </span>
               </div>
             </div>
@@ -300,7 +303,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
               <div className="repo-link-box">
                 <div className="repo-info-left">
                   <Database size={16} />
-                  <span>Open Source Privacy-First Software</span>
+                  <span>{t.versionTracker.openSourceTagline}</span>
                 </div>
                 <a
                   href={versionInfo.repositoryUrl}
