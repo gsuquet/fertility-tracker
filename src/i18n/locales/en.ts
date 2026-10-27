@@ -195,6 +195,9 @@ export const en = {
       'The saved observations could not be read. The application keeps a copy of the original data. Download the copy before you delete it.',
     download: 'Download unreadable data',
     dismiss: 'Delete the copy',
+    messageNoCopy:
+      'The saved observations could not be read, and the application could not keep a copy. Download the original data now. Your next change replaces it.',
+    close: 'Close',
   },
   disclaimer: {
     trademark:

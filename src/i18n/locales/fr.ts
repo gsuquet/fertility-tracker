@@ -197,6 +197,9 @@ export const fr: TranslationSchema = {
       "Les observations enregistrées n'ont pas pu être lues. L'application garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
     download: 'Télécharger les données illisibles',
     dismiss: 'Supprimer la copie',
+    messageNoCopy:
+      "Les observations enregistrées n'ont pas pu être lues, et l'application n'a pas pu en garder une copie. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
+    close: 'Fermer',
   },
   disclaimer: {
     trademark:

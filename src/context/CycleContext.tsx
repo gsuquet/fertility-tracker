@@ -22,7 +22,9 @@ export interface CycleDataContextType {
   loadDemoData: () => void;
   /** The original text of stored data that could not be read, or null. */
   recoveryData: string | null;
-  /** Deletes the copy of the stored data that could not be read. */
+  /** True when the recovery key holds a copy of `recoveryData`. */
+  recoveryKept: boolean;
+  /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
   dismissRecovery: () => void;
 }
 
@@ -60,18 +62,20 @@ const keepOneManualPeak = (list: Observation[], date: string): Observation[] => 
 
 /**
  * Reads the stored observations. When the stored text cannot be read, copies it to the
- * recovery key before the app can save over it, and returns it as `recoveryData`.
+ * recovery key if that key is empty, and returns it as `recoveryData`. `recoveryKept` is
+ * false when no copy was written: the app must then not save over the original text.
  */
 const loadStoredState = () => {
   const raw = readStorage(STORAGE_KEY) ?? '[]';
   const validated = parseAndValidateObservationsJson(raw);
   if (validated === null) {
-    writeStorage(RECOVERY_KEY, raw);
-    return { observations: [], recoveryData: raw };
+    const recoveryKept = readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
+    return { observations: [], recoveryData: raw, recoveryKept };
   }
   return {
     observations: reprocessObservations(validated),
     recoveryData: readStorage(RECOVERY_KEY),
+    recoveryKept: true,
   };
 };
 
@@ -79,6 +83,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [initialState] = useState(loadStoredState);
   const [observations, setObservations] = useState<Observation[]>(initialState.observations);
   const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
+  const { recoveryKept } = initialState;
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -92,8 +97,10 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [cycles, selectedCycleId]);
 
   useEffect(() => {
+    // Without a recovery copy, keep the unreadable original until the observations change.
+    if (!recoveryKept && observations === initialState.observations) return;
     writeStorage(STORAGE_KEY, JSON.stringify(observations));
-  }, [observations]);
+  }, [observations, recoveryKept, initialState.observations]);
 
   const saveObservation = useCallback((obsData: ObservationInput) => {
     setObservations(prev => {
@@ -171,9 +178,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [applyObservations]);
 
   const dismissRecovery = useCallback(() => {
-    removeStorage(RECOVERY_KEY);
+    if (recoveryKept) removeStorage(RECOVERY_KEY);
     setRecoveryData(null);
-  }, []);
+  }, [recoveryKept]);
 
   const dataValue = useMemo(
     () => ({
@@ -188,6 +195,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       clearAllData,
       loadDemoData,
       recoveryData,
+      recoveryKept,
       dismissRecovery,
     }),
     [
@@ -201,6 +209,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       clearAllData,
       loadDemoData,
       recoveryData,
+      recoveryKept,
       dismissRecovery,
     ]
   );

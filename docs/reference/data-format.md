@@ -18,6 +18,8 @@ The application uses `localStorage`. It sends no data to a server.
 
 If the value of `fertility_care_observations` is not a JSON array, the application starts with no observations. Before it saves, it copies the value to `fertility_care_observations_recovery`.
 
+The application does not replace a copy that is already in `fertility_care_observations_recovery`. If the application cannot write the copy, it keeps the original value in `fertility_care_observations`. Your next change replaces that value.
+
 ## Backup file
 
 A backup file is a JSON array of observations. It is the same as the value of `fertility_care_observations`. The file is not encrypted.

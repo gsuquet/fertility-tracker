@@ -49,4 +49,15 @@ describe('StorageRecoveryNotice', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(localStorage.getItem('fertility_care_observations_recovery')).toBeNull();
   });
+
+  it('says that no copy is kept and closes without deleting the earlier copy', () => {
+    localStorage.setItem('fertility_care_observations_recovery', 'old copy');
+    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    renderWithProviders(<StorageRecoveryNotice />);
+    expect(screen.getByRole('alert')).toHaveTextContent(en.storageRecovery.messageNoCopy);
+    expect(screen.queryByRole('button', { name: en.storageRecovery.dismiss })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: en.storageRecovery.close }));
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(localStorage.getItem('fertility_care_observations_recovery')).toBe('old copy');
+  });
 });

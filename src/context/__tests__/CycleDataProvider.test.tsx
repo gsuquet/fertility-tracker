@@ -46,6 +46,8 @@ describe('CycleDataProvider', () => {
     const { result } = renderData();
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
     expect(result.current.recoveryData).toBe('[{"date": "2026-06-01"');
+    expect(result.current.recoveryKept).toBe(true);
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('[]');
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
   });
@@ -60,9 +62,43 @@ describe('CycleDataProvider', () => {
     expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
   });
 
+  it('keeps a pending recovery copy and the original data when the data is unreadable again', () => {
+    localStorage.setItem(RECOVERY_KEY, 'old copy');
+    localStorage.setItem(STORAGE_KEY, 'new unreadable');
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe('new unreadable');
+    expect(result.current.recoveryKept).toBe(false);
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('new unreadable');
+    act(() => result.current.dismissRecovery());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+  });
+
+  it('does not overwrite the original data when the recovery copy fails', () => {
+    const setItem = localStorage.setItem.bind(localStorage);
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === RECOVERY_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe('{corrupt');
+    expect(result.current.recoveryKept).toBe(false);
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_KEY)).toBe('{corrupt');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    spy.mockRestore();
+  });
+
   it('keeps the recovery copy from an earlier session and has none for valid data', () => {
     localStorage.setItem(RECOVERY_KEY, 'old text');
-    expect(renderData().result.current.recoveryData).toBe('old text');
+    const earlier = renderData().result.current;
+    expect(earlier.recoveryData).toBe('old text');
+    expect(earlier.recoveryKept).toBe(true);
     localStorage.clear();
     localStorage.setItem(STORAGE_KEY, '[]');
     expect(renderData().result.current.recoveryData).toBeNull();
