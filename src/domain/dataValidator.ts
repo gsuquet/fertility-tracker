@@ -1,43 +1,14 @@
-import type {
-  Observation,
-  BleedingCode,
-  MucusStretch,
-  MucusModifier,
-  FrequencyCode,
-  SymptomCode,
+import {
+  BLEEDING_CODES,
+  FREQUENCY_CODES,
+  MODIFIER_CODES,
+  STRETCH_CODES,
+  SYMPTOM_CODES,
+  isCodeIn,
 } from '../types/crms';
+import type { Observation, MucusModifier, SymptomCode } from '../types/crms';
 import { calculateStamp } from './stampCalculator';
 import { formatCodeString } from './codeParser';
-
-const VALID_BLEEDING: ReadonlySet<string> = new Set<BleedingCode>(['H', 'M', 'L', 'VL', 'B']);
-const VALID_STRETCH: ReadonlySet<string> = new Set<MucusStretch>([
-  '0',
-  '2',
-  '2W',
-  '4',
-  '6',
-  '8',
-  '10',
-  '10DL',
-  '10SL',
-  '10WL',
-]);
-const VALID_MODIFIERS: ReadonlySet<string> = new Set<MucusModifier>([
-  'B',
-  'C',
-  'C/K',
-  'G',
-  'K',
-  'L',
-  'P',
-  'Y',
-]);
-const VALID_FREQUENCY: ReadonlySet<string> = new Set<FrequencyCode>(['X1', 'X2', 'X3', 'AD']);
-const VALID_SYMPTOMS: ReadonlySet<string> = new Set<SymptomCode>(['AP', 'RAP', 'LAP']);
-
-/** Narrows an unknown value to a member of a string literal union backed by `allowed`. */
-const isOneOf = <T extends string>(allowed: ReadonlySet<string>, value: unknown): value is T =>
-  typeof value === 'string' && allowed.has(value);
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -55,20 +26,18 @@ export function validateObservation(raw: unknown): Observation | null {
   }
 
   // Validate or fallback optional biomarker fields
-  const bleeding = isOneOf<BleedingCode>(VALID_BLEEDING, obj.bleeding) ? obj.bleeding : undefined;
+  const bleeding = isCodeIn(BLEEDING_CODES, obj.bleeding) ? obj.bleeding : undefined;
 
-  const stretch = isOneOf<MucusStretch>(VALID_STRETCH, obj.stretch) ? obj.stretch : undefined;
+  const stretch = isCodeIn(STRETCH_CODES, obj.stretch) ? obj.stretch : undefined;
 
   const modifiers: MucusModifier[] = Array.isArray(obj.modifiers)
-    ? obj.modifiers.filter((m: unknown) => isOneOf<MucusModifier>(VALID_MODIFIERS, m))
+    ? obj.modifiers.filter((m: unknown) => isCodeIn(MODIFIER_CODES, m))
     : [];
 
-  const frequency = isOneOf<FrequencyCode>(VALID_FREQUENCY, obj.frequency)
-    ? obj.frequency
-    : undefined;
+  const frequency = isCodeIn(FREQUENCY_CODES, obj.frequency) ? obj.frequency : undefined;
 
   const symptoms: SymptomCode[] = Array.isArray(obj.symptoms)
-    ? obj.symptoms.filter((s: unknown) => isOneOf<SymptomCode>(VALID_SYMPTOMS, s))
+    ? obj.symptoms.filter((s: unknown) => isCodeIn(SYMPTOM_CODES, s))
     : [];
 
   const intercourse: boolean = Boolean(obj.intercourse);

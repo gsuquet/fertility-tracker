@@ -188,6 +188,18 @@ export const fr: TranslationSchema = {
     oldestToNewestNote:
       'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
     exportSuccess: 'Rapport PDF généré avec succès !',
+    pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
+    jsonDescription:
+      "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
+  },
+  storageRecovery: {
+    message:
+      "Les observations enregistrées n'ont pas pu être lues. L'application garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
+    download: 'Télécharger les données illisibles',
+    dismiss: 'Supprimer la copie',
+    messageNoCopy:
+      "Les observations enregistrées n'ont pas pu être lues, et l'application n'a pas pu en garder une copie. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
+    close: 'Fermer',
   },
   disclaimer: {
     trademark:

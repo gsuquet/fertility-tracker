@@ -14,6 +14,7 @@ import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
 
 const CycleAnalyticsView = React.lazy(() =>
   import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
@@ -85,6 +86,7 @@ const MainApp: React.FC = () => {
       <main
         className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
       >
+        <StorageRecoveryNotice />
         <CycleStatsHeader />
 
         {/* The key resets the alert of a failed page when the tab changes */}
