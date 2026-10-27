@@ -20,7 +20,10 @@ describe('CycleStartModal Component', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    const dialog = screen.getByRole('dialog', { name: /new cycle/i });
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'Close' })).toHaveFocus();
     expect(screen.getByText('2026-09-02')).toBeInTheDocument();
   });
 
@@ -73,7 +76,7 @@ describe('CycleStartModal Component', () => {
       </LanguageProvider>
     );
 
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(handleCancel).toHaveBeenCalledTimes(1);
   });
 
@@ -89,7 +92,7 @@ describe('CycleStartModal Component', () => {
         />
       </LanguageProvider>
     );
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     fireEvent.click(screen.getByText('2026-09-02'));
     expect(handleCancel).not.toHaveBeenCalled();
 

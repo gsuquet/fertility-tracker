@@ -103,12 +103,18 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
         </div>
 
         <div className="cycle-header-actions">
-          <button className="nav-icon-btn" onClick={jumpToStart} title={t.chartStrip.jumpToStart}>
+          <button
+            type="button"
+            className="nav-icon-btn"
+            onClick={jumpToStart}
+            title={t.chartStrip.jumpToStart}
+          >
             {t.chartStrip.jumpToStart}
           </button>
 
           {peakDayNum && (
             <button
+              type="button"
               className="nav-icon-btn peak-btn"
               onClick={jumpToPeak}
               title={t.chartStrip.jumpToPeak}
@@ -117,12 +123,18 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
             </button>
           )}
 
-          <button className="nav-icon-btn" onClick={jumpToEnd} title={t.chartStrip.jumpToLatest}>
+          <button
+            type="button"
+            className="nav-icon-btn"
+            onClick={jumpToEnd}
+            title={t.chartStrip.jumpToLatest}
+          >
             {t.chartStrip.jumpToLatest}
           </button>
 
           <div className="scroll-arrows">
             <button
+              type="button"
               className="scroll-btn"
               onClick={() => scrollRow('left')}
               aria-label="Scroll left"
@@ -130,6 +142,7 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
               <ChevronLeft size={16} />
             </button>
             <button
+              type="button"
               className="scroll-btn"
               onClick={() => scrollRow('right')}
               aria-label="Scroll right"

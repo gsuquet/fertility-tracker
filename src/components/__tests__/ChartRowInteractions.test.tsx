@@ -62,21 +62,18 @@ describe('ChartRow interactions', () => {
     expect(drawer()).toBe('2026-09-17 day 3 0AD');
   });
 
-  it('opens an empty day of the empty grid with Enter and ignores other keys', () => {
+  // A native button opens with Enter and Space in the browser: jsdom does not do this
+  const expectNativeButton = (cell: HTMLElement) => {
+    expect(cell.tagName).toBe('BUTTON');
+    expect(cell).toHaveAttribute('type', 'button');
+  };
+
+  it('makes each empty day of the empty grid a native button', () => {
     renderChart();
     const cell = screen.getByRole('button', { name: 'Day 2 (2026-09-16) - Empty' });
+    expectNativeButton(cell);
     fireEvent.keyDown(cell, { key: 'a' });
     expect(drawer()).toBe('closed');
-    fireEvent.keyDown(cell, { key: 'Enter' });
-    expect(drawer()).toBe('2026-09-16 day 2 0AD');
-  });
-
-  it('opens an empty day of the empty grid with Space', () => {
-    renderChart();
-    fireEvent.keyDown(screen.getByRole('button', { name: 'Day 4 (2026-09-18) - Empty' }), {
-      key: ' ',
-    });
-    expect(drawer()).toBe('2026-09-18 day 4 0AD');
   });
 
   it('toggles the legend of the empty grid', () => {
@@ -87,26 +84,22 @@ describe('ChartRow interactions', () => {
     expect(screen.queryByText('Creighton Model Chart Stamp Key:')).toBeNull();
   });
 
-  it('opens a saved day with a click, Enter or Space and ignores other keys', () => {
+  it('opens a saved day, a native button, with a click', () => {
     renderChart(rich);
     const cell = screen.getByRole('button', { name: /^Cycle Day 1, Date 2026-09-10/ });
+    expectNativeButton(cell);
     fireEvent.keyDown(cell, { key: 'a' });
     expect(drawer()).toBe('closed');
-    fireEvent.keyDown(cell, { key: 'Enter' });
-    expect(drawer()).toBe('2026-09-10 day 1 H');
-    fireEvent.keyDown(cell, { key: ' ' });
     fireEvent.click(cell);
     expect(drawer()).toBe('2026-09-10 day 1 H');
   });
 
-  it('opens a gap day with a click, Enter or Space and ignores other keys', () => {
+  it('opens a gap day, a native button, with a click', () => {
     renderChart(rich);
     const gap = screen.getByRole('button', { name: /^Day 5 \(2026-09-14\) - Empty/ });
+    expectNativeButton(gap);
     fireEvent.keyDown(gap, { key: 'Tab' });
     expect(drawer()).toBe('closed');
-    fireEvent.keyDown(gap, { key: ' ' });
-    expect(drawer()).toBe('2026-09-14 day 5 0AD');
-    fireEvent.keyDown(gap, { key: 'Enter' });
     fireEvent.click(gap);
     expect(drawer()).toBe('2026-09-14 day 5 0AD');
   });

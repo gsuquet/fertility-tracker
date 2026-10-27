@@ -100,6 +100,16 @@ The notice shows above the pages when the application cannot read the saved obse
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
 | **About & Version Tracker** | From the header.                                                      |
 
+All the dialogs, the observation drawer and the mobile menu use the same keyboard rules:
+
+| Key or action              | Result                                                               |
+| -------------------------- | -------------------------------------------------------------------- |
+| The dialog opens           | The focus goes to the first button of the dialog.                    |
+| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page. |
+| `Escape`                   | Closes the top dialog only. A dialog under it stays open.            |
+| A click outside the dialog | Closes the dialog.                                                   |
+| The dialog closes          | The focus goes back to the button that opened the dialog.            |
+
 ## Error message
 
 If a page or a dialog cannot load, the application shows the message **This part did not load** in its place. The header and the footer stay available. Click **Reload** to load the page again. Your observations stay in the browser.

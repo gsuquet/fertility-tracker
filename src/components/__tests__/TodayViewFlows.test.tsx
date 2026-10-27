@@ -125,9 +125,6 @@ describe('TodayView flows', () => {
     unmount();
 
     renderToday();
-    expect(screen.getByRole('radio', { name: /Direct Code/ })).toHaveAttribute(
-      'aria-checked',
-      'true'
-    );
+    expect(screen.getByRole('radio', { name: /Direct Code/ })).toBeChecked();
   });
 });

@@ -285,6 +285,16 @@
     box-shadow: var(--shadow-sm);
   }
 
+  /* Each label holds a hidden native radio input: the label shows its keyboard focus */
+  label.mode-toggle-btn {
+    position: relative;
+  }
+
+  .mode-toggle-btn:has(input:focus-visible) {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
   .direct-mode-expand-wrapper {
     display: flex;
     justify-content: flex-start;

@@ -327,14 +327,23 @@ describe('ExportModal', () => {
     expect(screen.getByRole('button', { name: fr.confirmDialog.clearConfirm })).toBeInTheDocument();
   });
 
+  it('is a native modal dialog with the focus on the close button', () => {
+    renderModal();
+    const dialog = screen.getByRole('dialog', { name: en.exportModal.title });
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(screen.getByRole('button', { name: 'Close export dialog' })).toHaveFocus();
+  });
+
   it('closes from the close button, the overlay and Escape only', () => {
     const props = renderModal();
-    fireEvent.keyDown(document, { key: 'Enter' });
+    const dialog = screen.getByRole('dialog');
+    fireEvent.keyDown(dialog, { key: 'Enter' });
     fireEvent.click(screen.getByText(en.exportModal.title));
     expect(props.onClose).not.toHaveBeenCalled();
     click('Close export dialog');
-    fireEvent.click(screen.getByRole('dialog'));
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.click(dialog);
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(props.onClose).toHaveBeenCalledTimes(3);
   });
 });

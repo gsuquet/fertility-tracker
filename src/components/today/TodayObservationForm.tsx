@@ -82,28 +82,34 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
 
         {/* Entry Mode Toggle (Direct Code vs Detailed Form) */}
         <div className="entry-mode-toggle" role="radiogroup" aria-label={t.todayView.entryMode}>
-          <button
-            type="button"
-            role="radio"
+          <label
             className={`mode-toggle-btn ${entryMode === 'direct' ? 'active' : ''}`}
-            onClick={() => onSetEntryMode('direct')}
             title="Direct Code Entry Only"
-            aria-checked={entryMode === 'direct'}
           >
+            <input
+              type="radio"
+              name="entry-mode"
+              className="sr-only"
+              checked={entryMode === 'direct'}
+              onChange={() => onSetEntryMode('direct')}
+            />
             <Zap size={14} />
             <span>{t.todayView.modeDirect}</span>
-          </button>
-          <button
-            type="button"
-            role="radio"
+          </label>
+          <label
             className={`mode-toggle-btn ${entryMode === 'detailed' ? 'active' : ''}`}
-            onClick={() => onSetEntryMode('detailed')}
             title="Detailed Form Button Selectors"
-            aria-checked={entryMode === 'detailed'}
           >
+            <input
+              type="radio"
+              name="entry-mode"
+              className="sr-only"
+              checked={entryMode === 'detailed'}
+              onChange={() => onSetEntryMode('detailed')}
+            />
             <Sliders size={14} />
             <span>{t.todayView.modeDetailed}</span>
-          </button>
+          </label>
         </div>
       </div>
 

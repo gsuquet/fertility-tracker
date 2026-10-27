@@ -166,7 +166,7 @@ describe('ObservationDrawer flows', () => {
 
   it('closes from the close button, cancel, the overlay and Escape only', () => {
     renderDrawer(null);
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(drawer(), { key: 'Enter' });
     fireEvent.click(within(drawer()).getByText(en.labels.stampPreview));
     expect(drawer()).toBeInTheDocument();
 
@@ -179,7 +179,33 @@ describe('ObservationDrawer flows', () => {
     fireEvent.click(drawer());
     expect(screen.queryByRole('dialog')).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: 'open' }));
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('is a native modal dialog that takes the focus and gives it back to the opener', () => {
+    renderDrawer(null);
+    expect(drawer().tagName).toBe('DIALOG');
+    expect(drawer()).toHaveAttribute('aria-modal', 'true');
+    expect(within(drawer()).getByRole('button', { name: 'Close entry panel' })).toHaveFocus();
+    press('Close entry panel');
+
+    const opener = screen.getByRole('button', { name: 'open' });
+    opener.focus();
+    fireEvent.click(opener);
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+    expect(opener).toHaveFocus();
+  });
+
+  it('closes only the cycle question on Escape, and gives the focus back to Save', () => {
+    renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
+    press(en.codes.bleeding.H);
+    within(drawer()).getByRole('button', { name: en.actions.save }).focus();
+    press(en.actions.save);
+    const question = screen.getByRole('dialog', { name: en.cycleStartModal.title });
+    fireEvent.keyDown(within(question).getByRole('button', { name: 'Close' }), { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: en.cycleStartModal.title })).toBeNull();
+    expect(drawer()).toBeInTheDocument();
+    expect(within(drawer()).getByRole('button', { name: en.actions.save })).toHaveFocus();
   });
 });

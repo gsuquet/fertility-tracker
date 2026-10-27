@@ -51,6 +51,20 @@ describe('ObservationCodeSelector', () => {
     expect(labels(en.labels.symptoms)).toEqual(SYMPTOM_CODES.map(c => en.codes.symptoms[c]));
   });
 
+  it('names each group with the legend of a native fieldset', () => {
+    renderSelector();
+    for (const name of [
+      en.labels.bleeding,
+      en.labels.stretch,
+      en.labels.modifiers,
+      en.labels.frequency,
+      en.labels.symptoms,
+    ]) {
+      expect(group(name).tagName).toBe('FIELDSET');
+      expect(within(group(name)).getByText(name).tagName).toBe('LEGEND');
+    }
+  });
+
   it('marks the selected codes as pressed, with the class of their group', () => {
     renderSelector({
       bleeding: 'H',

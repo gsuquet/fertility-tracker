@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.17.0  
+**Document Version:** 1.18.1  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -322,10 +322,21 @@ The user interface comprises four primary view tabs, global navigation, header s
 
 - **Desktop & Mobile Header ([Header.tsx](./src/components/Header.tsx), [src/styles/views/header.css](./src/styles/views/header.css)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`).
   - **Desktop View:** Directly exposes all individual control buttons in the top header control bar with standard 42px touch targets.
-  - **Mobile View ($\le 640\text{px}$):** Streamlines the top navigation bar to only three primary elements: Logo (`🌱`), Cycle Picker dropdown, and a single More Actions button (`⋮`), aligned with uniform 38px heights (`height: 38px; min-height: 38px;`). Secondary action buttons (Export, Welcome Guide, Version Info, Language toggle, and Theme toggle) are consolidated into a slide-up mobile Action Sheet portaled directly to `document.body` via `ReactDOM.createPortal` (preventing CSS `backdrop-filter` stacking context displacement) and anchored at `bottom: 0`.
+  - **Mobile View ($\le 640\text{px}$):** Streamlines the top navigation bar to only three primary elements: Logo (`🌱`), Cycle Picker dropdown, and a single More Actions button (`⋮`), aligned with uniform 38px heights (`height: 38px; min-height: 38px;`). Secondary action buttons (Export, Welcome Guide, Version Info, Language toggle, and Theme toggle) are consolidated into a slide-up mobile Action Sheet (`aria-label="Mobile Navigation Menu"`) that the [modal dialog primitive](#51-navigation--global-controls) renders on `document.body` (preventing CSS `backdrop-filter` stacking context displacement), anchored at `bottom: 0`.
 - **Mobile Modal Bottom-Sheet Architecture ([dialogs.css](./src/styles/primitives/dialogs.css), [modals.css](./src/styles/views/modals.css)):** On mobile viewports ($\le 640\text{px}$), all modal dialogs (`ExportModal`, `WelcomeModal`, `VersionModal`, `CycleStartModal`) render as bottom sheets anchored to the bottom of the viewport with rounded top corners (`24px`), height clamped at `88dvh`, sticky header and action footer, and an independently scrolling modal body.
 - **Footer ([Footer.tsx](./src/components/Footer.tsx), [src/styles/views/footer.css](./src/styles/views/footer.css)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding User Guide link and Version Badge button linking to the Version Tracker modal. On mobile devices ($\le 640\text{px}$), the copyright text and the action badge links (`User Guide` and `v1.9.2`) are structured on separate aligned rows to ensure neat one-line presentation of badges with clear bottom-navigation safe area clearance.
 - **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
+- **Cycle Picker ([CyclePicker.tsx](./src/components/CyclePicker.tsx)):** The cycle menu (`role="listbox"`) is not a modal dialog. It closes with its toggle, its close button, `Escape`, and a click anywhere outside the menu and the toggle (a `document` click listener). The backdrop only dims the page on mobile.
+- **View Tabs:** The view selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its view. Each view has this panel in all its states, also when it is empty (for example the analytics empty state has `id="analytics-panel"`).
+- **Modal Dialog Primitive ([Modal.tsx](./src/components/Modal.tsx)):** All the modal dialogs and drawers use this one component: `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog` and the mobile Action Sheet in `Header`. No other component has a focus trap or an `Escape` handler for a dialog.
+  - It renders a native `<dialog>` element in a portal on `document.body` and opens it with `showModal()`. Thus the browser puts the dialog in the top layer and makes the page under it inert.
+  - The `<dialog>` has `aria-modal="true"` and an accessible name from `aria-labelledby` (the dialog title) or from `aria-label`. It can also have `aria-describedby`.
+  - **Initial focus:** When it opens, it moves the focus to the element of `initialFocusRef`, or else to the first focusable element in the dialog.
+  - **Focus trap:** `Tab` on the last focusable element moves the focus to the first, and `Shift+Tab` on the first moves it to the last. A dialog that opens over another dialog keeps the focus: the dialog under it ignores the keys.
+  - **Escape:** `Escape` calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document. The native `cancel` event (the browser fires it for `Escape` when the focus is not in the dialog) also calls `onClose`, and does not close the `<dialog>` by itself, so React state always controls whether the dialog is open.
+  - **Backdrop:** A click on the backdrop (the `<dialog>` element itself, outside the dialog panel) calls `onClose`. A click in the panel does not.
+  - **Focus return:** When it closes, it calls `close()` on the `<dialog>` (the page is inert until then), and then moves the focus back to the element that had the focus before it opened.
+  - **Scrolling content:** A dialog body that scrolls (for example the welcome guide slides) is a `<section>` with `tabIndex={0}`, named by its heading with `aria-labelledby` (role `region`), so a keyboard user can scroll it.
 
 ---
 
@@ -350,7 +361,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 - [TodayDateNav.tsx](./src/components/today/TodayDateNav.tsx): Compact date navigation bar with previous/next day stepping, native date picker trigger, formatted date display, and status badges (Today indicator, Cycle Day, Recorded/Pending status).
 - [TodayHistoryList.tsx](./src/components/today/TodayHistoryList.tsx): Recent 5-day observation timeline card with aligned 3-column layout (date label, stamp badge slot, and truncated code string).
-- [TodayObservationForm.tsx](./src/components/today/TodayObservationForm.tsx): Observation logging form supporting dual entry modes (Direct Code Entry and Detailed Selectors for bleeding, stretch, modifiers, frequency, symptoms, intercourse, notes, and cycle start).
+- [TodayObservationForm.tsx](./src/components/today/TodayObservationForm.tsx): Observation logging form supporting dual entry modes (Direct Code Entry and Detailed Selectors for bleeding, stretch, modifiers, frequency, symptoms, intercourse, notes, and cycle start). The entry mode toggle is a `role="radiogroup"` of two native radio inputs (`name="entry-mode"`), each inside a `<label>`; the arrow keys move between them.
 - [ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx): The code buttons (bleeding, cycle start toggle, stretch, modifiers, frequency, symptoms). The Today form and the Observation Drawer both use it (see [5.7](#57-observation-drawer)).
 - [TodayFertilityGuidance.tsx](./src/components/today/TodayFertilityGuidance.tsx): Real-time CrMS stamp preview badge, formatted code text, and clinical fertility guidance message (rendered in top mobile banner and desktop status card).
 
@@ -369,7 +380,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today. Each blank cell opens a draft observation with a click, `Enter` or `Space`.
 - [ChartCycleRow.tsx](./src/components/chart/ChartCycleRow.tsx): One cycle row: header (cycle number, date range, length, Peak Day), scroll and jump controls, phase timeline and the cell strip. The row keeps its own scroll element.
 - [ChartPhaseTimeline.tsx](./src/components/chart/ChartPhaseTimeline.tsx): Phase bar above the cells of a cycle.
-- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell opens with a click, `Enter` or `Space`.
+- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell is a native `<button type="button">`, so it opens with a click, `Enter` or `Space`.
 - [ChartCellPopover.tsx](./src/components/chart/ChartCellPopover.tsx): Detail popover of a filled cell (code, bleeding, stretch, modifiers, intercourse, notes).
 
 - **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again. Because the state is per cell, two popovers can show at the same time: one on the focused cell and one on the hovered cell.
@@ -411,6 +422,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
     - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
   - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
+- **Mucus Trend Scroll Region:** The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on narrow screens. It is a `<section>` with `tabIndex={0}`, named by the chart title with `aria-labelledby` (role `region`), so a keyboard user can scroll it.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
 ---
@@ -426,7 +438,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 3. **Live Stamp & Code Preview:** Real-time preview of the resulting stamp color and code string prior to saving.
 4. **Mobile Footer:** On screens of 640px or less, the footer buttons shrink to fit, and the delete button shows only its icon.
 
-**Shared code buttons:** [src/components/observation/ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx) renders the button groups for Bleeding, the cycle start toggle (shown only when a bleeding code is selected), Stretch, Modifiers, Frequency and Symptoms, in this sequence. It reads the field values and callbacks of `useObservationForm`. The drawer and the Today form show the same markup, classes, ARIA attributes and labels for these buttons.
+**Shared code buttons:** [src/components/observation/ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx) renders the button groups for Bleeding, the cycle start toggle (shown only when a bleeding code is selected), Stretch, Modifiers, Frequency and Symptoms, in this sequence. It reads the field values and callbacks of `useObservationForm`. The drawer and the Today form show the same markup, classes, ARIA attributes and labels for these buttons. Each button group is a `<fieldset>` whose `<legend>` names it (for example **Bleeding**), so the group has the role `group` and a name without `aria-label`.
 
 ---
 
@@ -438,8 +450,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
-  - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
-  - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it. It traps the focus: `Tab` on the last button moves to the first, and `Shift+Tab` on the first moves to the last, so the dialog under it cannot get the focus.
+  - It uses the [modal dialog primitive](#51-navigation--global-controls) over the export dialog, with `aria-labelledby` (its title) and `aria-describedby` (its message).
+  - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. The primitive traps the focus and moves it back to the element that opened the dialog.
   - All its text is translated (`confirmDialog.*`, `actions.cancel`).
   - The clear-all message says that a copy stays on this device until the user deletes it with **Delete the copy** in the undo toast.
   - **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist. When no observations exist, **Load Demo Cycle** and **Restore Data (JSON)** act at once, and **Clear Data / Reset** is disabled.
@@ -478,7 +490,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   2. **Biomarker & Stamp Legend:** Interactive visual matrix explaining Red (Bleeding), Dark Green (Dry), Green+Baby (Fertile Mucus), White+Baby (Peak/High Fertility), and Yellow stamps, as well as post-peak counting ($P+1, P+2, P+3$).
   3. **Daily Charting Guide:** Walkthrough of the Today Dashboard, Observation Drawer, Direct Code Entry (`10KLX3 I AP`), and Detailed Selectors.
   4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
-- **Accessible Design & Navigation:** Keyboard navigation (`Escape` close, tab trap), step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
+- **Accessible Design & Navigation:** Keyboard navigation through the [modal dialog primitive](#51-navigation--global-controls) (`Escape` close, focus trap, focus return), a slide body that the keyboard can focus and scroll, step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
 
 ### 5.11 Error Boundary
 
@@ -559,7 +571,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `cards.css`: Reusable surface containers (`.card`, `.card-surface`, `.card-glass`, `.card-interactive`, `.card-header`, `.card-body`).
     - `forms.css`: Form inputs, selects, textareas, custom checkboxes, and toggle switches.
     - `badges.css`: Indicators, pills, and biomarker badges (`.badge`, `.badge-pill`, `.stamp-badge`).
-    - `dialogs.css`: Modal backdrops, dialog containers, the confirmation dialog (`.confirm-overlay`, `.confirm-dialog`), and slide-in drawer panels.
+    - `dialogs.css`: Modal backdrops, dialog containers, the confirmation dialog (`.confirm-overlay`, `.confirm-dialog`), and slide-in drawer panels. The `.modal-dialog` rule removes the browser styles of the native `<dialog>` (margin, border, padding, size limits and `::backdrop`), so the overlay classes give the full-screen backdrop.
     - `toast.css`: The undo toast (`.undo-toast`) that floats above the bottom navigation.
   - `src/styles/views/`:
     - `header.css`: Global header, navigation brand, language selector, and theme switcher.
@@ -580,6 +592,9 @@ Interactive slide-over drawer for entering and editing observations with two syn
 ## 8. Testing & Quality Assurance
 
 The project uses **test-driven development (TDD)**. Write a failing test before each behavior change, then write the minimum code to make it pass. The tools are **Vitest**, **React Testing Library** and the **V8 coverage** engine. **Biome** and the strict **TypeScript** compiler do the static analysis.
+
+- `biome.json` keeps all the `a11y` rules of the recommended preset on. The project has no override that turns an accessibility rule off.
+- jsdom has no `HTMLDialogElement.showModal()` or `close()`. `src/setupTests.ts` adds two small versions that set and remove the `open` attribute, so the component tests can find an open `<dialog>` by its role.
 
 ### Coverage Policy
 

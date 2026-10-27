@@ -183,6 +183,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-white_baby">
               <svg
+                aria-hidden="true"
                 className="baby-svg"
                 viewBox="0 0 24 24"
                 fill="currentColor"
