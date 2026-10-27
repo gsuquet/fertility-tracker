@@ -127,6 +127,18 @@ describe('dataValidator Domain Engine', () => {
     expect(result?.symptoms).toEqual(['AP']);
   });
 
+  it('rebuilds a stored lone B or L appearance code so that it is not read as bleeding', () => {
+    expect(
+      validateObservation({ date: '2026-09-08', modifiers: ['L'], codeString: 'L' })?.codeString
+    ).toBe('-L');
+    expect(
+      validateObservation({ date: '2026-09-09', modifiers: ['B'], codeString: ' b ' })?.codeString
+    ).toBe('-B');
+    expect(
+      validateObservation({ date: '2026-09-10', bleeding: 'L', codeString: 'L' })?.codeString
+    ).toBe('L');
+  });
+
   it('keeps each symptom code once', () => {
     const result = validateObservation({
       date: '2026-09-07',

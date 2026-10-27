@@ -85,8 +85,11 @@ export function validateObservation(raw: unknown): Observation | null {
       : `obs_${obj.date}_${Date.now()}`;
 
   const stamp = calculateStamp(bleeding, stretch, modifiers);
+  const storedCode = typeof obj.codeString === 'string' ? obj.codeString.trim() : '';
+  // A stored lone 'B' or 'L' without bleeding is an appearance code. Rebuild it as '-B' or '-L'.
+  const isLoneAppearanceCode = !bleeding && ['B', 'L'].includes(storedCode.toUpperCase());
   const codeString =
-    typeof obj.codeString === 'string' && obj.codeString.trim().length > 0
+    typeof obj.codeString === 'string' && storedCode.length > 0 && !isLoneAppearanceCode
       ? appendMissingSymptoms(obj.codeString, symptoms)
       : formatCodeString({
           bleeding,

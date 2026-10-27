@@ -22,7 +22,7 @@ An appearance code without a stretch code can be the same as a bleeding code, fo
 
 The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
 
-Data from versions before 1.15.8 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string.
+Data from versions before 1.15.8 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. A stored code `B` or `L` on a day without bleeding becomes `-B` or `-L`.
 
 ## Bleeding codes
 
