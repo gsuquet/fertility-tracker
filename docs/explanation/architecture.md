@@ -81,6 +81,8 @@ If a part of the application cannot load, an error boundary shows a message and 
 
 The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../adr/0002-css-maintainability-design-system.md) for the reasons.
 
+The font Plus Jakarta Sans comes from the npm package `@fontsource-variable/plus-jakarta-sans`. The file `src/styles/base/fonts.css` declares only the `latin` and `latin-ext` files. One variable file gives all the weights. Vite copies the files to `assets/` with a hash in the name, so the service worker keeps them in the cache. The font does not come from Google Fonts, because each request to Google Fonts tells Google about the visit. The font has the SIL Open Font License 1.1.
+
 ## Related documents
 
 - [Domain API](../reference/domain-api.md)
