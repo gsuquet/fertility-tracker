@@ -12,4 +12,4 @@ Use this procedure to remove all your observations from this browser. For exampl
 
 ## Result
 
-The application has no observations. The theme, the language and the welcome guide settings stay the same.
+The application has no observations. It also deletes the copy of unreadable data. The theme, the language and the welcome guide settings stay the same.

@@ -39,6 +39,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.2',
+    date: '2026-10-27',
+    title: 'Safer Data and Peak Day Corrections',
+    titleFr: 'Données plus sûres et corrections du Jour Sommet',
+    tagline: 'One Peak Day per cycle, and unreadable data is kept for recovery',
+    taglineFr: 'Un Jour Sommet par cycle, et les données illisibles sont gardées pour récupération',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'When you set a Peak Day on a different day, it replaces the Peak Day that you set before in the same cycle. The Peak Days of other cycles do not change',
+      'Saved data that cannot be read is now kept, and you can download it as a file',
+      'The export dialog now says that the JSON backup file is not encrypted',
+    ],
+    highlightsFr: [
+      'Quand vous définissez un Jour Sommet sur un autre jour, il remplace le Jour Sommet défini avant dans le même cycle. Les Jours Sommet des autres cycles ne changent pas',
+      'Les données enregistrées illisibles sont maintenant gardées et peuvent être téléchargées dans un fichier',
+      'La fenêtre d’export indique maintenant que le fichier de sauvegarde JSON n’est pas chiffré',
+    ],
+  },
+  {
     version: '1.15.1',
     date: '2026-10-27',
     title: 'Documentation in Simplified Technical English',
