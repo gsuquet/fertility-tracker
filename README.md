@@ -18,7 +18,7 @@ Fertility Tracker is a web application to chart fertility signs with the Creight
 - Make a backup file and restore it.
 - Use the application in English or French, with a light or dark theme.
 
-Your data stays in your browser. The application has no account and no server database. Read [Privacy and data storage](docs/explanation/privacy-and-data-storage.md).
+Your data stays in your browser. The application has no account and no server database. It loads no file from a different site, also not the font. Read [Privacy and data storage](docs/explanation/privacy-and-data-storage.md).
 
 ## Start
 

@@ -88,19 +88,20 @@ graph TD
 
 Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an exact version. `.npmrc` sets `save-exact=true` and `engine-strict=true`; `package.json` declares `engines`, `devEngines` and `packageManager`; `.mise/config.toml` and `.mise/mise.lock` pin the toolchain with checksums.
 
-| Layer                  | Technology                                 | Specification / Version                                                                          |
-| :--------------------- | :----------------------------------------- | :----------------------------------------------------------------------------------------------- |
-| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)       |
-| **UI Library**         | React                                      | `v19.3.1`                                                                                        |
-| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)      |
-| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                         |
-| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)            |
-| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks  |
-| **Icons**              | Lucide React                               | `v1.61.0`                                                                                        |
-| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                           |
-| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3` |
-| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                             |
-| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                |
+| Layer                  | Technology                                 | Specification / Version                                                                           |
+| :--------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------------------ |
+| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)        |
+| **UI Library**         | React                                      | `v19.3.1`                                                                                         |
+| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)       |
+| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                          |
+| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)             |
+| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks   |
+| **Icons**              | Lucide React                               | `v1.61.0`                                                                                         |
+| **Font**               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans v5.3.0` (self-hosted variable woff2, no third-party host) |
+| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                            |
+| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3`  |
+| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                              |
+| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                 |
 
 ---
 
@@ -493,6 +494,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
+    - `fonts.css`: `@font-face` rules for **Plus Jakarta Sans** (variable weight `200 800`, `font-display: swap`). Only the `latin` and `latin-ext` woff2 subsets of `@fontsource-variable/plus-jakarta-sans` are declared. The `url()` values are package paths, so Vite copies the files to `assets/` with a content hash and the service worker precaches them. No font or stylesheet loads from a third-party host such as Google Fonts.
     - `reset.css`: Modern CSS box-sizing resets, zero-margin defaults, font smoothing.
     - `layout.css`: App shell container (`.app-layout`, `.main-content`), mobile bottom bar offsets, global focus outlines.
   - `src/styles/primitives/`:
@@ -621,7 +623,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
 - **Service worker events:**
   - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
   - `activate`: Deletes every cache whose name starts with `fertility-tracker-` and is not the current cache, then calls `clients.claim()`.
-  - `fetch`: Ignores requests that are not `GET` or not same-origin (for example Google Fonts).
+  - `fetch`: Ignores requests that are not `GET` or not same-origin.
     - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
     - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response whose `Content-Type` is not `text/html`. After a deploy, the server answers an old file name with `index.html` (SPA fallback); this response is returned but never stored under the asset URL.
     - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached app shell (`./`). Without a cached response, returns a network error.
@@ -634,6 +636,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
 **Configuration:** [public/\_headers](./public/_headers)
 
 - `Content-Security-Policy` uses `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not contain an inline script.
+- `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`: no third-party host. `index.html` loads no stylesheet, font or preconnect from another origin.
 - `sw.js` is served with `Cache-Control: no-cache, no-store, must-revalidate`, so the browser always checks for a new service worker. Files in `assets/` are immutable for one year.
 
 ---
@@ -642,7 +645,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
 
 ### Privacy
 
-Fertility Tracker operates with a 100% client-side execution model. All biomarker observations and health data remain strictly within the user's browser local storage. No health data is ever transmitted to remote servers.
+Fertility Tracker operates with a 100% client-side execution model. All biomarker observations and health data remain strictly within the user's browser local storage. No health data is ever transmitted to remote servers. The application loads all its files (scripts, styles and fonts) from its own origin, so no third party (for example Google Fonts) receives a request when a user opens it.
 
 ### Trademark Notice
 
