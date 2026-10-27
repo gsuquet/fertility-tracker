@@ -21,6 +21,9 @@ const Actions = () => {
       <button type="button" onClick={() => importDataJson('[]')}>
         import
       </button>
+      <button type="button" onClick={() => importDataJson('[]', 'merge')}>
+        merge
+      </button>
       <button type="button" onClick={clearAllData}>
         clear
       </button>
@@ -51,6 +54,8 @@ describe('UndoToast', () => {
     expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.demo);
     click('import');
     expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.import);
+    click('merge');
+    expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.merge);
     click('clear');
     expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.clear);
   });

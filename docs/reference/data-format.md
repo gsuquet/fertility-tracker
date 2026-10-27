@@ -77,6 +77,11 @@ When you restore a file, the application does these checks:
 - If two items have the same date, it keeps the last item.
 - It calculates `stamp`, `cycleDay` and `isPeakDay` again.
 
+If you have observations, you select **Replace** or **Merge**:
+
+- **Replace** deletes the current observations and keeps only the file.
+- **Merge** keeps the current observations. A day of the file replaces the current day with the same date.
+
 The validation is in `src/domain/dataValidator.ts`.
 
 ## Related documents

@@ -14,6 +14,8 @@ import {
 } from 'lucide-react';
 import { getExportFilename } from '../utils/exportUtils';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { summarizeObservations } from '../domain/backupImport';
+import type { BackupSummary, ImportMode } from '../domain/backupImport';
 import { ConfirmDialog } from './ConfirmDialog';
 
 interface ExportModalProps {
@@ -24,7 +26,10 @@ interface ExportModalProps {
 }
 
 /** A data action that waits for the user to confirm it. */
-type PendingAction = { kind: 'demo' } | { kind: 'clear' } | { kind: 'import'; text: string };
+type PendingAction =
+  | { kind: 'demo' }
+  | { kind: 'clear' }
+  | { kind: 'import'; text: string; summary: BackupSummary };
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPreparePrint }) => {
   const {
@@ -130,10 +135,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     }
   };
 
-  const runAction = (action: PendingAction) => {
+  const runAction = (action: PendingAction, mode: ImportMode = 'replace') => {
     if (action.kind === 'demo') loadDemoData();
     if (action.kind === 'clear') clearAllData();
-    if (action.kind === 'import') importDataJson(action.text);
+    if (action.kind === 'import') importDataJson(action.text, mode);
     setPending(null);
     onClose();
   };
@@ -143,9 +148,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     if (!file) return;
     const text = await file.text();
     e.target.value = '';
-    const isValid = parseAndValidateObservationsJson(text) !== null;
-    setImportError(!isValid);
-    if (isValid) runOrConfirm({ kind: 'import', text });
+    const imported = parseAndValidateObservationsJson(text);
+    setImportError(imported === null);
+    if (imported) runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported) });
   };
 
   const confirmContent = (action: PendingAction) => {
@@ -154,21 +159,32 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     if (action.kind === 'demo') {
       return {
         title: c.demoTitle,
-        message: c.demoMessage.replace('{count}', count),
+        messages: [c.demoMessage.replace('{count}', count)],
         actions: [{ label: c.demoConfirm, onClick: () => runAction(action) }],
       };
     }
     if (action.kind === 'clear') {
       return {
         title: c.clearTitle,
-        message: c.clearMessage.replace('{count}', count),
+        messages: [c.clearMessage.replace('{count}', count)],
         actions: [{ label: c.clearConfirm, onClick: () => runAction(action), danger: true }],
       };
     }
+    const { summary } = action;
+    const fileMessage =
+      summary.count === 0
+        ? c.importEmpty
+        : c.importSummary
+            .replace('{count}', String(summary.count))
+            .replace('{first}', String(summary.firstDate))
+            .replace('{last}', String(summary.lastDate));
     return {
       title: c.importTitle,
-      message: c.importMessage.replace('{count}', count),
-      actions: [{ label: c.importReplace, onClick: () => runAction(action) }],
+      messages: [fileMessage, c.importChoice.replace('{count}', count)],
+      actions: [
+        { label: c.importMerge, onClick: () => runAction(action, 'merge') },
+        { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
+      ],
     };
   };
 
@@ -377,7 +393,9 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
           actions={confirmation.actions}
           onCancel={() => setPending(null)}
         >
-          <p>{confirmation.message}</p>
+          {confirmation.messages.map(message => (
+            <p key={message}>{message}</p>
+          ))}
         </ConfirmDialog>
       )}
     </div>

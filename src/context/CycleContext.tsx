@@ -8,9 +8,11 @@ import { getTodayStr } from '../utils/dateUtils';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { buildDemoObservations } from '../domain/demoData';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { mergeObservations } from '../domain/backupImport';
+import type { ImportMode } from '../domain/backupImport';
 
 /** A change that replaced the observations and that the saved copy can undo. */
-export type DataChange = 'demo' | 'import' | 'clear' | 'earlier';
+export type DataChange = 'demo' | 'import' | 'merge' | 'clear' | 'earlier';
 
 export interface CycleDataContextType {
   observations: Observation[];
@@ -20,7 +22,8 @@ export interface CycleDataContextType {
   saveObservation: (obsData: ObservationInput) => void;
   deleteObservation: (id: string) => void;
   exportDataJson: () => string;
-  importDataJson: (jsonStr: string) => boolean;
+  /** Replaces the observations with a backup, or merges the backup into them. */
+  importDataJson: (jsonStr: string, mode?: ImportMode) => boolean;
   clearAllData: () => void;
   loadDemoData: () => void;
   /** The original text of stored data that could not be read, or null. */
@@ -197,13 +200,17 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [replaceObservations]);
 
   const importDataJson = useCallback(
-    (jsonStr: string): boolean => {
+    (jsonStr: string, mode: ImportMode = 'replace'): boolean => {
       const validated = parseAndValidateObservationsJson(jsonStr);
       if (!validated) return false;
-      replaceObservations('import', validated);
+      if (mode === 'merge') {
+        replaceObservations('merge', mergeObservations(observations, validated));
+      } else {
+        replaceObservations('import', validated);
+      }
       return true;
     },
-    [replaceObservations]
+    [observations, replaceObservations]
   );
 
   const loadDemoData = useCallback(() => {

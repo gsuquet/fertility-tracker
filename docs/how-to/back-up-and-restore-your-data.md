@@ -14,17 +14,20 @@ The file name has the date, for example `fertility-tracker-data-backup-2026-10-2
 
 ## Restore a backup
 
-> **CAUTION:** A restore replaces all the observations in this browser. Make a backup of the current data first if you want to keep it.
+> **CAUTION:** **Replace** deletes all the observations in this browser. Make a backup of the current data first if you want to keep it.
 1. Click **Practitioner PDF / PNG**.
 2. Click **Restore Data (JSON)**.
 3. Select the backup file.
 4. If the dialog shows "This file is not a valid backup", select a different file.
-5. If you have observations, the **Restore this backup?** dialog opens. Click **Replace**.
-6. Look at the chart. If it is not correct, click **Undo** in the toast at the bottom of the page.
+5. If you have observations, the **Restore this backup?** dialog opens. Read the number of observations and the dates of the file.
+6. Select how to use the file:
+   - To keep only the observations of the file, click **Replace**.
+   - To add the file to your observations, click **Merge**. A day of the file replaces your day with the same date.
+7. Look at the chart. If it is not correct, click **Undo** in the toast at the bottom of the page.
 
 ## Result
 
-The application shows the observations of the backup file. It calculates the cycles, stamps and Peak Days again.
+The application shows the observations of the backup file, or your observations merged with the file. It calculates the cycles, stamps and Peak Days again.
 
 ## Related documents
 

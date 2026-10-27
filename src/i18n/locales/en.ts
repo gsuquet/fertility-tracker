@@ -197,8 +197,12 @@ export const en = {
     demoMessage: 'The demo cycles replace the {count} observations in this browser.',
     demoConfirm: 'Load the demo',
     importTitle: 'Restore this backup?',
-    importMessage: 'The backup replaces the {count} observations in this browser.',
+    importSummary: 'The file has {count} observations, from {first} to {last}.',
+    importEmpty: 'The file has no observations.',
+    importChoice:
+      'You have {count} observations. Replace deletes them and keeps only the file. Merge keeps them, and the file replaces the days with the same date.',
     importReplace: 'Replace',
+    importMerge: 'Merge',
     clearTitle: 'Delete all chart data?',
     clearMessage: 'This deletes the {count} observations in this browser.',
     clearConfirm: 'Delete all data',
@@ -206,6 +210,7 @@ export const en = {
   undoToast: {
     demo: 'The demo data replaced your observations.',
     import: 'The backup replaced your observations.',
+    merge: 'The backup is merged into your observations.',
     clear: 'All observations are deleted.',
     earlier: 'The app keeps a copy of your observations from before the last change.',
     undo: 'Undo',

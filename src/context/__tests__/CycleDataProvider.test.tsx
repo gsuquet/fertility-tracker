@@ -314,6 +314,29 @@ describe('CycleDataProvider', () => {
       expect(storedUndoDates()).toEqual(['2026-06-01', '2026-06-02']);
     });
 
+    it('merges an import into the current days and undoes the merge', () => {
+      const { result } = renderSaved();
+      const file = [
+        makeObservation({ date: '2026-06-02', stretch: '10', modifiers: ['K'] }),
+        makeObservation({ date: '2026-06-03', stretch: '0' }),
+      ];
+      act(() => {
+        result.current.importDataJson(JSON.stringify(file), 'merge');
+      });
+      expect(result.current.observations.map(o => [o.date, o.stretch])).toEqual([
+        ['2026-06-01', undefined],
+        ['2026-06-02', '10'],
+        ['2026-06-03', '0'],
+      ]);
+      expect(result.current.undoChange).toBe('merge');
+
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations.map(o => [o.date, o.stretch])).toEqual([
+        ['2026-06-01', undefined],
+        ['2026-06-02', '0'],
+      ]);
+    });
+
     it('does not keep a copy when an import fails', () => {
       const { result } = renderSaved();
       act(() => {

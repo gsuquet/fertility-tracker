@@ -199,8 +199,12 @@ export const fr: TranslationSchema = {
     demoMessage: 'Les cycles de démo remplacent les {count} observations de ce navigateur.',
     demoConfirm: 'Charger la démo',
     importTitle: 'Restaurer cette sauvegarde ?',
-    importMessage: 'La sauvegarde remplace les {count} observations de ce navigateur.',
+    importSummary: 'Le fichier contient {count} observations, du {first} au {last}.',
+    importEmpty: 'Le fichier ne contient aucune observation.',
+    importChoice:
+      'Vous avez {count} observations. Remplacer les supprime et garde seulement le fichier. Fusionner les garde, et le fichier remplace les jours de même date.',
     importReplace: 'Remplacer',
+    importMerge: 'Fusionner',
     clearTitle: 'Supprimer toutes les données du graphique ?',
     clearMessage: 'Cette action supprime les {count} observations de ce navigateur.',
     clearConfirm: 'Tout supprimer',
@@ -208,6 +212,7 @@ export const fr: TranslationSchema = {
   undoToast: {
     demo: 'Les données de démo ont remplacé vos observations.',
     import: 'La sauvegarde a remplacé vos observations.',
+    merge: 'La sauvegarde est fusionnée avec vos observations.',
     clear: 'Toutes les observations sont supprimées.',
     earlier: "L'application garde une copie de vos observations d'avant la dernière modification.",
     undo: 'Annuler la modification',

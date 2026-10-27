@@ -203,6 +203,40 @@ describe('ExportModal', () => {
     expect(props.onClose).toHaveBeenCalledOnce();
   });
 
+  it('previews the file and merges it into the existing data', async () => {
+    const props = renderModal(threeCycles);
+    const file = [
+      makeObservation({ date: '2026-09-12', stretch: '10', modifiers: ['K'] }),
+      makeObservation({ date: '2026-09-20', stretch: '0' }),
+    ];
+    upload([new File([JSON.stringify(file)], 'backup.json')]);
+    const dialog = await screen.findByRole('dialog', { name: en.confirmDialog.importTitle });
+    expect(dialog).toHaveTextContent(
+      en.confirmDialog.importSummary
+        .replace('{count}', '2')
+        .replace('{first}', '2026-09-12')
+        .replace('{last}', '2026-09-20')
+    );
+    expect(dialog).toHaveTextContent(en.confirmDialog.importChoice.replace('{count}', '6'));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.confirmDialog.importMerge }));
+    // The file replaces 2026-09-12 and adds 2026-09-20: 6 + 1 observations
+    expect(screen.getByTestId('count')).toHaveTextContent('7');
+    expect(props.onClose).toHaveBeenCalledOnce();
+  });
+
+  it('previews a file with no observations, in French', async () => {
+    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+      language: 'fr',
+      observations: threeCycles,
+    });
+    upload([new File(['[]'], 'empty.json')]);
+    const dialog = await screen.findByRole('dialog', { name: fr.confirmDialog.importTitle });
+    expect(dialog).toHaveTextContent(fr.confirmDialog.importEmpty);
+    expect(
+      within(dialog).getByRole('button', { name: fr.confirmDialog.importMerge })
+    ).toBeVisible();
+  });
+
   it('shows a translated error for an invalid backup and ignores an empty selection', async () => {
     const alertSpy = vi.spyOn(window, 'alert');
     const props = renderModal(threeCycles);
