@@ -25,7 +25,7 @@ fertility-tracker/
 │   │   └── locales/             # en.ts (reference) and fr.ts
 │   ├── styles/                  # CSS in cascade layers
 │   ├── test/                    # Test helpers
-│   ├── types/                   # TypeScript types of the domain
+│   ├── types/                   # TypeScript types and code lists of the domain
 │   ├── utils/                   # Dates, export file names, safe storage
 │   ├── App.tsx                  # Application layout
 │   └── main.tsx                 # Entry point
