@@ -673,6 +673,12 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
   2. An observation logged in the **Today** view is still there after a reload.
   3. A JSON backup, a reset and a restore of that backup keep the observations. The reset goes through the confirm dialog (**Delete all data**) and shows the undo message. After a new observation, the restore shows the import preview, and **Replace** brings back the observations of the backup.
   4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
+  5. A manual Peak Day set in the drawer moves the Peak Day in the stats header and the post-peak stamps in the chart. When the user removes it, the detected Peak Day comes back, also after a reload.
+  6. Saved data that is not JSON shows the recovery notice, and `fertility_care_observations_recovery` keeps the original text. **Delete the copy** and its confirm dialog remove the notice and the copy.
+  7. A saved list with one record that is not valid shows the other observations and the recovery notice for 1 record. The recovery key keeps the original text.
+  8. When `localStorage.setItem` fails for the observations key, the save warning shows, and **Back up now** opens the export dialog.
+  9. After the first visit, the service worker controls the page. With the network off (`context.setOffline(true)`), a reload loads the application, and a new observation saves.
+  10. After **Load Demo Cycle**, the undo toast shows. When a chart cell opens the drawer, the toast is in the drawer dialog: the **Tab** key reaches **Undo**, and a click on **Undo** brings back the empty chart. The focus then goes to the dialog. After the drawer closes, the chart stays empty and the toast does not show.
 - **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit list of rule id and target pairs for each screen in `e2e/accessibility.spec.ts` (all `color-contrast`, issue #49; see also #34 and #35). The test fails on a pair that is not in the list and on a listed pair that no longer occurs, so the list shrinks when a correction is merged.
 - Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.
 
