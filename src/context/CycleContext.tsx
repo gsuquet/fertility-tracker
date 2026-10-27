@@ -1,13 +1,27 @@
 import type React from 'react';
-import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import {
+  createContext,
+  useContext,
+  useState,
+  useEffect,
+  useMemo,
+  useCallback,
+  useRef,
+} from 'react';
 import type { Cycle, Observation, ObservationInput } from '../types/crms';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
-import { getTodayStr } from '../utils/dateUtils';
-import { readStorage, removeStorage, writeStorage } from '../utils/storage';
+import { addDays, getTodayStr } from '../utils/dateUtils';
+import { BACKUP_SNOOZE_DAYS, DEMO_ID_PREFIX, hasUserObservations } from '../domain/backupReminder';
+import {
+  readStorage,
+  removeStorage,
+  requestPersistentStorage,
+  writeStorage,
+} from '../utils/storage';
 import { buildDemoObservations } from '../domain/demoData';
-import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { parseObservationData, serializeObservations } from '../domain/storageFormat';
 import { mergeObservations } from '../domain/backupImport';
 import type { ImportMode } from '../domain/backupImport';
 
@@ -30,6 +44,20 @@ export interface CycleDataContextType {
   recoveryData: string | null;
   /** True when the recovery key holds a copy of `recoveryData`. */
   recoveryKept: boolean;
+  /** The number of stored records that failed validation at load, or 0. */
+  droppedCount: number;
+  /** True when the browser refused the last write of the observations. */
+  saveFailed: boolean;
+  /** The date (`YYYY-MM-DD`) of the last JSON backup, or null. */
+  lastBackupDate: string | null;
+  /** Records today as the date of the last JSON backup. */
+  markBackedUp: () => void;
+  /** The date of the first load with the backup reminder: the start of the first period. */
+  backupReminderStart: string | null;
+  /** The backup reminder stays hidden before this date, or null. */
+  backupSnoozedUntil: string | null;
+  /** Hides the backup reminder for `BACKUP_SNOOZE_DAYS` days. */
+  snoozeBackupReminder: () => void;
   /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
   dismissRecovery: () => void;
   /** The last change that the saved copy can undo, or null when there is no copy. */
@@ -57,6 +85,9 @@ const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const UNDO_KEY = 'fertility_care_observations_undo';
+const LAST_BACKUP_KEY = 'fertility_care_last_backup';
+const REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
+const SNOOZE_KEY = 'fertility_care_backup_snoozed_until';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
@@ -76,22 +107,28 @@ const keepOneManualPeak = (list: Observation[], date: string): Observation[] => 
 };
 
 /**
- * Reads the stored observations. When the stored text cannot be read, copies it to the
- * recovery key if that key is empty, and returns it as `recoveryData`. `recoveryKept` is
- * false when no copy was written: the app must then not save over the original text.
+ * Reads the stored observations in either storage format. When the stored text cannot be
+ * read, or some of its records fail validation, copies the text to the recovery key if that
+ * key is empty, and returns it as `recoveryData`. `recoveryKept` is false when no copy was
+ * written: the app must then not save over the original text.
  */
 const loadStoredState = () => {
   const raw = readStorage(STORAGE_KEY) ?? '[]';
-  const validated = parseAndValidateObservationsJson(raw);
-  if (validated === null) {
-    const recoveryKept = readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
-    return { observations: [], recoveryData: raw, recoveryKept };
+  const parsed = parseObservationData(raw);
+  const keepCopy = () => readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
+  if (parsed === null) {
+    return { observations: [], droppedCount: 0, recoveryData: raw, recoveryKept: keepCopy() };
   }
-  return {
-    observations: reprocessObservations(validated),
-    recoveryData: readStorage(RECOVERY_KEY),
-    recoveryKept: true,
-  };
+  const observations = reprocessObservations(parsed.observations);
+  const { droppedCount } = parsed;
+  if (droppedCount > 0) {
+    return { observations, droppedCount, recoveryData: raw, recoveryKept: keepCopy() };
+  }
+  // A copy kept in an earlier session: its records give the number of dropped records again.
+  const recoveryData = readStorage(RECOVERY_KEY);
+  const keptDropped =
+    recoveryData === null ? 0 : (parseObservationData(recoveryData)?.droppedCount ?? 0);
+  return { observations, droppedCount: keptDropped, recoveryData, recoveryKept: true };
 };
 
 interface UndoState {
@@ -102,16 +139,25 @@ interface UndoState {
 
 /** Reads the copy that an earlier session kept before a replacing change. */
 const loadStoredUndo = (): UndoState | null => {
-  const saved = parseAndValidateObservationsJson(readStorage(UNDO_KEY) ?? 'null');
-  return saved ? { change: 'earlier', observations: saved, persisted: true } : null;
+  const saved = parseObservationData(readStorage(UNDO_KEY) ?? 'null');
+  return saved ? { change: 'earlier', observations: saved.observations, persisted: true } : null;
 };
 
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [initialState] = useState(loadStoredState);
   const [observations, setObservations] = useState<Observation[]>(initialState.observations);
   const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
-  const { recoveryKept } = initialState;
+  const { recoveryKept, droppedCount } = initialState;
   const [undo, setUndo] = useState<UndoState | null>(loadStoredUndo);
+  const [saveFailed, setSaveFailed] = useState(false);
+  const [lastBackupDate, setLastBackupDate] = useState(() => readStorage(LAST_BACKUP_KEY));
+  const [backupReminderStart, setBackupReminderStart] = useState(() =>
+    readStorage(REMINDER_START_KEY)
+  );
+  const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
+  const persistRequested = useRef(false);
+  const hasData = observations.length > 0;
+  const hasUserData = hasUserObservations(observations);
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -127,8 +173,35 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     // Without a recovery copy, keep the unreadable original until the observations change.
     if (!recoveryKept && observations === initialState.observations) return;
-    writeStorage(STORAGE_KEY, JSON.stringify(observations));
+    setSaveFailed(!writeStorage(STORAGE_KEY, serializeObservations(observations)));
   }, [observations, recoveryKept, initialState.observations]);
+
+  // Ask once, when there is data to keep, so that the browser does not evict it.
+  useEffect(() => {
+    if (!hasData || persistRequested.current) return;
+    persistRequested.current = true;
+    void requestPersistentStorage();
+  }, [hasData]);
+
+  // The reminder period starts with the first real observation (or on upgrade with real data).
+  useEffect(() => {
+    if (!hasUserData || backupReminderStart !== null) return;
+    const today = getTodayStr();
+    writeStorage(REMINDER_START_KEY, today);
+    setBackupReminderStart(today);
+  }, [hasUserData, backupReminderStart]);
+
+  const markBackedUp = useCallback(() => {
+    const today = getTodayStr();
+    writeStorage(LAST_BACKUP_KEY, today);
+    setLastBackupDate(today);
+  }, []);
+
+  const snoozeBackupReminder = useCallback(() => {
+    const until = addDays(getTodayStr(), BACKUP_SNOOZE_DAYS);
+    writeStorage(SNOOZE_KEY, until);
+    setBackupSnoozedUntil(until);
+  }, []);
 
   const dismissUndo = useCallback(() => {
     removeStorage(UNDO_KEY);
@@ -147,7 +220,11 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const codeString = obsData.codeString || formatCodeString(obsData);
 
         const newObs: Observation = {
-          id: obsData.id || `obs_${date}_${Date.now()}`,
+          // A saved demo day becomes the user's own day, with a real id.
+          id:
+            obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
+              ? obsData.id
+              : `obs_${date}_${Date.now()}`,
           date,
           cycleDay: obsData.cycleDay || 1,
           bleeding: obsData.bleeding,
@@ -190,7 +267,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 
   const exportDataJson = useCallback(() => {
-    return JSON.stringify(observations, null, 2);
+    return serializeObservations(observations, 2);
   }, [observations]);
 
   const applyObservations = useCallback((list: Observation[]) => {
@@ -208,7 +285,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       if (undo) {
         setUndo({ ...undo, change });
       } else {
-        const persisted = writeStorage(UNDO_KEY, JSON.stringify(observations));
+        const persisted = writeStorage(UNDO_KEY, serializeObservations(observations));
         setUndo({ change, observations, persisted });
       }
       applyObservations(list);
@@ -225,8 +302,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const importDataJson = useCallback(
     (jsonStr: string, mode: ImportMode = 'replace'): boolean => {
-      const validated = parseAndValidateObservationsJson(jsonStr);
-      if (!validated) return false;
+      const parsed = parseObservationData(jsonStr);
+      if (!parsed) return false;
+      const validated = parsed.observations;
       if (mode === 'merge') {
         replaceObservations('merge', mergeObservations(observations, validated));
       } else {
@@ -266,6 +344,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       loadDemoData,
       recoveryData,
       recoveryKept,
+      droppedCount,
+      saveFailed,
+      lastBackupDate,
+      markBackedUp,
+      backupReminderStart,
+      backupSnoozedUntil,
+      snoozeBackupReminder,
       dismissRecovery,
       undoChange: undo ? undo.change : null,
       undoLastChange,
@@ -284,6 +369,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       loadDemoData,
       recoveryData,
       recoveryKept,
+      droppedCount,
+      saveFailed,
+      lastBackupDate,
+      markBackedUp,
+      backupReminderStart,
+      backupSnoozedUntil,
+      snoozeBackupReminder,
       dismissRecovery,
       undo,
       undoLastChange,

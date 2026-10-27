@@ -48,11 +48,11 @@ describe('PrintExportView cycles', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('prints symptoms and notes but strips symptoms from the code', () => {
+  it('prints symptoms and notes apart from the code', () => {
     renderWithProviders(<PrintExportView selectedCycleIds={['all']} />, {
       observations: [
         makeObservation({ date: '2026-09-01', bleeding: 'H', symptoms: ['AP'], notes: 'cramps' }),
-        makeObservation({ date: '2026-09-02', bleeding: 'B', codeString: 'AP' }),
+        makeObservation({ date: '2026-09-02', codeString: 'AP' }),
       ],
     });
     expect(screen.getByText('AP')).toHaveClass('print-symptoms');

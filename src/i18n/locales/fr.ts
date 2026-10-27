@@ -233,6 +233,27 @@ export const fr: TranslationSchema = {
     messageNoCopy:
       "Les observations enregistrées n'ont pas pu être lues, et l'application n'a pas pu en garder une copie. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
     close: 'Fermer',
+    messagePartial:
+      "{count} enregistrements sauvegardés n'ont pas pu être lus. L'application affiche les autres observations et garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
+    messagePartialNoCopy:
+      "{count} enregistrements sauvegardés n'ont pas pu être lus, et l'application n'a pas pu en garder une copie. L'application affiche les autres observations. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
+    messagePartialOne:
+      "1 enregistrement sauvegardé n'a pas pu être lu. L'application affiche les autres observations et garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
+    messagePartialNoCopyOne:
+      "1 enregistrement sauvegardé n'a pas pu être lu, et l'application n'a pas pu en garder une copie. L'application affiche les autres observations. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
+  },
+  storageWarning: {
+    saveFailed:
+      "Le navigateur n'a pas pu enregistrer vos observations. Vos modifications sont conservées seulement jusqu'à la fermeture ou au rechargement de la page. Sauvegardez vos données maintenant.",
+    backUpNow: 'Sauvegarder maintenant',
+  },
+  backupReminder: {
+    message:
+      'Votre dernière sauvegarde date de plus de {days} jours. Téléchargez une sauvegarde pour garder une copie de vos observations.',
+    messageNever:
+      "Vous n'avez aucune sauvegarde de vos observations. Téléchargez une sauvegarde pour en garder une copie.",
+    backUpNow: 'Sauvegarder maintenant',
+    later: 'Plus tard',
   },
   disclaimer: {
     trademark:
