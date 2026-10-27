@@ -1,6 +1,13 @@
 import { describe, it, expect } from 'vitest';
 import { appendMissingSymptoms, formatCodeString, parseCodeString } from '../codeParser';
-import type { ObservationInput } from '../../types/crms';
+import type {
+  BleedingCode,
+  FrequencyCode,
+  MucusModifier,
+  MucusStretch,
+  ObservationInput,
+  SymptomCode,
+} from '../../types/crms';
 
 describe('formatCodeString', () => {
   it('returns an empty string when no field is set', () => {
@@ -58,6 +65,80 @@ describe('code string round trip', () => {
     expect(parsed.formattedCode).toBe(formatCodeString(obs));
   });
 
+  it('keeps the brown bleeding code B apart from the brown appearance code B', () => {
+    expect(parseCodeString(formatCodeString({ bleeding: 'B' }))).toMatchObject({
+      bleeding: 'B',
+      modifiers: [],
+    });
+    expect(parseCodeString('B 10KLX3 I AP')).toMatchObject({
+      bleeding: 'B',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+    });
+    expect(parseCodeString('10B')).toMatchObject({ bleeding: undefined, modifiers: ['B'] });
+  });
+
+  it('writes a lone appearance code that is also a bleeding code with a dash', () => {
+    expect(formatCodeString({ modifiers: ['L'] })).toBe('-L');
+    expect(formatCodeString({ modifiers: ['B'] })).toBe('-B');
+    expect(formatCodeString({ bleeding: 'H', modifiers: ['L'] })).toBe('H -L');
+    expect(formatCodeString({ modifiers: ['L'], frequency: 'X1' })).toBe('LX1');
+    expect(parseCodeString('-L')).toMatchObject({ bleeding: undefined, modifiers: ['L'] });
+    expect(parseCodeString('L')).toMatchObject({ bleeding: 'L', modifiers: [] });
+  });
+
+  it('keeps every field of each combination of codes', () => {
+    const bleedings: (BleedingCode | undefined)[] = [undefined, 'H', 'M', 'L', 'VL', 'B'];
+    const stretches: (MucusStretch | undefined)[] = [
+      undefined,
+      '0',
+      '2',
+      '2W',
+      '4',
+      '6',
+      '8',
+      '10',
+      '10DL',
+      '10SL',
+      '10WL',
+    ];
+    const allModifiers: MucusModifier[] = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'];
+    const modifierSets = Array.from({ length: 1 << allModifiers.length }, (_, mask) =>
+      allModifiers.filter((_, i) => mask & (1 << i))
+    );
+    const frequencies: (FrequencyCode | undefined)[] = [undefined, 'X1', 'X2', 'X3', 'AD'];
+    const symptomSets: SymptomCode[][] = [[], ['AP'], ['RAP', 'LAP']];
+    const failures: string[] = [];
+    for (const bleeding of bleedings)
+      for (const stretch of stretches)
+        for (const modifiers of modifierSets)
+          for (const frequency of frequencies)
+            for (const intercourse of [false, true])
+              for (const symptoms of symptomSets) {
+                const code = formatCodeString({
+                  bleeding,
+                  stretch,
+                  modifiers,
+                  frequency,
+                  intercourse,
+                  symptoms,
+                });
+                const p = parseCodeString(code);
+                if (
+                  p.bleeding !== bleeding ||
+                  p.stretch !== stretch ||
+                  p.modifiers.join() !== modifiers.join() ||
+                  p.frequency !== frequency ||
+                  p.intercourse !== intercourse ||
+                  p.symptoms.join() !== symptoms.join() ||
+                  p.formattedCode !== code
+                ) {
+                  failures.push(code);
+                }
+              }
+    expect(failures.slice(0, 10)).toEqual([]);
+  });
+
   it('shows the symptom of the direct code 10KLX3 I AP', () => {
     expect(parseCodeString('10klx3 i ap').formattedCode).toBe('10KLX3 I AP');
   });
@@ -72,6 +153,10 @@ describe('appendMissingSymptoms', () => {
   it('keeps a code that already shows all the symptoms', () => {
     expect(appendMissingSymptoms('10KLX3 I AP', ['AP'])).toBe('10KLX3 I AP');
     expect(appendMissingSymptoms('0AD', [])).toBe('0AD');
+  });
+
+  it('compares the symptom codes without regard to case', () => {
+    expect(appendMissingSymptoms('10kl ap', ['AP'])).toBe('10kl ap');
   });
 
   it('does not match a symptom code inside another token', () => {

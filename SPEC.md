@@ -167,9 +167,10 @@ The parser operates in two directions:
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
    `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse] [Symptoms]`  
    _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) come last, separated by spaces, so that `parseCodeString(formatCodeString(obs))` keeps every field. The Paper Chart Row cell and the practitioner print layout remove them from the displayed code and show them in a dedicated symptom tag instead.  
-   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.
+   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.  
+   _Ambiguous tokens:_ A mucus token made only of modifiers that equals a bleeding code (`B` or `L` with no stretch and no frequency) is written with a leading dash (`-B`, `-L`). A bare `L` keeps its meaning of light bleeding, so stored codes and typed codes are read as before.
 2. **Stored data repair (`appendMissingSymptoms`):** When the data validator loads an observation whose stored `codeString` lacks one of its `symptoms` (data written before version 1.15.8), it appends each missing symptom code to the end of the stored `codeString`. The rest of the stored code is kept as is.
-3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag. A bare `B` token is brown bleeding only when it is the first token; in any other position it is the brown modifier. The parser ignores the dash of `-B` and `-L`, so they are read as modifiers. For every combination of fields, `parseCodeString(formatCodeString(obs))` returns the same fields.
 
 ---
 

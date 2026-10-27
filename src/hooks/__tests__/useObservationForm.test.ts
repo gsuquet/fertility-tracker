@@ -61,7 +61,7 @@ describe('useObservationForm', () => {
       symptoms: [],
       intercourse: false,
     });
-    expect(form.current.directInputText).toBe('L');
+    expect(form.current.directInputText).toBe('-L');
   });
 
   it('keeps the direct code when notes, peak or cycle start change', () => {

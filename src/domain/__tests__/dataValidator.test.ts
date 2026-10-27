@@ -127,6 +127,16 @@ describe('dataValidator Domain Engine', () => {
     expect(result?.symptoms).toEqual(['AP']);
   });
 
+  it('keeps each symptom code once', () => {
+    const result = validateObservation({
+      date: '2026-09-07',
+      stretch: '0',
+      symptoms: ['AP', 'AP', 'LAP'],
+    });
+    expect(result?.symptoms).toEqual(['AP', 'LAP']);
+    expect(result?.codeString).toBe('0 AP LAP');
+  });
+
   it('makes a code string with the symptoms when it is missing', () => {
     const result = validateObservation({ date: '2026-09-06', stretch: '0', symptoms: ['LAP'] });
     expect(result?.codeString).toBe('0 LAP');

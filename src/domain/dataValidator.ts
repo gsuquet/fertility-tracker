@@ -68,7 +68,7 @@ export function validateObservation(raw: unknown): Observation | null {
     : undefined;
 
   const symptoms: SymptomCode[] = Array.isArray(obj.symptoms)
-    ? obj.symptoms.filter((s: unknown) => isOneOf<SymptomCode>(VALID_SYMPTOMS, s))
+    ? [...new Set(obj.symptoms.filter((s: unknown) => isOneOf<SymptomCode>(VALID_SYMPTOMS, s)))]
     : [];
 
   const intercourse: boolean = Boolean(obj.intercourse);

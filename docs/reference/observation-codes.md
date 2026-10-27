@@ -18,19 +18,21 @@ Examples: `M`, `0AD`, `10KLX3 I AP`, `L 6CX1`.
 
 In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. The parser gives the same fields back from each code string that the application writes.
 
+An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow and `-L` as the appearance code for lubricative.
+
 The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
 
 Data from versions before 1.15.8 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string.
 
 ## Bleeding codes
 
-| Code | Meaning                 | In Direct Code Entry                                                                               |
-| ---- | ----------------------- | -------------------------------------------------------------------------------------------------- |
-| `H`  | Heavy flow              | Yes                                                                                                |
-| `M`  | Moderate flow           | Yes                                                                                                |
-| `L`  | Light flow              | Yes                                                                                                |
-| `VL` | Very light flow         | Yes                                                                                                |
-| `B`  | Brown or black bleeding | No. Use the **Detailed Form** buttons. In Direct Code Entry, `B` is the appearance code for brown. |
+| Code | Meaning                 | In Direct Code Entry                                                                    |
+| ---- | ----------------------- | --------------------------------------------------------------------------------------- |
+| `H`  | Heavy flow              | Yes                                                                                     |
+| `M`  | Moderate flow           | Yes                                                                                     |
+| `L`  | Light flow              | Yes                                                                                     |
+| `VL` | Very light flow         | Yes                                                                                     |
+| `B`  | Brown or black bleeding | Yes, only as the first token. In other positions, `B` is the appearance code for brown. |
 
 ## Stretch codes
 

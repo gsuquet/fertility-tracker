@@ -17,6 +17,9 @@ export interface ParsedCodeResult {
   formattedCode: string;
 }
 
+/** Tokens that the parser reads as a bleeding code. */
+const BLEEDING_TOKENS: string[] = ['H', 'M', 'L', 'VL', 'B'];
+
 /**
  * Formats structured observation components into a clean, canonical Creighton code string.
  */
@@ -49,7 +52,9 @@ export function formatCodeString(obs: ObservationInput): string {
   }
 
   if (mucusToken) {
-    parts.push(mucusToken);
+    // A lone appearance code that is also a bleeding code (B, L) gets a dash,
+    // so that the parser does not read it as bleeding.
+    parts.push(BLEEDING_TOKENS.includes(mucusToken) ? `-${mucusToken}` : mucusToken);
   }
 
   // 4. Intercourse marker ('I')
@@ -70,7 +75,7 @@ export function formatCodeString(obs: ObservationInput): string {
  * Code strings saved before symptoms were formatted lack them.
  */
 export function appendMissingSymptoms(codeString: string, symptoms: SymptomCode[]): string {
-  const tokens = codeString.trim().split(/\s+/);
+  const tokens = codeString.trim().toUpperCase().split(/\s+/);
   const missing = symptoms.filter(sym => !tokens.includes(sym));
   return [codeString.trim(), ...missing].join(' ');
 }
@@ -89,7 +94,6 @@ export function parseCodeString(input: string): ParsedCodeResult {
   const symptoms: SymptomCode[] = [];
   let intercourse = false;
 
-  const validBleeding: BleedingCode[] = ['H', 'M', 'L', 'VL'];
   const validStretches: MucusStretch[] = [
     '10WL',
     '10SL',
@@ -106,7 +110,7 @@ export function parseCodeString(input: string): ParsedCodeResult {
   const validFreqs: FrequencyCode[] = ['X1', 'X2', 'X3', 'AD'];
   const validSymptoms: SymptomCode[] = ['RAP', 'LAP', 'AP'];
 
-  for (const token of tokens) {
+  for (const [index, token] of tokens.entries()) {
     if (token === 'I') {
       intercourse = true;
       continue;
@@ -124,7 +128,9 @@ export function parseCodeString(input: string): ParsedCodeResult {
       continue;
     }
 
-    if (validBleeding.includes(token as BleedingCode) && !bleeding) {
+    // B is brown bleeding only as the first token. Elsewhere it is the brown appearance code.
+    const isBleeding = token === 'B' ? index === 0 : BLEEDING_TOKENS.includes(token);
+    if (isBleeding && !bleeding) {
       bleeding = token as BleedingCode;
       continue;
     }

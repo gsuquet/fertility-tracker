@@ -50,11 +50,13 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'The observation code keeps the symptom codes, for example 10KLX3 I AP',
       'The history list, calendar and direct code field show the symptoms again',
       'Saved data without symptoms in the code gets them back when it loads',
+      'Direct Code Entry reads B first as brown bleeding, and a lone L or B appearance code is written -L or -B',
     ],
     highlightsFr: [
       'Le code d’observation garde les codes de symptôme, par exemple 10KLX3 I AP',
       'L’historique, le calendrier et le champ de code direct affichent de nouveau les symptômes',
       'Les données enregistrées sans symptômes dans le code les retrouvent au chargement',
+      'La saisie directe lit B en premier comme saignement brun, et un code d’aspect L ou B seul s’écrit -L ou -B',
     ],
   },
   {
