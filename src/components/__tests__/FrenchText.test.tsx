@@ -84,7 +84,7 @@ describe('French text of the components', () => {
   it('translates the calendar label of a day with an observation', () => {
     renderWithProviders(
       <CalendarGrid />,
-      inFrench([makeObservation({ date: '2026-09-02', codeString: '0' })])
+      inFrench([makeObservation({ date: '2026-09-02', stretch: '0', codeString: '0' })])
     );
     expect(
       screen.getByRole('button', {
@@ -218,7 +218,7 @@ describe('French text of the components', () => {
   });
 
   it('translates the drawer title and close button for a saved observation', () => {
-    const saved = makeObservation({ date: TODAY, codeString: '0' });
+    const saved = makeObservation({ date: TODAY, stretch: '0', codeString: '0' });
     renderWithProviders(
       <>
         <ObservationDrawer />
@@ -351,7 +351,7 @@ describe('French text of the components', () => {
   it('translates the today form titles, placeholder, day badge and saved state', () => {
     renderWithProviders(
       <TodayView />,
-      inFrench([makeObservation({ date: TODAY, codeString: '0' })])
+      inFrench([makeObservation({ date: TODAY, stretch: '0', codeString: '0' })])
     );
     expect(screen.getByTitle(fr.todayView.modeDirectTitle)).toBeInTheDocument();
     expect(screen.getByTitle(fr.todayView.modeDetailedTitle)).toBeInTheDocument();
@@ -392,7 +392,7 @@ describe('French text of the components', () => {
   });
 
   it('prints the day dates as DD/MM in French and MM-DD in English', () => {
-    const observations = [makeObservation({ date: '2026-09-03', codeString: '0' })];
+    const observations = [makeObservation({ date: '2026-09-03', stretch: '0', codeString: '0' })];
     const { unmount } = renderWithProviders(
       <PrintExportView selectedCycleIds={['all']} />,
       inFrench(observations)

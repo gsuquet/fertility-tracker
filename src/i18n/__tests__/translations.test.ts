@@ -37,6 +37,8 @@ describe('i18n Translation Modules & Schema Parity', () => {
     expect(Object.keys(fr.storageRecovery)).toEqual(Object.keys(en.storageRecovery));
     expect(Object.keys(fr.confirmDialog)).toEqual(Object.keys(en.confirmDialog));
     expect(Object.keys(fr.undoToast)).toEqual(Object.keys(en.undoToast));
+    expect(Object.keys(fr.storageWarning)).toEqual(Object.keys(en.storageWarning));
+    expect(Object.keys(fr.backupReminder)).toEqual(Object.keys(en.backupReminder));
     expect(Object.keys(fr.menu)).toEqual(Object.keys(en.menu));
     expect(Object.keys(fr.mobileTabs)).toEqual(Object.keys(en.mobileTabs));
     expect(Object.keys(fr.common)).toEqual(Object.keys(en.common));

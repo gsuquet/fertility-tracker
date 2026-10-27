@@ -1,5 +1,5 @@
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
-import type { Observation } from '../types/crms';
+import { parseObservationData } from './storageFormat';
 
 export interface VersionRelease {
   version: string;
@@ -63,6 +63,32 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'Chaque libellé de la légende des timbres apparaît une seule fois, par exemple Jour Sommet (P)',
       'Les libellés des lecteurs d’écran et les info-bulles des boutons sont traduits, et la langue de la page suit l’application',
       'Les codes CrMS comme 10KLX3, P et I restent les mêmes dans chaque langue',
+    ],
+  },
+  {
+    version: '1.18.0',
+    date: '2026-10-27',
+    title: 'Safer Data Storage',
+    titleFr: 'Stockage des données plus sûr',
+    tagline: 'The app now warns you when it cannot save and reminds you to back up',
+    taglineFr:
+      'L’application vous avertit maintenant quand elle ne peut pas enregistrer et vous rappelle de sauvegarder',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A warning stays at the top of the page when the browser does not save your observations',
+      'The app asks the browser to keep your data, so that it is not deleted when space is low',
+      'A reminder shows when your last backup is more than 30 days old. Later hides it for 7 days',
+      'The app can now read a versioned data format. It still saves in the old format, so older versions read your data and backups',
+      'Saved records that cannot be read are kept in a copy, and a message tells you how many',
+      'The code of each day is calculated again from its fields when the app loads your data',
+    ],
+    highlightsFr: [
+      'Un avertissement reste en haut de la page quand le navigateur n’enregistre pas vos observations',
+      'L’application demande au navigateur de garder vos données, pour qu’elles ne soient pas supprimées quand l’espace manque',
+      'Un rappel s’affiche quand votre dernière sauvegarde date de plus de 30 jours. Plus tard le masque pendant 7 jours',
+      'L’application sait maintenant lire un format de données versionné. Elle enregistre toujours dans l’ancien format, pour que les versions précédentes lisent vos données et sauvegardes',
+      'Les enregistrements illisibles sont gardés dans une copie, et un message indique leur nombre',
+      'Le code de chaque jour est recalculé à partir de ses champs quand l’application charge vos données',
     ],
   },
   {
@@ -908,14 +934,10 @@ export function getStorageStats(): StorageStats {
         }
       }
 
-      const storedObs = localStorage.getItem(STORAGE_OBSERVATIONS_KEY);
-      if (storedObs) {
-        const parsed = JSON.parse(storedObs);
-        if (Array.isArray(parsed)) {
-          observationsCount = parsed.length;
-          const cycles = groupObservationsIntoCycles(parsed as Observation[]);
-          cyclesCount = cycles.length;
-        }
+      const stored = parseObservationData(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) ?? '[]');
+      if (stored) {
+        observationsCount = stored.observations.length;
+        cyclesCount = groupObservationsIntoCycles(stored.observations).length;
       }
     }
   } catch {

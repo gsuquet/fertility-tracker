@@ -7,7 +7,7 @@ import { ConfirmDialog } from './ConfirmDialog';
 
 /** Lets the user save the stored data that the app could not read, then delete the copy or close. */
 export const StorageRecoveryNotice: React.FC = () => {
-  const { recoveryData, recoveryKept, dismissRecovery } = useCycleData();
+  const { recoveryData, recoveryKept, droppedCount, dismissRecovery } = useCycleData();
   const { t } = useLanguage();
   const [isConfirmOpen, setIsConfirmOpen] = useState(false);
 
@@ -22,9 +22,21 @@ export const StorageRecoveryNotice: React.FC = () => {
     URL.revokeObjectURL(url);
   };
 
+  const r = t.storageRecovery;
+  const partial =
+    droppedCount === 1
+      ? recoveryKept
+        ? r.messagePartialOne
+        : r.messagePartialNoCopyOne
+      : recoveryKept
+        ? r.messagePartial
+        : r.messagePartialNoCopy;
+  const whole = recoveryKept ? r.message : r.messageNoCopy;
+  const message = droppedCount > 0 ? partial.replace('{count}', String(droppedCount)) : whole;
+
   return (
     <div className="storage-recovery-notice" role="alert">
-      <p>{recoveryKept ? t.storageRecovery.message : t.storageRecovery.messageNoCopy}</p>
+      <p>{message}</p>
       <div className="storage-recovery-actions">
         <button type="button" className="btn btn-primary" onClick={handleDownload}>
           {t.storageRecovery.download}

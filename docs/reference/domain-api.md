@@ -63,11 +63,31 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 ## dataValidator.ts
 
-| Function                           | Signature                                    | Returns                                                     |
-| ---------------------------------- | -------------------------------------------- | ----------------------------------------------------------- |
-| `validateObservation`              | `(raw: unknown) => Observation \| null`      | A clean observation, or `null` if the date is not valid.    |
-| `validateObservationsArray`        | `(rawList: unknown) => Observation[]`        | The valid items, one for each date, in date order.          |
-| `parseAndValidateObservationsJson` | `(jsonStr: string) => Observation[] \| null` | The valid items, or `null` if the text is not a JSON array. |
+| Function              | Signature                               | Returns                                                  |
+| --------------------- | --------------------------------------- | -------------------------------------------------------- |
+| `validateObservation` | `(raw: unknown) => Observation \| null` | A clean observation, or `null` if the date is not valid. |
+
+## storageFormat.ts
+
+| Export                   | Signature                                                                    | Returns                                                                                                                                        |
+| ------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_SCHEMA_VERSION` | `number`                                                                     | The newest format that the application reads: `1`.                                                                                             |
+| `WRITE_SCHEMA_VERSION`   | `0 \| 1`                                                                     | The format that the application writes: `0`.                                                                                                   |
+| `serializeObservations`  | `(observations: Observation[], indent?: number, version?: 0 \| 1) => string` | The JSON text. Version 0 is a bare array. Version 1 is `{ "schemaVersion": 1, "observations": [...] }`. The default is `WRITE_SCHEMA_VERSION`. |
+| `parseObservationData`   | `(text: string) => ObservationData \| null`                                  | The valid observations, one for each date, in date order, and `droppedCount`.`null` if the application cannot read the text.                   |
+
+`parseObservationData` reads a bare JSON array (version 0) and the envelope (version 1). It calculates `codeString` again from the fields.
+
+## backupReminder.ts
+
+| Export                 | Signature                                                                             | Returns                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BACKUP_REMINDER_DAYS` | `number`                                                                              | `30`.                                                                                                                                      |
+| `BACKUP_SNOOZE_DAYS`   | `number`                                                                              | `7`.                                                                                                                                       |
+| `DEMO_ID_PREFIX`       | `string`                                                                              | `demo_`, the start of the id of a demo observation.                                                                                        |
+| `isUserObservation`    | `(obs: Observation) => boolean`                                                       | `true` if the observation is not demo data.                                                                                                |
+| `hasUserObservations`  | `(observations: Observation[]) => boolean`                                            | `true` if one observation or more is not demo data.                                                                                        |
+| `isBackupDue`          | `(dates: BackupReminderDates, observations: Observation[], today: string) => boolean` | `true` if a day that is not demo data exists, no snooze is active, and 30 days passed since the last backup or the first real observation. |
 
 ## backupImport.ts
 

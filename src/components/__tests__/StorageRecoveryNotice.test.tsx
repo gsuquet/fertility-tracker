@@ -1,4 +1,4 @@
-import { screen, fireEvent, within } from '@testing-library/react';
+import { cleanup, screen, fireEvent, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { StorageRecoveryNotice } from '../StorageRecoveryNotice';
 import { renderWithProviders, OBSERVATIONS_STORAGE_KEY } from '../../test/render';
@@ -74,5 +74,44 @@ describe('StorageRecoveryNotice', () => {
     fireEvent.click(screen.getByRole('button', { name: en.storageRecovery.close }));
     expect(screen.queryByRole('alert')).toBeNull();
     expect(localStorage.getItem('fertility_care_observations_recovery')).toBe('old copy');
+  });
+
+  describe('dropped records', () => {
+    const PARTIAL = JSON.stringify([{ date: '2026-06-01', stretch: '0' }, { date: 'x' }, 7]);
+
+    it('says how many records it dropped and that a copy is kept', () => {
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, PARTIAL);
+      renderWithProviders(<StorageRecoveryNotice />);
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        en.storageRecovery.messagePartial.replace('{count}', '2')
+      );
+      expect(screen.getByRole('button', { name: en.storageRecovery.dismiss })).toBeInTheDocument();
+    });
+
+    it('uses the singular for one dropped record, in English and French, also after a reload', () => {
+      const one = JSON.stringify([{ date: '2026-06-01', stretch: '0' }, { date: 'x' }]);
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, one);
+      renderWithProviders(<StorageRecoveryNotice />).unmount();
+      expect(localStorage.getItem('fertility_care_observations_recovery')).toBe(one);
+      renderWithProviders(<StorageRecoveryNotice />);
+      expect(screen.getByRole('alert')).toHaveTextContent(en.storageRecovery.messagePartialOne);
+      cleanup();
+      localStorage.setItem('fertility_care_observations_recovery', 'old copy');
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, one);
+      renderWithProviders(<StorageRecoveryNotice />, { language: 'fr' });
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        fr.storageRecovery.messagePartialNoCopyOne
+      );
+    });
+
+    it('says in French that no copy is kept', () => {
+      localStorage.setItem('fertility_care_observations_recovery', 'old copy');
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, PARTIAL);
+      renderWithProviders(<StorageRecoveryNotice />, { language: 'fr' });
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        fr.storageRecovery.messagePartialNoCopy.replace('{count}', '2')
+      );
+      expect(screen.getByRole('button', { name: fr.storageRecovery.close })).toBeInTheDocument();
+    });
   });
 });
