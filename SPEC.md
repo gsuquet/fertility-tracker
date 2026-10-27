@@ -110,7 +110,20 @@ The Domain Engine is isolated in `src/domain/` with pure, deterministic logic in
 
 ### 3.1 Biomarker Codes Catalog
 
-The Creighton Model system uses standardized alphanumeric tokens to record daily observations:
+The Creighton Model system uses standardized alphanumeric tokens to record daily observations.
+
+**Single source of truth:** [src/types/crms.ts](./src/types/crms.ts) exports each code list as an `as const` array, and the code types are derived from these arrays. The parser, the validator, the stamp calculator, the cycle boundary detector and the observation forms read the lists from this file. No other file repeats a code list.
+
+| Constant                  | Codes                                                       |
+| ------------------------- | ----------------------------------------------------------- |
+| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    |
+| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         |
+| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` |
+| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      |
+| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    |
+| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             |
+| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      |
+| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          |
 
 #### Bleeding Codes
 
@@ -171,7 +184,7 @@ The parser operates in two directions:
    `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
    _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
    _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes (e.g. `10WL`, `2W`, `10`), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
 
 ---
 
@@ -199,6 +212,7 @@ flowchart TD
 1. **Peak Day ($P$) Determination:**
    - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
    - **Manual Override Mode:** Respects user-set `isManualPeak` flag or cycle-level `manualPeakDate`.
+   - **One Manual Peak per Cycle:** When `saveObservation` saves an observation with `isManualPeak` set, it clears `isManualPeak` on the other days of the cycle that contains the saved day (the cycle is found after the saved day is added). The manual Peak Days of other cycles stay.
 2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
    - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
      - $+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
@@ -241,15 +255,22 @@ flowchart TD
 **Module:** [src/types/crms.ts](./src/types/crms.ts)
 
 ```typescript
-export type BleedingCode = 'H' | 'M' | 'L' | 'VL' | 'B';
+export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
+export type BleedingCode = (typeof BLEEDING_CODES)[number];
 
-export type MucusStretch = '0' | '2' | '2W' | '4' | '6' | '8' | '10' | '10DL' | '10SL' | '10WL';
+export const STRETCH_CODES = ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as const;
+export type MucusStretch = (typeof STRETCH_CODES)[number];
 
-export type MucusModifier = 'B' | 'C' | 'C/K' | 'G' | 'K' | 'L' | 'P' | 'Y';
+export const MODIFIER_CODES = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as const;
+export type MucusModifier = (typeof MODIFIER_CODES)[number];
 
-export type FrequencyCode = 'X1' | 'X2' | 'X3' | 'AD';
+export const FREQUENCY_CODES = ['X1', 'X2', 'X3', 'AD'] as const;
+export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
 
-export type SymptomCode = 'AP' | 'RAP' | 'LAP';
+export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
+export type SymptomCode = (typeof SYMPTOM_CODES)[number];
+
+// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (see 3.1)
 
 export type StampType =
   | 'RED' // Bleeding menses
@@ -347,7 +368,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
   - **White with Baby Icon:** Fertile mucus day
   - **Light Green with Baby & Number (1, 2, 3):** Post-peak count days
 - Displays day numbers, formatted code strings, intercourse (`I`) flags, and Peak (`P`) markers.
-- Allows toggling manual Peak Day designation directly on individual stamp cells.
+- A click on a stamp cell opens the observation drawer for that day. The manual Peak Day is set or removed there with **Designate Peak Day (P)**.
 - **Current Day Highlighting:** Automatically detects today's date (`todayStr`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
 
 ---
@@ -376,7 +397,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
     - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
     - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
     - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
-  - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
+  - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
@@ -400,7 +421,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx), [exportUtils.ts](./src/utils/exportUtils.ts)
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
-  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`.
+  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
@@ -450,12 +471,17 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
 
 - **Decoupled Context Architecture:**
-  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, `toggleManualPeak`, etc.).
+  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, etc.).
   - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
 - **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
-- **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
+- **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
+  - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
+  - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
+  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`.
+  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
+- **Automatic Reprocessing:** Any modification (addition, update including a manual Peak Day, deletion) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
 ---
@@ -529,17 +555,17 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### Test Layers
 
-| Layer       | Location                                  | Purpose                                                                                      |
-| ----------- | ----------------------------------------- | -------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access.                                        |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, the form state that Today and the drawer share.                        |
-| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                             |
-| Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                         |
-| Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.              |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                       |
-| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
-| Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                               |
+| Layer       | Location                                  | Purpose                                                                                                   |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access.                                                     |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                                      |
+| Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.                           |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                                    |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
+| Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                                            |
 
 ### Test Helpers (`src/test/`)
 

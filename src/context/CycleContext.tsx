@@ -16,11 +16,16 @@ export interface CycleDataContextType {
   setSelectedCycleId: (id: string) => void;
   saveObservation: (obsData: ObservationInput) => void;
   deleteObservation: (id: string) => void;
-  toggleManualPeak: (date: string) => void;
   exportDataJson: () => string;
   importDataJson: (jsonStr: string) => boolean;
   clearAllData: () => void;
   loadDemoData: () => void;
+  /** The original text of stored data that could not be read, or null. */
+  recoveryData: string | null;
+  /** True when the recovery key holds a copy of `recoveryData`. */
+  recoveryKept: boolean;
+  /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
+  dismissRecovery: () => void;
 }
 
 export interface CycleUiContextType {
@@ -36,17 +41,49 @@ const CycleDataContext = createContext<CycleDataContextType | undefined>(undefin
 const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fertility_care_observations';
+const RECOVERY_KEY = 'fertility_care_observations_recovery';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
 };
 
+/** Clears the manual Peak Day on the other days of the cycle that contains `date`. */
+const keepOneManualPeak = (list: Observation[], date: string): Observation[] => {
+  const cycleDates = new Set(
+    groupObservationsIntoCycles(list)
+      .find(c => c.observations.some(o => o.date === date))
+      ?.observations.map(o => o.date)
+  );
+  return list.map(obs =>
+    obs.date !== date && cycleDates.has(obs.date) ? { ...obs, isManualPeak: false } : obs
+  );
+};
+
+/**
+ * Reads the stored observations. When the stored text cannot be read, copies it to the
+ * recovery key if that key is empty, and returns it as `recoveryData`. `recoveryKept` is
+ * false when no copy was written: the app must then not save over the original text.
+ */
+const loadStoredState = () => {
+  const raw = readStorage(STORAGE_KEY) ?? '[]';
+  const validated = parseAndValidateObservationsJson(raw);
+  if (validated === null) {
+    const recoveryKept = readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
+    return { observations: [], recoveryData: raw, recoveryKept };
+  }
+  return {
+    observations: reprocessObservations(validated),
+    recoveryData: readStorage(RECOVERY_KEY),
+    recoveryKept: true,
+  };
+};
+
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [observations, setObservations] = useState<Observation[]>(() => {
-    const validated = parseAndValidateObservationsJson(readStorage(STORAGE_KEY) ?? '[]');
-    return reprocessObservations(validated ?? []);
-  });
+  const [initialState] = useState(loadStoredState);
+  const [observations, setObservations] = useState<Observation[]>(initialState.observations);
+  const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
+  const { recoveryKept } = initialState;
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -60,8 +97,10 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   }, [cycles, selectedCycleId]);
 
   useEffect(() => {
+    // Without a recovery copy, keep the unreadable original until the observations change.
+    if (!recoveryKept && observations === initialState.observations) return;
     writeStorage(STORAGE_KEY, JSON.stringify(observations));
-  }, [observations]);
+  }, [observations, recoveryKept, initialState.observations]);
 
   const saveObservation = useCallback((obsData: ObservationInput) => {
     setObservations(prev => {
@@ -95,7 +134,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updatedList.push(newObs);
       }
 
-      return reprocessObservations(updatedList);
+      return reprocessObservations(
+        newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
+      );
     });
   }, []);
 
@@ -103,18 +144,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setObservations(prev => {
       const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
       return reprocessObservations(filtered);
-    });
-  }, []);
-
-  const toggleManualPeak = useCallback((date: string) => {
-    setObservations(prev => {
-      const updated = prev.map(obs => {
-        if (obs.date === date) {
-          return { ...obs, isManualPeak: !obs.isManualPeak };
-        }
-        return { ...obs, isManualPeak: false };
-      });
-      return reprocessObservations(updated);
     });
   }, []);
 
@@ -126,6 +155,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setObservations([]);
     setSelectedCycleId('all');
     removeStorage(STORAGE_KEY);
+    removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
   }, []);
 
   const applyObservations = useCallback((list: Observation[]) => {
@@ -148,6 +179,11 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     applyObservations(buildDemoObservations(getTodayStr()));
   }, [applyObservations]);
 
+  const dismissRecovery = useCallback(() => {
+    if (recoveryKept) removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
+  }, [recoveryKept]);
+
   const dataValue = useMemo(
     () => ({
       observations,
@@ -156,11 +192,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setSelectedCycleId,
       saveObservation,
       deleteObservation,
-      toggleManualPeak,
       exportDataJson,
       importDataJson,
       clearAllData,
       loadDemoData,
+      recoveryData,
+      recoveryKept,
+      dismissRecovery,
     }),
     [
       observations,
@@ -168,11 +206,13 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       selectedCycleId,
       saveObservation,
       deleteObservation,
-      toggleManualPeak,
       exportDataJson,
       importDataJson,
       clearAllData,
       loadDemoData,
+      recoveryData,
+      recoveryKept,
+      dismissRecovery,
     ]
   );
 

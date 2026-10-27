@@ -5,7 +5,7 @@ import { useCycleData } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
 import { buildDemoObservations } from '../../domain/demoData';
-import { en } from '../../i18n';
+import { en, fr } from '../../i18n';
 import type { Observation } from '../../types/crms';
 
 // Three short cycles, newest first in the app: 2026-09-11, 2026-09-06, 2026-09-01
@@ -131,6 +131,21 @@ describe('ExportModal', () => {
     click(en.exportModal.singleCycle);
     print();
     expect(props.onPreparePrint).toHaveBeenCalledWith(['cycle_2026-09-11'], 'cycle-3');
+  });
+
+  it('describes the PDF and the backup file accurately', () => {
+    renderModal();
+    expect(screen.getByText(en.exportModal.pdfDescription)).toBeInTheDocument();
+    expect(screen.getByText(en.exportModal.jsonDescription)).toBeInTheDocument();
+    expect(screen.queryByText(/encrypted chart data/)).toBeNull();
+  });
+
+  it('shows the export descriptions in French', () => {
+    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+      language: 'fr',
+    });
+    expect(screen.getByText(fr.exportModal.pdfDescription)).toBeInTheDocument();
+    expect(screen.getByText(fr.exportModal.jsonDescription)).toBeInTheDocument();
   });
 
   it('downloads the data as a JSON backup', () => {
