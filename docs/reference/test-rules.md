@@ -27,6 +27,7 @@ This page lists the test rules, the test layers and the test helpers. For the re
 | Application | `src/__tests__/`               | React Testing Library | Flows across many components, for example print.                                |
 | Styles      | `src/styles/__tests__/`        | Vitest                | CSS rules for problems that the tests cannot see, for example dark mode colors. |
 | Tools       | `scripts/docs/__tests__/`      | Vitest                | The docs checker.                                                               |
+| End-to-end  | `e2e/`                         | Playwright and axe    | Main flows and accessibility in Chromium, against the production build.         |
 
 ## Coverage scope
 
@@ -52,6 +53,32 @@ Options of `renderWithProviders`:
 | `selectedCycleId` | `'all'` | Selects a cycle after the first render. |
 
 The setup file `src/setupTests.ts` clears `localStorage` after each test.
+
+## End-to-end tests
+
+Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage report does not include them. The settings are in `playwright.config.ts`.
+
+| Item                | Value                                                                                  |
+| ------------------- | -------------------------------------------------------------------------------------- |
+| Browser             | Chromium                                                                               |
+| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                |
+| Date in the browser | `2026-10-27`, set with `page.clock.setFixedTime()`.                                    |
+| Type check          | `e2e/tsconfig.json`.`npm run typecheck` checks it.                                     |
+| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`.                                   |
+| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed. |
+
+| Test file                   | Flows                                                                                                     |
+| --------------------------- | --------------------------------------------------------------------------------------------------------- |
+| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore, demo data in each view. |
+| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                          |
+
+| Helper              | File              | Use                                                               |
+| ------------------- | ----------------- | ----------------------------------------------------------------- |
+| `openApp(page)`     | `e2e/fixtures.ts` | Opens the application on a fixed date, without the welcome guide. |
+| `fixClock(page)`    | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                          |
+| `skipWelcome(page)` | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                  |
+
+`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe rule ids that the application breaks today. The check ignores only these rules. A violation of a different rule makes the test fail. When a correction is merged, remove its rule id from the list.
 
 ## Related documents
 

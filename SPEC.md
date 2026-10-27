@@ -528,6 +528,19 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 | Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
 | Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
 | Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                   |
+| End-to-end  | `e2e/`                         | Playwright flows and axe accessibility checks in Chromium, against the production build.     |
+
+### End-to-End Tests (`e2e/`)
+
+- **Playwright** drives a real Chromium against the production bundle: `vite build`, then `vite preview` on port `4173` (Playwright `webServer` in `playwright.config.ts`). The browser clock is fixed to `2026-10-27` so that the dates are stable.
+- Vitest does not run the files in `e2e/`, and the coverage report does not include them. `e2e/tsconfig.json` type-checks them; `npm run typecheck` runs it.
+- The suite covers these flows:
+  1. The first visit shows the welcome guide, and the **Escape** key closes it.
+  2. An observation logged in the **Today** view is still there after a reload.
+  3. A JSON backup, a reset and a restore of that backup keep the observations.
+  4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
+- **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit allowlist of axe rule ids in `e2e/accessibility.spec.ts`, linked to issues #34 and #35. A violation of any other rule fails the test. Remove a rule id from the allowlist when its issue is corrected.
+- Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.
 
 ### Test Helpers (`src/test/`)
 
@@ -558,6 +571,9 @@ npm run typecheck
 
 # Check the docs (STE writing rules, Diátaxis structure, links)
 mise run docs
+
+# Run the Playwright end-to-end and accessibility suite
+mise run e2e  # or: npm run test:e2e
 
 # Run every CI gate locally (tasks live in .mise/tasks/)
 mise run validate
@@ -597,6 +613,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
   2. **Pre-commit Hooks:** `pre-commit run --all-files` (file hygiene, gitleaks secret scan, Biome lint and format, `tsc --noEmit`)
   3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
   4. **Production Build:** `vite build`
+- **End-to-End Job:** A second job, `e2e`, runs on pull requests only. It installs the same toolchain with mise, runs `npm ci`, installs Chromium with `npx playwright install --with-deps chromium`, then runs `npm run test:e2e`. It uploads the Playwright report when a test fails.
 - **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
 
 ---

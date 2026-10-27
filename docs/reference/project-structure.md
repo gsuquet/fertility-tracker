@@ -11,6 +11,7 @@ fertility-tracker/
 │   ├── config.toml              # Pinned tools: Node.js, npm, pre-commit, gitleaks
 │   └── tasks/                   # mise tasks, one shell file for each task
 ├── docs/                        # Documentation (Diátaxis) and decision records
+├── e2e/                         # Playwright end-to-end and accessibility tests
 ├── public/                      # Static files: manifest, service worker, headers
 ├── scripts/docs/                # Docs checker and its tests
 ├── src/
@@ -33,6 +34,7 @@ fertility-tracker/
 ├── SPEC.md                      # Full specification
 ├── biome.json                   # Linter and formatter settings
 ├── package.json                 # Dependencies and npm scripts
+├── playwright.config.ts         # End-to-end test settings: browser and web server
 ├── tsconfig.json                # Strict TypeScript settings
 ├── vite.config.ts               # Build, test and coverage settings
 └── wrangler.json                # Cloudflare Pages settings
