@@ -213,9 +213,11 @@ function walk(root: string, folder: string): string[] {
   });
 }
 
-/** Lists the documentation files: README.md, AGENTS.md and the pages in docs/. */
+/** Lists the documentation files: README.md, AGENTS.md, SPEC.md and the pages in docs/. */
 export function listMarkdownFiles(root: string): string[] {
-  const topLevel = ['README.md', 'AGENTS.md'].filter(file => existsSync(join(root, file)));
+  const topLevel = ['README.md', 'AGENTS.md', 'SPEC.md'].filter(file =>
+    existsSync(join(root, file))
+  );
   const docs = existsSync(join(root, 'docs')) ? walk(root, 'docs') : [];
   return [...topLevel, ...docs].sort();
 }
