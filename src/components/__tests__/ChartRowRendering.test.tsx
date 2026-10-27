@@ -32,6 +32,7 @@ describe('ChartRow rendering', () => {
     const [cell] = screen.getAllByRole('button', { name: /^Cycle Day 1,/ }) as [HTMLElement];
     expect(stampRenders.count).toBeGreaterThan(10);
 
+    // Each event changes the hover state of the cell, so only that cell renders again
     for (const event of [
       fireEvent.mouseEnter,
       fireEvent.mouseLeave,
@@ -40,7 +41,7 @@ describe('ChartRow rendering', () => {
     ]) {
       const before = stampRenders.count;
       event(cell);
-      expect(stampRenders.count - before).toBeLessThanOrEqual(1);
+      expect(stampRenders.count - before).toBe(1);
     }
   });
 });
