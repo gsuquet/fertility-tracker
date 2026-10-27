@@ -28,8 +28,8 @@ interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   onOpenExport: () => void;
-  onOpenVersion?: () => void;
-  onOpenWelcome?: () => void;
+  onOpenVersion: () => void;
+  onOpenWelcome: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -152,27 +152,23 @@ export const Header: React.FC<HeaderProps> = ({
           <Download size={18} />
         </button>
 
-        {onOpenWelcome && (
-          <button
-            className="icon-button desktop-only-action"
-            onClick={onOpenWelcome}
-            title={t.welcomeModal.title}
-            aria-label={t.welcomeModal.title}
-          >
-            <BookOpen size={18} />
-          </button>
-        )}
+        <button
+          className="icon-button desktop-only-action"
+          onClick={onOpenWelcome}
+          title={t.welcomeModal.title}
+          aria-label={t.welcomeModal.title}
+        >
+          <BookOpen size={18} />
+        </button>
 
-        {onOpenVersion && (
-          <button
-            className="icon-button desktop-only-action"
-            onClick={onOpenVersion}
-            title={t.versionTracker.title}
-            aria-label={t.versionTracker.title}
-          >
-            <Info size={18} />
-          </button>
-        )}
+        <button
+          className="icon-button desktop-only-action"
+          onClick={onOpenVersion}
+          title={t.versionTracker.title}
+          aria-label={t.versionTracker.title}
+        >
+          <Info size={18} />
+        </button>
 
         <button
           className="lang-toggle-btn desktop-only-action"
@@ -207,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Actions Bottom Sheet Modal via Portal */}
-      {isMoreMenuOpen && typeof document !== 'undefined'
+      {isMoreMenuOpen
         ? ReactDOM.createPortal(
             <div
               className="modal-overlay mobile-menu-overlay"
@@ -220,7 +216,7 @@ export const Header: React.FC<HeaderProps> = ({
                 <div className="mobile-action-sheet-header">
                   <div className="sheet-header-title">
                     <Sparkles size={16} className="sheet-icon" />
-                    <span>{language === 'fr' ? 'Menu & Options' : 'Menu & Options'}</span>
+                    <span>{t.menu.title}</span>
                   </div>
                   <button
                     type="button"
@@ -247,64 +243,48 @@ export const Header: React.FC<HeaderProps> = ({
                     </div>
                     <div className="sheet-action-content">
                       <strong>{t.actions.exportPdf}</strong>
-                      <span>
-                        {language === 'fr'
-                          ? 'Imprimer ou exporter en PDF / JSON'
-                          : 'Print or export PDF / JSON charts'}
-                      </span>
+                      <span>{t.menu.exportHint}</span>
                     </div>
                   </button>
 
                   {/* Welcome & Guide Option */}
-                  {onOpenWelcome && (
-                    <button
-                      type="button"
-                      className="sheet-action-item"
-                      onClick={() => {
-                        setIsMoreMenuOpen(false);
-                        onOpenWelcome();
-                      }}
-                    >
-                      <div className="sheet-action-icon guide-icon-bg">
-                        <BookOpen size={18} />
-                      </div>
-                      <div className="sheet-action-content">
-                        <strong>{t.welcomeModal.title}</strong>
-                        <span>
-                          {language === 'fr'
-                            ? 'Tutoriel et guide des biomarqueurs'
-                            : 'Interactive guide & biomarker chart tutorial'}
-                        </span>
-                      </div>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="sheet-action-item"
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      onOpenWelcome();
+                    }}
+                  >
+                    <div className="sheet-action-icon guide-icon-bg">
+                      <BookOpen size={18} />
+                    </div>
+                    <div className="sheet-action-content">
+                      <strong>{t.welcomeModal.title}</strong>
+                      <span>{t.menu.guideHint}</span>
+                    </div>
+                  </button>
 
                   {/* Version & About Option */}
-                  {onOpenVersion && (
-                    <button
-                      type="button"
-                      className="sheet-action-item"
-                      onClick={() => {
-                        setIsMoreMenuOpen(false);
-                        onOpenVersion();
-                      }}
-                    >
-                      <div className="sheet-action-icon info-icon-bg">
-                        <Info size={18} />
+                  <button
+                    type="button"
+                    className="sheet-action-item"
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      onOpenVersion();
+                    }}
+                  >
+                    <div className="sheet-action-icon info-icon-bg">
+                      <Info size={18} />
+                    </div>
+                    <div className="sheet-action-content">
+                      <div className="sheet-action-title-row">
+                        <strong>{t.versionTracker.title}</strong>
+                        <span className="sheet-version-badge">v{currentVersion}</span>
                       </div>
-                      <div className="sheet-action-content">
-                        <div className="sheet-action-title-row">
-                          <strong>{t.versionTracker.title}</strong>
-                          <span className="sheet-version-badge">v{currentVersion}</span>
-                        </div>
-                        <span>
-                          {language === 'fr'
-                            ? 'Notes de version & stockage local'
-                            : 'Release notes & system storage diagnostics'}
-                        </span>
-                      </div>
-                    </button>
-                  )}
+                      <span>{t.menu.versionHint}</span>
+                    </div>
+                  </button>
 
                   <div className="sheet-divider" />
 
@@ -316,20 +296,12 @@ export const Header: React.FC<HeaderProps> = ({
                       onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
                     >
                       <Globe size={16} />
-                      <span>{language === 'fr' ? 'Langue : Français' : 'Language : English'}</span>
+                      <span>{t.menu.languageToggle}</span>
                     </button>
 
                     <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
                       {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                      <span>
-                        {theme === 'dark'
-                          ? language === 'fr'
-                            ? 'Thème : Sombre'
-                            : 'Theme : Dark'
-                          : language === 'fr'
-                            ? 'Thème : Clair'
-                            : 'Theme : Light'}
-                      </span>
+                      <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
                     </button>
                   </div>
                 </div>

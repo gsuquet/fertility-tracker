@@ -1,6 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { groupObservationsIntoCycles, isFirstBleedingDayOfSeries } from '../cycleBoundaryDetector';
+import {
+  groupObservationsIntoCycles,
+  isFirstBleedingDayOfSeries,
+  getCycleEndDate,
+} from '../cycleBoundaryDetector';
 import type { Observation } from '../../types/crms';
+import { makeObservation } from '../../test/factories';
 
 describe('cycleBoundaryDetector', () => {
   it('groups single cycle observations properly', () => {
@@ -138,5 +143,43 @@ describe('cycleBoundaryDetector', () => {
 
     // Logging dry day on June 4 -> FALSE
     expect(isFirstBleedingDayOfSeries({ date: '2026-06-04' }, existing)).toBe(false);
+  });
+
+  it('returns no cycles for no observations', () => {
+    expect(groupObservationsIntoCycles([])).toEqual([]);
+  });
+
+  it('starts a new cycle when menses follow a brown bleeding day', () => {
+    const cycles = groupObservationsIntoCycles([
+      makeObservation({ date: '2026-07-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-07-02', stretch: '0' }),
+      makeObservation({ date: '2026-07-28', bleeding: 'B' }),
+      makeObservation({ date: '2026-07-29', bleeding: 'M' }),
+    ]);
+    expect(cycles.map(c => c.startDate)).toEqual(['2026-07-29', '2026-07-01']);
+  });
+
+  it('continues the cycle when menses follow another menses day', () => {
+    const cycles = groupObservationsIntoCycles([
+      makeObservation({ date: '2026-07-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-07-02', bleeding: 'M' }),
+    ]);
+    expect(cycles).toHaveLength(1);
+  });
+});
+
+describe('getCycleEndDate', () => {
+  it('returns the date of the last observation', () => {
+    const [cycle] = groupObservationsIntoCycles([
+      makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-09-03', stretch: '0' }),
+    ]);
+    expect(cycle && getCycleEndDate(cycle)).toBe('2026-09-03');
+  });
+
+  it('returns the start date of an empty cycle', () => {
+    expect(getCycleEndDate({ id: 'c', startDate: '2026-09-01', observations: [] })).toBe(
+      '2026-09-01'
+    );
   });
 });

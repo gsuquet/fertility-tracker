@@ -33,7 +33,12 @@ const GithubIcon: React.FC<{ size?: number; className?: string }> = ({ size = 18
   </svg>
 );
 import type { VersionRelease } from '../domain/versionTracker';
-import { getVersionInfo, getVersionHistory, getStorageStats } from '../domain/versionTracker';
+import {
+  getVersionInfo,
+  getVersionHistory,
+  getLatestRelease,
+  getStorageStats,
+} from '../domain/versionTracker';
 
 interface VersionModalProps {
   isOpen: boolean;
@@ -63,9 +68,9 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
   if (!isOpen) return null;
 
   const versionInfo = getVersionInfo();
-  const history: VersionRelease[] = getVersionHistory();
+  const olderReleases = getVersionHistory().slice(1);
   const storageStats = getStorageStats();
-  const latestRelease = history[0];
+  const latestRelease = getLatestRelease();
 
   const toggleVersionExpand = (version: string) => {
     setExpandedVersions(prev => ({
@@ -74,21 +79,17 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
     }));
   };
 
-  const getReleaseTitle = (rel: VersionRelease) =>
-    language === 'fr' && rel.titleFr ? rel.titleFr : rel.title;
-  const getReleaseTagline = (rel: VersionRelease) =>
-    language === 'fr' && rel.taglineFr ? rel.taglineFr : rel.tagline;
+  const isFrench = language === 'fr';
+  const getReleaseTitle = (rel: VersionRelease) => (isFrench ? rel.titleFr : rel.title);
+  const getReleaseTagline = (rel: VersionRelease) => (isFrench ? rel.taglineFr : rel.tagline);
   const getReleaseHighlights = (rel: VersionRelease) =>
-    language === 'fr' && rel.highlightsFr ? rel.highlightsFr : rel.highlights;
+    isFrench ? rel.highlightsFr : rel.highlights;
 
-  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(
-    language === 'fr' ? 'fr-FR' : 'en-US',
-    {
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-    }
-  );
+  const formattedBuildDate = new Date(versionInfo.buildDate).toLocaleDateString(t.locale, {
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric',
+  });
 
   return (
     <div
@@ -160,94 +161,86 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
           {activeTab === 'notes' ? (
             <div className="version-notes-tab">
               {/* Featured Release Card */}
-              {latestRelease && (
-                <div className="version-featured-card">
-                  <div className="featured-card-header">
-                    <div className="featured-badge">
-                      <Tag size={14} />
-                      <span>v{latestRelease.version}</span>
-                    </div>
-                    <span className="featured-date">
-                      <Calendar size={14} />
-                      {latestRelease.date}
-                    </span>
+              <div className="version-featured-card">
+                <div className="featured-card-header">
+                  <div className="featured-badge">
+                    <Tag size={14} />
+                    <span>v{latestRelease.version}</span>
                   </div>
-
-                  <h3 className="featured-release-title">{getReleaseTitle(latestRelease)}</h3>
-                  {getReleaseTagline(latestRelease) && (
-                    <p className="featured-release-tagline">{getReleaseTagline(latestRelease)}</p>
-                  )}
-
-                  <div className="featured-highlights-section">
-                    <h4 className="highlights-heading">{t.versionTracker.keyHighlights}</h4>
-                    <ul className="highlights-list">
-                      {getReleaseHighlights(latestRelease).map((item, idx) => (
-                        <li key={idx} className="highlight-item">
-                          <CheckCircle2 size={16} className="highlight-icon" />
-                          <span>{item}</span>
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
+                  <span className="featured-date">
+                    <Calendar size={14} />
+                    {latestRelease.date}
+                  </span>
                 </div>
-              )}
+
+                <h3 className="featured-release-title">{getReleaseTitle(latestRelease)}</h3>
+                <p className="featured-release-tagline">{getReleaseTagline(latestRelease)}</p>
+
+                <div className="featured-highlights-section">
+                  <h4 className="highlights-heading">{t.versionTracker.keyHighlights}</h4>
+                  <ul className="highlights-list">
+                    {getReleaseHighlights(latestRelease).map((item, idx) => (
+                      <li key={idx} className="highlight-item">
+                        <CheckCircle2 size={16} className="highlight-icon" />
+                        <span>{item}</span>
+                      </li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
 
               {/* Full Release History Accordion List */}
-              {history.length > 1 && (
-                <div className="release-history-section">
-                  <h4 className="section-title">{t.versionTracker.releaseHistory}</h4>
-                  <div className="history-list">
-                    {history.slice(1).map(rel => {
-                      const isExpanded = !!expandedVersions[rel.version];
-                      const relTitle = getReleaseTitle(rel);
-                      const relTagline = getReleaseTagline(rel);
-                      const relHighlights = getReleaseHighlights(rel);
+              <div className="release-history-section">
+                <h4 className="section-title">{t.versionTracker.releaseHistory}</h4>
+                <div className="history-list">
+                  {olderReleases.map(rel => {
+                    const isExpanded = !!expandedVersions[rel.version];
+                    const relTitle = getReleaseTitle(rel);
+                    const relTagline = getReleaseTagline(rel);
+                    const relHighlights = getReleaseHighlights(rel);
 
-                      return (
-                        <div
-                          key={rel.version}
-                          className={`history-item-card ${isExpanded ? 'expanded' : ''}`}
+                    return (
+                      <div
+                        key={rel.version}
+                        className={`history-item-card ${isExpanded ? 'expanded' : ''}`}
+                      >
+                        <button
+                          type="button"
+                          className="history-item-header-btn"
+                          onClick={() => toggleVersionExpand(rel.version)}
+                          aria-expanded={isExpanded}
                         >
-                          <button
-                            type="button"
-                            className="history-item-header-btn"
-                            onClick={() => toggleVersionExpand(rel.version)}
-                            aria-expanded={isExpanded}
-                          >
-                            <div className="history-header-left">
-                              <span className="history-version-badge">v{rel.version}</span>
-                              <span className="history-date">
-                                <Calendar size={13} />
-                                {rel.date}
-                              </span>
-                            </div>
-                            <div className="history-expand-icon">
-                              {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
-                            </div>
-                          </button>
+                          <div className="history-header-left">
+                            <span className="history-version-badge">v{rel.version}</span>
+                            <span className="history-date">
+                              <Calendar size={13} />
+                              {rel.date}
+                            </span>
+                          </div>
+                          <div className="history-expand-icon">
+                            {isExpanded ? <ChevronUp size={16} /> : <ChevronDown size={16} />}
+                          </div>
+                        </button>
 
-                          {isExpanded && (
-                            <div className="history-item-body fade-in">
-                              <h5 className="history-expanded-title">{relTitle}</h5>
-                              {relTagline && <p className="history-tagline">{relTagline}</p>}
-                              {relHighlights.length > 0 && (
-                                <ul className="history-highlights-list">
-                                  {relHighlights.map((hl, i) => (
-                                    <li key={i} className="history-highlight-point">
-                                      <CheckCircle2 size={14} className="history-icon" />
-                                      <span>{hl}</span>
-                                    </li>
-                                  ))}
-                                </ul>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                      );
-                    })}
-                  </div>
+                        {isExpanded && (
+                          <div className="history-item-body fade-in">
+                            <h5 className="history-expanded-title">{relTitle}</h5>
+                            <p className="history-tagline">{relTagline}</p>
+                            <ul className="history-highlights-list">
+                              {relHighlights.map((hl, i) => (
+                                <li key={i} className="history-highlight-point">
+                                  <CheckCircle2 size={14} className="history-icon" />
+                                  <span>{hl}</span>
+                                </li>
+                              ))}
+                            </ul>
+                          </div>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
-              )}
+              </div>
             </div>
           ) : (
             <div className="version-system-tab">

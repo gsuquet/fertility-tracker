@@ -5,11 +5,11 @@ export interface VersionRelease {
   version: string;
   date: string;
   title: string;
-  titleFr?: string;
-  tagline?: string;
-  taglineFr?: string;
+  titleFr: string;
+  tagline: string;
+  taglineFr: string;
   highlights: string[];
-  highlightsFr?: string[];
+  highlightsFr: string[];
   crmsSpecVersion: string;
   breakingChanges?: boolean;
 }
@@ -36,7 +36,32 @@ export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome'
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
-export const VERSION_HISTORY: VersionRelease[] = [
+/** Release notes, newest first. The tuple type guarantees at least one release. */
+export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
+  {
+    version: '1.14.0',
+    date: '2026-10-27',
+    title: 'Test-Driven Development with 100% Coverage',
+    titleFr: 'Développement Piloté par les Tests avec 100 % de Couverture',
+    tagline: 'Every line, branch and function now runs in a test, and CI fails below 100% coverage',
+    taglineFr:
+      'Chaque ligne, branche et fonction passe maintenant dans un test, et la CI échoue sous 100 % de couverture',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Raised coverage to 100% for statements, branches, functions and lines, and made CI enforce it',
+      'Shared one tested form hook between the Today page and the entry drawer',
+      'Moved every French string into the locale files and removed unreachable fallbacks',
+      'PDF file names now include the cycle number when you print one cycle',
+      'Added a testing strategy guide and a test-first procedure',
+    ],
+    highlightsFr: [
+      'Couverture portée à 100 % pour les instructions, branches, fonctions et lignes, imposée par la CI',
+      'Un seul hook de formulaire testé, partagé par la page Aujourd’hui et le tiroir de saisie',
+      'Toutes les chaînes françaises déplacées dans les fichiers de langue, sans valeurs de repli inutiles',
+      'Le nom du fichier PDF contient maintenant le numéro du cycle quand vous imprimez un seul cycle',
+      'Ajout d’un guide de stratégie de test et d’une procédure « test d’abord »',
+    ],
+  },
   {
     version: '1.13.0',
     date: '2026-10-26',
@@ -56,7 +81,7 @@ export const VERSION_HISTORY: VersionRelease[] = [
       'Added pre-commit hooks (hygiene, secret scanning, Biome, type check), CI on the mise toolchain, and Dependabot updates',
     ],
     highlightsFr: [
-      'Passage à Node 26.12.1 et npm 11.20.0 (bundled with Node), avec une version exacte pour chaque dépendance, outil, hook et action CI',
+      'Passage à Node 26.12.1 et npm 11.20.0 (fourni avec Node), avec une version exacte pour chaque dépendance, outil, hook et action CI',
       'Mise à niveau vers React 19.3, Vite 8.3, Vitest 5.0, Biome 2.6 et Wrangler 4.153',
       'Activation de contrôles TypeScript plus stricts (noUncheckedIndexedAccess, exactOptionalPropertyTypes, verbatimModuleSyntax) et correction de chaque erreur',
       'Remplacement de Prettier par Biome pour l’analyse et le formatage du code, des styles, du JSON, du YAML et du Markdown',
@@ -488,18 +513,14 @@ export const VERSION_HISTORY: VersionRelease[] = [
   },
 ];
 
+/** App version, injected from package.json by Vite (`define` in vite.config.ts). */
 export function getAppVersion(): string {
-  if (typeof __APP_VERSION__ !== 'undefined') {
-    return __APP_VERSION__;
-  }
-  return '1.13.0';
+  return __APP_VERSION__;
 }
 
+/** Build timestamp, injected by Vite (`define` in vite.config.ts). */
 export function getBuildDate(): string {
-  if (typeof __BUILD_DATE__ !== 'undefined') {
-    return __BUILD_DATE__;
-  }
-  return '2026-10-26T00:00:00.000Z';
+  return __BUILD_DATE__;
 }
 
 export function getVersionInfo(): VersionInfo {
@@ -508,7 +529,7 @@ export function getVersionInfo(): VersionInfo {
     buildDate: getBuildDate(),
     crmsSpecVersion: CRMS_SPEC_VERSION,
     appName: 'Fertility Tracker',
-    environment: import.meta.env?.MODE || 'production',
+    environment: import.meta.env.MODE,
     repositoryUrl: 'https://github.com/gsuquet/fertility-tracker',
   };
 }
@@ -518,9 +539,7 @@ export function getVersionHistory(): VersionRelease[] {
 }
 
 export function getLatestRelease(): VersionRelease {
-  const [latest] = VERSION_HISTORY;
-  if (!latest) throw new Error('VERSION_HISTORY must contain at least one release');
-  return latest;
+  return VERSION_HISTORY[0];
 }
 
 export function checkAndRecordVersionSeen(): {

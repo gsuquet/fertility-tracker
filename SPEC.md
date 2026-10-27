@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.13.0  
+**Document Version:** 1.14.0  
 **Status:** Approved  
 **Last Updated:** October 26, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -388,7 +388,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`.
-  - **Print / PDF Export Filenames:** Dynamically sets the browser document title prior to `window.print()` to suggest clean PDF filenames (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
+  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
   - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
@@ -453,6 +453,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - Supported languages: **English (`en`)**, **French (`fr`)**.
 - Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
 - TypeScript compiler strictly enforces key parity across all language modules (`TranslationSchema`).
+- Components read every user-facing string and the date locale (`t.locale`: `en-US` or `fr-FR`) from the dictionary. Components do not branch on `language === 'fr'` and do not keep fallback strings, because each key always exists.
+- Release notes in `VERSION_HISTORY` require both languages (`title`/`titleFr`, `tagline`/`taglineFr`, `highlights`/`highlightsFr`).
 
 ### 7.2 Design System & Layered CSS Architecture
 
@@ -496,7 +498,30 @@ Interactive slide-over drawer for entering and editing observations with two syn
 
 ## 8. Testing & Quality Assurance
 
-The codebase maintains automated tests for domain algorithms and UI components using **Vitest**, **React Testing Library**, and **V8 Coverage Engine**, with static analysis governed by **Biome** and the strict **TypeScript** compiler.
+The project uses **test-driven development (TDD)**. Write a failing test before each behavior change, then write the minimum code to make it pass. The tools are **Vitest**, **React Testing Library** and the **V8 coverage** engine. **Biome** and the strict **TypeScript** compiler do the static analysis.
+
+### Coverage Policy
+
+- Coverage must stay at **100%** for statements, branches, functions and lines. `vite.config.ts` sets `coverage.thresholds: { 100: true }`, so `npm run test:coverage` fails below 100%. CI runs this command on each pull request.
+- Coverage ignore comments are not permitted. Code that no test can reach is removed (for example, guards for values that the types do not permit, or fallbacks for translation keys that always exist).
+- The coverage report excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
+
+### Test Layers
+
+| Layer       | Location                       | Purpose                                                                                      |
+| ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values. |
+| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                        |
+| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                        |
+| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                             |
+| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                         |
+| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
+
+### Test Helpers (`src/test/`)
+
+- `makeObservation({ date, ...fields })`: a valid observation with defaults.
+- `renderWithProviders(ui, { language, observations, selectedCycleId })`: renders inside every provider with optional French, saved data and a selected cycle.
+- `src/setupTests.ts` clears `localStorage` after each test.
 
 ### Quality & Test Suite Execution
 
@@ -507,8 +532,8 @@ mise install && mise run hooks
 # Execute full unit test suite (or watch mode with test:watch)
 npm run test
 
-# Execute test suite with V8 code coverage report
-npm run test:coverage
+# Execute the suite with coverage (fails below 100%)
+mise run coverage  # or: npm run test:coverage
 
 # Biome lint + format check (warnings fail)
 npm run check
@@ -523,17 +548,7 @@ npm run typecheck
 mise run validate
 ```
 
-### Key Test Coverage Areas
-
-- `dataValidator.test.ts`: Schema parsing, array validation, sanitization of malformed JSON imports and corrupt local storage data.
-- `codeParser.test.ts`: Canonical string formatting and freeform string parsing edge cases.
-- `stampCalculator.test.ts`: Mucus stretch and modifier stamp assignment accuracy.
-- `peakDetector.test.ts`: Automatic peak detection, manual peak overrides, and post-peak $P+1, P+2, P+3$ stamp assignments.
-- `cycleBoundaryDetector.test.ts`: Menses onset boundary splitting and cycle day numbering.
-- `versionTracker.test.ts`: Version history management, last-seen version tracking, and live storage footprint calculation.
-- `translations.test.ts`: Multi-locale key parity and schema validation.
-- `CycleContext.test.tsx`, `LanguageContext.test.tsx`, `ThemeContext.test.tsx`: Context state transitions, persistence, and fallback behaviors.
-- `Component Integration Tests`: `App.test.tsx`, `Header.test.tsx`, `Footer.test.tsx`, `ChartRow.test.tsx`, `TodayView.test.tsx`, `CalendarGrid.test.tsx`, `CycleStatsHeader.test.tsx`, `CycleStartModal.test.tsx`, `ExportModal.test.tsx`, `VersionModal.test.tsx`, `WelcomeModal.test.tsx`, and `ObservationDrawer.test.tsx`.
+See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md) and [docs/how-to/write-a-test-first.md](docs/how-to/write-a-test-first.md).
 
 ---
 

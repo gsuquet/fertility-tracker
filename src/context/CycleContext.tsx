@@ -1,19 +1,12 @@
 import type React from 'react';
 import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import type {
-  BleedingCode,
-  Cycle,
-  FrequencyCode,
-  MucusModifier,
-  MucusStretch,
-  Observation,
-  ObservationInput,
-  SymptomCode,
-} from '../types/crms';
+import type { Cycle, Observation, ObservationInput } from '../types/crms';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
-import { getTodayStr, addDays } from '../utils/dateUtils';
+import { getTodayStr } from '../utils/dateUtils';
+import { readStorage, removeStorage, writeStorage } from '../utils/storage';
+import { buildDemoObservations } from '../domain/demoData';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
 
 export interface CycleDataContextType {
@@ -51,42 +44,23 @@ const reprocessObservations = (rawObs: Observation[]): Observation[] => {
 
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [observations, setObservations] = useState<Observation[]>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const saved = localStorage.getItem(STORAGE_KEY);
-        if (saved) {
-          const validated = parseAndValidateObservationsJson(saved);
-          if (validated) {
-            return reprocessObservations(validated);
-          }
-        }
-      }
-    } catch (_e) {}
-    return [];
+    const validated = parseAndValidateObservationsJson(readStorage(STORAGE_KEY) ?? '[]');
+    return reprocessObservations(validated ?? []);
   });
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
-  const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id || 'all');
+  const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
 
+  // Fall back to the newest cycle (or 'all') when the selected cycle no longer exists.
   useEffect(() => {
-    if (cycles.length > 0) {
-      const [newest] = cycles;
-      if (newest && selectedCycleId !== 'all' && !cycles.some(c => c.id === selectedCycleId)) {
-        setSelectedCycleId(newest.id);
-      }
-    } else {
-      if (selectedCycleId !== 'all') {
-        setSelectedCycleId('all');
-      }
+    const isKnown = selectedCycleId === 'all' || cycles.some(c => c.id === selectedCycleId);
+    if (!isKnown) {
+      setSelectedCycleId(cycles[0]?.id ?? 'all');
     }
   }, [cycles, selectedCycleId]);
 
   useEffect(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(observations));
-      }
-    } catch (_e) {}
+    writeStorage(STORAGE_KEY, JSON.stringify(observations));
   }, [observations]);
 
   const saveObservation = useCallback((obsData: ObservationInput) => {
@@ -116,7 +90,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
       const updatedList = [...prev];
       if (existingIdx !== -1) {
-        updatedList[existingIdx] = { ...updatedList[existingIdx], ...newObs };
+        updatedList[existingIdx] = newObs;
       } else {
         updatedList.push(newObs);
       }
@@ -148,115 +122,31 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return JSON.stringify(observations, null, 2);
   }, [observations]);
 
-  const importDataJson = useCallback((jsonStr: string): boolean => {
-    try {
-      const validated = parseAndValidateObservationsJson(jsonStr);
-      if (validated) {
-        const processed = reprocessObservations(validated);
-        setObservations(processed);
-        const newCycles = groupObservationsIntoCycles(processed);
-        setSelectedCycleId(newCycles[0]?.id ?? 'all');
-        return true;
-      }
-    } catch (_e) {}
-    return false;
-  }, []);
-
   const clearAllData = useCallback(() => {
     setObservations([]);
     setSelectedCycleId('all');
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.removeItem(STORAGE_KEY);
-      }
-    } catch (_e) {}
+    removeStorage(STORAGE_KEY);
   }, []);
+
+  const applyObservations = useCallback((list: Observation[]) => {
+    const processed = reprocessObservations(list);
+    setObservations(processed);
+    setSelectedCycleId(groupObservationsIntoCycles(processed)[0]?.id ?? 'all');
+  }, []);
+
+  const importDataJson = useCallback(
+    (jsonStr: string): boolean => {
+      const validated = parseAndValidateObservationsJson(jsonStr);
+      if (!validated) return false;
+      applyObservations(validated);
+      return true;
+    },
+    [applyObservations]
+  );
 
   const loadDemoData = useCallback(() => {
-    const todayStr = getTodayStr();
-    const demoObs: Observation[] = [];
-
-    // Generate 2 full 28-day past cycles + current cycle (56 days total history)
-    for (let i = 55; i >= 0; i--) {
-      const dateStr = addDays(todayStr, -i);
-      const cd = ((55 - i) % 28) + 1;
-
-      let bleeding: BleedingCode | undefined;
-      let stretch: MucusStretch | undefined;
-      let modifiers: MucusModifier[] = [];
-      let frequency: FrequencyCode | undefined;
-      let intercourse = false;
-      let symptoms: SymptomCode[] = [];
-
-      if (cd <= 3) {
-        bleeding = cd === 1 ? 'H' : cd === 2 ? 'M' : 'L';
-      } else if (cd === 4) {
-        bleeding = 'VL';
-      } else if (cd >= 5 && cd <= 8) {
-        stretch = '0';
-        frequency = 'AD';
-      } else if (cd === 9 || cd === 10) {
-        stretch = '2';
-        modifiers = ['C'];
-        frequency = 'X2';
-      } else if (cd === 11) {
-        stretch = '6';
-        modifiers = ['C/K'];
-        frequency = 'X3';
-        intercourse = true;
-      } else if (cd === 12) {
-        stretch = '8';
-        modifiers = ['K'];
-        frequency = 'X3';
-      } else if (cd === 13) {
-        // PEAK DAY!
-        stretch = '10';
-        modifiers = ['K', 'L'];
-        frequency = 'AD';
-        symptoms = ['AP'];
-      } else if (cd >= 14 && cd <= 16) {
-        stretch = '0';
-        frequency = 'AD';
-        if (cd === 15) intercourse = true;
-      } else {
-        stretch = '0';
-        frequency = 'AD';
-        if (cd === 21) intercourse = true;
-      }
-
-      const stamp = calculateStamp(bleeding, stretch, modifiers);
-      const codeString = formatCodeString({
-        bleeding,
-        stretch,
-        modifiers,
-        frequency,
-        symptoms,
-        intercourse,
-      });
-
-      demoObs.push({
-        id: `demo_${dateStr}`,
-        date: dateStr,
-        cycleDay: cd,
-        bleeding,
-        stretch,
-        modifiers,
-        frequency,
-        symptoms,
-        intercourse,
-        stamp,
-        codeString,
-      });
-    }
-
-    const processed = reprocessObservations(demoObs);
-    setObservations(processed);
-    const newCycles = groupObservationsIntoCycles(processed);
-    const [newest] = newCycles;
-    if (newest) {
-      setSelectedCycleId(newest.id);
-    }
-  }, []);
+    applyObservations(buildDemoObservations(getTodayStr()));
+  }, [applyObservations]);
 
   const dataValue = useMemo(
     () => ({

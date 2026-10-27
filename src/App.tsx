@@ -31,6 +31,7 @@ const WelcomeModal = React.lazy(() =>
 );
 
 import { getExportFilename } from './utils/exportUtils';
+import { readStorage } from './utils/storage';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
@@ -39,44 +40,33 @@ const MainApp: React.FC = () => {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
-  const [shouldPrint, setShouldPrint] = useState(false);
+  // The PDF file name detail of a pending print, or null when nothing waits to print
+  const [pendingPrintDetail, setPendingPrintDetail] = useState<string | null>(null);
   const [toastMessage, setToastMessage] = useState<string | null>(null);
 
   useEffect(() => {
     checkAndRecordVersionSeen();
-    try {
-      if (typeof localStorage !== 'undefined') {
-        const hasSeenWelcome = localStorage.getItem(STORAGE_HAS_SEEN_WELCOME_KEY);
-        if (!hasSeenWelcome) {
-          setIsWelcomeModalOpen(true);
-        }
-      }
-    } catch {
-      // Ignore localStorage errors
+    if (!readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) {
+      setIsWelcomeModalOpen(true);
     }
   }, []);
 
-  React.useEffect(() => {
-    if (shouldPrint) {
-      const originalTitle = document.title;
-      let detail = 'all-cycles';
-      if (printCycleIds.length === 1 && printCycleIds[0] !== 'all') {
-        detail = `single-cycle`;
-      } else if (printCycleIds.length > 1) {
-        detail = 'selected-cycles';
-      }
-      document.title = getExportFilename('pdf', detail);
-      window.print();
-      setShouldPrint(false);
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 1000);
-    }
-  }, [shouldPrint, printCycleIds]);
+  // Print after the print view has rendered the selected cycles.
+  // The browser uses the document title as the default PDF file name.
+  useEffect(() => {
+    if (pendingPrintDetail === null) return;
+    const originalTitle = document.title;
+    document.title = getExportFilename('pdf', pendingPrintDetail);
+    window.print();
+    setPendingPrintDetail(null);
+    setTimeout(() => {
+      document.title = originalTitle;
+    }, 1000);
+  }, [pendingPrintDetail]);
 
-  const handlePreparePrint = (selectedCycleIds: string[]) => {
+  const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
-    setShouldPrint(true);
+    setPendingPrintDetail(fileDetail);
     setToastMessage(t.exportModal.exportSuccess);
     setTimeout(() => setToastMessage(null), 3500);
   };

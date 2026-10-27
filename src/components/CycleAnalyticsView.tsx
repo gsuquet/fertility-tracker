@@ -21,7 +21,8 @@ export const CycleAnalyticsView: React.FC = () => {
 
   const activeCycle = cycles.find(c => c.id === selectedCycleId) ?? cycles[0];
 
-  if (observations.length === 0 || !activeCycle) {
+  // No cycle exists without observations
+  if (!activeCycle) {
     return (
       <div className="analytics-empty-state">
         <Activity size={48} className="icon-muted" />
@@ -55,14 +56,12 @@ export const CycleAnalyticsView: React.FC = () => {
   const intercourseCount = targetObs.filter(o => o.intercourse).length;
 
   const getMucusScore = (obs: Observation): number => {
-    const mods = obs.modifiers || [];
     if (
       obs.stretch === '10' ||
       obs.stretch === '10DL' ||
       obs.stretch === '10SL' ||
       obs.stretch === '10WL' ||
-      mods.includes('K') ||
-      mods.includes('L')
+      obs.modifiers?.some(m => m === 'K' || m === 'L')
     ) {
       return 10;
     }
@@ -73,10 +72,12 @@ export const CycleAnalyticsView: React.FC = () => {
     return 0;
   };
 
-  const avgMucusScore =
-    totalDays > 0
-      ? (targetObs.reduce((acc, obs) => acc + getMucusScore(obs), 0) / totalDays).toFixed(1)
-      : '0.0';
+  // A cycle always holds at least one observation, so totalDays is never 0
+  const percentOf = (days: number) => (days / totalDays) * 100;
+
+  const avgMucusScore = (
+    targetObs.reduce((acc, obs) => acc + getMucusScore(obs), 0) / totalDays
+  ).toFixed(1);
 
   return (
     <div
@@ -144,7 +145,7 @@ export const CycleAnalyticsView: React.FC = () => {
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-menses"
-                style={{ width: `${totalDays > 0 ? (mensesDays / totalDays) * 100 : 0}%` }}
+                style={{ width: `${percentOf(mensesDays)}%` }}
               />
             </div>
 
@@ -157,7 +158,7 @@ export const CycleAnalyticsView: React.FC = () => {
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-follicular"
-                style={{ width: `${totalDays > 0 ? (follicularPhaseDays / totalDays) * 100 : 0}%` }}
+                style={{ width: `${percentOf(follicularPhaseDays)}%` }}
               />
             </div>
 
@@ -170,7 +171,7 @@ export const CycleAnalyticsView: React.FC = () => {
             <div className="phase-bar-wrapper">
               <div
                 className="phase-bar bar-luteal"
-                style={{ width: `${totalDays > 0 ? (lutealPhaseDays / totalDays) * 100 : 0}%` }}
+                style={{ width: `${percentOf(lutealPhaseDays)}%` }}
               />
             </div>
           </div>
@@ -188,8 +189,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-info">
                 <span>Menses Bleeding</span>
                 <strong>
-                  {mensesDays} {t.stats.days} (
-                  {totalDays > 0 ? Math.round((mensesDays / totalDays) * 100) : 0}%)
+                  {mensesDays} {t.stats.days} ({Math.round(percentOf(mensesDays))}%)
                 </strong>
               </div>
             </div>
@@ -199,8 +199,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-info">
                 <span>Infertile Dry Days</span>
                 <strong>
-                  {dryDays} {t.stats.days} (
-                  {totalDays > 0 ? Math.round((dryDays / totalDays) * 100) : 0}%)
+                  {dryDays} {t.stats.days} ({Math.round(percentOf(dryDays))}%)
                 </strong>
               </div>
             </div>
@@ -210,8 +209,7 @@ export const CycleAnalyticsView: React.FC = () => {
               <div className="dist-info">
                 <span>Fertile Mucus Days</span>
                 <strong>
-                  {fertileMucusDays} {t.stats.days} (
-                  {totalDays > 0 ? Math.round((fertileMucusDays / totalDays) * 100) : 0}%)
+                  {fertileMucusDays} {t.stats.days} ({Math.round(percentOf(fertileMucusDays))}%)
                 </strong>
               </div>
             </div>

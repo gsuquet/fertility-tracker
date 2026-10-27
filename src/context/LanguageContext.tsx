@@ -3,6 +3,9 @@ import { createContext, useContext, useState } from 'react';
 import type { Language } from '../types/crms';
 import type { TranslationSchema } from '../i18n';
 import { translations } from '../i18n';
+import { readStorage, writeStorage } from '../utils/storage';
+
+const LANGUAGE_STORAGE_KEY = 'fertility_care_lang';
 
 interface LanguageContextType {
   language: Language;
@@ -14,25 +17,16 @@ const LanguageContext = createContext<LanguageContextType | undefined>(undefined
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [language, setLanguageState] = useState<Language>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const saved = localStorage.getItem('fertility_care_lang');
-        if (saved === 'fr' || saved === 'en') return saved as Language;
-      }
-    } catch (_e) {}
-    return 'en';
+    const saved = readStorage(LANGUAGE_STORAGE_KEY);
+    return saved === 'fr' || saved === 'en' ? saved : 'en';
   });
 
   const setLanguage = (lang: Language) => {
     setLanguageState(lang);
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('fertility_care_lang', lang);
-      }
-    } catch (_e) {}
+    writeStorage(LANGUAGE_STORAGE_KEY, lang);
   };
 
-  const t = translations[language] || translations.en;
+  const t = translations[language];
 
   return (
     <LanguageContext.Provider value={{ language, setLanguage, t }}>

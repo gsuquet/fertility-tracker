@@ -1,5 +1,5 @@
 import '@testing-library/jest-dom/vitest';
-import { vi } from 'vitest';
+import { afterEach, vi } from 'vitest';
 
 // Mock localStorage if missing or undefined in environment
 const storageMock = (() => {
@@ -43,4 +43,9 @@ Object.defineProperty(window, 'matchMedia', {
     removeEventListener: vi.fn(),
     dispatchEvent: vi.fn(),
   })),
+});
+
+// Start every test with empty storage so saved data never leaks between tests
+afterEach(() => {
+  localStorage.clear();
 });

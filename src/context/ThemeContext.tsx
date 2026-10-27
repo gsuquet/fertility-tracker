@@ -1,6 +1,9 @@
 import type React from 'react';
 import { createContext, useContext, useState, useEffect } from 'react';
 import type { Theme } from '../types/crms';
+import { readStorage, writeStorage } from '../utils/storage';
+
+const THEME_STORAGE_KEY = 'fertility_care_theme';
 
 interface ThemeContextType {
   theme: Theme;
@@ -11,27 +14,17 @@ const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [theme, setTheme] = useState<Theme>(() => {
-    try {
-      if (typeof window !== 'undefined' && window.localStorage) {
-        const saved = localStorage.getItem('fertility_care_theme');
-        if (saved === 'dark' || saved === 'light') return saved;
-      }
-      if (typeof window !== 'undefined' && window.matchMedia) {
-        return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-      }
-    } catch (_e) {}
+    const saved = readStorage(THEME_STORAGE_KEY);
+    if (saved === 'dark' || saved === 'light') return saved;
+    if (typeof window.matchMedia === 'function') {
+      return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+    }
     return 'light';
   });
 
   useEffect(() => {
-    try {
-      if (typeof document !== 'undefined') {
-        document.documentElement.setAttribute('data-theme', theme);
-      }
-      if (typeof window !== 'undefined' && window.localStorage) {
-        localStorage.setItem('fertility_care_theme', theme);
-      }
-    } catch (_e) {}
+    document.documentElement.setAttribute('data-theme', theme);
+    writeStorage(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
   const toggleTheme = () => {

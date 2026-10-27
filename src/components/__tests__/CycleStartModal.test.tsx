@@ -76,4 +76,26 @@ describe('CycleStartModal Component', () => {
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(handleCancel).toHaveBeenCalledTimes(1);
   });
+
+  it('cancels from the overlay, the close button and the cancel link only', () => {
+    const handleCancel = vi.fn();
+    render(
+      <LanguageProvider>
+        <CycleStartModal
+          isOpen={true}
+          date="2026-09-02"
+          onConfirm={vi.fn()}
+          onCancel={handleCancel}
+        />
+      </LanguageProvider>
+    );
+    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.click(screen.getByText('2026-09-02'));
+    expect(handleCancel).not.toHaveBeenCalled();
+
+    fireEvent.click(screen.getByRole('dialog'));
+    fireEvent.click(screen.getByRole('button', { name: 'Close' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(handleCancel).toHaveBeenCalledTimes(3);
+  });
 });

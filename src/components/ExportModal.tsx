@@ -17,7 +17,8 @@ import { getExportFilename } from '../utils/exportUtils';
 interface ExportModalProps {
   isOpen: boolean;
   onClose: () => void;
-  onPreparePrint?: (selectedCycleIds: string[]) => void;
+  /** Receives the cycles to print and a short label for the PDF file name. */
+  onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
 }
 
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPreparePrint }) => {
@@ -33,8 +34,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
   useEffect(() => {
     const [newest] = cycles;
     if (newest) {
-      const initialSingle =
-        selectedCycleId && selectedCycleId !== 'all' ? selectedCycleId : newest.id;
+      const initialSingle = selectedCycleId === 'all' ? newest.id : selectedCycleId;
       setSelectedSingleId(initialSingle);
       setSelectedMultiIds(cycles.map(c => c.id));
     }
@@ -69,37 +69,26 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     );
   };
 
+  // Cycles are listed newest first, so Cycle 1 is the oldest
+  const cycleLabel = (cycleId: string) => {
+    const cycleIndex = cycles.findIndex(c => c.id === cycleId);
+    return cycleIndex === -1 ? 'all-cycles' : `cycle-${cycles.length - cycleIndex}`;
+  };
+
+  const describeSelection = (ids: string[]) => {
+    const [first, ...rest] = ids;
+    if (first && rest.length === 0) return cycleLabel(first);
+    return ids.length > 0 && ids.length < cycles.length ? 'selected-cycles' : 'all-cycles';
+  };
+
   const handlePrint = () => {
-    let idsToExport: string[] = [];
-    let detail = 'all-cycles';
-
-    if (exportMode === 'single') {
-      const targetId = selectedSingleId || (cycles[0] ? cycles[0].id : 'all');
-      idsToExport = [targetId];
-      const cycleIndex = cycles.findIndex(c => c.id === targetId);
-      detail = cycleIndex !== -1 ? `cycle-${cycles.length - cycleIndex}` : 'single-cycle';
-    } else {
-      idsToExport = selectedMultiIds.length > 0 ? selectedMultiIds : ['all'];
-      if (selectedMultiIds.length === 1) {
-        const cycleIndex = cycles.findIndex(c => c.id === selectedMultiIds[0]);
-        detail = cycleIndex !== -1 ? `cycle-${cycles.length - cycleIndex}` : 'single-cycle';
-      } else if (selectedMultiIds.length > 0 && selectedMultiIds.length < cycles.length) {
-        detail = 'selected-cycles';
-      } else {
-        detail = 'all-cycles';
-      }
-    }
-
-    if (onPreparePrint) {
-      onPreparePrint(idsToExport);
-    } else {
-      const originalTitle = document.title;
-      document.title = getExportFilename('pdf', detail);
-      window.print();
-      setTimeout(() => {
-        document.title = originalTitle;
-      }, 1000);
-    }
+    const idsToExport =
+      exportMode === 'single'
+        ? [selectedSingleId || 'all']
+        : selectedMultiIds.length > 0
+          ? selectedMultiIds
+          : ['all'];
+    onPreparePrint(idsToExport, describeSelection(idsToExport));
     onClose();
   };
 
@@ -115,23 +104,14 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     onClose();
   };
 
-  const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onload = event => {
-        const content = event.target?.result as string;
-        if (content) {
-          const success = importDataJson(content);
-          if (success) {
-            alert('Chart data restored successfully!');
-            onClose();
-          } else {
-            alert('Failed to import JSON file. Please check file format.');
-          }
-        }
-      };
-      reader.readAsText(file);
+    if (!file) return;
+    if (importDataJson(await file.text())) {
+      alert('Chart data restored successfully!');
+      onClose();
+    } else {
+      alert('Failed to import JSON file. Please check file format.');
     }
   };
 

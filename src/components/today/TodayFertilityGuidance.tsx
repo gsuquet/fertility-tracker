@@ -19,28 +19,20 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   intercourse,
   variant,
 }) => {
-  const { t, language } = useLanguage();
+  const { t } = useLanguage();
 
   const getFertilityGuidance = () => {
     switch (stamp) {
       case 'RED':
-        return language === 'fr'
-          ? 'Phase de règles. Considérez les jours de saignement comme potentiellement fertiles.'
-          : 'Menses phase. Bleeding days are considered potentially fertile per Creighton protocols.';
+        return t.todayView.guidance.red;
       case 'WHITE_BABY':
-        return language === 'fr'
-          ? 'Glaire fertile (Symbole Bébé). Journée fertile. Suivez vos objectifs de fertilité.'
-          : 'Fertile cervical mucus present (Baby Symbol). Fertile day. Follow your family planning intentions.';
+        return t.todayView.guidance.whiteBaby;
       case 'LIGHT_GREEN_BABY_1':
       case 'LIGHT_GREEN_BABY_2':
       case 'LIGHT_GREEN_BABY_3':
-        return language === 'fr'
-          ? 'Compte Post-Sommet (+1, +2, +3). Fenêtre d hyper-fertilité post-ovulatoire.'
-          : 'Post-Peak count (+1, +2, +3). High fertility transition window following Peak Day.';
+        return t.todayView.guidance.postPeak;
       default:
-        return language === 'fr'
-          ? 'Journée sèche / infertile. Continuez l observation quotidienne.'
-          : 'Dry / Infertile day based on observations. Continue standard daily monitoring.';
+        return t.todayView.guidance.dry;
     }
   };
 

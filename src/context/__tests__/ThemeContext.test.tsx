@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect, beforeEach } from 'vitest';
+import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 
 const TestComponent = () => {
@@ -64,5 +64,28 @@ describe('ThemeContext Provider', () => {
   it('throws error when useTheme is used outside ThemeProvider', () => {
     const renderOutside = () => render(<TestComponent />);
     expect(renderOutside).toThrow('useTheme must be used within ThemeProvider');
+  });
+
+  it('follows the system dark preference when no theme is stored', () => {
+    vi.mocked(window.matchMedia).mockReturnValueOnce({ matches: true } as MediaQueryList);
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    );
+    expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
+  });
+
+  it('uses the light theme when matchMedia is not available', () => {
+    const original = window.matchMedia;
+    // @ts-expect-error simulate a browser without matchMedia
+    window.matchMedia = undefined;
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    );
+    window.matchMedia = original;
+    expect(screen.getByTestId('current-theme')).toHaveTextContent('light');
   });
 });

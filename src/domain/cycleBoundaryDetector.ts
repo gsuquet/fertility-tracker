@@ -6,7 +6,7 @@ import { processCycleObservations } from './peakDetector';
  * is the first bleeding day of a series (i.e., has a bleeding code and is preceded by a non-bleeding day or no observation).
  */
 export function isFirstBleedingDayOfSeries(
-  obsData: { date: string; bleeding?: string },
+  obsData: { date: string; bleeding?: string | undefined },
   allObservations: Observation[]
 ): boolean {
   if (!obsData.bleeding || !['H', 'M', 'L', 'VL', 'B'].includes(obsData.bleeding)) {
@@ -76,16 +76,18 @@ export function groupObservationsIntoCycles(observations: Observation[]): Cycle[
     }
   }
 
-  // Save final current cycle
-  if (currentCycleObs.length > 0) {
-    const processedCurrent = processCycleObservations(currentCycleObs);
-    cycles.push({
-      id: `cycle_${currentCycleStartDate}`,
-      startDate: currentCycleStartDate,
-      observations: processedCurrent,
-    });
-  }
+  // Save final current cycle (always non-empty: the first observation starts it)
+  cycles.push({
+    id: `cycle_${currentCycleStartDate}`,
+    startDate: currentCycleStartDate,
+    observations: processCycleObservations(currentCycleObs),
+  });
 
   // Return cycles ordered newest to oldest (most recent cycle first)
   return cycles.reverse();
+}
+
+/** Returns the date of the last observation of a cycle, or its start date when it is empty. */
+export function getCycleEndDate(cycle: Cycle): string {
+  return cycle.observations.at(-1)?.date ?? cycle.startDate;
 }

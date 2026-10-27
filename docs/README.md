@@ -18,6 +18,7 @@ Additionally, this repository maintains formal records for architectural evoluti
   • Getting Started          │             • Log Biomarker Observations
                              │             • Export Cycle Charts
                              │             • Add a New Language (i18n)
+                             │             • Write a Test First
    LEARNING ───────────────────┼─────────────────── WORKING
                              │
      Explanation             │                 Reference
@@ -25,6 +26,7 @@ Additionally, this repository maintains formal records for architectural evoluti
                              │
   • CrMS Methodology         │             • CrMS Biomarker Codes
   • Architecture Overview    │             • Domain Engine API
+  • Testing Strategy         │
                              │             • Project Structure
                              ▼
                         THEORETICAL
@@ -47,6 +49,7 @@ How-To guides provide actionable, step-by-step instructions to accomplish specif
 - **[Log Biomarker Observations](how-to/log-biomarkers.md):** Step-by-step guide to using the observation drawer, Creighton codes, and manual Peak Day overrides.
 - **[Export Cycle Charts](how-to/export-cycle-charts.md):** Step-by-step guide to generating PDF reports, PNG chart images, or JSON data backups.
 - **[Add a New Language](how-to/add-new-language.md):** Instructions for contributing new i18n locale translations.
+- **[Write a Test First](how-to/write-a-test-first.md):** Procedure to change the code with test-driven development and keep 100% coverage.
 - **[Deploy to Cloudflare Pages](how-to/deploy-cloudflare.md):** Step-by-step guide for manual CLI deployment and GitHub Actions automated CD to Cloudflare Pages.
 
 ---
@@ -68,6 +71,7 @@ Explanation articles offer high-level context, background concepts, and design r
 
 - **[Creighton Model Methodology](explanation/crms-methodology.md):** Clinical principles of CrMS, biomarker scoring, and peak day calculation mechanics.
 - **[Architecture Overview](explanation/architecture-overview.md):** System design, data flow, reactive state management, and separation of concerns.
+- **[Testing Strategy](explanation/testing-strategy.md):** Why the project uses test-driven development and 100% coverage, the test layers and the test helpers.
 
 ---
 

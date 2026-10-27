@@ -86,4 +86,24 @@ describe('dateUtils', () => {
       expect(getDaysDifference('2026-07-25', '2026-07-20')).toBe(-5);
     });
   });
+
+  describe('invalid input', () => {
+    it('returns the input from formatDateDisplay when the date is not valid', () => {
+      expect(formatDateDisplay('2026-07')).toBe('2026-07');
+    });
+
+    it('returns the input from formatDateDisplay when the locale is not valid', () => {
+      expect(formatDateDisplay('2026-07-01', 'not a locale!')).toBe('2026-07-01');
+    });
+
+    it('returns an empty string from formatDayOfWeek when the date or locale is not valid', () => {
+      expect(formatDayOfWeek('abc')).toBe('');
+      expect(formatDayOfWeek('2026-07-01', 'not a locale!')).toBe('');
+    });
+
+    it('returns 0 from getDaysDifference when a date is not valid', () => {
+      expect(getDaysDifference('2026-07-01', 'xx')).toBe(0);
+      expect(getDaysDifference('xx', '2026-07-01')).toBe(0);
+    });
+  });
 });

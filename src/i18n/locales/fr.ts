@@ -3,6 +3,7 @@ import type { TranslationSchema } from '../types';
 export const fr: TranslationSchema = {
   appTitle: 'Fertility Tracker',
   subtitle: 'Modèle Creighton (CrMS)',
+  locale: 'fr-FR',
   tabs: {
     today: "Aujourd'hui",
     chart: 'Graphique Papier',
@@ -17,6 +18,13 @@ export const fr: TranslationSchema = {
     analytics: 'Analyses',
   },
   todayView: {
+    guidance: {
+      red: 'Phase de règles. Considérez les jours de saignement comme potentiellement fertiles.',
+      whiteBaby:
+        'Glaire fertile (Symbole Bébé). Journée fertile. Suivez vos objectifs de fertilité.',
+      postPeak: "Compte Post-Sommet (+1, +2, +3). Fenêtre d'hyper-fertilité post-ovulatoire.",
+      dry: "Journée sèche / infertile. Continuez l'observation quotidienne.",
+    },
     title: 'Observation du jour',
     subtitle: 'Saisissez, consultez et suivez votre observation quotidienne du Modèle Creighton',
     todayLabel: "Aujourd'hui",
@@ -35,6 +43,15 @@ export const fr: TranslationSchema = {
     modeDetailed: 'Formulaire Détaillé',
     showDetailed: 'Afficher les Sélecteurs Détaillés',
     hideDetailed: 'Masquer les Sélecteurs Détaillés',
+  },
+  menu: {
+    title: 'Menu & Options',
+    exportHint: 'Imprimer ou exporter en PDF / JSON',
+    guideHint: 'Tutoriel et guide des biomarqueurs',
+    versionHint: 'Notes de version & stockage local',
+    languageToggle: 'Langue : Français',
+    themeDark: 'Thème : Sombre',
+    themeLight: 'Thème : Clair',
   },
   actions: {
     newEntry: 'Saisir une observation',

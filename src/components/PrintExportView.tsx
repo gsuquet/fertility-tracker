@@ -31,12 +31,10 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
       ? displayCycles
       : displayCycles.filter(c => selectedCycleIds.includes(c.id));
 
-  const finalCycles = filtered;
-
-  if (finalCycles.length === 0) return null;
+  if (filtered.length === 0) return null;
 
   // Sort selected cycles chronologically: oldest to newest
-  const sortedCycles = [...finalCycles].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const sortedCycles = [...filtered].sort((a, b) => a.startDate.localeCompare(b.startDate));
 
   return (
     <div className="print-export-container" id="printable-pdf-export">
@@ -53,9 +51,8 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
 
       <div className="print-cycles-list">
         {sortedCycles.map(cycle => {
-          // Find original 1-based cycle index in the full list (where Cycle 1 is oldest)
-          const originalIndex = cycles.findIndex(c => c.id === cycle.id);
-          const cycleNum = originalIndex !== -1 ? cycles.length - originalIndex : 1;
+          // Cycles are listed newest first, so Cycle 1 is the oldest
+          const cycleNum = displayCycles.length - displayCycles.indexOf(cycle);
           const startDate = cycle.observations[0]?.date || cycle.startDate;
           const endDate = cycle.observations[cycle.observations.length - 1]?.date || startDate;
           const daysCount = cycle.observations.length;
@@ -115,7 +112,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                       if (obs) {
                         return (
                           <div
-                            key={obs.id || dayNum}
+                            key={dayNum}
                             className={`print-cell filled-cell ${isPeak ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()}`}
                           >
                             <div className="print-stamp-wrapper">
@@ -134,7 +131,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                             </div>
 
                             {(() => {
-                              const cleanCode = (obs.codeString || '')
+                              const cleanCode = obs.codeString
                                 .replace(/\b(AP|RAP|LAP)\b/g, '')
                                 .replace(/\s+/g, '');
                               return <div className="print-code">{cleanCode || '---'}</div>;
@@ -144,8 +141,8 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                               <div className="print-symptoms">{obs.symptoms.join(',')}</div>
                             )}
 
-                            <div className="print-notes" title={obs.notes || ''}>
-                              {obs.notes || ''}
+                            <div className="print-notes" title={obs.notes}>
+                              {obs.notes}
                             </div>
                           </div>
                         );

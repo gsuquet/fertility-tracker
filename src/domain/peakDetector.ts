@@ -42,7 +42,7 @@ export function processCycleObservations(
       const postPeakNum = idx - peakIndex;
       if (postPeakNum === 1) stamp = 'LIGHT_GREEN_BABY_1';
       else if (postPeakNum === 2) stamp = 'LIGHT_GREEN_BABY_2';
-      else if (postPeakNum === 3) stamp = 'LIGHT_GREEN_BABY_3';
+      else stamp = 'LIGHT_GREEN_BABY_3';
     }
 
     const calculatedCycleDay = getDaysDifference(startDate, obs.date) + 1;

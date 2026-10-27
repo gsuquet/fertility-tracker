@@ -6,61 +6,46 @@ import { Layers, ChevronDown, Check, X, Calendar } from 'lucide-react';
 
 export const CyclePicker: React.FC = () => {
   const { cycles, selectedCycleId, setSelectedCycleId } = useCycle();
-  const [isOpen, setIsOpen] = useState(false);
+  // The menu is open while it has a position
   const [menuCoords, setMenuCoords] = useState<{ top: number; right: number } | null>(null);
+  const isOpen = menuCoords !== null;
   const buttonRef = useRef<HTMLButtonElement>(null);
-  const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const updateCoords = useCallback(() => {
-    if (buttonRef.current) {
-      const rect = buttonRef.current.getBoundingClientRect();
-      setMenuCoords({
-        top: rect.bottom + 6,
-        right: window.innerWidth - rect.right,
-      });
-    }
+  const updateCoords = useCallback((button: HTMLElement) => {
+    const rect = button.getBoundingClientRect();
+    setMenuCoords({
+      top: rect.bottom + 6,
+      right: window.innerWidth - rect.right,
+    });
   }, []);
 
-  const toggleOpen = () => {
-    if (!isOpen) {
-      updateCoords();
+  const close = () => setMenuCoords(null);
+
+  const toggleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
+    if (isOpen) {
+      close();
+    } else {
+      updateCoords(event.currentTarget);
     }
-    setIsOpen(!isOpen);
   };
 
+  // While the menu is open, a full-screen backdrop catches clicks outside it
   useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      const target = event.target as Node;
-      if (
-        buttonRef.current &&
-        !buttonRef.current.contains(target) &&
-        dropdownRef.current &&
-        !dropdownRef.current.contains(target)
-      ) {
-        setIsOpen(false);
-      }
-    };
+    const button = buttonRef.current;
+    if (!isOpen || !button) return;
 
-    const handleScrollOrResize = () => {
-      if (isOpen) {
-        updateCoords();
-      }
-    };
+    const handleScrollOrResize = () => updateCoords(button);
 
     const handleKeyDown = (event: KeyboardEvent) => {
       if (event.key === 'Escape') {
-        setIsOpen(false);
+        setMenuCoords(null);
       }
     };
 
-    if (isOpen) {
-      document.addEventListener('mousedown', handleClickOutside);
-      document.addEventListener('keydown', handleKeyDown);
-      window.addEventListener('scroll', handleScrollOrResize, true);
-      window.addEventListener('resize', handleScrollOrResize);
-    }
+    document.addEventListener('keydown', handleKeyDown);
+    window.addEventListener('scroll', handleScrollOrResize, true);
+    window.addEventListener('resize', handleScrollOrResize);
     return () => {
-      document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('keydown', handleKeyDown);
       window.removeEventListener('scroll', handleScrollOrResize, true);
       window.removeEventListener('resize', handleScrollOrResize);
@@ -69,47 +54,44 @@ export const CyclePicker: React.FC = () => {
 
   if (cycles.length === 0) return null;
 
+  // An unknown id shows as 'all' until the provider resets it
   const activeCycleIndex = cycles.findIndex(c => c.id === selectedCycleId);
-  const activeCycleNumber = activeCycleIndex !== -1 ? cycles.length - activeCycleIndex : null;
-  const activeCycle = activeCycleIndex !== -1 ? cycles[activeCycleIndex] : null;
+  const activeCycle = cycles[activeCycleIndex];
 
   const getButtonLabel = (isMobile: boolean) => {
-    if (selectedCycleId === 'all') {
+    if (!activeCycle) {
       return isMobile ? `All (${cycles.length})` : `All Cycles (${cycles.length})`;
     }
-    if (activeCycleNumber) {
-      return isMobile
-        ? `Cycle ${activeCycleNumber}`
-        : `Cycle ${activeCycleNumber} (${activeCycle?.startDate})`;
-    }
-    return `All Cycles`;
+    const activeCycleNumber = cycles.length - activeCycleIndex;
+    return isMobile
+      ? `Cycle ${activeCycleNumber}`
+      : `Cycle ${activeCycleNumber} (${activeCycle.startDate})`;
   };
 
   const handleSelect = (id: string) => {
     setSelectedCycleId(id);
-    setIsOpen(false);
+    close();
   };
 
-  const isMobile = typeof window !== 'undefined' && window.innerWidth <= 640;
+  const isMobile = window.innerWidth <= 640;
 
-  const menuContent = isOpen ? (
+  const menuContent = menuCoords ? (
     <>
-      <div className="cycle-dropdown-backdrop" onClick={() => setIsOpen(false)} />
+      <div className="cycle-dropdown-backdrop" onClick={close} />
       <div
-        ref={dropdownRef}
         className="cycle-dropdown-menu"
         role="listbox"
         tabIndex={-1}
         style={
-          !isMobile && menuCoords
-            ? {
+          isMobile
+            ? undefined
+            : {
                 position: 'fixed',
                 top: `${menuCoords.top}px`,
                 right: `${menuCoords.right}px`,
                 left: 'auto',
                 bottom: 'auto',
               }
-            : undefined
         }
       >
         <div className="cycle-dropdown-header">
@@ -117,7 +99,7 @@ export const CyclePicker: React.FC = () => {
           <button
             type="button"
             className="cycle-dropdown-close"
-            onClick={() => setIsOpen(false)}
+            onClick={close}
             aria-label="Close cycle menu"
           >
             <X size={16} />
@@ -193,25 +175,7 @@ export const CyclePicker: React.FC = () => {
         <ChevronDown size={14} className={`cycle-selector-arrow ${isOpen ? 'open' : ''}`} />
       </button>
 
-      {/* Visually hidden select for test compatibility */}
-      <select
-        aria-hidden="true"
-        tabIndex={-1}
-        className="visually-hidden-select"
-        value={selectedCycleId}
-        onChange={e => setSelectedCycleId(e.target.value)}
-      >
-        <option value="all">All Cycles ({cycles.length})</option>
-        {cycles.map((cycle, idx) => (
-          <option key={cycle.id} value={cycle.id}>
-            Cycle {cycles.length - idx} ({cycle.startDate})
-          </option>
-        ))}
-      </select>
-
-      {typeof document !== 'undefined' && menuContent
-        ? ReactDOM.createPortal(menuContent, document.body)
-        : null}
+      {menuContent && ReactDOM.createPortal(menuContent, document.body)}
     </div>
   );
 };

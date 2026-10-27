@@ -52,7 +52,7 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
             </div>
             <div>
               <h2 id="cycle-start-modal-title" className="cycle-start-title">
-                {t.cycleStartModal?.title || 'New Cycle Start?'}
+                {t.cycleStartModal.title}
               </h2>
               <span className="cycle-start-date">{date}</span>
             </div>
@@ -61,25 +61,20 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
             type="button"
             onClick={onCancel}
             className="btn-icon"
-            aria-label={t.actions?.close || 'Close'}
+            aria-label={t.actions.close}
           >
             <X size={20} />
           </button>
         </div>
 
         <div className="cycle-start-body">
-          <p className="cycle-start-question">
-            {t.cycleStartModal?.question || 'Is this bleeding day the start of a new cycle?'}
-          </p>
-          <p className="cycle-start-description">
-            {t.cycleStartModal?.description ||
-              'This is the first bleeding day following non-bleeding days. You can choose whether this starts a new cycle or continues your current cycle.'}
-          </p>
+          <p className="cycle-start-question">{t.cycleStartModal.question}</p>
+          <p className="cycle-start-description">{t.cycleStartModal.description}</p>
         </div>
 
         <div className="cycle-start-actions">
           <button type="button" onClick={() => onConfirm(true)} className="btn btn-primary btn-lg">
-            {t.cycleStartModal?.yesBtn || 'Yes, Start New Cycle'}
+            {t.cycleStartModal.yesBtn}
           </button>
 
           <button
@@ -87,11 +82,11 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
             onClick={() => onConfirm(false)}
             className="btn btn-secondary btn-lg"
           >
-            {t.cycleStartModal?.noBtn || 'No, Continue Current Cycle'}
+            {t.cycleStartModal.noBtn}
           </button>
 
           <button type="button" onClick={onCancel} className="cycle-start-cancel-link">
-            {t.cycleStartModal?.cancelBtn || 'Cancel'}
+            {t.cycleStartModal.cancelBtn}
           </button>
         </div>
       </div>

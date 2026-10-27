@@ -1,6 +1,7 @@
 export const en = {
   appTitle: 'Fertility Tracker',
   subtitle: 'Creighton Model System (CrMS)',
+  locale: 'en-US',
   tabs: {
     today: 'Today',
     chart: 'Paper Chart Strip',
@@ -15,6 +16,14 @@ export const en = {
     analytics: 'Analytics',
   },
   todayView: {
+    guidance: {
+      red: 'Menses phase. Bleeding days are considered potentially fertile per Creighton protocols.',
+      whiteBaby:
+        'Fertile cervical mucus present (Baby Symbol). Fertile day. Follow your family planning intentions.',
+      postPeak:
+        'Post-Peak count (+1, +2, +3). High fertility transition window following Peak Day.',
+      dry: 'Dry / Infertile day based on observations. Continue standard daily monitoring.',
+    },
     title: "Today's Observation",
     subtitle: 'Record, view, and track your daily Creighton Model System observations',
     todayLabel: 'Today',
@@ -33,6 +42,15 @@ export const en = {
     modeDetailed: 'Detailed Form',
     showDetailed: 'Show Detailed Selectors',
     hideDetailed: 'Hide Detailed Selectors',
+  },
+  menu: {
+    title: 'Menu & Options',
+    exportHint: 'Print or export PDF / JSON charts',
+    guideHint: 'Interactive guide & biomarker chart tutorial',
+    versionHint: 'Release notes & system storage diagnostics',
+    languageToggle: 'Language : English',
+    themeDark: 'Theme : Dark',
+    themeLight: 'Theme : Light',
   },
   actions: {
     newEntry: 'Log Observation',

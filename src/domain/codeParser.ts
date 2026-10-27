@@ -142,10 +142,8 @@ export function parseCodeString(input: string): ParsedCodeResult {
       }
 
       const singleMod = remaining.slice(modIdx, modIdx + 1) as MucusModifier;
-      if (validModifiers.includes(singleMod)) {
-        if (!modifiers.includes(singleMod)) modifiers.push(singleMod);
-      } else if (singleMod === 'B' && !bleeding && !stretch) {
-        bleeding = 'B';
+      if (validModifiers.includes(singleMod) && !modifiers.includes(singleMod)) {
+        modifiers.push(singleMod);
       }
       modIdx += 1;
     }
