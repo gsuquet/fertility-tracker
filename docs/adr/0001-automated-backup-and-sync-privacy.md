@@ -1,165 +1,146 @@
-# 1. Automated Backup & Multi-Device Synchronization with Zero-Knowledge Privacy
+# ADR 0001: Automatic backup and synchronization with zero-knowledge privacy
 
-Date: 2026-08-14
-
-## Status
-
-Proposed
+- **Date:** 2026-08-14
+- **Status:** Proposed. Not implemented.
 
 ## Context
 
-Fertility Tracker is an offline-first, client-side web application handling highly sensitive personal reproductive health data (biomarkers, cycle timing, intercourse, and clinical indicators). The application currently persists data solely to browser `localStorage` with manual JSON export and import capabilities.
+The application keeps very sensitive health data: bleeding, mucus, intercourse and cycle dates. Today, it keeps the data only in the `localStorage` of the browser. The user can make a JSON backup and restore it manually.
 
-Users require:
+Users need these functions:
 
-1. **Automated, transparent backups** to prevent data loss upon browser cache clearing or device loss.
-2. **Multi-device synchronization** (e.g. logging on mobile, reviewing analytics on desktop/tablet, or partner sharing).
-3. **The highest standard of privacy**: Zero plaintext data or medical metadata must ever be accessible to hosting providers, servers, or intermediaries.
-4. **Local-first resilience**: The application must remain fully functional offline, syncing opportunistically when online.
+1. Automatic backups, so that they do not lose data when they clear the browser or lose the device.
+2. Synchronization between devices. For example, a user records on a phone and reads the statistics on a computer. A partner can also see the chart.
+3. Full privacy. A host, a server or a network must never see the data or the medical metadata in clear text.
+4. Local-first operation. The application must work without a network and synchronize when a network is available.
 
----
+## Options
 
-## Architectural Options Evaluated
+### Option A: Encrypted serverless relay on Cloudflare
 
-### Option A: Zero-Knowledge E2EE Serverless Sync (Cloudflare Workers + D1/KV)
+The browser encrypts the data with WebCrypto (AES-256-GCM). Then it sends the encrypted data to a Cloudflare Pages function, which keeps it in D1, KV or R2.
 
-The client application encrypts payloads using WebCrypto (AES-256-GCM) before transmitting to a serverless endpoint running on Cloudflare Pages / Workers with D1 (SQLite) or KV/R2.
+| Advantages                                                         | Disadvantages                                                |
+| ------------------------------------------------------------------ | ------------------------------------------------------------ |
+| The user does not need a cloud account.                            | The project must keep a small backend and a database schema. |
+| The server keeps only encrypted data and a hashed room identifier. |                                                              |
+| Synchronization can be fast.                                       |                                                              |
+| The free Cloudflare plan is sufficient.                            |                                                              |
 
-- **Pros:**
-  - Zero user configuration required (no external cloud accounts needed).
-  - 100% zero-knowledge: Server stores only cryptographically blinded room hashes and encrypted ciphertext blobs.
-  - Real-time sync capability (via WebSockets / SSE or lightweight delta polling).
-  - Free-tier compatible on Cloudflare Pages ($0 operational overhead).
-- **Cons:**
-  - Requires maintaining a minimal backend relay script and database schema.
+### Option B: Storage of the user (WebDAV, Nextcloud, Google Drive, iCloud)
 
-### Option B: Bring-Your-Own-Storage (BYOS / WebDAV / Nextcloud / Google Drive AppData / iCloud)
+The browser connects directly to a storage service of the user.
 
-The client connects directly to user-managed storage providers (e.g. WebDAV, Nextcloud, Google Drive `drive.appdata` hidden sandbox, or local folder via File System Access API).
+| Advantages                                        | Disadvantages                                                        |
+| ------------------------------------------------- | -------------------------------------------------------------------- |
+| The project keeps no server.                      | The user must set up OAuth credentials, a WebDAV address or a token. |
+| The user has full control of the encrypted files. | Background synchronization is limited on iOS and Safari.             |
+|                                                   | Two devices that write the full file at the same time can lose data. |
 
-- **Pros:**
-  - Zero server maintenance for the application author.
-  - Absolute user custody of raw encrypted files.
-- **Cons:**
-  - High friction: Requires configuring OAuth credentials, WebDAV URLs, or API tokens.
-  - Limited background sync on iOS/Safari PWAs due to mobile background execution limits.
-  - Risk of merge conflicts with full-file overwrites.
+### Option C: Direct connection between devices (WebRTC and CRDT)
 
-### Option C: Decentralized Peer-to-Peer Sync (WebRTC + CRDTs / Automerge / Yjs)
+The devices connect directly through WebRTC and exchange CRDT changes (Automerge or Yjs).
 
-Devices connect directly over WebRTC DataChannels using an ephemeral signaling server to exchange CRDT update logs.
+| Advantages                                   | Disadvantages                                   |
+| -------------------------------------------- | ----------------------------------------------- |
+| No server or storage service keeps the data. | Two devices must be online at the same time.    |
+| The CRDT merge has no conflicts.             | If the only device is lost, there is no backup. |
+|                                              | The CRDT library adds 50 to 200 KB.             |
+|                                              | The connection needs STUN and TURN servers.     |
 
-- **Pros:**
-  - Zero data stored on any server or intermediary storage provider.
-  - Mathematical conflict-free convergence.
-- **Cons:**
-  - Requires both devices to be online concurrently; provides zero disaster recovery if the only active device is lost.
-  - Substantial bundle size and memory overhead (~50KB–200KB WASM/JS for Automerge/Yjs).
-  - Complex NAT traversal requiring STUN/TURN relays.
+### Option D: Adapters with a default encrypted relay (selected)
 
-### Option D: Hybrid Adapter Architecture (Selected Direction)
+One `SyncAdapter` interface in `src/domain/sync/`. The default adapter is the encrypted relay of option A. Optional adapters use WebDAV or another storage service of the user, or an encrypted file.
 
-A unified `SyncAdapter` interface in `src/domain/sync/` featuring a default **Zero-Knowledge E2EE Serverless Sync** relay with optional pluggable **WebDAV / BYOS** and **Encrypted File Export**.
+## Key management
 
----
+| Method                          | Cryptography                                                                          | Setup for the user                                       | Recovery after device loss                         | Recommendation    |
+| ------------------------------- | ------------------------------------------------------------------------------------- | -------------------------------------------------------- | -------------------------------------------------- | ----------------- |
+| 12-word recovery phrase (BIP39) | PBKDF2 or Argon2id from 128 bits of entropy. Gives an AES-GCM key.                    | Write 12 words one time. Type them on the second device. | Yes, at all times.                                 | Default           |
+| Temporary QR code (ECDH)        | The first device shows an ECDH public key. The second device scans it.                | Scan with the camera. No typing.                         | Only if one device is still available.             | For fast pairing  |
+| Password and salt               | PBKDF2 with 600,000 or more iterations, or Argon2id.                                  | A password on each device.                               | Only as strong as the password.                    | Secondary option  |
+| Sync link with the key          | The key is in the URL fragment. The browser does not send the fragment to the server. | Open a link or scan a QR code.                           | If the link is lost, the data cannot be decrypted. | For a partner     |
+| Passkey (WebAuthn PRF)          | The authenticator makes the key with the PRF extension.                               | Face or fingerprint prompt.                              | Browser support is not complete.                   | Phase 3 candidate |
 
-## Key Management & Pairing Strategy
+## Synchronization and conflicts
 
-| Mechanism                                     | Security / Cryptography                                                                                                                               | Pairing / Setup UX                                          | Recovery Post-Device Loss                                                    | Recommendation                       |
-| :-------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------------------- | :--------------------------------------------------------------------------- | :----------------------------------- |
-| **1. 12-Word Recovery Phrase (BIP39)**        | PBKDF2 / Argon2id from 128-bit entropy; generates master symmetric key (AES-GCM).                                                                     | User writes down 12 words once; enters words on 2nd device. | **Excellent:** Can recover from scratch anytime.                             | **Recommended Default**              |
-| **2. Ephemeral QR Code Pairing (ECIES / DH)** | Device 1 generates ephemeral ECDH public key via QR; Device 2 scans and completes Diffie-Hellman handshake over local channel to transfer master key. | 5-second camera scan; zero typing required.                 | Requires at least one existing active device.                                | **Recommended for Fast Pairing**     |
-| **3. User Passphrase + Salt**                 | Master key derived from user password via PBKDF2 (600,000+ iterations) or Argon2id.                                                                   | Familiar password entry on all devices.                     | Depends on user password strength; susceptible to weak passwords.            | **Good Secondary Option**            |
-| **4. Anonymous Sync Link / Room Key**         | `https://fertility.app/#sync=<RoomID>&key=<Base64Key>` (Key stored in URL hash fragment, never sent to server).                                       | Copy/paste link or QR code. Instant 1-click sync.           | If URL/QR is lost, data in room cannot be decrypted.                         | **Ideal for Partner Sharing**        |
-| **5. WebAuthn / Passkeys (PRF Extension)**    | Hardware-backed authenticator derives symmetric key using PRF (Pseudo-Random Function) extension.                                                     | FaceID / TouchID biometric prompt.                          | Browser support for PRF extension is still evolving (Chrome/Safari partial). | **Future-Proof Candidate (Phase 3)** |
+| Strategy                                   | Method                                                                                                   | Size of a sync                      | Conflict resolution                                                                  | Complexity |
+| ------------------------------------------ | -------------------------------------------------------------------------------------------------------- | ----------------------------------- | ------------------------------------------------------------------------------------ | ---------- |
+| A. Full snapshot                           | Encrypts the full observation list as one file with a version and a time.                                | Less than 200 KB                    | The last write wins for the full file. Two offline devices can overwrite each other. | Very low   |
+| B. Changes for each observation (selected) | Each observation has `updatedAt` and `deletedAt`. The device sends only the changes since the last sync. | Less than 1 KB                      | The last write wins for each observation. Different days never conflict.             | Medium     |
+| C. CRDT log for each field                 | Each change of a field is an operation in an encrypted log.                                              | The log grows. It needs compaction. | The merge never loses data.                                                          | High       |
 
----
+## Comparison
 
-## Synchronization Granularity & Conflict Resolution
-
-| Strategy                                       | Mechanism                                                                                                                  | Storage Overhead                                | Conflict Resolution                                                                                                           | Implementation Complexity |
-| :--------------------------------------------- | :------------------------------------------------------------------------------------------------------------------------- | :---------------------------------------------- | :---------------------------------------------------------------------------------------------------------------------------- | :------------------------ |
-| **A. Snapshot Replacement**                    | Encrypts full `Observation[]` array as single JSON blob with `version` and `lastModified` timestamp.                       | Low (entire dataset < 200KB for years of data). | Last-Write-Wins (LWW) at file level. Concurrent edits on two offline devices can overwrite each other.                        | Very Low                  |
-| **B. Observation-Level Delta Sync (Selected)** | Each observation has `{ id, date, updatedAt, deletedAt }`. Client sends only changes/tombstones since `lastSyncTimestamp`. | Extremely low bandwidth (< 1KB per sync).       | Observation-level LWW based on `updatedAt`. Different days/cycles never conflict. Same-day edits resolve to latest timestamp. | Moderate / Optimal        |
-| **C. CRDT Field-Level Log (Automerge / Yjs)**  | Every field mutation is an immutable operation in an encrypted causal DAG.                                                 | High log growth over time; requires compaction. | Deterministic convergent merging without data loss.                                                                           | High                      |
-
----
-
-## Comprehensive Decision Matrix
-
-| Evaluation Vector                   | Option A: E2EE Serverless (Cloudflare) |  Option B: BYOS / WebDAV / Nextcloud  |        Option C: Pure P2P (WebRTC)         |  Option D: Hybrid Adapter (Selected)  |
-| :---------------------------------- | :------------------------------------: | :-----------------------------------: | :----------------------------------------: | :-----------------------------------: |
-| **Privacy / Zero Knowledge**        |       ★★★★★ (Client AES-256-GCM)       |       ★★★★★ (Client Encrypted)        |             ★★★★★ (Direct P2P)             |          ★★★★★ (Client E2EE)          |
-| **Onboarding Simplicity**           |    ★★★★★ (1-click / 12 words / QR)     |     ★★☆☆☆ (App passwords / URLs)      |    ★★★☆☆ (Simultaneous online pairing)     | ★★★★★ (Default simple, BYOS optional) |
-| **Automated Background Sync**       |   ★★★★★ (Web Background / On-change)   | ★★☆☆☆ (API throttles / Mobile limits) | ★☆☆☆☆ (Requires concurrent online devices) |           ★★★★★ (Adaptive)            |
-| **Disaster Recovery (Device Loss)** |     ★★★★★ (Encrypted Cloud Backup)     |         ★★★★★ (Cloud Storage)         |   ★☆☆☆☆ (Zero recovery if single device)   |        ★★★★★ (Full Redundancy)        |
-| **Operational & Hosting Cost**      |   ★★★★★ ($0 free tier on Cloudflare)   |       ★★★★★ ($0 to app author)        |        ★★★★☆ (Signaling/STUN costs)        |         ★★★★★ ($0 free tier)          |
-| **Bundle Size & Overhead**          |     ★★★★★ (< 5KB WebCrypto native)     |      ★★★★☆ (~15KB WebDAV/OAuth)       |        ★★☆☆☆ (~120KB Automerge/Yjs)        |     ★★★★★ (Modular / Lazy loaded)     |
-| **Multi-Device Partner Sharing**    |      ★★★★★ (Shared Room Key / QR)      |      ★★☆☆☆ (Shared Cloud Folder)      |        ★★★☆☆ (Manual Peer Pairing)         |       ★★★★★ (Seamless Room Key)       |
-
----
+| Criterion                  | A: Encrypted relay | B: User storage | C: Direct WebRTC | D: Adapters (selected) |
+| -------------------------- | ------------------ | --------------- | ---------------- | ---------------------- |
+| Privacy                    | Very good          | Very good       | Very good        | Very good              |
+| Easy setup                 | Very good          | Poor            | Medium           | Very good              |
+| Automatic background sync  | Very good          | Poor            | Very poor        | Very good              |
+| Recovery after device loss | Very good          | Very good       | Very poor        | Very good              |
+| Hosting cost               | None               | None            | Low              | None                   |
+| Bundle size                | Less than 5 KB     | About 15 KB     | About 120 KB     | Loaded only when used  |
+| Sharing with a partner     | Very good          | Poor            | Medium           | Very good              |
 
 ## Decision
 
-We will implement the **Hybrid Zero-Knowledge Sync Architecture (Option D)** with an **Observation-Level Delta Engine (Strategy B)**:
+The project will implement option D with strategy B:
 
-1. **Client-Side Cryptography (`src/utils/cryptoUtils.ts`):**
-   - Pure WebCrypto implementation (`AES-256-GCM` authenticated encryption).
-   - Key derivation using `PBKDF2-SHA256` (600,000 iterations) and standard BIP39 12-word mnemonic phrases.
-   - Zero external cryptographic dependencies to maintain minimal bundle size.
+1. **Encryption in the browser** (`src/utils/cryptoUtils.ts`):
+   - AES-256-GCM with WebCrypto.
+   - Key derivation with PBKDF2-SHA256 (600,000 iterations) and a 12-word BIP39 phrase.
+   - No external cryptography library.
+2. **Changes for each observation:**
+   - Add `updatedAt: number` and `deletedAt?: number` to the `Observation` type. A deleted observation keeps a `deletedAt` value.
+   - Merge with a last-write-wins rule for each observation.
+3. **Cloudflare relay** (`/api/sync`):
+   - Cloudflare Pages functions with D1 or KV.
+   - The relay keeps encrypted data. The index is `HMAC-SHA256(MasterKey, 'sync-room')`.
+4. **Pairing:**
+   - A 12-word recovery phrase for recovery.
+   - A temporary encrypted QR code to pair a new device.
 
-2. **Observation Delta Model:**
-   - Extend `Observation` type with `updatedAt: number` and `deletedAt?: number` (tombstones).
-   - Implement deterministic observation-level Last-Write-Wins (LWW) merger.
-
-3. **Cloudflare Relay (`/api/sync`):**
-   - Cloudflare Pages Functions with D1 / KV to store blind encrypted blobs indexed by `HMAC-SHA256(MasterKey, 'sync-room')`.
-
-4. **Pairing & UX:**
-   - 12-word recovery phrase for cold recovery.
-   - Encrypted ephemeral QR code transfer for immediate device pairing.
-
----
-
-## Phased Implementation Plan
+## Plan
 
 ```mermaid
 graph TD
-    subgraph Phase1: Cryptographic Foundation & Encrypted Backups
-        P1A[WebCrypto Service: AES-256-GCM + PBKDF2] --> P1B[Encrypted JSON Backup Export / Import with Password]
-        P1C[12-Word Recovery Phrase Generator] --> P1B
+    subgraph Phase1: Encryption and encrypted backups
+        P1A[WebCrypto service: AES-256-GCM and PBKDF2] --> P1B[Encrypted JSON backup and restore with a password]
+        P1C[12-word recovery phrase] --> P1B
     end
 
-    subgraph Phase2: Observation-Level Delta Engine
-        P2A[Observation Schema: updatedAt, deletedAt, syncStatus] --> P2B[Local Sync Queue in IndexedDB/LocalStorage]
-        P2B --> P2C[Deterministic LWW Merger]
+    subgraph Phase2: Changes for each observation
+        P2A[Observation fields: updatedAt, deletedAt, syncStatus] --> P2B[Local sync queue]
+        P2B --> P2C[Last-write-wins merge]
     end
 
-    subgraph Phase3: Zero-Knowledge Serverless Sync Relay
-        P3A[Cloudflare Worker Endpoint: /api/sync/delta] --> P3B[D1 / KV Encrypted Blob Table]
-        P3C[Fast QR Code Pairing between Devices] --> P3A
+    subgraph Phase3: Encrypted relay
+        P3A[Cloudflare endpoint: /api/sync/delta] --> P3B[D1 or KV table of encrypted data]
+        P3C[QR code pairing] --> P3A
     end
 
-    subgraph Phase4: Extended BYOS Adapters
-        P4A[WebDAV / Nextcloud Adapter]
-        P4B[Google Drive AppData Sandbox Adapter]
+    subgraph Phase4: User storage adapters
+        P4A[WebDAV and Nextcloud adapter]
+        P4B[Google Drive app data adapter]
     end
 
     Phase1 --> Phase2 --> Phase3 --> Phase4
 ```
 
----
-
 ## Consequences
 
-### Positive
+### Advantages
 
-- **Guaranteed Privacy:** Medical data is encrypted prior to transit; third-party hosts and network eavesdroppers have zero access to plaintext records.
-- **Seamless User Experience:** Non-technical users enjoy automated multi-device sync without provisioning cloud credentials or configuring complex servers.
-- **Offline Reliability:** All reads and writes remain instant and local; syncing occurs asynchronously and opportunistically.
-- **Cost Effective:** Fits completely within existing zero-cost Cloudflare Pages tier.
+- The browser encrypts the data before it sends it. Hosts and networks cannot read the data.
+- Users get automatic synchronization without a cloud account or a server to set up.
+- All reads and writes stay local and fast. The synchronization occurs in the background.
+- The free Cloudflare Pages plan is sufficient.
 
-### Negative / Trade-offs
+### Disadvantages
 
-- Requires introducing a backend relay endpoint (`/api/sync`) for cloud distribution (though architecturally zero-knowledge).
-- Requires careful handling of observation tombstones (`deletedAt`) to ensure deletions propagate correctly across offline devices.
+- The project must add a backend endpoint (`/api/sync`), although it cannot read the data.
+- A deletion must go to all devices, also to devices that are offline. The `deletedAt` value needs careful work.
+
+## Related documents
+
+- [Privacy and data storage](../explanation/privacy-and-data-storage.md)

@@ -18,8 +18,8 @@ export default defineConfig({
     coverage: {
       provider: 'v8',
       reporter: ['text', 'json', 'html'],
-      include: ['src/**/*.{ts,tsx}'],
-      exclude: ['src/**/*.test.{ts,tsx}', 'src/test/**', 'src/setupTests.ts', 'src/vite-env.d.ts'],
+      include: ['src/**/*.{ts,tsx}', 'scripts/**/*.ts'],
+      exclude: ['**/*.test.{ts,tsx}', 'src/test/**', 'src/setupTests.ts', 'src/vite-env.d.ts'],
       // Every line, branch and function must run in a test. CI fails below 100%.
       thresholds: {
         100: true,

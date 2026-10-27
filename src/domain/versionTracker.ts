@@ -39,6 +39,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.1',
+    date: '2026-10-27',
+    title: 'Documentation in Simplified Technical English',
+    titleFr: 'Documentation en Anglais Technique Simplifié',
+    tagline: 'The user guides and developer docs are rewritten, checked and organized by need',
+    taglineFr:
+      'Les guides utilisateur et la documentation développeur sont réécrits, vérifiés et classés par besoin',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Rewrote all the documentation in ASD-STE100 Simplified Technical English',
+      'Organized the documentation in tutorials, how-to guides, reference pages and explanations',
+      'Added a tutorial that charts a first cycle and a tutorial for a first code change',
+      'Corrected the documented stamp, Peak Day, export and backup rules to match the application',
+      'Added an automatic documentation check for writing rules, structure and broken links',
+    ],
+    highlightsFr: [
+      'Toute la documentation réécrite en anglais technique simplifié ASD-STE100',
+      'Documentation organisée en tutoriels, guides pratiques, pages de référence et explications',
+      'Ajout d’un tutoriel pour un premier cycle et d’un tutoriel pour une première modification du code',
+      'Règles documentées des tampons, du Jour Sommet, de l’export et de la sauvegarde corrigées selon l’application',
+      'Ajout d’une vérification automatique de la documentation : règles d’écriture, structure et liens',
+    ],
+  },
+  {
     version: '1.15.0',
     date: '2026-10-27',
     title: 'Correct Stamps, Phase Statistics and Calendar Display',

@@ -1,17 +1,9 @@
-# Specification & Version Workflow Rules
+# Specification and version workflow
 
-Follow these rules for all task executions in this repository:
+Follow the rules in [AGENTS.md](../../AGENTS.md). In summary:
 
-1. **Update `SPEC.md` Before Code Modifications**:
-   - Before making any code, UI, or domain engine modifications, inspect `SPEC.md` and update it to reflect the target feature, design decisions, or architectural changes.
-
-2. **Update Version & Release Notes After Code Modifications**:
-   - After completing code modifications, bump the application version in `package.json`.
-   - Add a new version release object (including version, build date, bilingual title/tagline/highlights) to `VERSION_HISTORY` in `src/domain/versionTracker.ts`.
-   - Ensure `SPEC.md` document header and version references match the new version.
-   - `src/domain/__tests__/versionTracker.test.ts` reads the version from `package.json`. Do not hard-code it.
-
-3. **Write the Test First**:
-   - Write a failing test before you change the behavior of the code. Then write the minimum code to make it pass.
-   - Keep coverage at 100% for statements, branches, functions and lines. Do not add coverage ignore comments.
-   - Follow `docs/how-to/write-a-test-first.md`.
+1. Before you change the code, write the change in `SPEC.md`.
+2. Write a test that fails before you change the behavior. Keep coverage at 100%. Do not add coverage ignore comments.
+3. After the change, increase the version in `package.json`, add a release to `VERSION_HISTORY` and set the version in `SPEC.md`.
+4. Write the documentation with the rules in `docs/reference/documentation-rules.md`.
+5. Run `mise run validate` before you push.
