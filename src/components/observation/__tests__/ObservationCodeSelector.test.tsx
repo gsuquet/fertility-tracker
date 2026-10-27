@@ -125,7 +125,10 @@ describe('ObservationCodeSelector', () => {
     const actions = renderSelector({ bleeding: 'M', isCycleStart });
     const toggle = screen.getByRole('button', { name: `${cycleStartLabel}${suffix}` });
     expect(toggle).toHaveAttribute('aria-pressed', pressed);
-    expect(toggle).toHaveClass('peak-toggle-btn');
+    // The colors come from the stylesheet tokens, not from inline styles
+    expect(toggle).toHaveClass('peak-toggle-btn', 'cycle-start-toggle-btn');
+    expect(toggle.classList.contains('active')).toBe(isCycleStart === true);
+    expect(toggle).not.toHaveAttribute('style');
     fireEvent.click(toggle);
     expect(actions.toggleCycleStart).toHaveBeenCalledOnce();
   });

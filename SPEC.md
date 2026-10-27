@@ -182,10 +182,12 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 The parser operates in two directions:
 
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
-   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
-   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
-   _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse] [Symptoms]`  
+   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) come last, separated by spaces, so that `parseCodeString(formatCodeString(obs))` keeps every field. The Paper Chart Row cell and the practitioner print layout remove them from the displayed code and show them in a dedicated symptom tag instead.  
+   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.  
+   _Ambiguous tokens:_ A mucus token made only of modifiers that equals a bleeding code (`B` or `L` with no stretch and no frequency) is written with a leading dash (`-B`, `-L`). A bare `L` keeps its meaning of light bleeding, so stored codes and typed codes are read as before.
+2. **Stored data repair (`appendMissingSymptoms`):** When the data validator loads an observation whose stored `codeString` lacks one of its `symptoms` (data written before version 1.17.2), it appends each missing symptom code to the end of the stored `codeString`. The rest of the stored code is kept as is. A stored `codeString` that is exactly `B` or `L` (any case) on an observation without bleeding is a lone modifier, so the validator rebuilds it with `formatCodeString` (`-B`, `-L`).
+3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag. A bare `B` token is brown bleeding only when it is the first token; in any other position it is the brown modifier. The parser ignores the dash of `-B` and `-L`, so they are read as modifiers. For every combination of fields, `parseCodeString(formatCodeString(obs))` returns the same fields.
 
 ---
 
@@ -561,7 +563,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   ```
 - **Modular Directory Organization:**
   - `src/styles/tokens/`:
-    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-info`, `--color-white`, `--color-black`).
+    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), accent tokens (`--accent-primary`, `--accent-solid`, `--accent-solid-hover`, `--accent-light`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-success-solid`, `--color-success-text`, `--color-success-surface`, `--color-warning`, `--color-warning-text`, `--color-warning-surface`, `--color-info`, `--color-info-text`, `--color-info-surface`, `--color-white`, `--color-black`), observation toggle colors (`--color-intercourse`, `--color-peak`, `--color-cycle-start-text`, `--color-cycle-start-surface`), `--accent-soft`, `--bg-overlay`, `--shadow-xl` and `--font-mono`.
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
@@ -588,6 +590,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `print.css`: High-resolution export layouts and `@media print` rules.
   - `src/styles/utilities/`:
     - `utilities.css`: Layout helpers (`.flex-center`, `.gap-2`, `.items-center`), text helpers (`.text-truncate`, `.sr-only`).
+- **Text Contrast (WCAG 2 AA):** In both themes, each text token meets a contrast ratio of at least 4.5:1 on the surfaces that show it. `--text-primary`, `--text-secondary`, `--text-muted` and `--accent-primary` are text colors on `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`. `--accent-primary` is also a text color on `--accent-light`. `--accent-solid` and `--accent-solid-hover` are the fill colors behind white text, for example `.btn-primary`. A rule that puts white text on an accent fill uses `--accent-solid`, not `--accent-primary`. `--color-danger` and `--color-danger-hover` are the fills of `.btn-danger` behind white text. `--color-intercourse` and `--color-peak` are the fills of the active intercourse and Peak toggles, and `--color-success-solid` is the fill of the Today saved message (`.today-toast`), all behind white text. `--color-info-text` on `--color-info-surface` is the form mode badge of the welcome guide. `--color-success-text` on `--color-success-surface` is the version badge of the mobile menu. `--color-cycle-start-text` on `--color-cycle-start-surface` is the active Start of New Cycle toggle (`.cycle-start-toggle-btn.active`). `--color-warning-text` on `--color-warning-surface` is the symptom tag of the chart (`.cell-symptom-tag`). The footer copyright text and the empty days of the chart (`.empty-cell.paper-cell`, marked by a dashed border) have no opacity, so their text keeps the contrast of its token. Each custom property that a style or a component uses is defined in `src/styles/tokens/`. The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
 
 ---
 
@@ -617,6 +620,19 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 | PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                                    |
 | Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
 | Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                                            |
+| End-to-end  | `e2e/`                                    | Playwright flows and axe accessibility checks in Chromium, against the production build.                  |
+
+### End-to-End Tests (`e2e/`)
+
+- **Playwright** drives a real Chromium against the production bundle: `vite build`, then `vite preview` on port `4173` (Playwright `webServer` in `playwright.config.ts`). The browser time zone is UTC and the clock is fixed to `2026-10-27T12:00:00Z`, so that the dates are stable. A local run reuses a running server only when `PW_REUSE=1` is set.
+- Vitest does not run the files in `e2e/`, and the coverage report does not include them. `e2e/tsconfig.json` type-checks them; `npm run typecheck` runs it.
+- The suite covers these flows:
+  1. The first visit shows the welcome guide, and the **Escape** key closes it.
+  2. An observation logged in the **Today** view is still there after a reload.
+  3. A JSON backup, a reset and a restore of that backup keep the observations. The reset goes through the confirm dialog (**Delete all data**) and shows the undo message. After a new observation, the restore shows the import preview, and **Replace** brings back the observations of the backup.
+  4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
+- **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit list of rule id and target pairs for each screen in `e2e/accessibility.spec.ts` (all `color-contrast`, issue #49; see also #34 and #35). The test fails on a pair that is not in the list and on a listed pair that no longer occurs, so the list shrinks when a correction is merged.
+- Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.
 
 ### Test Helpers (`src/test/`)
 
@@ -647,6 +663,9 @@ npm run typecheck
 
 # Check the docs (STE writing rules, Diátaxis structure, links)
 mise run docs
+
+# Run the Playwright end-to-end and accessibility suite
+mise run e2e  # or: npm run test:e2e
 
 # Run every CI gate locally (tasks live in .mise/tasks/)
 mise run validate
@@ -686,6 +705,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
   2. **Pre-commit Hooks:** `pre-commit run --all-files` (file hygiene, gitleaks secret scan, Biome lint and format, `tsc --noEmit`)
   3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
   4. **Production Build:** `vite build`
+- **End-to-End Job:** A second job, `e2e`, runs on pull requests only. It installs the same toolchain with mise, runs `npm ci`, installs Chromium with `npx playwright install --with-deps chromium`, then runs `npm run test:e2e`. It uploads the Playwright report when a test fails.
 - **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
 
 ### 9.1 Offline Support & Installable App

@@ -132,7 +132,7 @@ describe('ChartRow interactions', () => {
     const fertile = screen.getByRole('button', { name: /Date 2026-09-12/ });
     fireEvent.mouseEnter(fertile);
     const popover = fertile.querySelector('.cell-hover-popover') as HTMLElement;
-    expect(within(popover).getByText('10KL I')).toBeInTheDocument();
+    expect(within(popover).getByText('10KL I AP')).toBeInTheDocument();
     expect(within(popover).getByText('K, L')).toBeInTheDocument();
     expect(within(popover).getByText('Yes (I)')).toBeInTheDocument();
     expect(within(popover).getByText('"stretchy"')).toBeInTheDocument();
@@ -188,7 +188,7 @@ describe('ChartRow interactions', () => {
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToStart }));
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToLatest }));
     expect(scrollTo).toHaveBeenCalledTimes(2);
-    fireEvent.click(screen.getByRole('button', { name: /P$/ }));
+    fireEvent.click(screen.getByRole('button', { name: 'P' }));
     expect(scrollIntoView).toHaveBeenCalledOnce();
   });
 

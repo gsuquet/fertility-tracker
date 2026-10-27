@@ -33,7 +33,7 @@ describe('buildDemoObservations', () => {
       '2CX2',
       '6C/KX3 I',
       '8KX3',
-      '10KLAD',
+      '10KLAD AP',
       '0AD',
       '0AD I',
       '0AD',
