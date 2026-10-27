@@ -39,6 +39,31 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.18.3',
+    date: '2026-10-27',
+    title: 'Full French Translation',
+    titleFr: 'Traduction française complète',
+    tagline: 'The last English texts of the French interface are now translated',
+    taglineFr: 'Les derniers textes anglais de l’interface française sont maintenant traduits',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The chart cells, popover, phase bar and legend are translated',
+      'The calendar months and weekdays, the cycle picker and the footer are translated',
+      'The analytics empty state, stamp distribution and mucus score scale are translated',
+      'The printed practitioner report uses the language of the app, also for the export date',
+      'Screen reader labels and button tooltips are translated',
+      'CrMS codes such as 10KLX3, P and I stay the same in each language',
+    ],
+    highlightsFr: [
+      'Les cases du graphique, leur info-bulle, la barre des phases et la légende sont traduites',
+      'Les mois et les jours du calendrier, le sélecteur de cycle et le pied de page sont traduits',
+      'L’état vide des analyses, la répartition des timbres et l’échelle du score de glaire sont traduits',
+      'Le rapport imprimé pour le praticien utilise la langue de l’application, y compris pour la date d’export',
+      'Les libellés des lecteurs d’écran et les info-bulles des boutons sont traduits',
+      'Les codes CrMS comme 10KLX3, P et I restent les mêmes dans chaque langue',
+    ],
+  },
+  {
     version: '1.17.0',
     date: '2026-10-27',
     title: 'Confirm, Preview and Undo Data Changes',
