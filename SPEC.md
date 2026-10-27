@@ -360,8 +360,18 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 
 ### 5.4 Paper Chart Row View
 
-**Module:** [src/components/ChartRow.tsx](./src/components/ChartRow.tsx)
+**Module:** [src/components/ChartRow.tsx](./src/components/ChartRow.tsx)  
+**Decomposed Subcomponents:**
 
+- [ChartToolbar.tsx](./src/components/chart/ChartToolbar.tsx): Title, view mode toggle (35-day grid or compact strip), phase bar toggle and legend toggle. The empty chart shows only the title and the legend toggle.
+- [ChartLegend.tsx](./src/components/chart/ChartLegend.tsx): Stamp legend key.
+- [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today. Each blank cell opens a draft observation with a click, `Enter` or `Space`.
+- [ChartCycleRow.tsx](./src/components/chart/ChartCycleRow.tsx): One cycle row: header (cycle number, date range, length, Peak Day), scroll and jump controls, phase timeline and the cell strip. The row keeps its own scroll element.
+- [ChartPhaseTimeline.tsx](./src/components/chart/ChartPhaseTimeline.tsx): Phase bar above the cells of a cycle.
+- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell opens with a click, `Enter` or `Space`.
+- [ChartCellPopover.tsx](./src/components/chart/ChartCellPopover.tsx): Detail popover of a filled cell (code, bleeding, stretch, modifiers, intercourse, notes).
+
+- **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again. Because the state is per cell, two popovers can show at the same time: one on the focused cell and one on the hovered cell.
 - Recreates the visual aesthetic of official Creighton paper chart strips.
 - Renders 35 days per row with color-coded stamp blocks:
   - **Red:** Menses bleeding
@@ -370,7 +380,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
   - **Light Green with Baby & Number (1, 2, 3):** Post-peak count days
 - Displays day numbers, formatted code strings, intercourse (`I`) flags, and Peak (`P`) markers.
 - A click on a stamp cell opens the observation drawer for that day. The manual Peak Day is set or removed there with **Designate Peak Day (P)**.
-- **Current Day Highlighting:** Automatically detects today's date (`todayStr`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
+- **Current Day Highlighting:** Automatically detects today's date (`getTodayStr()` from `src/utils/dateUtils.ts`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
 
 ---
 

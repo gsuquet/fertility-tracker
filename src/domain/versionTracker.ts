@@ -65,6 +65,27 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.16.2',
+    date: '2026-10-27',
+    title: 'Faster Paper Chart',
+    titleFr: 'Graphique Papier Plus Rapide',
+    tagline: 'Moving over a chart day no longer redraws the whole chart',
+    taglineFr: 'Survoler un jour du graphique ne redessine plus tout le graphique',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Hovering or focusing a chart day now redraws only that day',
+      'The focused day and the hovered day can now show their details at the same time',
+      'The days of the empty chart now open with Enter or Space',
+      'The paper chart code is split into small parts that are easier to maintain',
+    ],
+    highlightsFr: [
+      'Survoler ou sélectionner un jour du graphique ne redessine plus que ce jour',
+      'Le jour sélectionné et le jour survolé peuvent maintenant afficher leurs détails en même temps',
+      'Les jours du graphique vide s’ouvrent maintenant avec Entrée ou Espace',
+      'Le code du graphique papier est divisé en petites parties plus faciles à maintenir',
+    ],
+  },
+  {
     version: '1.16.1',
     date: '2026-10-27',
     title: 'Self-Hosted Font',
