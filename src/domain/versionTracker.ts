@@ -39,6 +39,31 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.0',
+    date: '2026-10-27',
+    title: 'Correct Stamps, Phase Statistics and Calendar Display',
+    titleFr: 'Tampons, Statistiques de Phase et Calendrier Corrigés',
+    tagline:
+      'Three light green days follow each fertile patch, and the calendar is readable everywhere',
+    taglineFr:
+      'Trois jours vert clair suivent chaque période fertile, et le calendrier est lisible partout',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Each run of fertile mucus is now followed by three light green days, before and after the Peak Day',
+      'The follicular phase is now counted before the Peak Day and shown as in progress',
+      'The all-cycles view now averages the phase lengths per cycle',
+      'Calendar text is readable in dark mode',
+      'On mobile, calendar codes wrap instead of being cut, and the entry drawer buttons fit on screen',
+    ],
+    highlightsFr: [
+      'Chaque période de glaire fertile est maintenant suivie de trois jours vert clair, avant et après le Jour Sommet',
+      'La phase folliculaire est maintenant comptée avant le Jour Sommet et indiquée comme en cours',
+      'La vue de tous les cycles calcule maintenant la moyenne des phases par cycle',
+      'Le texte du calendrier est lisible en mode sombre',
+      'Sur mobile, les codes du calendrier passent à la ligne au lieu d’être coupés, et les boutons du tiroir de saisie tiennent à l’écran',
+    ],
+  },
+  {
     version: '1.14.0',
     date: '2026-10-27',
     title: 'Test-Driven Development with 100% Coverage',

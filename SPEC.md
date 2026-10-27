@@ -1,8 +1,8 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.14.0  
+**Document Version:** 1.15.0  
 **Status:** Approved  
-**Last Updated:** October 26, 2026  
+**Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
 ---
@@ -196,12 +196,15 @@ flowchart TD
 1. **Peak Day ($P$) Determination:**
    - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
    - **Manual Override Mode:** Respects user-set `isManualPeak` flag or cycle-level `manualPeakDate`.
-2. **Post-Peak Phase Transition ($P+1, P+2, P+3$):**
-   - The three days immediately following Peak Day ($P+1, P+2, P+3$) are assigned specialized post-peak baby stamps:
-     - $P+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
-     - $P+2 \rightarrow$ `LIGHT_GREEN_BABY_2`
-     - $P+3 \rightarrow$ `LIGHT_GREEN_BABY_3`
-   - These stamps visually remind users of the post-peak fertile count window.
+2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
+   - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
+     - $+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
+     - $+2 \rightarrow$ `LIGHT_GREEN_BABY_2`
+     - $+3 \rightarrow$ `LIGHT_GREEN_BABY_3`
+   - The rule applies to every patch of fertile mucus, before and after the Peak Day.
+   - The count uses calendar days, so a day without an observation still counts.
+   - A new `WHITE_BABY` day restarts the count. A `RED` day stays red.
+   - A `WHITE_BABY` day after a manual Peak Day stays white.
 
 ---
 
@@ -310,7 +313,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - **Cycle Selector:** Dropdown to switch between active and historical cycles.
 - **Current Cycle Day:** Total days logged in the cycle.
 - **Peak Day Indicator:** Displays designated Peak Day (e.g. Day 14) or "Searching...".
-- **Post-Peak Luteal Length:** Total days count post-peak ($P+1$ through cycle end).
+- **Post-Peak Luteal Length:** Total days count post-peak ($P+1$ through cycle end). The all-cycles view shows the average over the cycles that have a Peak Day.
 - **Mucific Score:** Calculated biomarker score summarizing mucus quantity and quality.
 
 ---
@@ -354,6 +357,8 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - Shows stamp badge color, day code snippet, and intercourse indicator on calendar tiles.
 - **Current Day Highlighting:** Automatically highlights the current date tile (`.calendar-day.is-today`) with a 2px accent border ring (`var(--accent-primary)`), soft theme-aware background tint (`var(--accent-soft)`), a circular date number badge (`.calendar-day-num`), and `aria-current="date"` attribute.
 - Clicking any tile opens the Observation Drawer pre-populated for that date.
+- **Theme:** Tile text uses the theme tokens (`--text-primary`, `--text-secondary`), so it stays readable in dark mode.
+- **Mobile (≤ 640px):** A long observation code wraps onto more lines, and the tile grows to fit it. The code is never cut.
 
 ---
 
@@ -364,6 +369,10 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
 - Historical charts and summary metrics across all logged cycles:
   - **Cycle Length Variability:** Min, max, and average cycle duration.
   - **Luteal Phase Health:** Post-peak phase duration monitoring (ideal: 9–16 days).
+  - **Phase Lengths** ([src/domain/cyclePhases.ts](./src/domain/cyclePhases.ts)):
+    - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
+    - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
+    - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
   - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
@@ -379,6 +388,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 1. **Interactive Form Builder:** Dropdown selectors for Bleeding, Stretch, Modifiers, Frequency, Symptoms, and Intercourse toggle.
 2. **Natural Language String Input:** Freeform text field with real-time parser validation.
 3. **Live Stamp & Code Preview:** Real-time preview of the resulting stamp color and code string prior to saving.
+4. **Mobile Footer:** On screens of 640px or less, the footer buttons shrink to fit, and the delete button shows only its icon.
 
 ---
 
@@ -468,7 +478,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
   ```
 - **Modular Directory Organization:**
   - `src/styles/tokens/`:
-    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-info`, `--color-white`, `--color-black`).
+    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-warning`, `--color-info`, `--color-white`, `--color-black`).
     - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
     - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
   - `src/styles/base/`:
