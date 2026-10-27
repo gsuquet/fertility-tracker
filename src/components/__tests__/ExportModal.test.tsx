@@ -23,7 +23,7 @@ const ObservationCount = () => (
 );
 
 const renderModal = (observations?: Observation[], selectedCycleId?: string) => {
-  const props = { isOpen: true, onClose: vi.fn(), onPreparePrint: vi.fn() };
+  const props = { onClose: vi.fn(), onPreparePrint: vi.fn() };
   renderWithProviders(
     <>
       <ExportModal {...props} />
@@ -45,11 +45,6 @@ const multiCheckbox = (cycleNum: number) =>
 describe('ExportModal', () => {
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  it('renders nothing when closed', () => {
-    renderWithProviders(<ExportModal isOpen={false} onClose={vi.fn()} onPreparePrint={vi.fn()} />);
-    expect(screen.queryByRole('dialog')).toBeNull();
   });
 
   it('prints the newest cycle by default in single mode', () => {
@@ -142,7 +137,7 @@ describe('ExportModal', () => {
   });
 
   it('shows the export descriptions in French', () => {
-    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+    renderWithProviders(<ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
       language: 'fr',
     });
     expect(screen.getByText(fr.exportModal.pdfDescription)).toBeInTheDocument();
@@ -235,7 +230,7 @@ describe('ExportModal', () => {
   });
 
   it('previews a file with no observations, in French', async () => {
-    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+    renderWithProviders(<ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
       language: 'fr',
       observations: threeCycles,
     });
@@ -263,7 +258,7 @@ describe('ExportModal', () => {
   });
 
   it('shows the import error in French', async () => {
-    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+    renderWithProviders(<ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
       language: 'fr',
     });
     upload([new File(['{}'], 'broken.json')]);
@@ -326,7 +321,7 @@ describe('ExportModal', () => {
   });
 
   it('asks in French', () => {
-    renderWithProviders(<ExportModal isOpen onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
+    renderWithProviders(<ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} />, {
       language: 'fr',
       observations: threeCycles,
     });

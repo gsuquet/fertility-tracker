@@ -26,6 +26,11 @@
     }
   }
 
+  /* Holds the place of a lazy page while its chunk loads, so the footer does not jump */
+  .lazy-page-fallback {
+    min-height: 60vh;
+  }
+
   /* Shown by ErrorBoundary when a part of the app fails to render or load */
   .error-boundary {
     display: flex;

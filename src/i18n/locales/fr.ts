@@ -467,6 +467,7 @@ export const fr: TranslationSchema = {
     cycleDayDate: 'JC {day} ({date})',
     cycleDayCompact: 'JC{day}',
     monthDay: '{day}/{month}',
+    loading: 'Chargement…',
   },
   calendar: {
     prevMonth: 'Mois précédent',

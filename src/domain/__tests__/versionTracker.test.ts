@@ -1,16 +1,13 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import pkg from '../../../package.json';
 import {
-  getAppVersion,
-  getBuildDate,
   getVersionInfo,
   getVersionHistory,
   getLatestRelease,
-  checkAndRecordVersionSeen,
   getStorageStats,
   CRMS_SPEC_VERSION,
 } from '../versionTracker';
-import { LAST_SEEN_VERSION_KEY, STORAGE_OBSERVATIONS_KEY } from '../../utils/storageKeys';
+import { STORAGE_OBSERVATIONS_KEY } from '../../utils/storageKeys';
 
 describe('versionTracker Domain Engine', () => {
   beforeEach(() => {
@@ -36,19 +33,6 @@ describe('versionTracker Domain Engine', () => {
     expect(latest.crmsSpecVersion).toBe('1.1.0');
   });
 
-  it('correctly tracks and updates last seen version in localStorage', () => {
-    // First run (no version stored)
-    const check1 = checkAndRecordVersionSeen();
-    expect(check1.isNewVersion).toBe(true);
-    expect(check1.previousVersion).toBeNull();
-    expect(localStorage.getItem(LAST_SEEN_VERSION_KEY)).toBe(pkg.version);
-
-    // Second run (same version stored)
-    const check2 = checkAndRecordVersionSeen();
-    expect(check2.isNewVersion).toBe(false);
-    expect(check2.previousVersion).toBe(pkg.version);
-  });
-
   it('calculates storage stats from localStorage', () => {
     const mockObs = [
       { id: 'obs-1', date: '2026-07-01', code: 'H', stamp: 'red-menses' },
@@ -64,31 +48,11 @@ describe('versionTracker Domain Engine', () => {
     expect(typeof stats.formattedSize).toBe('string');
   });
 
-  describe('build-time values', () => {
-    it('returns the package.json version and an ISO build date', () => {
-      expect(getAppVersion()).toBe(pkg.version);
-      expect(new Date(getBuildDate()).toISOString()).toBe(getBuildDate());
-      expect(getVersionInfo().environment).toBe('test');
-    });
-  });
-
-  describe('checkAndRecordVersionSeen', () => {
-    afterEach(() => {
-      vi.restoreAllMocks();
-    });
-
-    it('reports a new version when the stored version is older', () => {
-      localStorage.setItem(LAST_SEEN_VERSION_KEY, '0.0.1');
-      expect(checkAndRecordVersionSeen()).toEqual({ isNewVersion: true, previousVersion: '0.0.1' });
-      expect(localStorage.getItem(LAST_SEEN_VERSION_KEY)).toBe(pkg.version);
-    });
-
-    it('reports no new version when storage throws', () => {
-      vi.spyOn(localStorage, 'getItem').mockImplementation(() => {
-        throw new Error('denied');
-      });
-      expect(checkAndRecordVersionSeen()).toEqual({ isNewVersion: false, previousVersion: null });
-    });
+  it('returns the version and the build date of the build', () => {
+    const info = getVersionInfo();
+    expect(info.version).toBe(pkg.version);
+    expect(new Date(info.buildDate).toISOString()).toBe(info.buildDate);
+    expect(info.environment).toBe('test');
   });
 
   describe('getStorageStats', () => {

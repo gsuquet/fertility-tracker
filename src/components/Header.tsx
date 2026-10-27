@@ -21,7 +21,7 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
-import { getAppVersion } from '../domain/versionTracker';
+import { getAppVersion } from '../domain/appVersion';
 import { Modal } from './Modal';
 
 interface HeaderProps {

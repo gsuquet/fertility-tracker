@@ -11,9 +11,8 @@ vi.mock('../components/CycleAnalyticsView', () => ({
   },
 }));
 vi.mock('../components/WelcomeModal', () => ({
-  WelcomeModal: ({ isOpen }: { isOpen: boolean }) => {
-    if (isOpen) throw new Error('Failed to fetch dynamically imported module');
-    return null;
+  WelcomeModal: () => {
+    throw new Error('Failed to fetch dynamically imported module');
   },
 }));
 

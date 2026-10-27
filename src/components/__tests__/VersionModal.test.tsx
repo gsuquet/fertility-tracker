@@ -6,20 +6,10 @@ import { renderWithProviders } from '../../test/render';
 import { getLatestRelease, getVersionHistory } from '../../domain/versionTracker';
 
 describe('VersionModal Component', () => {
-  it('does not render when isOpen is false', () => {
+  it('renders modal content, version title and release notes', () => {
     render(
       <LanguageProvider>
-        <VersionModal isOpen={false} onClose={() => {}} />
-      </LanguageProvider>
-    );
-
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('renders modal content, version title and release notes when isOpen is true', () => {
-    render(
-      <LanguageProvider>
-        <VersionModal isOpen={true} onClose={() => {}} />
+        <VersionModal onClose={() => {}} />
       </LanguageProvider>
     );
 
@@ -36,7 +26,7 @@ describe('VersionModal Component', () => {
   it('switches tabs to System Information when tab button is clicked', () => {
     render(
       <LanguageProvider>
-        <VersionModal isOpen={true} onClose={() => {}} />
+        <VersionModal onClose={() => {}} />
       </LanguageProvider>
     );
 
@@ -52,7 +42,7 @@ describe('VersionModal Component', () => {
     const handleClose = vi.fn();
     render(
       <LanguageProvider>
-        <VersionModal isOpen={true} onClose={handleClose} />
+        <VersionModal onClose={handleClose} />
       </LanguageProvider>
     );
 
@@ -65,7 +55,7 @@ describe('VersionModal Component', () => {
   });
 
   it('is a native modal dialog with the focus on the close button', () => {
-    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />);
+    renderWithProviders(<VersionModal onClose={vi.fn()} />);
     const dialog = screen.getByRole('dialog', { name: /About & Version Tracker/i });
     expect(dialog.tagName).toBe('DIALOG');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
@@ -73,7 +63,7 @@ describe('VersionModal Component', () => {
   });
 
   it('shows the release notes in French', () => {
-    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />, { language: 'fr' });
+    renderWithProviders(<VersionModal onClose={vi.fn()} />, { language: 'fr' });
     const latest = getLatestRelease();
     expect(screen.getByText(latest.titleFr)).toBeInTheDocument();
     expect(screen.getByText(latest.taglineFr)).toBeInTheDocument();
@@ -81,7 +71,7 @@ describe('VersionModal Component', () => {
   });
 
   it('collapses an expanded release and returns to the notes tab', () => {
-    renderWithProviders(<VersionModal isOpen={true} onClose={vi.fn()} />);
+    renderWithProviders(<VersionModal onClose={vi.fn()} />);
     const older = getVersionHistory()[1];
     if (!older) throw new Error('expected an older release');
     const header = screen.getByRole('button', { name: new RegExp(`v${older.version}`) });
@@ -101,7 +91,7 @@ describe('VersionModal Component', () => {
 
   it('closes from the overlay but not from the dialog body or other keys', () => {
     const handleClose = vi.fn();
-    renderWithProviders(<VersionModal isOpen={true} onClose={handleClose} />);
+    renderWithProviders(<VersionModal onClose={handleClose} />);
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     fireEvent.click(screen.getByText(getLatestRelease().title));
     expect(handleClose).not.toHaveBeenCalled();

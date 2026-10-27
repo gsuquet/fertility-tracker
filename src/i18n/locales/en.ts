@@ -463,6 +463,7 @@ export const en = {
     cycleDayDate: 'CD {day} ({date})',
     cycleDayCompact: 'CD{day}',
     monthDay: '{month}-{day}',
+    loading: 'Loading…',
   },
   calendar: {
     prevMonth: 'Previous month',

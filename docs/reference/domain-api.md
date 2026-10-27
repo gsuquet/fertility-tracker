@@ -1,6 +1,6 @@
 # Domain API
 
-This page lists the exported functions of `src/domain/`. These functions are pure: they do not use React and they do not change their arguments. The exception is `versionTracker.ts`, which reads and writes `localStorage`.
+This page lists the exported functions of `src/domain/`. These functions are pure: they do not use React and they do not change their arguments. The exceptions are `versionTracker.ts` and `appVersion.ts`, which read and write `localStorage`.
 
 ## codeParser.ts
 
@@ -104,16 +104,25 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 ## versionTracker.ts
 
+| Export              | Signature                               | Returns                                                            |
+| ------------------- | --------------------------------------- | ------------------------------------------------------------------ |
+| `VERSION_HISTORY`   | `[VersionRelease, ...VersionRelease[]]` | The release notes, newest first, in English and French.            |
+| `getVersionInfo`    | `() => VersionInfo`                     | The version, build date, CrMS version, mode and repository.        |
+| `getVersionHistory` | `() => VersionRelease[]`                | `VERSION_HISTORY`.                                                 |
+| `getLatestRelease`  | `() => VersionRelease`                  | The first item of `VERSION_HISTORY`.                               |
+| `getStorageStats`   | `() => StorageStats`                    | The number of keys, the size and the cycle and observation counts. |
+
+Only the **About & Version Tracker** dialog imports this file. Thus, the release notes are not in the main JavaScript file.
+
+## appVersion.ts
+
+The main JavaScript file imports this file. It must not import `versionTracker.ts`.
+
 | Export                      | Signature                                                          | Returns                                                                          |
 | --------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
-| `VERSION_HISTORY`           | `[VersionRelease, ...VersionRelease[]]`                            | The release notes, newest first, in English and French.                          |
 | `getAppVersion`             | `() => string`                                                     | The version from `package.json`.                                                 |
 | `getBuildDate`              | `() => string`                                                     | The build time, in ISO format.                                                   |
-| `getVersionInfo`            | `() => VersionInfo`                                                | The version, build date, CrMS version, mode and repository.                      |
-| `getVersionHistory`         | `() => VersionRelease[]`                                           | `VERSION_HISTORY`.                                                               |
-| `getLatestRelease`          | `() => VersionRelease`                                             | The first item of `VERSION_HISTORY`.                                             |
 | `checkAndRecordVersionSeen` | `() => { isNewVersion: boolean; previousVersion: string \| null }` | Compares the version with the last version seen, then saves the current version. |
-| `getStorageStats`           | `() => StorageStats`                                               | The number of keys, the size and the cycle and observation counts.               |
 
 ## Related documents
 

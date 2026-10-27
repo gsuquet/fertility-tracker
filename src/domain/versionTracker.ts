@@ -1,3 +1,4 @@
+import { getAppVersion, getBuildDate } from './appVersion';
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
 import {
   LAST_SEEN_VERSION_KEY,
@@ -42,6 +43,34 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
+  {
+    version: '1.18.5',
+    date: '2026-10-27',
+    title: 'Faster Start',
+    titleFr: 'Démarrage plus rapide',
+    tagline: 'The app loads less code at start, and each dialog loads when you open it',
+    taglineFr:
+      'L’application charge moins de code au démarrage, et chaque fenêtre se charge à son ouverture',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The main JavaScript file is about 15% smaller',
+      'The release notes load only when you open the About dialog',
+      'The export, About and welcome dialogs load when you open them for the first time',
+      'Each dialog opens on its first tab or step',
+      'The app prints only after the print view has loaded, so the printed page is never blank',
+      'A screen reader announces Loading while a page or a dialog loads',
+      'All the parts are still available offline',
+    ],
+    highlightsFr: [
+      'Le fichier JavaScript principal est environ 15 % plus petit',
+      'Les notes de version se chargent seulement à l’ouverture de la fenêtre À propos',
+      'Les fenêtres d’export, À propos et de bienvenue se chargent à leur première ouverture',
+      'Chaque fenêtre s’ouvre sur son premier onglet ou sa première étape',
+      'L’application imprime seulement après le chargement de la vue d’impression, donc la page imprimée n’est jamais vide',
+      'Un lecteur d’écran annonce Chargement pendant le chargement d’une page ou d’une fenêtre',
+      'Toutes les parties restent disponibles hors ligne',
+    ],
+  },
   {
     version: '1.18.3',
     date: '2026-10-27',
@@ -899,16 +928,6 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   },
 ];
 
-/** App version, injected from package.json by Vite (`define` in vite.config.ts). */
-export function getAppVersion(): string {
-  return __APP_VERSION__;
-}
-
-/** Build timestamp, injected by Vite (`define` in vite.config.ts). */
-export function getBuildDate(): string {
-  return __BUILD_DATE__;
-}
-
 export function getVersionInfo(): VersionInfo {
   return {
     version: getAppVersion(),
@@ -926,31 +945,6 @@ export function getVersionHistory(): VersionRelease[] {
 
 export function getLatestRelease(): VersionRelease {
   return VERSION_HISTORY[0];
-}
-
-export function checkAndRecordVersionSeen(): {
-  isNewVersion: boolean;
-  previousVersion: string | null;
-} {
-  try {
-    const currentVersion = getAppVersion();
-    const lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
-    const isNewVersion = !lastSeen || lastSeen !== currentVersion;
-
-    if (isNewVersion) {
-      localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
-    }
-
-    return {
-      isNewVersion,
-      previousVersion: lastSeen,
-    };
-  } catch {
-    return {
-      isNewVersion: false,
-      previousVersion: null,
-    };
-  }
 }
 
 export function getStorageStats(): StorageStats {

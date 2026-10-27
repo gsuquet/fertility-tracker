@@ -4,7 +4,7 @@ import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
-import { getAppVersion } from '../../domain/versionTracker';
+import { getAppVersion } from '../../domain/appVersion';
 import type { ActiveTab } from '../../types/crms';
 
 const SelectionProbe = () => {
