@@ -17,6 +17,7 @@ fertility-tracker/
 │   ├── __tests__/               # Application flow tests
 │   ├── components/              # React components
 │   │   ├── __tests__/           # Component tests
+│   │   ├── chart/               # Parts of the Chart page
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
 │   ├── domain/                  # Pure CrMS rules and data functions
