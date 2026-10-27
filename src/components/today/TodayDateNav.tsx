@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import type { Observation } from '../../types/crms';
+import { formatMessage } from '../../i18n';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import {
   Calendar as CalendarIcon,
@@ -102,7 +103,9 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           </button>
         )}
         {currentObs?.cycleDay && (
-          <span className="badge badge-secondary badge-sm">Day {currentObs.cycleDay}</span>
+          <span className="badge badge-secondary badge-sm">
+            {formatMessage(t.common.dayNumber, { day: currentObs.cycleDay })}
+          </span>
         )}
         {currentObs ? (
           <span className="badge badge-success badge-sm">

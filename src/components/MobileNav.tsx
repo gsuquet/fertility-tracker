@@ -19,7 +19,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
   };
 
   return (
-    <nav className="mobile-nav-bar" aria-label="Mobile Navigation">
+    <nav className="mobile-nav-bar" aria-label={t.mobileTabs.navLabel}>
       <button
         type="button"
         className={`mobile-nav-item ${activeTab === 'today' ? 'active' : ''}`}

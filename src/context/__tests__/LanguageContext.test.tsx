@@ -80,4 +80,17 @@ describe('LanguageContext Provider', () => {
     const renderOutside = () => render(<TestComponent />);
     expect(renderOutside).toThrow('useLanguage must be used within LanguageProvider');
   });
+
+  it('sets the lang attribute of the document to the app language', () => {
+    render(
+      <LanguageProvider>
+        <TestComponent />
+      </LanguageProvider>
+    );
+    expect(document.documentElement.lang).toBe('en');
+    fireEvent.click(screen.getByText('Switch to FR'));
+    expect(document.documentElement.lang).toBe('fr');
+    fireEvent.click(screen.getByText('Switch to EN'));
+    expect(document.documentElement.lang).toBe('en');
+  });
 });

@@ -14,7 +14,12 @@ describe('App flows', () => {
 
   it('shows the welcome guide on the first visit only', async () => {
     const { unmount } = render(<App />);
-    const guide = await screen.findByRole('dialog', { name: en.welcomeModal.title });
+    // The guide is a lazy chunk: the first load can take more than 1 s under coverage
+    const guide = await screen.findByRole(
+      'dialog',
+      { name: en.welcomeModal.title },
+      { timeout: 5000 }
+    );
     fireEvent.click(within(guide).getByRole('button', { name: en.welcomeModal.skip }));
     expect(screen.queryByRole('dialog')).toBeNull();
     unmount();

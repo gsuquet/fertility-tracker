@@ -4,6 +4,7 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CyclePicker } from '../CyclePicker';
 import { CycleProvider, useCycle } from '../../context/CycleContext';
+import { LanguageProvider } from '../../context/LanguageContext';
 
 const TestWrapper: React.FC = () => {
   const { loadDemoData, cycles } = useCycle();
@@ -17,9 +18,11 @@ const TestWrapper: React.FC = () => {
 
 const renderCyclePicker = () => {
   return render(
-    <CycleProvider>
-      <TestWrapper />
-    </CycleProvider>
+    <LanguageProvider>
+      <CycleProvider>
+        <TestWrapper />
+      </CycleProvider>
+    </LanguageProvider>
   );
 };
 

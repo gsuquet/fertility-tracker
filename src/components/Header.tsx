@@ -57,8 +57,8 @@ export const Header: React.FC<HeaderProps> = ({
         type="button"
         className="header-brand-btn"
         onClick={() => setActiveTab('today')}
-        title="Creighton FertilityCare System Home"
-        aria-label="Creighton FertilityCare System Home"
+        title={t.menu.homeLabel}
+        aria-label={t.menu.homeLabel}
       >
         <div className="brand-logo" aria-hidden="true">
           🌱
@@ -69,7 +69,7 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </button>
 
-      <div className="header-tabs" role="tablist" aria-label="Main Navigation Views">
+      <div className="header-tabs" role="tablist" aria-label={t.menu.mainNavLabel}>
         <button
           type="button"
           role="tab"
@@ -170,8 +170,8 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="lang-toggle-btn desktop-only-action"
           onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-          title="Switch Language / Changer de langue"
-          aria-label="Switch Language"
+          title={t.menu.languageTitle}
+          aria-label={t.menu.languageLabel}
         >
           <Globe size={16} />
           <span>{language.toUpperCase()}</span>
@@ -181,8 +181,8 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="icon-button desktop-only-action"
           onClick={toggleTheme}
-          title="Toggle Dark/Light Mode"
-          aria-label="Toggle Dark/Light Mode"
+          title={t.menu.themeToggleLabel}
+          aria-label={t.menu.themeToggleLabel}
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -192,8 +192,8 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="icon-button mobile-more-btn"
           onClick={() => setIsMoreMenuOpen(true)}
-          title="More actions / Plus d'actions"
-          aria-label="More actions"
+          title={t.menu.moreActionsTitle}
+          aria-label={t.menu.moreActionsLabel}
           aria-expanded={isMoreMenuOpen}
         >
           <MoreVertical size={18} />
@@ -203,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
       {/* Mobile Actions Bottom Sheet: the Modal primitive renders it in a portal */}
       {isMoreMenuOpen && (
         <Modal
-          label="Mobile Navigation Menu"
+          label={t.menu.mobileMenuLabel}
           onClose={() => setIsMoreMenuOpen(false)}
           className="modal-overlay mobile-menu-overlay"
           panelClassName="mobile-action-sheet"
@@ -217,7 +217,7 @@ export const Header: React.FC<HeaderProps> = ({
               type="button"
               className="icon-button sheet-close-btn"
               onClick={() => setIsMoreMenuOpen(false)}
-              aria-label="Close menu"
+              aria-label={t.menu.closeMenu}
             >
               <X size={18} />
             </button>

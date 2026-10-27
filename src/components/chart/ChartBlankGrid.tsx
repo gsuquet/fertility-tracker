@@ -15,9 +15,11 @@ export const ChartBlankGrid: React.FC<ChartBlankGridProps> = ({ t, onOpenDay }) 
   return (
     <div className="chart-row-container paper-theme">
       <div className="chart-row-header flex-header">
-        <span className="cycle-title-badge">{t.chartStrip.cycleBadge} 1 (Days 1 - 35)</span>
+        <span className="cycle-title-badge">
+          {t.chartStrip.cycleBadge} 1 {t.chartStrip.blankDays}
+        </span>
         <span className="cycle-helper-hint">
-          <Sparkles size={14} className="hint-icon" /> Click any cell to log your observation
+          <Sparkles size={14} className="hint-icon" /> {t.chartStrip.blankHint}
         </span>
       </div>
 

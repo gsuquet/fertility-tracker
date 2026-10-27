@@ -40,6 +40,7 @@ import {
   getStorageStats,
 } from '../domain/versionTracker';
 import { Modal } from './Modal';
+import { formatMessage } from '../i18n';
 
 interface VersionModalProps {
   isOpen: boolean;
@@ -102,7 +103,9 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
               </span>
               <span className="version-pill secondary-pill">
                 <Layers size={12} />
-                CrMS Spec v{versionInfo.crmsSpecVersion}
+                {formatMessage(t.versionTracker.crmsSpecPill, {
+                  version: versionInfo.crmsSpecVersion,
+                })}
               </span>
             </div>
           </div>
@@ -286,7 +289,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) =
             <div className="repo-link-box">
               <div className="repo-info-left">
                 <Database size={16} />
-                <span>Open Source Privacy-First Software</span>
+                <span>{t.versionTracker.openSourceTagline}</span>
               </div>
               <a
                 href={versionInfo.repositoryUrl}

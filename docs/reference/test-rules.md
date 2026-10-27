@@ -4,16 +4,17 @@ This page lists the test rules, the test layers and the test helpers. For the re
 
 ## Rules
 
-| Rule                                                                        | Enforced by                     |
-| --------------------------------------------------------------------------- | ------------------------------- |
-| Write the test before the code.                                             | Review                          |
-| Keep 100% coverage for statements, branches, functions and lines.           | `vite.config.ts` thresholds, CI |
-| Do not add coverage ignore comments.                                        | Review                          |
-| Remove code that no test can reach.                                         | Coverage report                 |
-| Find elements by role and accessible name, not by CSS class.                | Review                          |
-| Get the expected text from the locale files, for example `en.actions.save`. | Review                          |
-| Set the date with `vi.setSystemTime()`. Use fake timers for delays.         | Review                          |
-| Give each test a name that tells the behavior.                              | Review                          |
+| Rule                                                                         | Enforced by                     |
+| ---------------------------------------------------------------------------- | ------------------------------- |
+| Write the test before the code.                                              | Review                          |
+| Keep 100% coverage for statements, branches, functions and lines.            | `vite.config.ts` thresholds, CI |
+| Do not add coverage ignore comments.                                         | Review                          |
+| Remove code that no test can reach.                                          | Coverage report                 |
+| Find elements by role and accessible name, not by CSS class.                 | Review                          |
+| Get the expected text from the locale files, for example `en.actions.save`.  | Review                          |
+| Do not write user-visible text in a `.tsx` file. Put it in the locale files. | `noHardcodedText.test.ts`       |
+| Set the date with `vi.setSystemTime()`. Use fake timers for delays.          | Review                          |
+| Give each test a name that tells the behavior.                               | Review                          |
 
 ## Test layers
 

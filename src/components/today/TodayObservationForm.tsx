@@ -84,7 +84,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
         <div className="entry-mode-toggle" role="radiogroup" aria-label={t.todayView.entryMode}>
           <label
             className={`mode-toggle-btn ${entryMode === 'direct' ? 'active' : ''}`}
-            title="Direct Code Entry Only"
+            title={t.todayView.modeDirectTitle}
           >
             <input
               type="radio"
@@ -98,7 +98,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           </label>
           <label
             className={`mode-toggle-btn ${entryMode === 'detailed' ? 'active' : ''}`}
-            title="Detailed Form Button Selectors"
+            title={t.todayView.modeDetailedTitle}
           >
             <input
               type="radio"
@@ -190,7 +190,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           id="today-notes"
           className="form-input form-textarea"
           rows={3}
-          placeholder="Add relevant notes (e.g., stress, medication, travel)..."
+          placeholder={t.todayView.notesPlaceholder}
           value={notes}
           onChange={e => onNotesChange(e.target.value)}
         />
@@ -221,7 +221,13 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           aria-disabled={!hasUnsavedChanges}
         >
           <Save size={18} />
-          <span>{hasUnsavedChanges ? t.actions.save : onDelete ? 'Saved' : t.actions.save}</span>
+          <span>
+            {hasUnsavedChanges
+              ? t.actions.save
+              : onDelete
+                ? t.todayView.savedLabel
+                : t.actions.save}
+          </span>
         </button>
       </div>
     </form>

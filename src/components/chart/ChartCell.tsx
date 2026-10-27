@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { Plus, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatMessage } from '../../i18n';
 import type { Observation } from '../../types/crms';
 import { formatDayOfWeek } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
@@ -14,11 +15,14 @@ const cleanCode = (codeString: string) =>
     .trim()
     .replace(/\s+/g, ' ');
 
-const TodayPill: React.FC = () => (
-  <span className="cell-today-pill" title="Today">
-    Today
-  </span>
-);
+const TodayPill: React.FC = () => {
+  const { t } = useLanguage();
+  return (
+    <span className="cell-today-pill" title={t.todayView.todayLabel}>
+      {t.todayView.todayLabel}
+    </span>
+  );
+};
 
 interface ChartFilledCellProps {
   obs: Observation;
@@ -43,12 +47,18 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
-      aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}${isToday ? ', Today' : ''}`}
+      aria-label={formatMessage(t.chartStrip.filledCellLabel, {
+        day: obs.cycleDay,
+        date: obs.date,
+        stamp: obs.stamp,
+        code: obs.codeString || t.chartStrip.noCode,
+        today: isToday ? t.chartStrip.todaySuffix : '',
+      })}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}
         <span className="cell-day-num">{obs.cycleDay}</span>
-        <span className="cell-day-name">{formatDayOfWeek(obs.date)}</span>
+        <span className="cell-day-name">{formatDayOfWeek(obs.date, t.locale)}</span>
         <span className="cell-date">{obs.date.slice(5)}</span>
       </div>
 
@@ -67,7 +77,10 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
 
       <div className="cell-footer-indicators">
         {obs.symptoms && obs.symptoms.length > 0 && (
-          <span className="cell-symptom-tag" title={`Symptoms: ${obs.symptoms.join(', ')}`}>
+          <span
+            className="cell-symptom-tag"
+            title={formatMessage(t.chartStrip.symptomsTitle, { symptoms: obs.symptoms.join(', ') })}
+          >
             {obs.symptoms.join(',')}
           </span>
         )}
@@ -97,6 +110,7 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
   isToday,
   onOpen,
 }) => {
+  const { t } = useLanguage();
   const open = () => onOpen(dateStr, dayNum);
   return (
     <button
@@ -104,7 +118,11 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
       aria-current={isToday ? 'date' : undefined}
       onClick={open}
-      aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
+      aria-label={formatMessage(t.chartStrip.emptyCellLabel, {
+        day: dayNum,
+        date: dateStr,
+        today: isToday ? t.chartStrip.todaySuffix : '',
+      })}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}
@@ -135,13 +153,18 @@ export const ChartBlankCell: React.FC<ChartBlankCellProps> = ({
   addLabel,
   onOpen,
 }) => {
+  const { t } = useLanguage();
   const open = () => onOpen(dateStr, dayNum);
   return (
     <button
       type="button"
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
       onClick={open}
-      aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}`}
+      aria-label={formatMessage(t.chartStrip.blankCellLabel, {
+        day: dayNum,
+        date: dateStr,
+        today: isToday ? t.chartStrip.todaySuffix : '',
+      })}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}

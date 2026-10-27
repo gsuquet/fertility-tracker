@@ -48,7 +48,7 @@ export const ChartRow: React.FC = () => {
       >
         <ChartToolbar
           t={t}
-          subtitle="Creighton Model FertilityCare System"
+          subtitle={t.chartStrip.subtitleBlank}
           showLegend={showLegend}
           onToggleLegend={toggleLegend}
         />
@@ -66,7 +66,7 @@ export const ChartRow: React.FC = () => {
     <div className="chart-strip-view" id="chart-panel" role="tabpanel" aria-labelledby="tab-chart">
       <ChartToolbar
         t={t}
-        subtitle="Creighton Model System"
+        subtitle={t.chartStrip.subtitle}
         showLegend={showLegend}
         onToggleLegend={toggleLegend}
         controls={{

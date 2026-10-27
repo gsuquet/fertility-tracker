@@ -1,5 +1,5 @@
 import type React from 'react';
-import { createContext, useCallback, useContext, useMemo, useState } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Language } from '../types/crms';
 import type { TranslationSchema } from '../i18n';
 import { translations } from '../i18n';
@@ -24,6 +24,11 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     setLanguageState(lang);
     writeStorage(LANGUAGE_STORAGE_KEY, lang);
   }, []);
+
+  // Screen readers and the browser use the lang attribute to pick the voice and hyphenation
+  useEffect(() => {
+    document.documentElement.lang = language;
+  }, [language]);
 
   const value = useMemo(
     () => ({ language, setLanguage, t: translations[language] }),
