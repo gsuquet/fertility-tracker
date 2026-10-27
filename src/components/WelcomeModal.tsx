@@ -27,17 +27,14 @@ import { Modal } from './Modal';
 import { formatMessage } from '../i18n';
 
 interface WelcomeModalProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-export const WelcomeModal: React.FC<WelcomeModalProps> = ({ isOpen, onClose }) => {
+export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
   const { t } = useLanguage();
   const { loadDemoData } = useCycle();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
-
-  if (!isOpen) return null;
 
   const handleDismiss = () => {
     writeStorage(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');

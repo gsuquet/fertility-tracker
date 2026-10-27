@@ -3,7 +3,7 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
 import type { ActiveTab } from './types/crms';
-import { checkAndRecordVersionSeen } from './domain/versionTracker';
+import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
 
@@ -20,25 +20,46 @@ import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
 import { StorageSaveWarning } from './components/StorageSaveWarning';
 import { BackupReminder } from './components/BackupReminder';
 import { UndoToast } from './components/UndoToast';
+import { LoadingStatus } from './components/LoadingStatus';
+
+const loadCycleAnalyticsView = () => import('./components/CycleAnalyticsView');
+const loadExportModal = () => import('./components/ExportModal');
+const loadVersionModal = () => import('./components/VersionModal');
+const loadWelcomeModal = () => import('./components/WelcomeModal');
 
 const CycleAnalyticsView = React.lazy(() =>
-  import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
+  loadCycleAnalyticsView().then(m => ({ default: m.CycleAnalyticsView }))
 );
-const ExportModal = React.lazy(() =>
-  import('./components/ExportModal').then(m => ({ default: m.ExportModal }))
-);
+const ExportModal = React.lazy(() => loadExportModal().then(m => ({ default: m.ExportModal })));
 const PrintExportView = React.lazy(() =>
   import('./components/PrintExportView').then(m => ({ default: m.PrintExportView }))
 );
-const VersionModal = React.lazy(() =>
-  import('./components/VersionModal').then(m => ({ default: m.VersionModal }))
-);
-const WelcomeModal = React.lazy(() =>
-  import('./components/WelcomeModal').then(m => ({ default: m.WelcomeModal }))
-);
+const VersionModal = React.lazy(() => loadVersionModal().then(m => ({ default: m.VersionModal })));
+const WelcomeModal = React.lazy(() => loadWelcomeModal().then(m => ({ default: m.WelcomeModal })));
+
+/**
+ * The lazy chunks that the app imports when the browser is idle after the first render.
+ * After that, a tab that stays open during a new deploy does not need the old chunks again.
+ */
+const PRELOADED_CHUNKS = [
+  loadCycleAnalyticsView,
+  loadExportModal,
+  loadVersionModal,
+  loadWelcomeModal,
+];
+
+/**
+ * Calls `onReady` when it mounts. Put it next to a lazy component in one `React.Suspense`:
+ * React mounts it only after the lazy chunk has loaded and rendered.
+ */
+const ChunkReady: React.FC<{ onReady: (state: 'ready') => void }> = ({ onReady }) => {
+  useEffect(() => onReady('ready'), [onReady]);
+  return null;
+};
 
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
+import { whenIdle } from './utils/whenIdle';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
@@ -47,12 +68,23 @@ const MainApp: React.FC = () => {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
+  // The print view is a lazy chunk: the app prints only after it has rendered
+  const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');
   // The PDF file name detail of a pending print, or null when nothing waits to print
   const [pendingPrintDetail, setPendingPrintDetail] = useState<string | null>(null);
   const [toastMessage, showToast] = useToast(3500);
   // The pending title restore of the last print, cancelled when the app unmounts
   const titleRestore = useRef<{ title: string; timer: ReturnType<typeof setTimeout> } | null>(null);
   useEffect(() => () => clearTimeout(titleRestore.current?.timer), []);
+
+  // A failed preload has no effect: the part tries again when the user opens it
+  useEffect(
+    () =>
+      whenIdle(() => {
+        void Promise.allSettled(PRELOADED_CHUNKS.map(load => load()));
+      }),
+    []
+  );
 
   useEffect(() => {
     checkAndRecordVersionSeen();
@@ -61,27 +93,36 @@ const MainApp: React.FC = () => {
     }
   }, []);
 
-  // Print after the print view has rendered the selected cycles.
+  // Print after the print view has loaded and rendered the selected cycles.
   // The browser uses the document title as the default PDF file name.
   useEffect(() => {
-    if (pendingPrintDetail === null) return;
+    if (pendingPrintDetail === null || printView === 'loading') return;
+    setPendingPrintDetail(null);
+    if (printView === 'failed') {
+      showToast(t.exportModal.printError);
+      return;
+    }
     // A print within one second of the last one keeps the title from before both prints
     const originalTitle = titleRestore.current?.title ?? document.title;
     clearTimeout(titleRestore.current?.timer);
     document.title = getExportFilename('pdf', pendingPrintDetail);
     window.print();
-    setPendingPrintDetail(null);
     const timer = setTimeout(() => {
       document.title = originalTitle;
       titleRestore.current = null;
     }, 1000);
     titleRestore.current = { title: originalTitle, timer };
-  }, [pendingPrintDetail]);
+  }, [pendingPrintDetail, printView, showToast, t]);
+
+  // The dialog and its error boundary close the same way
+  const closeExportModal = () => setIsExportModalOpen(false);
+  const closeVersionModal = () => setIsVersionModalOpen(false);
+  const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
 
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
     setPendingPrintDetail(fileDetail);
-    showToast(t.exportModal.exportSuccess);
+    if (printView !== 'failed') showToast(t.exportModal.exportSuccess);
   };
 
   return (
@@ -104,7 +145,7 @@ const MainApp: React.FC = () => {
 
         {/* The key resets the alert of a failed page when the tab changes */}
         <ErrorBoundary key={activeTab}>
-          <React.Suspense fallback={<div className="loading-spinner-fallback" aria-busy="true" />}>
+          <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
             {activeTab === 'today' && <TodayView />}
             {activeTab === 'chart' && <ChartRow />}
             {activeTab === 'calendar' && <CalendarGrid />}
@@ -120,19 +161,37 @@ const MainApp: React.FC = () => {
 
       <ObservationDrawer />
 
-      <ErrorBoundary>
+      {/* Each dialog renders only while it is open, so its chunk loads when it opens first.
+          Its own boundary shows a failure as a dialog, and closing the dialog removes it. */}
+      {isExportModalOpen && (
+        <ErrorBoundary onClose={closeExportModal}>
+          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+            <ExportModal onClose={closeExportModal} onPreparePrint={handlePreparePrint} />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {isVersionModalOpen && (
+        <ErrorBoundary onClose={closeVersionModal}>
+          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+            <VersionModal onClose={closeVersionModal} />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {isWelcomeModalOpen && (
+        <ErrorBoundary onClose={closeWelcomeModal}>
+          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+            <WelcomeModal onClose={closeWelcomeModal} />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {/* Always rendered, so the browser print command (Ctrl+P) also prints the report */}
+      <ErrorBoundary onError={() => setPrintView('failed')}>
         <React.Suspense fallback={null}>
-          <ExportModal
-            isOpen={isExportModalOpen}
-            onClose={() => setIsExportModalOpen(false)}
-            onPreparePrint={handlePreparePrint}
-          />
-
-          <VersionModal isOpen={isVersionModalOpen} onClose={() => setIsVersionModalOpen(false)} />
-
-          <WelcomeModal isOpen={isWelcomeModalOpen} onClose={() => setIsWelcomeModalOpen(false)} />
-
           <PrintExportView selectedCycleIds={printCycleIds} />
+          <ChunkReady onReady={setPrintView} />
         </React.Suspense>
       </ErrorBoundary>
 

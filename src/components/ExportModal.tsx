@@ -21,7 +21,6 @@ import { Modal } from './Modal';
 import { formatMessage } from '../i18n';
 
 interface ExportModalProps {
-  isOpen: boolean;
   onClose: () => void;
   /** Receives the cycles to print and a short label for the PDF file name. */
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
@@ -33,7 +32,7 @@ type PendingAction =
   | { kind: 'clear' }
   | { kind: 'import'; text: string; summary: BackupSummary };
 
-export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPreparePrint }) => {
+export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrint }) => {
   const {
     observations,
     cycles,
@@ -53,7 +52,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
   const [importError, setImportError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: isOpen resets the selection each time the modal opens
+  // The app mounts the dialog each time it opens, so each opening starts from this selection
   useEffect(() => {
     const [newest] = cycles;
     if (newest) {
@@ -61,9 +60,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
       setSelectedSingleId(initialSingle);
       setSelectedMultiIds(cycles.map(c => c.id));
     }
-  }, [isOpen, cycles, selectedCycleId]);
-
-  if (!isOpen) return null;
+  }, [cycles, selectedCycleId]);
 
   const handleSelectAllMulti = () => {
     setSelectedMultiIds(cycles.map(c => c.id));

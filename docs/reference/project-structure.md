@@ -64,6 +64,7 @@ fertility-tracker/
 | `backupReminder.ts`        | When to show the backup reminder.              |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
 | `versionTracker.ts`        | Release notes, version and storage statistics. |
+| `appVersion.ts`            | Version, build date and last version seen.     |
 
 ## Components
 
@@ -93,6 +94,7 @@ fertility-tracker/
 | `WelcomeModal.tsx`                        | The welcome guide.                                             |
 | `Footer.tsx`                              | Legal text, guide link and version.                            |
 | `ErrorBoundary.tsx`                       | Message and **Reload** button when a part cannot load.         |
+| `LoadingStatus.tsx`                       | The loading text for a screen reader while a lazy part loads.  |
 
 ## Related documents
 

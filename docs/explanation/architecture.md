@@ -10,7 +10,7 @@ This design keeps health data on the device of the user. It also makes the hosti
 
 ## The domain layer
 
-The CrMS rules are in `src/domain/`. These functions are pure: they get data and return new data. They do not use React, the DOM or the network. The only exception is `versionTracker.ts`, which reads `localStorage`.
+The CrMS rules are in `src/domain/`. These functions are pure: they get data and return new data. They do not use React, the DOM or the network. The exceptions are `versionTracker.ts` and `appVersion.ts`, which read `localStorage`.
 
 There are three reasons for this separation:
 
@@ -59,6 +59,23 @@ The data context and the user interface context are separate. Thus, when the dra
 ## Shared form logic
 
 The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same. The component `ObservationCodeSelector` shows the code buttons of the two forms.
+
+## Lazy loading
+
+The first screen needs only a part of the code. Thus, the main JavaScript file contains only this part. The other parts load later with `React.lazy`:
+
+- The **Cycle Analytics** page loads when you open it.
+- Each dialog loads when you open it for the first time. The application shows a dialog only while it is open.
+- The release notes are in `versionTracker.ts`, and only the **About & Version Tracker** dialog imports this file. The header and the footer get the version from `appVersion.ts`, which is a small file.
+- The print view loads when the application starts. The **Print / Save as PDF** button starts the print only after the print view has loaded. The browser print command (Ctrl+P) does not wait.
+
+When the browser is idle after the first render, the application also loads the chunks of the page and the dialogs. Thus, the first screen is fast, and a dialog opens without a network later. This is important after a new deploy: the new service worker deletes the old files, and an old tab cannot get them again.
+
+If a chunk does not load, the part shows an error with a **Reload** button. Each dialog has its own error boundary, and a failed dialog shows the error in a dialog. When you close it, the next opening tries again. A failed print view shows an error toast and does not print.
+
+A smaller main file makes the first start faster, mainly on a slow phone. A unit test in `src/__tests__/mainChunk.test.ts` makes sure that the main file does not import the lazy parts.
+
+While a part loads, a screen reader announces "Loading". The screen does not show a spinner, because the load is fast and a spinner flashes.
 
 ## Offline use
 

@@ -43,18 +43,15 @@ import { Modal } from './Modal';
 import { formatMessage } from '../i18n';
 
 interface VersionModalProps {
-  isOpen: boolean;
   onClose: () => void;
 }
 
-export const VersionModal: React.FC<VersionModalProps> = ({ isOpen, onClose }) => {
+export const VersionModal: React.FC<VersionModalProps> = ({ onClose }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'notes' | 'system'>('notes');
   const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
     '1.1.0': true,
   });
-
-  if (!isOpen) return null;
 
   const versionInfo = getVersionInfo();
   const olderReleases = getVersionHistory().slice(1);

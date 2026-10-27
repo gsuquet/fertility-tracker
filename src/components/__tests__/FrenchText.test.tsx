@@ -335,14 +335,14 @@ describe('French text of the components', () => {
   });
 
   it('translates the version dialog pills and tagline', () => {
-    renderWithProviders(<VersionModal isOpen onClose={() => {}} />, inFrench());
+    renderWithProviders(<VersionModal onClose={() => {}} />, inFrench());
     expect(screen.getByText(/^Spéc\. CrMS v/)).toBeInTheDocument();
     fireEvent.click(screen.getAllByText(fr.versionTracker.tabSystemInfo)[0]!);
     expect(screen.getByText(fr.versionTracker.openSourceTagline)).toBeInTheDocument();
   });
 
   it('translates the welcome guide steps', () => {
-    renderWithProviders(<WelcomeModal isOpen onClose={() => {}} />, inFrench());
+    renderWithProviders(<WelcomeModal onClose={() => {}} />, inFrench());
     expect(screen.getByRole('tablist', { name: fr.welcomeModal.stepsLabel })).toBeInTheDocument();
     fireEvent.click(screen.getByTitle(formatMessage(fr.welcomeModal.goToStep, { step: 3 })));
     expect(screen.getByText(fr.todayView.modeDetailed, { selector: 'span' })).toBeInTheDocument();
@@ -361,10 +361,7 @@ describe('French text of the components', () => {
   });
 
   it('translates the close button of the export dialog', () => {
-    renderWithProviders(
-      <ExportModal isOpen onClose={() => {}} onPreparePrint={() => {}} />,
-      inFrench()
-    );
+    renderWithProviders(<ExportModal onClose={() => {}} onPreparePrint={() => {}} />, inFrench());
     expect(screen.getByRole('button', { name: fr.exportModal.close })).toBeInTheDocument();
   });
   it('writes each print legend label once, in both languages', () => {

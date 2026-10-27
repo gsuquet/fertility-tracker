@@ -52,6 +52,35 @@ describe('App flows', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
   });
 
+  it('starts each opening of a dialog anew', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    render(<App />);
+    const openNotes = () => {
+      fireEvent.click(within(footer()).getByRole('button', { name: en.versionTracker.title }));
+      return screen.findByRole('dialog', { name: en.versionTracker.title });
+    };
+    let notes = await openNotes();
+    fireEvent.click(within(notes).getByRole('tab', { name: en.versionTracker.tabSystemInfo }));
+    fireEvent.keyDown(notes, { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    notes = await openNotes();
+    expect(
+      within(notes).getByRole('tab', { name: en.versionTracker.tabReleaseNotes })
+    ).toHaveAttribute('aria-selected', 'true');
+    fireEvent.keyDown(notes, { key: 'Escape' });
+
+    const openGuide = () => {
+      fireEvent.click(within(footer()).getByRole('button', { name: en.welcomeModal.title }));
+      return screen.findByRole('dialog', { name: en.welcomeModal.title });
+    };
+    let guide = await openGuide();
+    fireEvent.click(within(guide).getByRole('button', { name: en.welcomeModal.next }));
+    expect(within(guide).getByText('Step 2 of 4')).toBeInTheDocument();
+    fireEvent.keyDown(guide, { key: 'Escape' });
+    guide = await openGuide();
+    expect(within(guide).getByText('Step 1 of 4')).toBeInTheDocument();
+  });
+
   it('prints the chosen cycles with a dated file name and restores the title', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     const print = vi.spyOn(window, 'print').mockImplementation(() => {});

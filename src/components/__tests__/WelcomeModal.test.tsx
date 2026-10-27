@@ -10,23 +10,11 @@ const ObservationCount = () => (
 );
 
 describe('WelcomeModal Component', () => {
-  it('does not render when isOpen is false', () => {
+  it('renders slide 1 title and step indicators', () => {
     render(
       <LanguageProvider>
         <CycleProvider>
-          <WelcomeModal isOpen={false} onClose={() => {}} />
-        </CycleProvider>
-      </LanguageProvider>
-    );
-
-    expect(screen.queryByRole('dialog')).not.toBeInTheDocument();
-  });
-
-  it('renders slide 1 title and step indicators when isOpen is true', () => {
-    render(
-      <LanguageProvider>
-        <CycleProvider>
-          <WelcomeModal isOpen={true} onClose={() => {}} />
+          <WelcomeModal onClose={() => {}} />
         </CycleProvider>
       </LanguageProvider>
     );
@@ -41,7 +29,7 @@ describe('WelcomeModal Component', () => {
     render(
       <LanguageProvider>
         <CycleProvider>
-          <WelcomeModal isOpen={true} onClose={() => {}} />
+          <WelcomeModal onClose={() => {}} />
         </CycleProvider>
       </LanguageProvider>
     );
@@ -63,7 +51,7 @@ describe('WelcomeModal Component', () => {
     render(
       <LanguageProvider>
         <CycleProvider>
-          <WelcomeModal isOpen={true} onClose={() => {}} />
+          <WelcomeModal onClose={() => {}} />
         </CycleProvider>
       </LanguageProvider>
     );
@@ -80,7 +68,7 @@ describe('WelcomeModal Component', () => {
     render(
       <LanguageProvider>
         <CycleProvider>
-          <WelcomeModal isOpen={true} onClose={handleClose} />
+          <WelcomeModal onClose={handleClose} />
         </CycleProvider>
       </LanguageProvider>
     );
@@ -96,7 +84,7 @@ describe('WelcomeModal Component', () => {
     render(
       <LanguageProvider>
         <CycleProvider>
-          <WelcomeModal isOpen={true} onClose={() => {}} />
+          <WelcomeModal onClose={() => {}} />
         </CycleProvider>
       </LanguageProvider>
     );
@@ -112,7 +100,7 @@ describe('WelcomeModal Component', () => {
     const handleClose = vi.fn();
     renderWithProviders(
       <>
-        <WelcomeModal isOpen={true} onClose={handleClose} />
+        <WelcomeModal onClose={handleClose} />
         <ObservationCount />
       </>
     );
@@ -125,7 +113,7 @@ describe('WelcomeModal Component', () => {
 
   it('closes with Start Fresh, the close button, the overlay and Escape', () => {
     const handleClose = vi.fn();
-    renderWithProviders(<WelcomeModal isOpen={true} onClose={handleClose} />);
+    renderWithProviders(<WelcomeModal onClose={handleClose} />);
     fireEvent.click(screen.getByTitle('Go to step 4'));
     fireEvent.click(screen.getByText(/Start Fresh/i));
     fireEvent.click(screen.getByRole('button', { name: 'Close' }));
@@ -135,7 +123,7 @@ describe('WelcomeModal Component', () => {
   });
 
   it('is a native modal dialog with the focus on the close button', () => {
-    renderWithProviders(<WelcomeModal isOpen={true} onClose={vi.fn()} />);
+    renderWithProviders(<WelcomeModal onClose={vi.fn()} />);
     const dialog = screen.getByRole('dialog', { name: /Welcome to Fertility Tracker/i });
     expect(dialog.tagName).toBe('DIALOG');
     expect(dialog).toHaveAttribute('aria-modal', 'true');
@@ -143,7 +131,7 @@ describe('WelcomeModal Component', () => {
   });
 
   it('lets the keyboard focus and scroll the slide body, named by the slide title', () => {
-    renderWithProviders(<WelcomeModal isOpen={true} onClose={vi.fn()} />);
+    renderWithProviders(<WelcomeModal onClose={vi.fn()} />);
     const body = screen.getByRole('region', { name: /Clinical Charting, Privacy First/i });
     expect(body).toHaveClass('welcome-modal-body');
     expect(body).toHaveAttribute('tabindex', '0');
@@ -155,7 +143,7 @@ describe('WelcomeModal Component', () => {
 
   it('ignores other keys and clicks inside the dialog', () => {
     const handleClose = vi.fn();
-    renderWithProviders(<WelcomeModal isOpen={true} onClose={handleClose} />);
+    renderWithProviders(<WelcomeModal onClose={handleClose} />);
     fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     fireEvent.click(screen.getByText(/Step 1 of 4/i));
     expect(handleClose).not.toHaveBeenCalled();

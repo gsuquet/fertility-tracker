@@ -38,6 +38,35 @@ describe('ErrorBoundary', () => {
     expect(screen.getByRole('button', { name: fr.errorBoundary.reload })).toBeInTheDocument();
   });
 
+  it('shows the alert in a dialog with a Close button in dialog mode', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onClose = vi.fn();
+    renderWithProviders(
+      <ErrorBoundary onClose={onClose}>
+        <Broken />
+      </ErrorBoundary>,
+      { language: 'fr' }
+    );
+    const dialog = screen.getByRole('dialog', { name: fr.errorBoundary.title });
+    expect(dialog).toContainElement(screen.getByRole('alert'));
+    fireEvent.click(screen.getByRole('button', { name: fr.errorBoundary.close }));
+    expect(onClose).toHaveBeenCalledOnce();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledTimes(2);
+  });
+
+  it('calls onError once when a child fails', () => {
+    vi.spyOn(console, 'error').mockImplementation(() => {});
+    const onError = vi.fn();
+    renderWithProviders(
+      <ErrorBoundary onError={onError}>
+        <Broken />
+      </ErrorBoundary>
+    );
+    expect(onError).toHaveBeenCalledOnce();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+  });
+
   it('reloads the page when the user clicks Reload', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const reload = vi.fn();
