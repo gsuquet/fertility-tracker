@@ -398,7 +398,7 @@ Interactive slide-over drawer for entering and editing observations with two syn
 **Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx), [exportUtils.ts](./src/utils/exportUtils.ts)
 
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
-  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`.
+  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:

@@ -188,6 +188,9 @@ export const fr: TranslationSchema = {
     oldestToNewestNote:
       'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
     exportSuccess: 'Rapport PDF généré avec succès !',
+    pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
+    jsonDescription:
+      "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
   },
   storageRecovery: {
     message:

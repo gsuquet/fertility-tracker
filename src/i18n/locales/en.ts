@@ -186,6 +186,9 @@ export const en = {
     deselectAll: 'Deselect All',
     oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
     exportSuccess: 'PDF report generated successfully!',
+    pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
+    jsonDescription:
+      'Download all your observations as a JSON file. The file is not encrypted: keep it private.',
   },
   storageRecovery: {
     message:
