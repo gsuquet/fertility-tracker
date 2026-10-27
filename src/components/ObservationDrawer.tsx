@@ -2,18 +2,12 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import {
-  BLEEDING_CODES,
-  FREQUENCY_CODES,
-  MODIFIER_CODES,
-  STRETCH_CODES,
-  SYMPTOM_CODES,
-} from '../types/crms';
 import { needsCycleStartChoice } from '../domain/observationForm';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { StampBadge } from './StampBadge';
-import { X, Save, Trash2, Heart, Flag, Calendar } from 'lucide-react';
+import { ObservationCodeSelector } from './observation/ObservationCodeSelector';
+import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
 
 export const ObservationDrawer: React.FC = () => {
@@ -31,7 +25,7 @@ export const ObservationDrawer: React.FC = () => {
   const [date, setDate] = useState(() => getTodayStr());
   const form = useObservationForm();
   const { fields, load } = form;
-  const { bleeding, stretch, modifiers, frequency, symptoms, intercourse, isCycleStart } = fields;
+  const { intercourse, isCycleStart } = fields;
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens
@@ -164,113 +158,7 @@ export const ObservationDrawer: React.FC = () => {
             </button>
           </div>
 
-          {/* Bleeding Selector */}
-          <div className="form-group">
-            <label>{t.labels.bleeding}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.bleeding}>
-              {BLEEDING_CODES.map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${bleeding === code ? 'active bleeding' : ''}`}
-                  onClick={() => form.selectBleeding(bleeding === code ? undefined : code)}
-                  aria-pressed={bleeding === code}
-                >
-                  {t.codes.bleeding[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Start of New Cycle Toggle (Visible when Bleeding is active) */}
-          {bleeding && (
-            <div className="form-group">
-              <button
-                type="button"
-                className={`peak-toggle-btn cycle-start-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
-                onClick={form.toggleCycleStart}
-                aria-pressed={isCycleStart === true}
-              >
-                <Calendar size={18} />
-                <span>
-                  {t.cycleStartModal.isCycleStartLabel}
-                  {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
-                </span>
-              </button>
-            </div>
-          )}
-
-          {/* Mucus Stretch Selector */}
-          <div className="form-group">
-            <label>{t.labels.stretch}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.stretch}>
-              {STRETCH_CODES.map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${stretch === code ? 'active stretch' : ''}`}
-                  onClick={() => form.selectStretch(stretch === code ? undefined : code)}
-                  aria-pressed={stretch === code}
-                >
-                  {t.codes.stretch[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Modifiers Multi-Select */}
-          <div className="form-group">
-            <label>{t.labels.modifiers}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.modifiers}>
-              {MODIFIER_CODES.map(mod => (
-                <button
-                  type="button"
-                  key={mod}
-                  className={`option-btn ${modifiers.includes(mod) ? 'active modifier' : ''}`}
-                  onClick={() => form.toggleModifier(mod)}
-                  aria-pressed={modifiers.includes(mod)}
-                >
-                  {t.codes.modifiers[mod]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Frequency Selector */}
-          <div className="form-group">
-            <label>{t.labels.frequency}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.frequency}>
-              {FREQUENCY_CODES.map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${frequency === code ? 'active frequency' : ''}`}
-                  onClick={() => form.selectFrequency(frequency === code ? undefined : code)}
-                  aria-pressed={frequency === code}
-                >
-                  {t.codes.frequency[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Symptoms Multi-Select */}
-          <div className="form-group">
-            <label>{t.labels.symptoms}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.symptoms}>
-              {SYMPTOM_CODES.map(sym => (
-                <button
-                  type="button"
-                  key={sym}
-                  className={`option-btn ${symptoms.includes(sym) ? 'active symptom' : ''}`}
-                  onClick={() => form.toggleSymptom(sym)}
-                  aria-pressed={symptoms.includes(sym)}
-                >
-                  {t.codes.symptoms[sym]}
-                </button>
-              ))}
-            </div>
-          </div>
+          <ObservationCodeSelector fields={fields} actions={form} />
 
           {/* Manual Peak Day Flag */}
           <div className="form-group">
