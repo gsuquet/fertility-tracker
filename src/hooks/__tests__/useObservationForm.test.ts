@@ -36,8 +36,7 @@ describe('useObservationForm', () => {
     act(() => form.current.setDirectText('h ap'));
     expect(form.current.directInputText).toBe('h ap');
     expect(form.current.fields).toMatchObject({ bleeding: 'H', symptoms: ['AP'] });
-    // Symptoms are kept apart from the code
-    expect(form.current.currentCode).toBe('H');
+    expect(form.current.currentCode).toBe('H AP');
   });
 
   it('rewrites the direct code when a code field changes', () => {
@@ -49,7 +48,7 @@ describe('useObservationForm', () => {
     act(() => form.current.toggleSymptom('AP'));
     act(() => form.current.toggleIntercourse());
     act(() => form.current.selectBleeding('B'));
-    expect(form.current.directInputText).toBe('B 10KLX3 I');
+    expect(form.current.directInputText).toBe('B 10KLX3 I AP');
 
     act(() => form.current.toggleModifier('K'));
     act(() => form.current.toggleSymptom('AP'));
@@ -62,7 +61,7 @@ describe('useObservationForm', () => {
       symptoms: [],
       intercourse: false,
     });
-    expect(form.current.directInputText).toBe('L');
+    expect(form.current.directInputText).toBe('-L');
   });
 
   it('keeps the direct code when notes, peak or cycle start change', () => {

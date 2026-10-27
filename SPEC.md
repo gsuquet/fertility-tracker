@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.17.1  
+**Document Version:** 1.17.2  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -182,10 +182,12 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 The parser operates in two directions:
 
 1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
-   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse]`  
-   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) are intentionally excluded from `codeString` so that symptoms are strictly rendered in dedicated symptom badges/sections below the observation code.  
-   _Example:_ `10KLX3 I` or `H` or `2WX2` or `0AD`.
-2. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag.
+   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse] [Symptoms]`  
+   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) come last, separated by spaces, so that `parseCodeString(formatCodeString(obs))` keeps every field. The Paper Chart Row cell and the practitioner print layout remove them from the displayed code and show them in a dedicated symptom tag instead.  
+   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.  
+   _Ambiguous tokens:_ A mucus token made only of modifiers that equals a bleeding code (`B` or `L` with no stretch and no frequency) is written with a leading dash (`-B`, `-L`). A bare `L` keeps its meaning of light bleeding, so stored codes and typed codes are read as before.
+2. **Stored data repair (`appendMissingSymptoms`):** When the data validator loads an observation whose stored `codeString` lacks one of its `symptoms` (data written before version 1.17.2), it appends each missing symptom code to the end of the stored `codeString`. The rest of the stored code is kept as is. A stored `codeString` that is exactly `B` or `L` (any case) on an observation without bleeding is a lone modifier, so the validator rebuilds it with `formatCodeString` (`-B`, `-L`).
+3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag. A bare `B` token is brown bleeding only when it is the first token; in any other position it is the brown modifier. The parser ignores the dash of `-B` and `-L`, so they are read as modifiers. For every combination of fields, `parseCodeString(formatCodeString(obs))` returns the same fields.
 
 ---
 

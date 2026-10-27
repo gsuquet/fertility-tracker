@@ -4,10 +4,11 @@ This page lists the exported functions of `src/domain/`. These functions are pur
 
 ## codeParser.ts
 
-| Function           | Signature                             | Returns                                                                       |
-| ------------------ | ------------------------------------- | ----------------------------------------------------------------------------- |
-| `formatCodeString` | `(obs: ObservationInput) => string`   | The code string, for example `"10KLX3 I"`. It does not include symptoms.      |
-| `parseCodeString`  | `(input: string) => ParsedCodeResult` | The fields of a typed code, and `formattedCode`. Unknown letters are ignored. |
+| Function                | Signature                                                 | Returns                                                                       |
+| ----------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
+| `formatCodeString`      | `(obs: ObservationInput) => string`                       | The code string, for example `"10KLX3 I AP"`. The symptoms come last.         |
+| `parseCodeString`       | `(input: string) => ParsedCodeResult`                     | The fields of a typed code, and `formattedCode`. Unknown letters are ignored. |
+| `appendMissingSymptoms` | `(codeString: string, symptoms: SymptomCode[]) => string` | The stored code string with each missing symptom code added at the end.       |
 
 `ParsedCodeResult` has `bleeding`, `stretch`, `modifiers`, `frequency`, `symptoms`, `intercourse` and `formattedCode`.
 
