@@ -23,3 +23,21 @@ export const openApp = async (page: Page) => {
   await skipWelcome(page);
   await page.goto('/');
 };
+
+/**
+ * A pattern for a translated template, for example `en.chartStrip.filledCellLabel`.
+ * Each placeholder without a value matches any text.
+ */
+export const labelPattern = (template: string, values: Record<string, string | number>) =>
+  new RegExp(
+    `^${template
+      .split(/(\{\w+\})/)
+      .map(part => {
+        const name = /^\{(\w+)\}$/.exec(part)?.[1];
+        if (name === undefined) return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+        return Object.hasOwn(values, name)
+          ? String(values[name]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
+          : '.*';
+      })
+      .join('')}$`
+  );

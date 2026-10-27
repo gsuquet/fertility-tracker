@@ -3,7 +3,8 @@ import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
 import { en } from '../src/i18n/locales/en';
-import { TODAY, fixClock, openApp } from './fixtures';
+import { formatMessage } from '../src/i18n/format';
+import { TODAY, fixClock, labelPattern, openApp } from './fixtures';
 
 const directCode = (page: Page) => page.getByRole('textbox', { name: en.labels.directInput });
 
@@ -107,9 +108,22 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
     await expect(
-      chart.getByRole('button', { name: /^Cycle Day 13, Date 2026-10-12, Stamp WHITE_BABY/ })
+      chart.getByRole('button', {
+        name: labelPattern(en.chartStrip.filledCellLabel, {
+          day: 13,
+          date: '2026-10-12',
+          stamp: 'WHITE_BABY',
+        }),
+      })
     ).toBeVisible();
-    await expect(chart.getByRole('button', { name: /Date 2026-10-27, .*Today$/ })).toBeVisible();
+    await expect(
+      chart.getByRole('button', {
+        name: labelPattern(en.chartStrip.filledCellLabel, {
+          date: TODAY,
+          today: en.chartStrip.todaySuffix,
+        }),
+      })
+    ).toBeVisible();
 
     await page.getByRole('tab', { name: en.tabs.calendar }).click();
     const calendar = page.getByRole('tabpanel', { name: en.tabs.calendar });
@@ -124,7 +138,9 @@ test.describe('Fertility Tracker in a browser', () => {
       analytics.getByRole('heading', { name: new RegExp(`^${en.analytics.phasesTitle}`) })
     ).toBeVisible();
     await expect(analytics).toContainText(en.analytics.normalLuteal);
-    await expect(analytics).toContainText('CD 13 (2026-10-12)');
+    await expect(analytics).toContainText(
+      formatMessage(en.common.cycleDayDate, { day: 13, date: '2026-10-12' })
+    );
   });
 
   test('sets and clears a manual Peak Day in the drawer', async ({ page }) => {
@@ -133,31 +149,36 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.getByRole('button', { name: en.actions.loadDemo }).click();
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
-    const peakStat = (text: string) => page.getByTitle(`${en.stats.peakDay}: ${text}`);
+    const peakStat = (day: number, date: string) =>
+      page.getByTitle(
+        `${en.stats.peakDay}: ${formatMessage(en.common.cycleDayDate, { day, date })}`
+      );
     const cell = (date: string, stamp: string) =>
-      chart.getByRole('button', { name: new RegExp(`Date ${date}, Stamp ${stamp},`) });
-    const drawer = page.getByRole('dialog', { name: 'Edit Observation' });
+      chart.getByRole('button', {
+        name: labelPattern(en.chartStrip.filledCellLabel, { date, stamp }),
+      });
+    const drawer = page.getByRole('dialog', { name: en.drawer.editTitle });
 
     // The detected Peak Day is cycle day 13. Cycle day 18 is a dry day after the post-peak days.
-    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+    await expect(peakStat(13, '2026-10-12')).toBeVisible();
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
     await drawer.getByRole('button', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
-    await expect(peakStat('CD 17 (2026-10-16)')).toBeVisible();
+    await expect(peakStat(17, '2026-10-16')).toBeVisible();
     await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
     await drawer.getByRole('button', { name: en.actions.removePeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
-    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+    await expect(peakStat(13, '2026-10-12')).toBeVisible();
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await page.reload();
-    await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
+    await expect(peakStat(13, '2026-10-12')).toBeVisible();
   });
 
   test('keeps the undo toast usable in the drawer dialog', async ({ page }) => {
@@ -169,9 +190,15 @@ test.describe('Fertility Tracker in a browser', () => {
 
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
-    const filledCells = chart.getByRole('button', { name: /^Cycle Day / });
-    await chart.getByRole('button', { name: /Date 2026-10-12, / }).click();
-    const drawer = page.getByRole('dialog', { name: 'Edit Observation' });
+    const filledCells = chart.getByRole('button', {
+      name: labelPattern(en.chartStrip.filledCellLabel, {}),
+    });
+    await chart
+      .getByRole('button', {
+        name: labelPattern(en.chartStrip.filledCellLabel, { date: '2026-10-12' }),
+      })
+      .click();
+    const drawer = page.getByRole('dialog', { name: en.drawer.editTitle });
     await expect(drawer).toBeVisible();
 
     // The toast is in the top dialog, so the focus trap of the dialog reaches Undo.
