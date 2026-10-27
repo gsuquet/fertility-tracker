@@ -1,4 +1,5 @@
-import React, { useEffect } from 'react';
+import type React from 'react';
+import { useEffect } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CyclePicker } from '../CyclePicker';
@@ -10,7 +11,7 @@ const TestWrapper: React.FC = () => {
     if (cycles.length === 0) {
       loadDemoData();
     }
-  }, []);
+  }, [cycles.length, loadDemoData]);
   return <CyclePicker />;
 };
 

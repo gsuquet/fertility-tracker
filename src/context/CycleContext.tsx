@@ -1,5 +1,15 @@
-import React, { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
-import { Observation, Cycle } from '../types/crms';
+import type React from 'react';
+import { createContext, useContext, useState, useEffect, useMemo, useCallback } from 'react';
+import type {
+  BleedingCode,
+  Cycle,
+  FrequencyCode,
+  MucusModifier,
+  MucusStretch,
+  Observation,
+  ObservationInput,
+  SymptomCode,
+} from '../types/crms';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
@@ -11,7 +21,7 @@ export interface CycleDataContextType {
   cycles: Cycle[];
   selectedCycleId: string;
   setSelectedCycleId: (id: string) => void;
-  saveObservation: (obsData: Partial<Observation>) => void;
+  saveObservation: (obsData: ObservationInput) => void;
   deleteObservation: (id: string) => void;
   toggleManualPeak: (date: string) => void;
   exportDataJson: () => string;
@@ -60,8 +70,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   useEffect(() => {
     if (cycles.length > 0) {
-      if (selectedCycleId !== 'all' && !cycles.some(c => c.id === selectedCycleId)) {
-        setSelectedCycleId(cycles[0].id);
+      const [newest] = cycles;
+      if (newest && selectedCycleId !== 'all' && !cycles.some(c => c.id === selectedCycleId)) {
+        setSelectedCycleId(newest.id);
       }
     } else {
       if (selectedCycleId !== 'all') {
@@ -78,7 +89,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     } catch (_e) {}
   }, [observations]);
 
-  const saveObservation = useCallback((obsData: Partial<Observation>) => {
+  const saveObservation = useCallback((obsData: ObservationInput) => {
     setObservations(prev => {
       const date = obsData.date || getTodayStr();
       const existingIdx = prev.findIndex(o => o.date === date);
@@ -144,11 +155,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         const processed = reprocessObservations(validated);
         setObservations(processed);
         const newCycles = groupObservationsIntoCycles(processed);
-        if (newCycles.length > 0) {
-          setSelectedCycleId(newCycles[0].id);
-        } else {
-          setSelectedCycleId('all');
-        }
+        setSelectedCycleId(newCycles[0]?.id ?? 'all');
         return true;
       }
     } catch (_e) {}
@@ -174,12 +181,12 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       const dateStr = addDays(todayStr, -i);
       const cd = ((55 - i) % 28) + 1;
 
-      let bleeding: any;
-      let stretch: any;
-      let modifiers: any[] = [];
-      let frequency: any;
+      let bleeding: BleedingCode | undefined;
+      let stretch: MucusStretch | undefined;
+      let modifiers: MucusModifier[] = [];
+      let frequency: FrequencyCode | undefined;
       let intercourse = false;
-      let symptoms: any[] = [];
+      let symptoms: SymptomCode[] = [];
 
       if (cd <= 3) {
         bleeding = cd === 1 ? 'H' : cd === 2 ? 'M' : 'L';
@@ -245,8 +252,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const processed = reprocessObservations(demoObs);
     setObservations(processed);
     const newCycles = groupObservationsIntoCycles(processed);
-    if (newCycles.length > 0) {
-      setSelectedCycleId(newCycles[0].id);
+    const [newest] = newCycles;
+    if (newest) {
+      setSelectedCycleId(newest.id);
     }
   }, []);
 

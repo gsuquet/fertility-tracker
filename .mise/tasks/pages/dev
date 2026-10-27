@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Serve the production build with Wrangler Pages locally"
+set -euo pipefail
+
+npm run pages:dev

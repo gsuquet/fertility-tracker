@@ -1,6 +1,7 @@
-import React, { useRef } from 'react';
+import type React from 'react';
+import { useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { Observation } from '../../types/crms';
+import type { Observation } from '../../types/crms';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import {
   Calendar as CalendarIcon,
@@ -15,7 +16,7 @@ import {
 interface TodayDateNavProps {
   selectedDate: string;
   isToday: boolean;
-  currentObs?: Observation;
+  currentObs?: Observation | undefined;
   onPrevDay: () => void;
   onNextDay: () => void;
   onGoToToday: () => void;
@@ -37,7 +38,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   const handleOpenPicker = () => {
     const inputEl = datePickerRef.current;
     if (inputEl) {
-      if ('showPicker' in inputEl && typeof (inputEl as any).showPicker === 'function') {
+      if (typeof inputEl.showPicker === 'function') {
         try {
           inputEl.showPicker();
         } catch (_e) {

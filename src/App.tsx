@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
-import { ActiveTab } from './types/crms';
+import type { ActiveTab } from './types/crms';
 import { checkAndRecordVersionSeen, STORAGE_HAS_SEEN_WELCOME_KEY } from './domain/versionTracker';
 
 import { Header } from './components/Header';

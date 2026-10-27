@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run Biome lint and format checks"
+set -euo pipefail
+
+npm run check

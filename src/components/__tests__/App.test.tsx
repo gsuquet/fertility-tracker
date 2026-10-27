@@ -46,7 +46,7 @@ describe('App Root Component Integration', () => {
     render(<App />);
 
     const versionBtns = screen.getAllByLabelText(/About & Version Tracker/i);
-    fireEvent.click(versionBtns[0]);
+    fireEvent.click(versionBtns[0]!);
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();

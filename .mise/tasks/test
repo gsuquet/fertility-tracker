@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Run Vitest unit and integration test suite"
+set -euo pipefail
+
+npm run test -- "$@"

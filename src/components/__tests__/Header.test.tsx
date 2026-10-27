@@ -1,3 +1,4 @@
+import type { ComponentProps } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
@@ -5,7 +6,7 @@ import { LanguageProvider } from '../../context/LanguageContext';
 import { ThemeProvider } from '../../context/ThemeContext';
 import { CycleProvider } from '../../context/CycleContext';
 
-const renderHeader = (props: any) => {
+const renderHeader = (props: ComponentProps<typeof Header>) => {
   return render(
     <ThemeProvider>
       <LanguageProvider>

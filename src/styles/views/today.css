@@ -464,7 +464,6 @@
 
   /* Top Stamp Hero Banner (Mobile & Desktop DX) */
   .today-top-status-banner {
-    background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-xl);
     padding: 1.25rem 1.75rem;

@@ -64,7 +64,7 @@ describe('Today View Subcomponents', () => {
     const buttons = screen.getAllByRole('button');
     expect(buttons.length).toBe(5);
 
-    await user.click(buttons[0]);
+    await user.click(buttons[0]!);
     expect(handleSelect).toHaveBeenCalled();
   });
 

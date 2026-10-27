@@ -1,7 +1,7 @@
-import React from 'react';
+import type React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCycle } from '../context/CycleContext';
-import { ActiveTab } from '../types/crms';
+import type { ActiveTab } from '../types/crms';
 import { Layout, Calendar as CalendarIcon, BarChart2, Plus, CalendarDays } from 'lucide-react';
 
 interface MobileNavProps {

@@ -1,4 +1,4 @@
-import { TranslationSchema } from '../types';
+import type { TranslationSchema } from '../types';
 
 export const fr: TranslationSchema = {
   appTitle: 'Fertility Tracker',

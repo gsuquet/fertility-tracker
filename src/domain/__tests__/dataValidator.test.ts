@@ -64,9 +64,9 @@ describe('dataValidator Domain Engine', () => {
 
     const result = validateObservationsArray(rawList);
     expect(result.length).toBe(2);
-    expect(result[0].date).toBe('2026-09-01');
-    expect(result[0].bleeding).toBe('H');
-    expect(result[1].date).toBe('2026-09-02');
+    expect(result[0]?.date).toBe('2026-09-01');
+    expect(result[0]?.bleeding).toBe('H');
+    expect(result[1]?.date).toBe('2026-09-02');
   });
 
   it('parses and validates JSON strings safely', () => {

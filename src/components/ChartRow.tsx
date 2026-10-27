@@ -1,7 +1,9 @@
-import React, { useState, useRef } from 'react';
+import type React from 'react';
+import { useState, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { Observation } from '../types/crms';
+import type { Cycle, Observation } from '../types/crms';
+import type { TranslationSchema } from '../i18n';
 import { StampBadge } from './StampBadge';
 import { addDays, formatDayOfWeek } from '../utils/dateUtils';
 import {
@@ -138,7 +140,7 @@ export const ChartRow: React.FC = () => {
           <div
             className="chart-row-scroll"
             ref={el => {
-              scrollRefs.current['empty'] = el;
+              scrollRefs.current.empty = el;
             }}
           >
             <div className="chart-row-strip paper-grid-strip">
@@ -515,7 +517,7 @@ export const ChartRow: React.FC = () => {
 };
 
 /* Stamp Legend Key Sub-component */
-const ChartStripLegend: React.FC<{ t: any }> = ({ t }) => {
+const ChartStripLegend: React.FC<{ t: TranslationSchema }> = ({ t }) => {
   return (
     <div className="chart-strip-legend paper-legend">
       <div className="legend-title">Creighton Model Chart Stamp Key:</div>
@@ -572,9 +574,9 @@ const ChartStripLegend: React.FC<{ t: any }> = ({ t }) => {
 
 /* Phase Timeline Sub-component */
 const CyclePhaseTimeline: React.FC<{
-  cycle: any;
+  cycle: Cycle;
   totalSlots: number;
-  t: any;
+  t: TranslationSchema;
 }> = ({ cycle, totalSlots, t }) => {
   const obsList: Observation[] = cycle.observations;
 

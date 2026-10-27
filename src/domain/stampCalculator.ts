@@ -1,4 +1,4 @@
-import { BleedingCode, MucusStretch, MucusModifier, StampType } from '../types/crms';
+import type { BleedingCode, MucusStretch, MucusModifier, StampType } from '../types/crms';
 
 /**
  * Determines if a set of mucus characteristics has Peak-type fertile qualities:

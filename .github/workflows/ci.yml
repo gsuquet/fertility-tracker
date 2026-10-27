@@ -8,35 +8,48 @@ on:
 
 permissions: {}
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
 jobs:
-  test:
-    runs-on: ubuntu-latest
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
     permissions:
       contents: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
-
-      - name: Setup Node.js
-        uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
         with:
-          node-version: '26.5.0'
-          cache: 'npm'
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install pinned toolchain (node, npm, pre-commit, gitleaks)
+        uses: jdx/mise-action@82a612c5ab8bcda7cc5db6b7e81a8e7584c3dc6e # v5.2.3
+        with:
+          version: 2026.10.19
+          install: true
+          cache: true
 
       - name: Install dependencies
         run: npm ci
 
-      - name: Run linter
-        run: npm run lint
+      - name: Verify registry signatures
+        run: npm audit signatures
 
-      - name: Verify code formatting
-        run: npm run format:check
+      - name: Scan pull request commits for secrets
+        env:
+          BASE_REF: ${{ github.base_ref }}
+        run: gitleaks git --redact --verbose --log-opts="origin/${BASE_REF}..HEAD" .
+
+      - name: Run pre-commit hooks (hygiene, Biome, types)
+        env:
+          SKIP: gitleaks
+        run: pre-commit run --all-files --show-diff-on-failure
 
       - name: Run unit tests with code coverage
         run: npm run test:coverage
 
-      - name: Run TypeScript type check
-        run: npx tsc --noEmit
-
       - name: Build production bundle
-        run: npm run build
+        run: npx --no-install vite build

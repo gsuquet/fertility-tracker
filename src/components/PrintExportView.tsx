@@ -1,8 +1,8 @@
-import React from 'react';
+import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
-import { Observation } from '../types/crms';
+import type { Observation } from '../types/crms';
 import { addDays } from '../utils/dateUtils';
 import { Target } from 'lucide-react';
 

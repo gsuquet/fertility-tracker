@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Start Vite development server"
+set -euo pipefail
+
+npm run dev -- "$@"

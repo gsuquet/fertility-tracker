@@ -1,10 +1,11 @@
+import type { ComponentProps } from 'react';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MobileNav } from '../MobileNav';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider } from '../../context/CycleContext';
 
-const renderMobileNav = (props: any) => {
+const renderMobileNav = (props: ComponentProps<typeof MobileNav>) => {
   return render(
     <LanguageProvider>
       <CycleProvider>

@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -28,10 +29,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
   const [selectedSingleId, setSelectedSingleId] = useState<string>('');
   const [selectedMultiIds, setSelectedMultiIds] = useState<string[]>([]);
 
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isOpen resets the selection each time the modal opens
   useEffect(() => {
-    if (cycles.length > 0) {
+    const [newest] = cycles;
+    if (newest) {
       const initialSingle =
-        selectedCycleId && selectedCycleId !== 'all' ? selectedCycleId : cycles[0].id;
+        selectedCycleId && selectedCycleId !== 'all' ? selectedCycleId : newest.id;
       setSelectedSingleId(initialSingle);
       setSelectedMultiIds(cycles.map(c => c.id));
     }

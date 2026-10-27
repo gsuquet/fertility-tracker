@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import type React from 'react';
+import { useState, useEffect } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import {
   X,
@@ -31,12 +32,8 @@ const GithubIcon: React.FC<{ size?: number; className?: string }> = ({ size = 18
     />
   </svg>
 );
-import {
-  getVersionInfo,
-  getVersionHistory,
-  getStorageStats,
-  VersionRelease,
-} from '../domain/versionTracker';
+import type { VersionRelease } from '../domain/versionTracker';
+import { getVersionInfo, getVersionHistory, getStorageStats } from '../domain/versionTracker';
 
 interface VersionModalProps {
   isOpen: boolean;

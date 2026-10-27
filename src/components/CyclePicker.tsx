@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
+import type React from 'react';
+import { useState, useRef, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import { useCycle } from '../context/CycleContext';
 import { Layers, ChevronDown, Check, X, Calendar } from 'lucide-react';
@@ -10,7 +11,7 @@ export const CyclePicker: React.FC = () => {
   const buttonRef = useRef<HTMLButtonElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  const updateCoords = () => {
+  const updateCoords = useCallback(() => {
     if (buttonRef.current) {
       const rect = buttonRef.current.getBoundingClientRect();
       setMenuCoords({
@@ -18,7 +19,7 @@ export const CyclePicker: React.FC = () => {
         right: window.innerWidth - rect.right,
       });
     }
-  };
+  }, []);
 
   const toggleOpen = () => {
     if (!isOpen) {
@@ -64,7 +65,7 @@ export const CyclePicker: React.FC = () => {
       window.removeEventListener('scroll', handleScrollOrResize, true);
       window.removeEventListener('resize', handleScrollOrResize);
     };
-  }, [isOpen]);
+  }, [isOpen, updateCoords]);
 
   if (cycles.length === 0) return null;
 

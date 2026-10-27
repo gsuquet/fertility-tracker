@@ -1,11 +1,11 @@
-import React from 'react';
-import { StampType } from '../types/crms';
+import type React from 'react';
+import type { StampType } from '../types/crms';
 
 interface StampBadgeProps {
   stamp: StampType;
-  isPeakDay?: boolean;
-  intercourse?: boolean;
-  size?: 'sm' | 'md' | 'lg';
+  isPeakDay?: boolean | undefined;
+  intercourse?: boolean | undefined;
+  size?: 'sm' | 'md' | 'lg' | undefined;
 }
 
 export const StampBadge: React.FC<StampBadgeProps> = ({

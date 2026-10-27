@@ -1,6 +1,6 @@
-import React from 'react';
+import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import {
+import type {
   BleedingCode,
   MucusStretch,
   MucusModifier,
@@ -28,15 +28,15 @@ interface TodayObservationFormProps {
   onDirectTextChange: (text: string) => void;
   intercourse: boolean;
   onIntercourseToggle: () => void;
-  bleeding?: BleedingCode;
+  bleeding?: BleedingCode | undefined;
   onBleedingSelect: (b?: BleedingCode) => void;
-  isCycleStart?: boolean;
+  isCycleStart?: boolean | undefined;
   onToggleCycleStart: () => void;
-  stretch?: MucusStretch;
+  stretch?: MucusStretch | undefined;
   onStretchSelect: (s?: MucusStretch) => void;
   modifiers: MucusModifier[];
   onToggleModifier: (mod: MucusModifier) => void;
-  frequency?: FrequencyCode;
+  frequency?: FrequencyCode | undefined;
   onFrequencySelect: (f?: FrequencyCode) => void;
   symptoms: SymptomCode[];
   onToggleSymptom: (sym: SymptomCode) => void;

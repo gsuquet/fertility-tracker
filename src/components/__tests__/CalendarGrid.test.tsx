@@ -27,8 +27,8 @@ describe('CalendarGrid Component', () => {
   it('renders Monday as the first column header of the week', () => {
     const { container } = renderCalendarGrid();
     const headers = container.querySelectorAll('.calendar-weekday-header .weekday-full');
-    expect(headers[0].textContent).toBe('Mon');
-    expect(headers[6].textContent).toBe('Sun');
+    expect(headers[0]?.textContent).toBe('Mon');
+    expect(headers[6]?.textContent).toBe('Sun');
   });
 
   it('opens observation drawer with clicked date when clicking an empty calendar day', () => {

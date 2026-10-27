@@ -1,4 +1,4 @@
-import React from 'react';
+import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { Calendar, Flame, Heart, Activity } from 'lucide-react';
@@ -48,8 +48,8 @@ export const CycleStatsHeader: React.FC = () => {
     const cyclesWithPeak = cycles.filter(c => c.observations.some(o => o.isPeakDay));
     if (cyclesWithPeak.length > 0) {
       const totalLuteal = cyclesWithPeak.reduce((acc, c) => {
-        const p = c.observations.find(o => o.isPeakDay)!;
-        return acc + c.observations.filter(o => o.cycleDay > p.cycleDay).length;
+        const peakCycleDay = c.observations.find(o => o.isPeakDay)?.cycleDay ?? 0;
+        return acc + c.observations.filter(o => o.cycleDay > peakCycleDay).length;
       }, 0);
       const avgLuteal = (totalLuteal / cyclesWithPeak.length).toFixed(1);
       lutealPhaseText = `${avgLuteal} ${t.stats.days} (avg)`;

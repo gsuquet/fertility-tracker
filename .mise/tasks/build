@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Type-check TypeScript and build production bundle"
+set -euo pipefail
+
+npm run build

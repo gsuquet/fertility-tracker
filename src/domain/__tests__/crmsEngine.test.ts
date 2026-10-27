@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest';
 import { calculateStamp, isPeakTypeMucus } from '../stampCalculator';
 import { processCycleObservations } from '../peakDetector';
 import { formatCodeString, parseCodeString } from '../codeParser';
-import { Observation } from '../../types/crms';
+import type { Observation } from '../../types/crms';
 
 describe('Creighton Model Domain Engine', () => {
   describe('stampCalculator', () => {
@@ -145,12 +145,12 @@ describe('Creighton Model Domain Engine', () => {
 
       const processed = processCycleObservations(rawObs);
 
-      expect(processed[2].isPeakDay).toBe(true);
-      expect(processed[2].stamp).toBe('WHITE_BABY');
-      expect(processed[3].stamp).toBe('LIGHT_GREEN_BABY_1');
-      expect(processed[4].stamp).toBe('LIGHT_GREEN_BABY_2');
-      expect(processed[5].stamp).toBe('LIGHT_GREEN_BABY_3');
-      expect(processed[6].stamp).toBe('DARK_GREEN');
+      expect(processed[2]?.isPeakDay).toBe(true);
+      expect(processed[2]?.stamp).toBe('WHITE_BABY');
+      expect(processed[3]?.stamp).toBe('LIGHT_GREEN_BABY_1');
+      expect(processed[4]?.stamp).toBe('LIGHT_GREEN_BABY_2');
+      expect(processed[5]?.stamp).toBe('LIGHT_GREEN_BABY_3');
+      expect(processed[6]?.stamp).toBe('DARK_GREEN');
     });
 
     it('sorts observations created out of date order chronologically by date and calculates cycleDay', () => {
@@ -168,10 +168,10 @@ describe('Creighton Model Domain Engine', () => {
 
       const processed = processCycleObservations(rawObs);
 
-      expect(processed[0].date).toBe('2026-07-20');
-      expect(processed[0].cycleDay).toBe(1);
-      expect(processed[1].date).toBe('2026-07-25');
-      expect(processed[1].cycleDay).toBe(6);
+      expect(processed[0]?.date).toBe('2026-07-20');
+      expect(processed[0]?.cycleDay).toBe(1);
+      expect(processed[1]?.date).toBe('2026-07-25');
+      expect(processed[1]?.cycleDay).toBe(6);
     });
   });
 });

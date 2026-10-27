@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Preview production build locally"
+set -euo pipefail
+
+npm run preview

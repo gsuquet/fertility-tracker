@@ -8,7 +8,7 @@ This hands-on tutorial will guide you through setting up **Fertility Tracker** l
 
 Before starting this tutorial, ensure you have:
 
-- **mise** (recommended for managing Node.js versions and tasks) or **Node.js** installed ($\ge v26.5.0$).
+- **mise** (recommended for managing Node.js versions and tasks) or **Node.js** installed (exactly v26.12.1, pinned in `.mise/config.toml`).
 - **Git** installed on your system.
 - A modern web browser (Chrome, Firefox, Safari, or Edge).
 

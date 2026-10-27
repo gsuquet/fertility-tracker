@@ -1,6 +1,8 @@
-import React, { createContext, useContext, useState } from 'react';
-import { Language } from '../types/crms';
-import { translations, TranslationSchema } from '../i18n';
+import type React from 'react';
+import { createContext, useContext, useState } from 'react';
+import type { Language } from '../types/crms';
+import type { TranslationSchema } from '../i18n';
+import { translations } from '../i18n';
 
 interface LanguageContextType {
   language: Language;

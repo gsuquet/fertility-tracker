@@ -1,4 +1,5 @@
-import React, { useState } from 'react';
+import type React from 'react';
+import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { StampBadge } from './StampBadge';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';

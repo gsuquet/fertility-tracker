@@ -1,5 +1,43 @@
+# Hooks run on every commit. Install once with: mise run hooks
+# Remote hook revisions are pinned to commit SHAs; local hooks use the versions pinned by mise
+# (.mise/config.toml) and package-lock.json.
+default_install_hook_types: [pre-commit]
+fail_fast: false
+
 repos:
-  - repo: https://github.com/gitleaks/gitleaks
-    rev: v8.30.1
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: 3e8a8703264a2f4a69428a0aa4dcb512790b2c8c # frozen: v6.0.0
     hooks:
+      - id: check-added-large-files
+      - id: check-case-conflict
+      - id: check-merge-conflict
+      - id: check-json
+        exclude: ^tsconfig\.json$
+      - id: check-toml
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: mixed-line-ending
+        args: [--fix=lf]
+      - id: trailing-whitespace
+        args: [--markdown-linebreak-ext=md]
+
+  - repo: local
+    hooks:
+      # Uses the gitleaks binary pinned in .mise/config.toml. It scans staged changes only,
+      # so CI skips it and scans the pull request commits in a separate step.
       - id: gitleaks
+        name: gitleaks (staged changes)
+        entry: gitleaks git --pre-commit --redact --staged --verbose
+        language: system
+        pass_filenames: false
+      - id: biome-check
+        name: biome check (lint + format)
+        entry: npx --no-install biome check --error-on-warnings --no-errors-on-unmatched --files-ignore-unknown=true
+        language: system
+        types: [text]
+      - id: typecheck
+        name: tsc --noEmit
+        entry: npm run --silent typecheck
+        language: system
+        files: \.(ts|tsx)$
+        pass_filenames: false

@@ -13,7 +13,7 @@ Deployment is managed automatically by Cloudflare Pages native GitHub Integratio
    - **Framework Preset:** Vite
    - **Build Command:** `npm run build`
    - **Build Output Directory:** `dist`
-   - **Node.js Version:** $\ge 22.0.0$ (configured via `package.json` engines)
+   - **Node.js Version:** `26.12.1`, read by Cloudflare from `.node-version` (also pinned in `package.json` engines and `.mise/config.toml`). The build uses the npm bundled with that Node release (`11.20.0`), which `package.json` pins exactly. Do not set a different `NODE_VERSION` environment variable in the Pages project.
 3. **Production URL:** [`https://fertility-tracker.gsuquet.com`](https://fertility-tracker.gsuquet.com)
 4. **Preview Deployments:** Pull requests automatically generate unique staging preview URLs for isolated testing before merging to `main`.
 
@@ -26,7 +26,7 @@ If you need to deploy or test static builds locally without pushing to GitHub:
 ### Prerequisites
 
 - Cloudflare Account
-- Node.js $\ge 22.0.0$ and `npm` or `mise`
+- `mise`, or Node.js `26.12.1` with its bundled npm `11.20.0` (the versions pinned in `.mise/config.toml`)
 
 ### Steps
 
