@@ -616,7 +616,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
 **Modules:** [src/sw/serviceWorker.ts](./src/sw/serviceWorker.ts), [src/sw/entry.ts](./src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](./src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](./scripts/pwa/serviceWorkerPlugin.ts)
 
 - **Build-time precache list:** The Vite plugin `serviceWorkerPlugin` (build only) bundles `src/sw/entry.ts` to `dist/sw.js`. It injects the precache list and the cache name into it:
-  - **Precache list:** `./` and every file of the build output (`index.html`, all hashed files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons). Source maps, `sw.js` and `_headers` are excluded.
+  - **Precache list:** `./` (the app shell; the server answers it with `index.html`) and every other file of the build output (all hashed files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons). `index.html` is not listed under its own name: `./` stores it. Source maps, `sw.js` and `_headers` are excluded.
   - **Cache name:** `fertility-tracker-<app version>-<build hash>`. The build hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the precached files. Thus each build with a different output installs a new cache.
 - **Service worker events:**
   - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
@@ -624,7 +624,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
   - `fetch`: Ignores requests that are not `GET` or not same-origin (for example Google Fonts).
     - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
     - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response whose `Content-Type` is not `text/html`. After a deploy, the server answers an old file name with `index.html` (SPA fallback); this response is returned but never stored under the asset URL.
-    - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached `index.html`. Without a cached response, returns a network error.
+    - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached app shell (`./`). Without a cached response, returns a network error.
 - **Registration:** `src/main.tsx` calls `registerServiceWorker()` after the first render. It registers `./sw.js` only in a production build (`import.meta.env.PROD`), in a secure context (`https:` or `localhost`) and when the browser supports service workers. A registration failure is ignored. There is no inline script in `index.html`.
 - **Web App Manifest ([public/manifest.webmanifest](./public/manifest.webmanifest)):** PNG icons `icons/icon-192.png` (192×192, `any`), `icons/icon-512.png` (512×512, `any`) and `icons/icon-maskable-512.png` (512×512, `maskable`, glyph inside the 80% safe zone). `index.html` links `icons/icon-192.png` as the `apple-touch-icon`.
 - **Data:** The service worker caches only application files. It never reads or caches observations, which stay in `localStorage`.
