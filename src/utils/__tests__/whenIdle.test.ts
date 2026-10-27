@@ -15,7 +15,8 @@ describe('whenIdle', () => {
     const callback = vi.fn();
 
     const cancel = whenIdle(callback);
-    expect(requestIdleCallback).toHaveBeenCalledOnce();
+    // On a page that is always busy, the call still occurs after 2 seconds
+    expect(requestIdleCallback).toHaveBeenCalledWith(expect.any(Function), { timeout: 2000 });
     const [idleCallback] = requestIdleCallback.mock.calls[0] as unknown as [() => void];
     idleCallback();
     expect(callback).toHaveBeenCalledOnce();
@@ -25,8 +26,9 @@ describe('whenIdle', () => {
   });
 
   it('falls back to a timer in a browser without requestIdleCallback', () => {
+    // Fake only the timers: fake timers can also install a requestIdleCallback
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
     vi.stubGlobal('requestIdleCallback', undefined);
-    vi.useFakeTimers();
     const callback = vi.fn();
 
     whenIdle(callback);
