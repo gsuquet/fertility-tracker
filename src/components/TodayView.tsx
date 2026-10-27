@@ -11,9 +11,10 @@ import { TodayObservationForm } from './today/TodayObservationForm';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { getTodayStr, addDays } from '../utils/dateUtils';
 import { readStorage, writeStorage } from '../utils/storage';
+import { STORAGE_ENTRY_MODE_KEY as ENTRY_MODE_STORAGE_KEY } from '../utils/storageKeys';
+import { useToast } from '../hooks/useToast';
 import { CheckCircle2 } from 'lucide-react';
 
-const ENTRY_MODE_STORAGE_KEY = 'fertility_care_entry_mode';
 type EntryMode = 'direct' | 'detailed';
 
 export const TodayView: React.FC = () => {
@@ -50,7 +51,7 @@ export const TodayView: React.FC = () => {
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // Toast feedback state
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, showToast] = useToast(3000);
 
   const currentObs = observations.find(o => o.date === selectedDate);
 
@@ -65,11 +66,6 @@ export const TodayView: React.FC = () => {
       setSelectedDate(selectedObservation.date);
     }
   }, [selectedObservation]);
-
-  const showToast = (msg: string) => {
-    setToastMessage(msg);
-    setTimeout(() => setToastMessage(null), 3000);
-  };
 
   const isToday = selectedDate === getTodayStr();
 

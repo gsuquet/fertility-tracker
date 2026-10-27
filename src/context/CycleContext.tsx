@@ -23,6 +23,14 @@ import {
 import { buildDemoObservations } from '../domain/demoData';
 import { parseObservationData, serializeObservations } from '../domain/storageFormat';
 import { mergeObservations } from '../domain/backupImport';
+import {
+  STORAGE_BACKUP_REMINDER_START_KEY as REMINDER_START_KEY,
+  STORAGE_BACKUP_SNOOZED_UNTIL_KEY as SNOOZE_KEY,
+  STORAGE_LAST_BACKUP_KEY as LAST_BACKUP_KEY,
+  STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
+  STORAGE_RECOVERY_KEY as RECOVERY_KEY,
+  STORAGE_UNDO_KEY as UNDO_KEY,
+} from '../utils/storageKeys';
 import type { ImportMode } from '../domain/backupImport';
 
 /** A change that replaced the observations and that the saved copy can undo. */
@@ -81,13 +89,6 @@ export type CycleContextType = CycleDataContextType & CycleUiContextType;
 
 const CycleDataContext = createContext<CycleDataContextType | undefined>(undefined);
 const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
-
-const STORAGE_KEY = 'fertility_care_observations';
-const RECOVERY_KEY = 'fertility_care_observations_recovery';
-const UNDO_KEY = 'fertility_care_observations_undo';
-const LAST_BACKUP_KEY = 'fertility_care_last_backup';
-const REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
-const SNOOZE_KEY = 'fertility_care_backup_snoozed_until';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
@@ -256,12 +257,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
 
   const deleteObservation = useCallback(
-    (idOrDate: string) => {
+    (id: string) => {
       dismissUndo();
-      setObservations(prev => {
-        const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
-        return reprocessObservations(filtered);
-      });
+      setObservations(prev => reprocessObservations(prev.filter(o => o.id !== id)));
     },
     [dismissUndo]
   );

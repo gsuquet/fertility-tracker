@@ -1,14 +1,15 @@
 import { screen, fireEvent } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { StorageSaveWarning } from '../StorageSaveWarning';
-import { renderWithProviders, OBSERVATIONS_STORAGE_KEY } from '../../test/render';
+import { renderWithProviders } from '../../test/render';
+import { STORAGE_OBSERVATIONS_KEY } from '../../utils/storageKeys';
 import { en, fr } from '../../i18n';
 
 /** Makes the browser refuse each write of the observations. */
 const refuseObservationWrites = () => {
   const setItem = localStorage.setItem.bind(localStorage);
   vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
-    if (key === OBSERVATIONS_STORAGE_KEY) throw new Error('QuotaExceededError');
+    if (key === STORAGE_OBSERVATIONS_KEY) throw new Error('QuotaExceededError');
     setItem(key, value);
   });
 };

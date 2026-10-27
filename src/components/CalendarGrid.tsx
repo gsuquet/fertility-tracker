@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { StampBadge } from './StampBadge';
+import { getTodayStr } from '../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
 export const CalendarGrid: React.FC = () => {
@@ -55,7 +56,7 @@ export const CalendarGrid: React.FC = () => {
     daysGrid.push(day);
   }
 
-  const todayStr = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+  const todayStr = getTodayStr();
 
   return (
     <div

@@ -31,23 +31,13 @@ describe('processCycleObservations', () => {
     ]);
   });
 
-  it('uses the manual Peak Day date when it is given', () => {
-    const result = processCycleObservations(cycle, '2026-07-02');
-    expect(result.find(o => o.isPeakDay)?.date).toBe('2026-07-02');
-    // A fertile day after the manual peak keeps its white stamp
-    expect(result[2]?.stamp).toBe('WHITE_BABY');
-    expect(result[3]?.stamp).toBe('LIGHT_GREEN_BABY_1');
-  });
-
-  it('has no Peak Day when the manual date is not in the cycle', () => {
-    const result = processCycleObservations(cycle, '2026-08-01');
-    expect(result.some(o => o.isPeakDay)).toBe(false);
-  });
-
   it('uses an observation flagged isManualPeak before the automatic Peak Day', () => {
     const flagged = cycle.map(o => (o.date === '2026-07-02' ? { ...o, isManualPeak: true } : o));
     const result = processCycleObservations(flagged);
     expect(result.find(o => o.isPeakDay)?.date).toBe('2026-07-02');
+    // A fertile day after the manual peak keeps its white stamp
+    expect(result[2]?.stamp).toBe('WHITE_BABY');
+    expect(result[3]?.stamp).toBe('LIGHT_GREEN_BABY_1');
   });
 
   it('has no Peak Day and no post-peak stamps when there is no peak-type mucus', () => {

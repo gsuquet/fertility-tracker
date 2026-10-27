@@ -1,7 +1,7 @@
 import { readFile } from 'node:fs/promises';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
-import { STORAGE_OBSERVATIONS_KEY } from '../src/domain/versionTracker';
+import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
 import { en } from '../src/i18n/locales/en';
 import { TODAY, fixClock, openApp } from './fixtures';
 

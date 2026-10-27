@@ -1,7 +1,7 @@
 import { fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { en } from '../i18n';
 
 // Simulates lazy chunks that fail to load, for example offline before the service worker cached them.

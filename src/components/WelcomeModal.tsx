@@ -21,7 +21,7 @@ import {
   PlayCircle,
   CheckCircle2,
 } from 'lucide-react';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { writeStorage } from '../utils/storage';
 
 interface WelcomeModalProps {
