@@ -50,8 +50,8 @@
     "jsdom": "^30.0.0",
     "prettier": "^3.9.6",
     "typescript": "^7.0.2",
-    "vite": "^8.1.5",
+    "vite": "^8.3.5",
     "vitest": "^4.1.11",
-    "wrangler": "^4.115.0"
+    "wrangler": "^4.153.0"
   }
 }
