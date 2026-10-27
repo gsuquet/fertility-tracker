@@ -12,7 +12,8 @@ import type { Cycle, Observation, ObservationInput } from '../types/crms';
 import { calculateStamp } from '../domain/stampCalculator';
 import { formatCodeString } from '../domain/codeParser';
 import { groupObservationsIntoCycles } from '../domain/cycleBoundaryDetector';
-import { getTodayStr } from '../utils/dateUtils';
+import { addDays, getTodayStr } from '../utils/dateUtils';
+import { BACKUP_SNOOZE_DAYS } from '../domain/backupReminder';
 import {
   readStorage,
   removeStorage,
@@ -51,6 +52,12 @@ export interface CycleDataContextType {
   lastBackupDate: string | null;
   /** Records today as the date of the last JSON backup. */
   markBackedUp: () => void;
+  /** The date of the first load with the backup reminder: the start of the first period. */
+  backupReminderStart: string | null;
+  /** The backup reminder stays hidden before this date, or null. */
+  backupSnoozedUntil: string | null;
+  /** Hides the backup reminder for `BACKUP_SNOOZE_DAYS` days. */
+  snoozeBackupReminder: () => void;
   /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
   dismissRecovery: () => void;
   /** The last change that the saved copy can undo, or null when there is no copy. */
@@ -79,6 +86,17 @@ const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const UNDO_KEY = 'fertility_care_observations_undo';
 const LAST_BACKUP_KEY = 'fertility_care_last_backup';
+const REMINDER_START_KEY = 'fertility_care_backup_reminder_start';
+const SNOOZE_KEY = 'fertility_care_backup_snoozed_until';
+
+/** Reads the start of the reminder period, and stores today on the first load. */
+const loadReminderStart = (): string => {
+  const stored = readStorage(REMINDER_START_KEY);
+  if (stored !== null) return stored;
+  const today = getTodayStr();
+  writeStorage(REMINDER_START_KEY, today);
+  return today;
+};
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
@@ -115,12 +133,11 @@ const loadStoredState = () => {
   if (droppedCount > 0) {
     return { observations, droppedCount, recoveryData: raw, recoveryKept: keepCopy() };
   }
-  return {
-    observations,
-    droppedCount,
-    recoveryData: readStorage(RECOVERY_KEY),
-    recoveryKept: true,
-  };
+  // A copy kept in an earlier session: its records give the number of dropped records again.
+  const recoveryData = readStorage(RECOVERY_KEY);
+  const keptDropped =
+    recoveryData === null ? 0 : (parseObservationData(recoveryData)?.droppedCount ?? 0);
+  return { observations, droppedCount: keptDropped, recoveryData, recoveryKept: true };
 };
 
 interface UndoState {
@@ -143,6 +160,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [undo, setUndo] = useState<UndoState | null>(loadStoredUndo);
   const [saveFailed, setSaveFailed] = useState(false);
   const [lastBackupDate, setLastBackupDate] = useState(() => readStorage(LAST_BACKUP_KEY));
+  const [backupReminderStart] = useState(loadReminderStart);
+  const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
   const persistRequested = useRef(false);
   const hasData = observations.length > 0;
 
@@ -174,6 +193,12 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     const today = getTodayStr();
     writeStorage(LAST_BACKUP_KEY, today);
     setLastBackupDate(today);
+  }, []);
+
+  const snoozeBackupReminder = useCallback(() => {
+    const until = addDays(getTodayStr(), BACKUP_SNOOZE_DAYS);
+    writeStorage(SNOOZE_KEY, until);
+    setBackupSnoozedUntil(until);
   }, []);
 
   const dismissUndo = useCallback(() => {
@@ -317,6 +342,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       saveFailed,
       lastBackupDate,
       markBackedUp,
+      backupReminderStart,
+      backupSnoozedUntil,
+      snoozeBackupReminder,
       dismissRecovery,
       undoChange: undo ? undo.change : null,
       undoLastChange,
@@ -339,6 +367,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       saveFailed,
       lastBackupDate,
       markBackedUp,
+      backupReminderStart,
+      backupSnoozedUntil,
+      snoozeBackupReminder,
       dismissRecovery,
       undo,
       undoLastChange,

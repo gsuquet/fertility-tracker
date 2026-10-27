@@ -31,7 +31,7 @@ The application decreases some of these risks:
 
 - When you have observations, it asks the browser to keep the data (`navigator.storage.persist()`). Without this permission, a browser can delete the data of a site when the device has little space. A browser can refuse the request.
 - If the browser does not save a change, a warning stays at the top of the page. Your changes then stay only until you close the page.
-- If you have no backup, or your last backup is more than 30 days old, a reminder shows at the top of the page.
+- If your last backup is more than 30 days old, a reminder shows at the top of the page. Without a backup, the 30 days start when you first open version 1.18.0 or later.
 
 To decrease these risks more, make a backup file regularly. Read [Back up and restore your data](../how-to/back-up-and-restore-your-data.md).
 

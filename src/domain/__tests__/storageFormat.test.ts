@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import {
   STORAGE_SCHEMA_VERSION,
+  WRITE_SCHEMA_VERSION,
   parseObservationData,
   serializeObservations,
 } from '../storageFormat';
@@ -24,17 +25,26 @@ const legacyObservation = {
 };
 
 describe('storageFormat', () => {
-  it('writes the observations in a versioned envelope', () => {
-    const obs = makeObservation({ date: '2026-06-01' });
-    expect(JSON.parse(serializeObservations([obs]))).toEqual({
-      schemaVersion: STORAGE_SCHEMA_VERSION,
-      observations: [obs],
-    });
+  it('reads version 1 but still writes version 0 by default', () => {
     expect(STORAGE_SCHEMA_VERSION).toBe(1);
+    expect(WRITE_SCHEMA_VERSION).toBe(0);
   });
 
-  it('indents the envelope when an indent is given', () => {
-    expect(serializeObservations([], 2)).toBe('{\n  "schemaVersion": 1,\n  "observations": []\n}');
+  it('writes a bare array, which older app versions read', () => {
+    const obs = makeObservation({ date: '2026-06-01' });
+    expect(JSON.parse(serializeObservations([obs]))).toEqual([obs]);
+    expect(serializeObservations([], 2)).toBe('[]');
+  });
+
+  it('writes the versioned envelope when version 1 is asked for', () => {
+    const obs = makeObservation({ date: '2026-06-01' });
+    expect(JSON.parse(serializeObservations([obs], undefined, 1))).toEqual({
+      schemaVersion: 1,
+      observations: [obs],
+    });
+    expect(serializeObservations([], 2, 1)).toBe(
+      '{\n  "schemaVersion": 1,\n  "observations": []\n}'
+    );
   });
 
   it('migrates the bare array of version 0 without loss', () => {
@@ -64,8 +74,10 @@ describe('storageFormat', () => {
 
   it('reads back what it writes', () => {
     const migrated = parseObservationData(JSON.stringify([legacyObservation]));
-    const written = serializeObservations(migrated?.observations ?? []);
-    expect(parseObservationData(written)).toEqual(migrated);
+    for (const version of [0, 1] as const) {
+      const written = serializeObservations(migrated?.observations ?? [], undefined, version);
+      expect(parseObservationData(written)).toEqual(migrated);
+    }
   });
 
   it('reads an empty bare array and an empty envelope', () => {

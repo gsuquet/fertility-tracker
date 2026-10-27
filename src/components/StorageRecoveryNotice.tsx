@@ -23,15 +23,16 @@ export const StorageRecoveryNotice: React.FC = () => {
   };
 
   const r = t.storageRecovery;
-  const message =
-    droppedCount > 0
-      ? (recoveryKept ? r.messagePartial : r.messagePartialNoCopy).replace(
-          '{count}',
-          String(droppedCount)
-        )
+  const partial =
+    droppedCount === 1
+      ? recoveryKept
+        ? r.messagePartialOne
+        : r.messagePartialNoCopyOne
       : recoveryKept
-        ? r.message
-        : r.messageNoCopy;
+        ? r.messagePartial
+        : r.messagePartialNoCopy;
+  const whole = recoveryKept ? r.message : r.messageNoCopy;
+  const message = droppedCount > 0 ? partial.replace('{count}', String(droppedCount)) : whole;
 
   return (
     <div className="storage-recovery-notice" role="alert">

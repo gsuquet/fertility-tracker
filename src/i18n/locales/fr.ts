@@ -237,6 +237,10 @@ export const fr: TranslationSchema = {
       "{count} enregistrements sauvegardés n'ont pas pu être lus. L'application affiche les autres observations et garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
     messagePartialNoCopy:
       "{count} enregistrements sauvegardés n'ont pas pu être lus, et l'application n'a pas pu en garder une copie. L'application affiche les autres observations. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
+    messagePartialOne:
+      "1 enregistrement sauvegardé n'a pas pu être lu. L'application affiche les autres observations et garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
+    messagePartialNoCopyOne:
+      "1 enregistrement sauvegardé n'a pas pu être lu, et l'application n'a pas pu en garder une copie. L'application affiche les autres observations. Téléchargez les données d'origine maintenant. Votre prochaine modification les remplace.",
   },
   storageWarning: {
     saveFailed:

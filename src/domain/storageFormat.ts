@@ -3,11 +3,17 @@ import { formatCodeString } from './codeParser';
 import { validateObservation } from './dataValidator';
 
 /**
- * The version of the stored observation format. Version 0 is the bare JSON array that the
- * app wrote before 1.18.0. Version 1 is `{ schemaVersion: 1, observations: [...] }`.
+ * The newest stored observation format that the app reads. Version 0 is a bare JSON array.
+ * Version 1 is `{ schemaVersion: 1, observations: [...] }`.
  * The browser storage, the undo copy and the backup file use the same format.
  */
 export const STORAGE_SCHEMA_VERSION = 1;
+
+/**
+ * The format that the app writes. It stays 0 (the bare array) so that version 1.17 and older,
+ * for example after a rollback, can still read all the data. A later release sets it to 1.
+ */
+export const WRITE_SCHEMA_VERSION: 0 | 1 = 0;
 
 export interface ObservationData {
   /** The valid observations, one for each date, in date order. */
@@ -16,9 +22,14 @@ export interface ObservationData {
   droppedCount: number;
 }
 
-/** Writes the observations in the current versioned envelope. */
-export function serializeObservations(observations: Observation[], indent?: number): string {
-  return JSON.stringify({ schemaVersion: STORAGE_SCHEMA_VERSION, observations }, null, indent);
+/** Writes the observations as a bare array (version 0) or in the versioned envelope (version 1). */
+export function serializeObservations(
+  observations: Observation[],
+  indent?: number,
+  version: 0 | 1 = WRITE_SCHEMA_VERSION
+): string {
+  const data = version === 0 ? observations : { schemaVersion: version, observations };
+  return JSON.stringify(data, null, indent);
 }
 
 /**

@@ -91,11 +91,12 @@ describe('App flows', () => {
     fireEvent.click(screen.getByRole('button', { name: en.undoToast.undo }));
     expect(screen.queryByRole('status')).toBeNull();
     const stored = JSON.parse(localStorage.getItem('fertility_care_observations') as string);
-    expect(stored.observations).toHaveLength(1);
+    expect(stored).toHaveLength(1);
   });
 
   it('opens the export dialog from the save warning and from the backup reminder', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem('fertility_care_backup_reminder_start', '2026-01-01');
     localStorage.setItem(
       'fertility_care_observations',
       JSON.stringify([{ date: '2026-06-01', bleeding: 'H' }])

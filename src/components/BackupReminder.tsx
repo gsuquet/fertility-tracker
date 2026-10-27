@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useState } from 'react';
 import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { BACKUP_REMINDER_DAYS, isBackupDue } from '../domain/backupReminder';
@@ -12,11 +11,21 @@ interface BackupReminderProps {
 
 /** Reminds the user to download a backup when the last one is old or missing. */
 export const BackupReminder: React.FC<BackupReminderProps> = ({ onOpenExport }) => {
-  const { observations, lastBackupDate } = useCycleData();
+  const {
+    observations,
+    lastBackupDate,
+    backupReminderStart,
+    backupSnoozedUntil,
+    snoozeBackupReminder,
+  } = useCycleData();
   const { t } = useLanguage();
-  const [isHidden, setIsHidden] = useState(false);
 
-  if (isHidden || !isBackupDue(lastBackupDate, observations, getTodayStr())) return null;
+  const dates = {
+    lastBackupDate,
+    reminderStart: backupReminderStart,
+    snoozedUntil: backupSnoozedUntil,
+  };
+  if (!isBackupDue(dates, observations, getTodayStr())) return null;
 
   const message =
     lastBackupDate === null
@@ -30,7 +39,7 @@ export const BackupReminder: React.FC<BackupReminderProps> = ({ onOpenExport }) 
         <button type="button" className="btn btn-primary" onClick={onOpenExport}>
           {t.backupReminder.backUpNow}
         </button>
-        <button type="button" className="btn btn-secondary" onClick={() => setIsHidden(true)}>
+        <button type="button" className="btn btn-secondary" onClick={snoozeBackupReminder}>
           {t.backupReminder.later}
         </button>
       </div>

@@ -234,6 +234,10 @@ export const en = {
       '{count} saved records could not be read. The application shows the other observations and keeps a copy of the original data. Download the copy before you delete it.',
     messagePartialNoCopy:
       '{count} saved records could not be read, and the application could not keep a copy. The application shows the other observations. Download the original data now. Your next change replaces it.',
+    messagePartialOne:
+      '1 saved record could not be read. The application shows the other observations and keeps a copy of the original data. Download the copy before you delete it.',
+    messagePartialNoCopyOne:
+      '1 saved record could not be read, and the application could not keep a copy. The application shows the other observations. Download the original data now. Your next change replaces it.',
   },
   storageWarning: {
     saveFailed:

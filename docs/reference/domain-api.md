@@ -68,20 +68,22 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 ## storageFormat.ts
 
-| Export                   | Signature                                                  | Returns                                                                                                                                                              |
-| ------------------------ | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `STORAGE_SCHEMA_VERSION` | `number`                                                   | The current version of the stored format: `1`.                                                                                                                       |
-| `serializeObservations`  | `(observations: Observation[], indent?: number) => string` | The JSON text of `{ "schemaVersion": 1, "observations": [...] }`.                                                                                                    |
-| `parseObservationData`   | `(text: string) => ObservationData \| null`                | The valid observations, one for each date, in date order, and `droppedCount`.`null` if the text is not JSON, not a supported format, or from a newer schema version. |
+| Export                   | Signature                                                                    | Returns                                                                                                                                        |
+| ------------------------ | ---------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_SCHEMA_VERSION` | `number`                                                                     | The newest format that the application reads: `1`.                                                                                             |
+| `WRITE_SCHEMA_VERSION`   | `0 \| 1`                                                                     | The format that the application writes: `0`.                                                                                                   |
+| `serializeObservations`  | `(observations: Observation[], indent?: number, version?: 0 \| 1) => string` | The JSON text. Version 0 is a bare array. Version 1 is `{ "schemaVersion": 1, "observations": [...] }`. The default is `WRITE_SCHEMA_VERSION`. |
+| `parseObservationData`   | `(text: string) => ObservationData \| null`                                  | The valid observations, one for each date, in date order, and `droppedCount`.`null` if the application cannot read the text.                   |
 
 `parseObservationData` reads a bare JSON array (version 0) and the envelope (version 1). It calculates `codeString` again from the fields.
 
 ## backupReminder.ts
 
-| Export                 | Signature                                                                                 | Returns                                                                                                    |
-| ---------------------- | ----------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| `BACKUP_REMINDER_DAYS` | `number`                                                                                  | `30`.                                                                                                      |
-| `isBackupDue`          | `(lastBackupDate: string \| null, observations: Observation[], today: string) => boolean` | `true` if observations exist and 30 days or more passed since the last backup, or since the earliest date. |
+| Export                 | Signature                                                                             | Returns                                                                                                                         |
+| ---------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `BACKUP_REMINDER_DAYS` | `number`                                                                              | `30`.                                                                                                                           |
+| `BACKUP_SNOOZE_DAYS`   | `number`                                                                              | `7`.                                                                                                                            |
+| `isBackupDue`          | `(dates: BackupReminderDates, observations: Observation[], today: string) => boolean` | `true` if a day that is not demo data exists, no snooze is active, and 30 days passed since the last backup or the first start. |
 
 ## backupImport.ts
 
