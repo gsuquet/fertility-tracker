@@ -1,4 +1,4 @@
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { StorageRecoveryNotice } from '../StorageRecoveryNotice';
 import { renderWithProviders, OBSERVATIONS_STORAGE_KEY } from '../../test/render';
@@ -41,11 +41,26 @@ describe('StorageRecoveryNotice', () => {
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:recovery');
   });
 
-  it('deletes the copy and hides the notice, in French', () => {
+  it('asks before it deletes the only copy', () => {
+    localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
+    renderWithProviders(<StorageRecoveryNotice />);
+    fireEvent.click(screen.getByRole('button', { name: en.storageRecovery.dismiss }));
+    const dialog = screen.getByRole('dialog', { name: en.confirmDialog.recoveryTitle });
+    expect(dialog).toHaveAccessibleDescription(en.confirmDialog.recoveryMessage);
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('alert')).toBeInTheDocument();
+    expect(localStorage.getItem('fertility_care_observations_recovery')).toBe(RAW);
+  });
+
+  it('deletes the copy and hides the notice after confirmation, in French', () => {
     localStorage.setItem(OBSERVATIONS_STORAGE_KEY, RAW);
     renderWithProviders(<StorageRecoveryNotice />, { language: 'fr' });
     expect(screen.getByRole('alert')).toHaveTextContent(fr.storageRecovery.message);
     fireEvent.click(screen.getByRole('button', { name: fr.storageRecovery.dismiss }));
+    const dialog = screen.getByRole('dialog', { name: fr.confirmDialog.recoveryTitle });
+    fireEvent.click(within(dialog).getByRole('button', { name: fr.confirmDialog.recoveryConfirm }));
+    expect(screen.queryByRole('dialog')).toBeNull();
     expect(screen.queryByRole('alert')).toBeNull();
     expect(localStorage.getItem('fertility_care_observations_recovery')).toBeNull();
   });

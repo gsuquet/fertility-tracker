@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.16.3  
+**Document Version:** 1.17.0  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -437,6 +437,16 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
+- **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
+  - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
+  - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it. It traps the focus: `Tab` on the last button moves to the first, and `Shift+Tab` on the first moves to the last, so the dialog under it cannot get the focus.
+  - All its text is translated (`confirmDialog.*`, `actions.cancel`).
+  - The clear-all message says that a copy stays on this device until the user deletes it with **Delete the copy** in the undo toast.
+  - **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist. When no observations exist, **Load Demo Cycle** and **Restore Data (JSON)** act at once, and **Clear Data / Reset** is disabled.
+  - **Import Preview & Merge:** Before a backup changes existing observations, the dialog shows the number of observations in the file and its date range (first and last date, `YYYY-MM-DD`), or that the file has no observations. It offers two actions:
+    - **Replace** (`importDataJson(text, 'replace')`): the file replaces all the current observations.
+    - **Merge** (`importDataJson(text, 'merge')`): a day of the file replaces the current day with the same date. The other current days stay. When a day of the file is a manual Peak Day, the merge clears the manual Peak Day of the current days in the same cycle, so each cycle keeps one manual Peak Day. `mergeObservations()` in [backupImport.ts](./src/domain/backupImport.ts) does the merge and `summarizeObservations()` gives the preview.
+  - **Restore Data (JSON)** is a button that opens a hidden file input, so the keyboard can reach it. A file that is not a valid backup shows the translated error `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
   - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
@@ -489,12 +499,20 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
 - **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
   - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
   - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
-  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`.
-  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
+  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`. The undo copy of the observations stays until **Undo** or **Delete the copy** in the undo toast.
+  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. That button opens the confirmation dialog (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`); only its confirm button calls `dismissRecovery()`. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
+- **Undo of Replaced Data:** Before `loadDemoData()`, `importDataJson()` (replace or merge) or `clearAllData()` changes the observations, the provider writes the current observations (a JSON array) to `fertility_care_observations_undo`.
+  - While a copy exists, a second replacing change does not replace it: the copy keeps the oldest observations, so **Undo** after demo then clear puts back the data from before the demo. `undoChange` names the latest change.
+  - `saveObservation()` and `deleteObservation()` delete the copy (as `dismissUndo()` does) and the toast closes, so **Undo** can never drop a day that was saved after the change.
+  - `useCycleData()` exposes `undoPersisted`: `false` when `writeStorage` could not write the copy. The toast then adds the translated warning `undoToast.notSaved` (**Undo** works only until the page reloads).
+  - `useCycleData()` exposes `undoChange`: the last change that the copy can undo (`'demo'`, `'import'`, `'merge'`, `'clear'` or `'earlier'`), or `null` when there is no copy.
+  - `undoLastChange()` restores the copied observations, selects their newest cycle and deletes the copy. `dismissUndo()` deletes the copy and keeps the change.
+  - When the app starts and `fertility_care_observations_undo` holds a valid array, `undoChange` is `'earlier'`, so the copy stays visible after a reload.
+  - [UndoToast.tsx](./src/components/UndoToast.tsx) shows a translated toast (`role="status"`, `undoToast.*`) while `undoChange` is set. It tells what changed and has **Undo** and **Delete the copy** buttons. It does not close by itself.
 - **Automatic Reprocessing:** Any modification (addition, update including a manual Peak Day, deletion) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
@@ -541,7 +559,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `cards.css`: Reusable surface containers (`.card`, `.card-surface`, `.card-glass`, `.card-interactive`, `.card-header`, `.card-body`).
     - `forms.css`: Form inputs, selects, textareas, custom checkboxes, and toggle switches.
     - `badges.css`: Indicators, pills, and biomarker badges (`.badge`, `.badge-pill`, `.stamp-badge`).
-    - `dialogs.css`: Modal backdrops, dialog containers, and slide-in drawer panels.
+    - `dialogs.css`: Modal backdrops, dialog containers, the confirmation dialog (`.confirm-overlay`, `.confirm-dialog`), and slide-in drawer panels.
+    - `toast.css`: The undo toast (`.undo-toast`) that floats above the bottom navigation.
   - `src/styles/views/`:
     - `header.css`: Global header, navigation brand, language selector, and theme switcher.
     - `cycle-picker.css`: Cycle dropdown selector and cycle summary metrics.

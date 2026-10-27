@@ -71,4 +71,27 @@ describe('App flows', () => {
     act(() => vi.advanceTimersByTime(2500));
     expect(screen.queryByRole('status')).toBeNull();
   });
+  it('confirms the demo data over saved data and undoes it from the toast', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem(
+      'fertility_care_observations',
+      JSON.stringify([{ date: '2026-06-01', bleeding: 'H' }])
+    );
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    const exportDialog = await screen.findByRole('dialog', { name: en.exportModal.title });
+    fireEvent.click(within(exportDialog).getByRole('button', { name: en.actions.loadDemo }));
+    const confirmDialog = screen.getByRole('dialog', { name: en.confirmDialog.demoTitle });
+    fireEvent.click(
+      within(confirmDialog).getByRole('button', { name: en.confirmDialog.demoConfirm })
+    );
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.demo);
+
+    fireEvent.click(screen.getByRole('button', { name: en.undoToast.undo }));
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(JSON.parse(localStorage.getItem('fertility_care_observations') as string)).toHaveLength(
+      1
+    );
+  });
 });

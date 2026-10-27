@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import {
@@ -13,6 +13,10 @@ import {
   Square,
 } from 'lucide-react';
 import { getExportFilename } from '../utils/exportUtils';
+import { parseAndValidateObservationsJson } from '../domain/dataValidator';
+import { summarizeObservations } from '../domain/backupImport';
+import type { BackupSummary, ImportMode } from '../domain/backupImport';
+import { ConfirmDialog } from './ConfirmDialog';
 
 interface ExportModalProps {
   isOpen: boolean;
@@ -21,14 +25,30 @@ interface ExportModalProps {
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
 }
 
+/** A data action that waits for the user to confirm it. */
+type PendingAction =
+  | { kind: 'demo' }
+  | { kind: 'clear' }
+  | { kind: 'import'; text: string; summary: BackupSummary };
+
 export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPreparePrint }) => {
-  const { cycles, selectedCycleId, exportDataJson, importDataJson, loadDemoData, clearAllData } =
-    useCycle();
+  const {
+    observations,
+    cycles,
+    selectedCycleId,
+    exportDataJson,
+    importDataJson,
+    loadDemoData,
+    clearAllData,
+  } = useCycle();
   const { t } = useLanguage();
 
   const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
   const [selectedSingleId, setSelectedSingleId] = useState<string>('');
   const [selectedMultiIds, setSelectedMultiIds] = useState<string[]>([]);
+  const [pending, setPending] = useState<PendingAction | null>(null);
+  const [importError, setImportError] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
   // biome-ignore lint/correctness/useExhaustiveDependencies: isOpen resets the selection each time the modal opens
   useEffect(() => {
@@ -104,16 +124,71 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
     onClose();
   };
 
+  const hasData = observations.length > 0;
+
+  // Without data there is nothing to lose, so the action runs at once.
+  const runOrConfirm = (action: PendingAction) => {
+    if (hasData) {
+      setPending(action);
+    } else {
+      runAction(action);
+    }
+  };
+
+  const runAction = (action: PendingAction, mode: ImportMode = 'replace') => {
+    if (action.kind === 'demo') loadDemoData();
+    if (action.kind === 'clear') clearAllData();
+    if (action.kind === 'import') importDataJson(action.text, mode);
+    setPending(null);
+    onClose();
+  };
+
   const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (importDataJson(await file.text())) {
-      alert('Chart data restored successfully!');
-      onClose();
-    } else {
-      alert('Failed to import JSON file. Please check file format.');
-    }
+    const text = await file.text();
+    e.target.value = '';
+    const imported = parseAndValidateObservationsJson(text);
+    setImportError(imported === null);
+    if (imported) runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported) });
   };
+
+  const confirmContent = (action: PendingAction) => {
+    const count = String(observations.length);
+    const c = t.confirmDialog;
+    if (action.kind === 'demo') {
+      return {
+        title: c.demoTitle,
+        messages: [c.demoMessage.replace('{count}', count)],
+        actions: [{ label: c.demoConfirm, onClick: () => runAction(action) }],
+      };
+    }
+    if (action.kind === 'clear') {
+      return {
+        title: c.clearTitle,
+        messages: [c.clearMessage.replace('{count}', count)],
+        actions: [{ label: c.clearConfirm, onClick: () => runAction(action), danger: true }],
+      };
+    }
+    const { summary } = action;
+    const fileMessage =
+      summary.count === 0
+        ? c.importEmpty
+        : c.importSummary
+            .replace('{count}', String(summary.count))
+            .replace('{first}', String(summary.firstDate))
+            .replace('{last}', String(summary.lastDate));
+    return {
+      title: c.importTitle,
+      messages: [fileMessage, c.importChoice.replace('{count}', count)],
+      actions: [
+        { label: c.importMerge, onClick: () => runAction(action, 'merge') },
+        { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
+      ],
+    };
+  };
+
+  const confirmation = pending && confirmContent(pending);
 
   return (
     <div
@@ -270,41 +345,59 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
           <div className="modal-divider" />
 
           <div className="import-restore-section">
-            <label className="btn btn-secondary import-label" style={{ cursor: 'pointer' }}>
+            <button
+              type="button"
+              className="btn btn-secondary"
+              onClick={() => fileInputRef.current?.click()}
+            >
               <FileText size={16} />
               <span>{t.actions.importJson}</span>
-              <input
-                type="file"
-                accept=".json"
-                onChange={handleFileUpload}
-                style={{ display: 'none' }}
-              />
-            </label>
+            </button>
+            <input
+              ref={fileInputRef}
+              type="file"
+              accept=".json"
+              onChange={handleFileUpload}
+              hidden
+            />
 
             <button
+              type="button"
               className="btn btn-secondary"
-              onClick={() => {
-                loadDemoData();
-                onClose();
-              }}
+              onClick={() => runOrConfirm({ kind: 'demo' })}
             >
               {t.actions.loadDemo}
             </button>
 
             <button
+              type="button"
               className="btn btn-danger"
-              onClick={() => {
-                if (confirm('Are you sure you want to clear all chart data?')) {
-                  clearAllData();
-                  onClose();
-                }
-              }}
+              disabled={!hasData}
+              onClick={() => setPending({ kind: 'clear' })}
             >
               {t.actions.clearData}
             </button>
           </div>
+
+          {importError && (
+            <p className="import-error" role="alert">
+              {t.exportModal.importError}
+            </p>
+          )}
         </div>
       </div>
+
+      {confirmation && (
+        <ConfirmDialog
+          title={confirmation.title}
+          actions={confirmation.actions}
+          onCancel={() => setPending(null)}
+        >
+          {confirmation.messages.map(message => (
+            <p key={message}>{message}</p>
+          ))}
+        </ConfirmDialog>
+      )}
     </div>
   );
 };
