@@ -159,4 +159,40 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.reload();
     await expect(peakStat('CD 13 (2026-10-12)')).toBeVisible();
   });
+
+  test('keeps the undo toast usable in the drawer dialog', async ({ page }) => {
+    await openApp(page);
+    await page.getByRole('button', { name: en.actions.exportPdf }).click();
+    await page.getByRole('button', { name: en.actions.loadDemo }).click();
+    const toast = page.getByRole('status').filter({ hasText: en.undoToast.demo });
+    await expect(toast).toBeVisible();
+
+    await page.getByRole('tab', { name: en.tabs.chart }).click();
+    const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
+    const filledCells = chart.getByRole('button', { name: /^Cycle Day / });
+    await chart.getByRole('button', { name: /Date 2026-10-12, / }).click();
+    const drawer = page.getByRole('dialog', { name: 'Edit Observation' });
+    await expect(drawer).toBeVisible();
+
+    // The toast is in the top dialog, so the focus trap of the dialog reaches Undo.
+    const undo = drawer.getByRole('button', { name: en.undoToast.undo });
+    await expect(undo).toBeVisible();
+    // The drawer has about 45 tab stops (the date field has more than one), Undo comes after them.
+    for (let i = 0; i < 100; i++) {
+      await page.keyboard.press('Tab');
+      if (await undo.evaluate(b => b === document.activeElement)) break;
+    }
+    await expect(undo).toBeFocused();
+
+    await undo.click();
+    await expect(toast).toBeHidden();
+    await expect(drawer).toBeFocused();
+    await expect(filledCells).toHaveCount(0);
+
+    await page.keyboard.press('Escape');
+    await expect(drawer).toBeHidden();
+    await expect(filledCells).toHaveCount(0);
+    await expect(toast).toBeHidden();
+    expect(await savedObservations(page)).toBe('[]');
+  });
 });

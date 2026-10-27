@@ -43,9 +43,9 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
   return (
     <>
       {/* Bleeding Selector */}
-      <div className="form-group">
-        <label>{t.labels.bleeding}</label>
-        <div className="button-grid" role="group" aria-label={t.labels.bleeding}>
+      <fieldset className="form-group">
+        <legend>{t.labels.bleeding}</legend>
+        <div className="button-grid">
           {BLEEDING_CODES.map(code => (
             <button
               type="button"
@@ -58,7 +58,7 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Start of New Cycle Toggle (Visible when Bleeding is active) */}
       {bleeding && (
@@ -79,9 +79,9 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
       )}
 
       {/* Mucus Stretch Selector */}
-      <div className="form-group">
-        <label>{t.labels.stretch}</label>
-        <div className="button-grid" role="group" aria-label={t.labels.stretch}>
+      <fieldset className="form-group">
+        <legend>{t.labels.stretch}</legend>
+        <div className="button-grid">
           {STRETCH_CODES.map(code => (
             <button
               type="button"
@@ -94,12 +94,12 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Modifiers Multi-Select */}
-      <div className="form-group">
-        <label>{t.labels.modifiers}</label>
-        <div className="button-grid" role="group" aria-label={t.labels.modifiers}>
+      <fieldset className="form-group">
+        <legend>{t.labels.modifiers}</legend>
+        <div className="button-grid">
           {MODIFIER_CODES.map(mod => (
             <button
               type="button"
@@ -112,12 +112,12 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Frequency Selector */}
-      <div className="form-group">
-        <label>{t.labels.frequency}</label>
-        <div className="button-grid" role="group" aria-label={t.labels.frequency}>
+      <fieldset className="form-group">
+        <legend>{t.labels.frequency}</legend>
+        <div className="button-grid">
           {FREQUENCY_CODES.map(code => (
             <button
               type="button"
@@ -130,12 +130,12 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
 
       {/* Symptoms Multi-Select */}
-      <div className="form-group">
-        <label>{t.labels.symptoms}</label>
-        <div className="button-grid" role="group" aria-label={t.labels.symptoms}>
+      <fieldset className="form-group">
+        <legend>{t.labels.symptoms}</legend>
+        <div className="button-grid">
           {SYMPTOM_CODES.map(sym => (
             <button
               type="button"
@@ -148,7 +148,7 @@ export const ObservationCodeSelector: React.FC<ObservationCodeSelectorProps> = (
             </button>
           ))}
         </div>
-      </div>
+      </fieldset>
     </>
   );
 };

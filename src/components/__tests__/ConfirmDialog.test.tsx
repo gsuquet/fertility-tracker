@@ -45,6 +45,9 @@ describe('ConfirmDialog', () => {
     renderDialog();
     const dialog = screen.getByRole('dialog', { name: 'Replace the data?' });
     expect(dialog).toHaveAttribute('aria-modal', 'true');
+    // It uses the shared native <dialog> primitive
+    expect(dialog.tagName).toBe('DIALOG');
+    expect(dialog).toHaveClass('modal-dialog', 'modal-overlay', 'confirm-overlay');
     expect(dialog).toHaveAccessibleDescription('The current observations go away.');
     expect(screen.getByRole('button', { name: en.actions.cancel })).toHaveFocus();
   });
@@ -68,7 +71,8 @@ describe('ConfirmDialog', () => {
 
     fireEvent.click(screen.getByRole('button', { name: en.actions.cancel }));
     fireEvent.keyDown(dialog, { key: 'Escape' });
-    fireEvent.click(dialog.parentElement as HTMLElement);
+    // The native <dialog> is the backdrop: a click on it outside the panel cancels
+    fireEvent.click(dialog);
     expect(props.onCancel).toHaveBeenCalledTimes(3);
     // Escape stays in the dialog, so the dialog under it does not close too
     expect(outerKeyDown).toHaveBeenCalledOnce();

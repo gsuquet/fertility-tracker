@@ -7,14 +7,6 @@ import { formatDayOfWeek } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 import { ChartCellPopover } from './ChartCellPopover';
 
-/** Opens a cell with the keyboard like a button */
-const onActivateKey = (open: () => void) => (e: React.KeyboardEvent) => {
-  if (e.key === 'Enter' || e.key === ' ') {
-    e.preventDefault();
-    open();
-  }
-};
-
 /** Removes the symptom codes, which the cell shows in its own tag */
 const cleanCode = (codeString: string) =>
   codeString
@@ -42,7 +34,8 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
   const code = cleanCode(obs.codeString);
 
   return (
-    <div
+    <button
+      type="button"
       className={`chart-cell filled-cell paper-cell ${obs.isPeakDay ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''}`}
       aria-current={isToday ? 'date' : undefined}
       onClick={open}
@@ -50,10 +43,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
       onBlur={() => setIsHovered(false)}
-      tabIndex={0}
-      role="button"
       aria-label={`Cycle Day ${obs.cycleDay}, Date ${obs.date}, Stamp ${obs.stamp}, Code ${obs.codeString || 'None'}${isToday ? ', Today' : ''}`}
-      onKeyDown={onActivateKey(open)}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}
@@ -89,7 +79,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
       </div>
 
       {isHovered && <ChartCellPopover obs={obs} />}
-    </div>
+    </button>
   );
 };
 
@@ -109,14 +99,12 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
 }) => {
   const open = () => onOpen(dateStr, dayNum);
   return (
-    <div
+    <button
+      type="button"
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
       aria-current={isToday ? 'date' : undefined}
       onClick={open}
-      tabIndex={0}
-      role="button"
       aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}. Click to add observation.`}
-      onKeyDown={onActivateKey(open)}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}
@@ -127,7 +115,7 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
       <div className="cell-placeholder">
         <Plus size={14} className="add-icon" />
       </div>
-    </div>
+    </button>
   );
 };
 
@@ -149,13 +137,11 @@ export const ChartBlankCell: React.FC<ChartBlankCellProps> = ({
 }) => {
   const open = () => onOpen(dateStr, dayNum);
   return (
-    <div
+    <button
+      type="button"
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
       onClick={open}
-      tabIndex={0}
-      role="button"
       aria-label={`Day ${dayNum} (${dateStr}) - Empty${isToday ? ', Today' : ''}`}
-      onKeyDown={onActivateKey(open)}
     >
       <div className="cell-header">
         {isToday && <TodayPill />}
@@ -166,6 +152,6 @@ export const ChartBlankCell: React.FC<ChartBlankCellProps> = ({
         <Plus size={16} className="add-icon" />
         <span className="add-label">{addLabel}</span>
       </div>
-    </div>
+    </button>
   );
 };

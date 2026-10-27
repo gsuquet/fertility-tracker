@@ -45,15 +45,6 @@
         "noUnusedVariables": "error",
         "noUnusedImports": "error",
         "useExhaustiveDependencies": "error"
-      },
-      "a11y": {
-        "useKeyWithClickEvents": "off",
-        "noStaticElementInteractions": "off",
-        "useButtonType": "off",
-        "noSvgWithoutTitle": "off",
-        "useSemanticElements": "off",
-        "noNoninteractiveElementToInteractiveRole": "off",
-        "noLabelWithoutControl": "off"
       }
     }
   },

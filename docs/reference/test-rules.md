@@ -70,11 +70,11 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                     |
 | Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                          |
 
-| Test file                   | Flows                                                                                                                                                                                          |
-| --------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view, manual Peak Day. |
-| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                                               |
-| `e2e/resilience.spec.ts`    | Saved data that is not JSON, a list with one record that is not valid, a save that fails, and a reload without a network.                                                                      |
+| Test file                   | Flows                                                                                                                                                                                                                               |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view, manual Peak Day, the undo toast in the drawer dialog. |
+| `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                                                                                    |
+| `e2e/resilience.spec.ts`    | Saved data that is not JSON, a list with one record that is not valid, a save that fails, and a reload without a network.                                                                                                           |
 
 | Helper              | File              | Use                                                               |
 | ------------------- | ----------------- | ----------------------------------------------------------------- |
