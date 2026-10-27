@@ -28,8 +28,8 @@ interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   onOpenExport: () => void;
-  onOpenVersion?: () => void;
-  onOpenWelcome?: () => void;
+  onOpenVersion: () => void;
+  onOpenWelcome: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -152,27 +152,23 @@ export const Header: React.FC<HeaderProps> = ({
           <Download size={18} />
         </button>
 
-        {onOpenWelcome && (
-          <button
-            className="icon-button desktop-only-action"
-            onClick={onOpenWelcome}
-            title={t.welcomeModal.title}
-            aria-label={t.welcomeModal.title}
-          >
-            <BookOpen size={18} />
-          </button>
-        )}
+        <button
+          className="icon-button desktop-only-action"
+          onClick={onOpenWelcome}
+          title={t.welcomeModal.title}
+          aria-label={t.welcomeModal.title}
+        >
+          <BookOpen size={18} />
+        </button>
 
-        {onOpenVersion && (
-          <button
-            className="icon-button desktop-only-action"
-            onClick={onOpenVersion}
-            title={t.versionTracker.title}
-            aria-label={t.versionTracker.title}
-          >
-            <Info size={18} />
-          </button>
-        )}
+        <button
+          className="icon-button desktop-only-action"
+          onClick={onOpenVersion}
+          title={t.versionTracker.title}
+          aria-label={t.versionTracker.title}
+        >
+          <Info size={18} />
+        </button>
 
         <button
           className="lang-toggle-btn desktop-only-action"
@@ -207,7 +203,7 @@ export const Header: React.FC<HeaderProps> = ({
       </div>
 
       {/* Mobile Actions Bottom Sheet Modal via Portal */}
-      {isMoreMenuOpen && typeof document !== 'undefined'
+      {isMoreMenuOpen
         ? ReactDOM.createPortal(
             <div
               className="modal-overlay mobile-menu-overlay"
@@ -252,47 +248,43 @@ export const Header: React.FC<HeaderProps> = ({
                   </button>
 
                   {/* Welcome & Guide Option */}
-                  {onOpenWelcome && (
-                    <button
-                      type="button"
-                      className="sheet-action-item"
-                      onClick={() => {
-                        setIsMoreMenuOpen(false);
-                        onOpenWelcome();
-                      }}
-                    >
-                      <div className="sheet-action-icon guide-icon-bg">
-                        <BookOpen size={18} />
-                      </div>
-                      <div className="sheet-action-content">
-                        <strong>{t.welcomeModal.title}</strong>
-                        <span>{t.menu.guideHint}</span>
-                      </div>
-                    </button>
-                  )}
+                  <button
+                    type="button"
+                    className="sheet-action-item"
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      onOpenWelcome();
+                    }}
+                  >
+                    <div className="sheet-action-icon guide-icon-bg">
+                      <BookOpen size={18} />
+                    </div>
+                    <div className="sheet-action-content">
+                      <strong>{t.welcomeModal.title}</strong>
+                      <span>{t.menu.guideHint}</span>
+                    </div>
+                  </button>
 
                   {/* Version & About Option */}
-                  {onOpenVersion && (
-                    <button
-                      type="button"
-                      className="sheet-action-item"
-                      onClick={() => {
-                        setIsMoreMenuOpen(false);
-                        onOpenVersion();
-                      }}
-                    >
-                      <div className="sheet-action-icon info-icon-bg">
-                        <Info size={18} />
+                  <button
+                    type="button"
+                    className="sheet-action-item"
+                    onClick={() => {
+                      setIsMoreMenuOpen(false);
+                      onOpenVersion();
+                    }}
+                  >
+                    <div className="sheet-action-icon info-icon-bg">
+                      <Info size={18} />
+                    </div>
+                    <div className="sheet-action-content">
+                      <div className="sheet-action-title-row">
+                        <strong>{t.versionTracker.title}</strong>
+                        <span className="sheet-version-badge">v{currentVersion}</span>
                       </div>
-                      <div className="sheet-action-content">
-                        <div className="sheet-action-title-row">
-                          <strong>{t.versionTracker.title}</strong>
-                          <span className="sheet-version-badge">v{currentVersion}</span>
-                        </div>
-                        <span>{t.menu.versionHint}</span>
-                      </div>
-                    </button>
-                  )}
+                      <span>{t.menu.versionHint}</span>
+                    </div>
+                  </button>
 
                   <div className="sheet-divider" />
 
