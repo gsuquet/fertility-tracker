@@ -12,6 +12,7 @@ fertility-tracker/
 │   └── tasks/                   # mise tasks, one shell file for each task
 ├── docs/                        # Documentation (Diátaxis) and decision records
 ├── public/                      # Static files: manifest, service worker, headers
+├── scripts/commits/             # Commit message checker and its tests
 ├── scripts/docs/                # Docs checker and its tests
 ├── src/
 │   ├── __tests__/               # Application flow tests

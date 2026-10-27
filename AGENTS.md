@@ -20,3 +20,9 @@ These rules apply to each change in this repository. They apply to people too.
 - Pin each tool and each dependency to an exact version.
 - Put each task in a shell file in `.mise/tasks/`.
 - CI runs on pull requests only. It does not run on `main`.
+
+## Commits
+
+- Write each commit message and each pull request title in the [Conventional Commits](docs/reference/commit-messages.md) format: `type(scope)!: description`.
+- Install the `commit-msg` hook with `mise run hooks`. It checks each commit message.
+- A squash merge uses the pull request title as the commit message. CI checks the title.

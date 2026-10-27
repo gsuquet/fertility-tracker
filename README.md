@@ -32,7 +32,7 @@ git clone https://github.com/gsuquet/fertility-tracker.git
 cd fertility-tracker
 mise install          # Node.js 26.12.1, npm 11.20.0, pre-commit, gitleaks
 mise run install      # npm ci
-mise run hooks        # Git pre-commit hooks
+mise run hooks        # Git pre-commit and commit-msg hooks
 mise run dev          # http://localhost:5173
 ```
 
@@ -52,7 +52,8 @@ All the documentation is in [docs/](docs/README.md). It has tutorials, how-to gu
    mise run validate
    ```
 
-6. Open a pull request to `main`. The CI workflow must pass.
+6. Commit with a [Conventional Commits](docs/reference/commit-messages.md) message.
+7. Open a pull request to `main`, with a title in the same format. The CI workflow must pass.
 
 Report a problem or ask for a feature in [GitHub Issues](https://github.com/gsuquet/fertility-tracker/issues).
 
