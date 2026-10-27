@@ -75,9 +75,50 @@ describe('dataValidator Domain Engine', () => {
       modifiers: ['K', 'L'],
       frequency: 'X3',
       symptoms: ['AP'],
-      codeString: '10KLX3 custom',
+      codeString: '10KLX3 custom AP',
       stamp: 'WHITE_BABY',
     });
+  });
+
+  it('adds the symptoms to a stored code string that lacks them', () => {
+    const result = validateObservation({
+      date: '2026-09-05',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      frequency: 'X3',
+      intercourse: true,
+      symptoms: ['AP'],
+      codeString: '10KLX3 I',
+    });
+    expect(result?.codeString).toBe('10KLX3 I AP');
+    expect(result?.symptoms).toEqual(['AP']);
+  });
+
+  it('rebuilds a stored lone B or L appearance code so that it is not read as bleeding', () => {
+    expect(
+      validateObservation({ date: '2026-09-08', modifiers: ['L'], codeString: 'L' })?.codeString
+    ).toBe('-L');
+    expect(
+      validateObservation({ date: '2026-09-09', modifiers: ['B'], codeString: ' b ' })?.codeString
+    ).toBe('-B');
+    expect(
+      validateObservation({ date: '2026-09-10', bleeding: 'L', codeString: 'L' })?.codeString
+    ).toBe('L');
+  });
+
+  it('keeps each symptom code once', () => {
+    const result = validateObservation({
+      date: '2026-09-07',
+      stretch: '0',
+      symptoms: ['AP', 'AP', 'LAP'],
+    });
+    expect(result?.symptoms).toEqual(['AP', 'LAP']);
+    expect(result?.codeString).toBe('0 AP LAP');
+  });
+
+  it('makes a code string with the symptoms when it is missing', () => {
+    const result = validateObservation({ date: '2026-09-06', stretch: '0', symptoms: ['LAP'] });
+    expect(result?.codeString).toBe('0 LAP');
   });
 
   it('replaces a blank id and a blank code string', () => {

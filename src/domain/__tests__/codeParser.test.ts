@@ -1,6 +1,7 @@
 import { describe, it, expect } from 'vitest';
-import { formatCodeString, parseCodeString } from '../codeParser';
-import { STRETCH_CODES } from '../../types/crms';
+import { appendMissingSymptoms, formatCodeString, parseCodeString } from '../codeParser';
+import { BLEEDING_CODES, FREQUENCY_CODES, MODIFIER_CODES, STRETCH_CODES } from '../../types/crms';
+import type { MucusModifier, ObservationInput, SymptomCode } from '../../types/crms';
 
 describe('formatCodeString', () => {
   it('returns an empty string when no field is set', () => {
@@ -19,8 +20,130 @@ describe('formatCodeString', () => {
     expect(formatCodeString({ stretch: '0', modifiers: [] })).toBe('0');
   });
 
-  it('adds the intercourse marker last', () => {
+  it('adds the intercourse marker after the mucus token', () => {
     expect(formatCodeString({ bleeding: 'L', stretch: '2', intercourse: true })).toBe('L 2 I');
+  });
+
+  it('adds the symptom codes last', () => {
+    expect(
+      formatCodeString({
+        stretch: '10',
+        modifiers: ['K', 'L'],
+        frequency: 'X3',
+        intercourse: true,
+        symptoms: ['AP'],
+      })
+    ).toBe('10KLX3 I AP');
+    expect(formatCodeString({ symptoms: ['RAP', 'LAP'] })).toBe('RAP LAP');
+  });
+});
+
+describe('code string round trip', () => {
+  const cases: ObservationInput[] = [
+    { stretch: '10', modifiers: ['K', 'L'], frequency: 'X3', intercourse: true, symptoms: ['AP'] },
+    { bleeding: 'M', frequency: 'AD', symptoms: ['RAP', 'LAP'] },
+    { stretch: '0', frequency: 'AD', symptoms: ['LAP'] },
+    { symptoms: ['AP'] },
+  ];
+
+  it.each(cases)('keeps every field of %o', obs => {
+    const parsed = parseCodeString(formatCodeString(obs));
+    expect(parsed).toMatchObject({
+      bleeding: obs.bleeding,
+      stretch: obs.stretch,
+      modifiers: obs.modifiers ?? [],
+      frequency: obs.frequency,
+      symptoms: obs.symptoms ?? [],
+      intercourse: obs.intercourse ?? false,
+    });
+    expect(parsed.formattedCode).toBe(formatCodeString(obs));
+  });
+
+  it('keeps the brown bleeding code B apart from the brown appearance code B', () => {
+    expect(parseCodeString(formatCodeString({ bleeding: 'B' }))).toMatchObject({
+      bleeding: 'B',
+      modifiers: [],
+    });
+    expect(parseCodeString('B 10KLX3 I AP')).toMatchObject({
+      bleeding: 'B',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+    });
+    expect(parseCodeString('10B')).toMatchObject({ bleeding: undefined, modifiers: ['B'] });
+  });
+
+  it('writes a lone appearance code that is also a bleeding code with a dash', () => {
+    expect(formatCodeString({ modifiers: ['L'] })).toBe('-L');
+    expect(formatCodeString({ modifiers: ['B'] })).toBe('-B');
+    expect(formatCodeString({ bleeding: 'H', modifiers: ['L'] })).toBe('H -L');
+    expect(formatCodeString({ modifiers: ['L'], frequency: 'X1' })).toBe('LX1');
+    expect(parseCodeString('-L')).toMatchObject({ bleeding: undefined, modifiers: ['L'] });
+    expect(parseCodeString('L')).toMatchObject({ bleeding: 'L', modifiers: [] });
+  });
+
+  it('keeps every field of each combination of codes', () => {
+    const bleedings = [undefined, ...BLEEDING_CODES];
+    const stretches = [undefined, ...STRETCH_CODES];
+    const allModifiers: readonly MucusModifier[] = MODIFIER_CODES;
+    const modifierSets = Array.from({ length: 1 << allModifiers.length }, (_, mask) =>
+      allModifiers.filter((_, i) => mask & (1 << i))
+    );
+    const frequencies = [undefined, ...FREQUENCY_CODES];
+    const symptomSets: SymptomCode[][] = [[], ['AP'], ['RAP', 'LAP']];
+    const failures: string[] = [];
+    for (const bleeding of bleedings)
+      for (const stretch of stretches)
+        for (const modifiers of modifierSets)
+          for (const frequency of frequencies)
+            for (const intercourse of [false, true])
+              for (const symptoms of symptomSets) {
+                const code = formatCodeString({
+                  bleeding,
+                  stretch,
+                  modifiers,
+                  frequency,
+                  intercourse,
+                  symptoms,
+                });
+                const p = parseCodeString(code);
+                if (
+                  p.bleeding !== bleeding ||
+                  p.stretch !== stretch ||
+                  p.modifiers.join() !== modifiers.join() ||
+                  p.frequency !== frequency ||
+                  p.intercourse !== intercourse ||
+                  p.symptoms.join() !== symptoms.join() ||
+                  p.formattedCode !== code
+                ) {
+                  failures.push(code);
+                }
+              }
+    expect(failures.slice(0, 10)).toEqual([]);
+    // About 507k cases: this test needs more than the default 5 s under coverage.
+  }, 60_000);
+
+  it('shows the symptom of the direct code 10KLX3 I AP', () => {
+    expect(parseCodeString('10klx3 i ap').formattedCode).toBe('10KLX3 I AP');
+  });
+});
+
+describe('appendMissingSymptoms', () => {
+  it('appends each symptom that the stored code does not show', () => {
+    expect(appendMissingSymptoms('10KLX3 I', ['AP'])).toBe('10KLX3 I AP');
+    expect(appendMissingSymptoms('0AD RAP', ['RAP', 'LAP'])).toBe('0AD RAP LAP');
+  });
+
+  it('keeps a code that already shows all the symptoms', () => {
+    expect(appendMissingSymptoms('10KLX3 I AP', ['AP'])).toBe('10KLX3 I AP');
+    expect(appendMissingSymptoms('0AD', [])).toBe('0AD');
+  });
+
+  it('compares the symptom codes without regard to case', () => {
+    expect(appendMissingSymptoms('10kl ap', ['AP'])).toBe('10kl ap');
+  });
+
+  it('does not match a symptom code inside another token', () => {
+    expect(appendMissingSymptoms('0 RAP', ['AP'])).toBe('0 RAP AP');
   });
 });
 

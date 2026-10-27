@@ -8,7 +8,7 @@ import {
 } from '../types/crms';
 import type { Observation, MucusModifier, SymptomCode } from '../types/crms';
 import { calculateStamp } from './stampCalculator';
-import { formatCodeString } from './codeParser';
+import { appendMissingSymptoms, formatCodeString } from './codeParser';
 
 const DATE_REGEX = /^\d{4}-\d{2}-\d{2}$/;
 
@@ -37,7 +37,7 @@ export function validateObservation(raw: unknown): Observation | null {
   const frequency = isCodeIn(FREQUENCY_CODES, obj.frequency) ? obj.frequency : undefined;
 
   const symptoms: SymptomCode[] = Array.isArray(obj.symptoms)
-    ? obj.symptoms.filter((s: unknown) => isCodeIn(SYMPTOM_CODES, s))
+    ? [...new Set(obj.symptoms.filter((s: unknown) => isCodeIn(SYMPTOM_CODES, s)))]
     : [];
 
   const intercourse: boolean = Boolean(obj.intercourse);
@@ -54,9 +54,14 @@ export function validateObservation(raw: unknown): Observation | null {
       : `obs_${obj.date}_${Date.now()}`;
 
   const stamp = calculateStamp(bleeding, stretch, modifiers);
+  const storedCode = typeof obj.codeString === 'string' ? obj.codeString.trim() : '';
+  // A stored lone 'B' or 'L' without bleeding is an appearance code. Rebuild it as '-B' or '-L'.
+  const upperCode = storedCode.toUpperCase();
+  const isLoneAppearanceCode =
+    !bleeding && isCodeIn(BLEEDING_CODES, upperCode) && isCodeIn(MODIFIER_CODES, upperCode);
   const codeString =
-    typeof obj.codeString === 'string' && obj.codeString.trim().length > 0
-      ? obj.codeString
+    typeof obj.codeString === 'string' && storedCode.length > 0 && !isLoneAppearanceCode
+      ? appendMissingSymptoms(obj.codeString, symptoms)
       : formatCodeString({
           bleeding,
           stretch,
