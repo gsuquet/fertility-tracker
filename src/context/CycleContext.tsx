@@ -16,7 +16,6 @@ export interface CycleDataContextType {
   setSelectedCycleId: (id: string) => void;
   saveObservation: (obsData: ObservationInput) => void;
   deleteObservation: (id: string) => void;
-  toggleManualPeak: (date: string) => void;
   exportDataJson: () => string;
   importDataJson: (jsonStr: string) => boolean;
   clearAllData: () => void;
@@ -45,6 +44,18 @@ const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
+};
+
+/** Clears the manual Peak Day on the other days of the cycle that contains `date`. */
+const keepOneManualPeak = (list: Observation[], date: string): Observation[] => {
+  const cycleDates = new Set(
+    groupObservationsIntoCycles(list)
+      .find(c => c.observations.some(o => o.date === date))
+      ?.observations.map(o => o.date)
+  );
+  return list.map(obs =>
+    obs.date !== date && cycleDates.has(obs.date) ? { ...obs, isManualPeak: false } : obs
+  );
 };
 
 /**
@@ -116,7 +127,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
         updatedList.push(newObs);
       }
 
-      return reprocessObservations(updatedList);
+      return reprocessObservations(
+        newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
+      );
     });
   }, []);
 
@@ -124,24 +137,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setObservations(prev => {
       const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
       return reprocessObservations(filtered);
-    });
-  }, []);
-
-  const toggleManualPeak = useCallback((date: string) => {
-    setObservations(prev => {
-      // Only one manual Peak Day per cycle: clear the other days of the toggled cycle only.
-      const cycleDates = new Set(
-        groupObservationsIntoCycles(prev)
-          .find(c => c.observations.some(o => o.date === date))
-          ?.observations.map(o => o.date)
-      );
-      const updated = prev.map(obs => {
-        if (obs.date === date) {
-          return { ...obs, isManualPeak: !obs.isManualPeak };
-        }
-        return cycleDates.has(obs.date) ? { ...obs, isManualPeak: false } : obs;
-      });
-      return reprocessObservations(updated);
     });
   }, []);
 
@@ -188,7 +183,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       setSelectedCycleId,
       saveObservation,
       deleteObservation,
-      toggleManualPeak,
       exportDataJson,
       importDataJson,
       clearAllData,
@@ -202,7 +196,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       selectedCycleId,
       saveObservation,
       deleteObservation,
-      toggleManualPeak,
       exportDataJson,
       importDataJson,
       clearAllData,

@@ -43,17 +43,16 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     date: '2026-10-27',
     title: 'Safer Data and Peak Day Corrections',
     titleFr: 'Données plus sûres et corrections du Jour Sommet',
-    tagline: 'Peak Days stay in their cycle, and unreadable data is kept for recovery',
-    taglineFr:
-      'Les Jours Sommet restent dans leur cycle, et les données illisibles sont gardées pour récupération',
+    tagline: 'One Peak Day per cycle, and unreadable data is kept for recovery',
+    taglineFr: 'Un Jour Sommet par cycle, et les données illisibles sont gardées pour récupération',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'Setting a Peak Day no longer removes the Peak Days that you set in other cycles',
+      'When you set a Peak Day on a different day, it replaces the Peak Day that you set before in the same cycle. The Peak Days of other cycles do not change',
       'Saved data that cannot be read is now kept, and you can download it as a file',
       'The export dialog now says that the JSON backup file is not encrypted',
     ],
     highlightsFr: [
-      'Définir un Jour Sommet ne supprime plus les Jours Sommet définis dans les autres cycles',
+      'Quand vous définissez un Jour Sommet sur un autre jour, il remplace le Jour Sommet défini avant dans le même cycle. Les Jours Sommet des autres cycles ne changent pas',
       'Les données enregistrées illisibles sont maintenant gardées et peuvent être téléchargées dans un fichier',
       'La fenêtre d’export indique maintenant que le fichier de sauvegarde JSON n’est pas chiffré',
     ],

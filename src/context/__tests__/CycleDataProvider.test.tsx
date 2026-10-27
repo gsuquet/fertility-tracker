@@ -110,21 +110,7 @@ describe('CycleDataProvider', () => {
     });
   });
 
-  it('moves the manual Peak Day to the toggled date and clears it on a second toggle', () => {
-    const { result } = renderData();
-    act(() =>
-      result.current.saveObservation({ date: '2026-09-01', stretch: '10', modifiers: ['K'] })
-    );
-    act(() =>
-      result.current.saveObservation({ date: '2026-09-02', stretch: '10', modifiers: ['K'] })
-    );
-    act(() => result.current.toggleManualPeak('2026-09-01'));
-    expect(result.current.observations.map(o => o.isManualPeak)).toEqual([true, false]);
-    act(() => result.current.toggleManualPeak('2026-09-01'));
-    expect(result.current.observations.map(o => o.isManualPeak)).toEqual([false, false]);
-  });
-
-  it('keeps the manual Peak Day of another cycle when a Peak Day is toggled', () => {
+  it('keeps one manual Peak Day per cycle when a Peak Day is saved', () => {
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([
@@ -137,19 +123,60 @@ describe('CycleDataProvider', () => {
         }),
         makeObservation({ date: '2026-06-29', bleeding: 'H' }),
         makeObservation({ date: '2026-07-08', stretch: '10', modifiers: ['K'] }),
-        makeObservation({ date: '2026-07-09', stretch: '10', modifiers: ['K'] }),
       ])
     );
     const { result } = renderData();
-    act(() => result.current.toggleManualPeak('2026-07-08'));
+    const manualPeaks = () =>
+      result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
+    const peakDays = () => result.current.observations.filter(o => o.isPeakDay).map(o => o.date);
+    act(() =>
+      result.current.saveObservation({
+        date: '2026-07-08',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    expect(manualPeaks()).toEqual(['2026-06-10', '2026-07-08']);
+    act(() =>
+      result.current.saveObservation({
+        date: '2026-07-10',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
+    expect(manualPeaks()).toEqual(['2026-06-10', '2026-07-10']);
+    expect(peakDays()).toEqual(['2026-06-10', '2026-07-10']);
+    act(() => result.current.saveObservation({ date: '2026-07-10', stretch: '0' }));
+    expect(manualPeaks()).toEqual(['2026-06-10']);
+  });
+
+  it('clears the manual Peak Day of the cycle that a saved day joins', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([
+        makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+        makeObservation({
+          date: '2026-06-10',
+          stretch: '10',
+          modifiers: ['K'],
+          isManualPeak: true,
+        }),
+        makeObservation({ date: '2026-06-29', bleeding: 'H' }),
+      ])
+    );
+    const { result } = renderData();
+    act(() =>
+      result.current.saveObservation({
+        date: '2026-06-12',
+        stretch: '10',
+        modifiers: ['K'],
+        isManualPeak: true,
+      })
+    );
     const peaks = result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
-    expect(peaks).toEqual(['2026-06-10', '2026-07-08']);
-    act(() => result.current.toggleManualPeak('2026-07-09'));
-    const movedPeaks = result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
-    expect(movedPeaks).toEqual(['2026-06-10', '2026-07-09']);
-    act(() => result.current.toggleManualPeak('2026-08-15'));
-    const unchanged = result.current.observations.filter(o => o.isManualPeak).map(o => o.date);
-    expect(unchanged).toEqual(['2026-06-10', '2026-07-09']);
+    expect(peaks).toEqual(['2026-06-12']);
   });
 
   it('deletes an observation by id', () => {
