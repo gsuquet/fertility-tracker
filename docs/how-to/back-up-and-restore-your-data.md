@@ -18,9 +18,8 @@ The file name has the date, for example `fertility-tracker-data-backup-2026-10-2
 1. Click **Practitioner PDF / PNG**.
 2. Click **Restore Data (JSON)**.
 3. Select the backup file.
-4. Read the message:
-   - If the message is "Chart data restored successfully!", the restore is complete.
-   - If the message is "Failed to import JSON file", the file is not a valid backup. Select a different file.
+4. If the dialog shows "This file is not a valid backup", select a different file.
+5. If you have observations, the **Restore this backup?** dialog opens. Click **Replace**.
 
 ## Result
 

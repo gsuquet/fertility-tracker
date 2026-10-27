@@ -189,6 +189,19 @@ export const en = {
     pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
     jsonDescription:
       'Download all your observations as a JSON file. The file is not encrypted: keep it private.',
+    importError:
+      'This file is not a valid backup. Select a JSON backup file from Fertility Tracker.',
+  },
+  confirmDialog: {
+    demoTitle: 'Replace your data with the demo?',
+    demoMessage: 'The demo cycles replace the {count} observations in this browser.',
+    demoConfirm: 'Load the demo',
+    importTitle: 'Restore this backup?',
+    importMessage: 'The backup replaces the {count} observations in this browser.',
+    importReplace: 'Replace',
+    clearTitle: 'Delete all chart data?',
+    clearMessage: 'This deletes the {count} observations in this browser.',
+    clearConfirm: 'Delete all data',
   },
   storageRecovery: {
     message:

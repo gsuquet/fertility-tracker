@@ -7,8 +7,8 @@ Use this procedure to remove all your observations from this browser. For exampl
 ## Procedure
 
 1. Click **Practitioner PDF / PNG**. On a phone, click the menu button and then **Practitioner PDF / PNG**.
-2. Click **Clear Data / Reset**. The browser asks you to confirm.
-3. Click **OK**.
+2. Click **Clear Data / Reset**. The **Delete all chart data?** dialog opens.
+3. Click **Delete all data**.
 
 ## Result
 

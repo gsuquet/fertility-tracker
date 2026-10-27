@@ -400,6 +400,12 @@ Interactive slide-over drawer for entering and editing observations with two syn
 - **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
   - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
   - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
+- **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
+  - It renders in a portal over the export dialog with `role="dialog"`, `aria-modal="true"`, `aria-labelledby` (its title) and `aria-describedby` (its message).
+  - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. When it closes, it moves the focus back to the element that opened it.
+  - All its text is translated (`confirmDialog.*`, `actions.cancel`).
+  - **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist. When no observations exist, **Load Demo Cycle** and **Restore Data (JSON)** act at once, and **Clear Data / Reset** is disabled.
+  - **Restore Data (JSON)** is a button that opens a hidden file input, so the keyboard can reach it. A file that is not a valid backup shows the translated error `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
 - **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
 - **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
   - Day of week display is omitted from chart cells to conserve horizontal and vertical space.

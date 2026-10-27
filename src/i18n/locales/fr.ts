@@ -191,6 +191,19 @@ export const fr: TranslationSchema = {
     pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
     jsonDescription:
       "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
+    importError:
+      "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde JSON de Fertility Tracker.",
+  },
+  confirmDialog: {
+    demoTitle: 'Remplacer vos données par la démo ?',
+    demoMessage: 'Les cycles de démo remplacent les {count} observations de ce navigateur.',
+    demoConfirm: 'Charger la démo',
+    importTitle: 'Restaurer cette sauvegarde ?',
+    importMessage: 'La sauvegarde remplace les {count} observations de ce navigateur.',
+    importReplace: 'Remplacer',
+    clearTitle: 'Supprimer toutes les données du graphique ?',
+    clearMessage: 'Cette action supprime les {count} observations de ce navigateur.',
+    clearConfirm: 'Tout supprimer',
   },
   storageRecovery: {
     message:

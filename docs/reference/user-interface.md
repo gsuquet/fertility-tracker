@@ -48,15 +48,29 @@ The **Today** page and the observation drawer have the same fields.
 
 ## Export and backup dialog
 
-| Button                  | Action                                                     |
-| ----------------------- | ---------------------------------------------------------- |
-| **Single Cycle**        | Prints one cycle.                                          |
-| **Multiple Cycles**     | Prints the selected cycles.                                |
-| **Print / Save as PDF** | Opens the print dialog of the browser.                     |
-| **Backup Data (JSON)**  | Downloads all observations in a JSON file.                 |
-| **Restore Data (JSON)** | Replaces all observations with the content of a JSON file. |
-| **Load Demo Cycle**     | Replaces all observations with two demo cycles.            |
-| **Clear Data / Reset**  | Deletes all observations after a confirmation.             |
+| Button                  | Action                                                                                       |
+| ----------------------- | -------------------------------------------------------------------------------------------- |
+| **Single Cycle**        | Prints one cycle.                                                                            |
+| **Multiple Cycles**     | Prints the selected cycles.                                                                  |
+| **Print / Save as PDF** | Opens the print dialog of the browser.                                                       |
+| **Backup Data (JSON)**  | Downloads all observations in a JSON file.                                                   |
+| **Restore Data (JSON)** | Replaces all observations with the content of a JSON file. Asks first if observations exist. |
+| **Load Demo Cycle**     | Replaces all observations with two demo cycles. Asks first if observations exist.            |
+| **Clear Data / Reset**  | Deletes all observations after a confirmation. It is disabled when no observations exist.    |
+
+If the file is not a valid backup, the dialog shows an error. The observations do not change.
+
+## Confirmation dialog
+
+The confirmation dialog opens over the export dialog before an action replaces or deletes observations. The focus starts on **Cancel**.
+
+| Dialog                               | Opens from              | Button that continues |
+| ------------------------------------ | ----------------------- | --------------------- |
+| **Restore this backup?**             | **Restore Data (JSON)** | **Replace**           |
+| **Replace your data with the demo?** | **Load Demo Cycle**     | **Load the demo**     |
+| **Delete all chart data?**           | **Clear Data / Reset**  | **Delete all data**   |
+
+**Cancel**, the `Escape` key and a click outside the dialog close it. The observations do not change.
 
 ## Unreadable data notice
 
