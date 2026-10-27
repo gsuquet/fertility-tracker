@@ -445,6 +445,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
 - **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
+- **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`. `useCycleData()` exposes the copied text as `recoveryData` (or `null`) and `dismissRecovery()`, which deletes the copy.
+  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. **Delete the copy** calls `dismissRecovery()`.
 - **Automatic Reprocessing:** Any modification (addition, update, deletion, manual peak toggle) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 

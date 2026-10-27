@@ -5,6 +5,7 @@ import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
 
 const STORAGE_KEY = 'fertility_care_observations';
+const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CycleProvider>{children}</CycleProvider>
 );
@@ -38,6 +39,33 @@ describe('CycleDataProvider', () => {
     const { result } = renderData();
     expect(result.current.observations).toEqual([]);
     expect(result.current.selectedCycleId).toBe('all');
+  });
+
+  it('copies unreadable stored data to the recovery key before it saves', () => {
+    localStorage.setItem(STORAGE_KEY, '[{"date": "2026-06-01"');
+    const { result } = renderData();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
+    expect(result.current.recoveryData).toBe('[{"date": "2026-06-01"');
+    act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+    expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
+  });
+
+  it('copies stored data that is not an array and deletes the copy on dismiss', () => {
+    const raw = JSON.stringify({ date: '2026-06-01' });
+    localStorage.setItem(STORAGE_KEY, raw);
+    const { result } = renderData();
+    expect(result.current.recoveryData).toBe(raw);
+    act(() => result.current.dismissRecovery());
+    expect(result.current.recoveryData).toBeNull();
+    expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
+  });
+
+  it('keeps the recovery copy from an earlier session and has none for valid data', () => {
+    localStorage.setItem(RECOVERY_KEY, 'old text');
+    expect(renderData().result.current.recoveryData).toBe('old text');
+    localStorage.clear();
+    localStorage.setItem(STORAGE_KEY, '[]');
+    expect(renderData().result.current.recoveryData).toBeNull();
   });
 
   it('saves today when no date is given and fills default fields', () => {

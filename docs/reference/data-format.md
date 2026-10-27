@@ -6,14 +6,17 @@ This page gives the format of the data that the application keeps in the browser
 
 The application uses `localStorage`. It sends no data to a server.
 
-| Key                                   | Content                                       |
-| ------------------------------------- | --------------------------------------------- |
-| `fertility_care_observations`         | All observations, as a JSON array.            |
-| `fertility_care_theme`                | `light` or `dark`.                            |
-| `fertility_care_lang`                 | `en` or `fr`.                                 |
-| `fertility_care_entry_mode`           | The last entry mode of the **Today** page.    |
-| `fertility_tracker_has_seen_welcome`  | Set when you close the welcome guide.         |
-| `fertility_tracker_last_seen_version` | The last application version that you opened. |
+| Key                                    | Content                                                      |
+| -------------------------------------- | ------------------------------------------------------------ |
+| `fertility_care_observations`          | All observations, as a JSON array.                           |
+| `fertility_care_observations_recovery` | A copy of observation data that the application cannot read. |
+| `fertility_care_theme`                 | `light` or `dark`.                                           |
+| `fertility_care_lang`                  | `en` or `fr`.                                                |
+| `fertility_care_entry_mode`            | The last entry mode of the **Today** page.                   |
+| `fertility_tracker_has_seen_welcome`   | Set when you close the welcome guide.                        |
+| `fertility_tracker_last_seen_version`  | The last application version that you opened.                |
+
+If the value of `fertility_care_observations` is not a JSON array, the application starts with no observations. Before it saves, it copies the value to `fertility_care_observations_recovery`.
 
 ## Backup file
 

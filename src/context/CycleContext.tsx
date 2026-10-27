@@ -21,6 +21,10 @@ export interface CycleDataContextType {
   importDataJson: (jsonStr: string) => boolean;
   clearAllData: () => void;
   loadDemoData: () => void;
+  /** The original text of stored data that could not be read, or null. */
+  recoveryData: string | null;
+  /** Deletes the copy of the stored data that could not be read. */
+  dismissRecovery: () => void;
 }
 
 export interface CycleUiContextType {
@@ -36,17 +40,34 @@ const CycleDataContext = createContext<CycleDataContextType | undefined>(undefin
 const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fertility_care_observations';
+const RECOVERY_KEY = 'fertility_care_observations_recovery';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
 };
 
+/**
+ * Reads the stored observations. When the stored text cannot be read, copies it to the
+ * recovery key before the app can save over it, and returns it as `recoveryData`.
+ */
+const loadStoredState = () => {
+  const raw = readStorage(STORAGE_KEY) ?? '[]';
+  const validated = parseAndValidateObservationsJson(raw);
+  if (validated === null) {
+    writeStorage(RECOVERY_KEY, raw);
+    return { observations: [], recoveryData: raw };
+  }
+  return {
+    observations: reprocessObservations(validated),
+    recoveryData: readStorage(RECOVERY_KEY),
+  };
+};
+
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const [observations, setObservations] = useState<Observation[]>(() => {
-    const validated = parseAndValidateObservationsJson(readStorage(STORAGE_KEY) ?? '[]');
-    return reprocessObservations(validated ?? []);
-  });
+  const [initialState] = useState(loadStoredState);
+  const [observations, setObservations] = useState<Observation[]>(initialState.observations);
+  const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -154,6 +175,11 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     applyObservations(buildDemoObservations(getTodayStr()));
   }, [applyObservations]);
 
+  const dismissRecovery = useCallback(() => {
+    removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
+  }, []);
+
   const dataValue = useMemo(
     () => ({
       observations,
@@ -167,6 +193,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       importDataJson,
       clearAllData,
       loadDemoData,
+      recoveryData,
+      dismissRecovery,
     }),
     [
       observations,
@@ -179,6 +207,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       importDataJson,
       clearAllData,
       loadDemoData,
+      recoveryData,
+      dismissRecovery,
     ]
   );
 

@@ -187,6 +187,12 @@ export const en = {
     oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
     exportSuccess: 'PDF report generated successfully!',
   },
+  storageRecovery: {
+    message:
+      'The saved observations could not be read. The application keeps a copy of the original data. Download the copy before you delete it.',
+    download: 'Download unreadable data',
+    dismiss: 'Delete the copy',
+  },
   disclaimer: {
     trademark:
       'FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction.',

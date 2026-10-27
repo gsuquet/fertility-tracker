@@ -189,6 +189,12 @@ export const fr: TranslationSchema = {
       'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
     exportSuccess: 'Rapport PDF généré avec succès !',
   },
+  storageRecovery: {
+    message:
+      "Les observations enregistrées n'ont pas pu être lues. L'application garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
+    download: 'Télécharger les données illisibles',
+    dismiss: 'Supprimer la copie',
+  },
   disclaimer: {
     trademark:
       "FertilityCare™ et le système Creighton Model FertilityCare™ (CrMS) sont des marques déposées de l'Institut Saint Paul VI pour l'étude de la reproduction humaine.",
