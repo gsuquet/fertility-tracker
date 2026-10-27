@@ -16,6 +16,7 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 | `mise run coverage`  | Runs the tests with coverage. Fails below 100%.                   |
 | `mise run check`     | Runs the Biome linter and the format check.                       |
 | `mise run docs`      | Checks the docs: writing rules, Diátaxis structure and links.     |
+| `mise run e2e`       | Runs the Playwright end-to-end and accessibility tests.           |
 | `mise run build`     | Runs the type check and builds the application in `dist`.         |
 | `mise run preview`   | Serves `dist` on port `4173`.                                     |
 | `mise run pages:dev` | Serves `dist` with Wrangler, as Cloudflare Pages does.            |
@@ -24,23 +25,24 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 
 ## npm scripts
 
-| Command                 | Action                                                        |
-| ----------------------- | ------------------------------------------------------------- |
-| `npm run dev`           | Starts the Vite development server.                           |
-| `npm run build`         | Runs `typecheck`, then `vite build`.                          |
-| `npm run preview`       | Serves the production build.                                  |
-| `npm run test`          | Runs Vitest one time.                                         |
-| `npm run test:watch`    | Runs Vitest in watch mode.                                    |
-| `npm run test:coverage` | Runs Vitest with V8 coverage. Fails below 100%.               |
-| `npm run typecheck`     | Runs `tsc --noEmit`.                                          |
-| `npm run lint`          | Runs the Biome linter. A warning is a failure.                |
-| `npm run format`        | Formats all files with Biome.                                 |
-| `npm run format:check`  | Checks the format of all files.                               |
-| `npm run check`         | Runs the Biome linter and the format check.                   |
-| `npm run check:fix`     | Corrects the lint and format findings that Biome can correct. |
-| `npm run validate`      | Runs `check`, `typecheck`, `test:coverage` and the build.     |
-| `npm run pages:dev`     | Serves `dist` with Wrangler.                                  |
-| `npm run deploy`        | Builds and deploys to Cloudflare Pages.                       |
+| Command                 | Action                                                            |
+| ----------------------- | ----------------------------------------------------------------- |
+| `npm run dev`           | Starts the Vite development server.                               |
+| `npm run build`         | Runs `typecheck`, then `vite build`.                              |
+| `npm run preview`       | Serves the production build.                                      |
+| `npm run test`          | Runs Vitest one time.                                             |
+| `npm run test:watch`    | Runs Vitest in watch mode.                                        |
+| `npm run test:coverage` | Runs Vitest with V8 coverage. Fails below 100%.                   |
+| `npm run test:e2e`      | Builds the application and runs the Playwright tests in Chromium. |
+| `npm run typecheck`     | Runs `tsc --noEmit` on the application and on `e2e/`.             |
+| `npm run lint`          | Runs the Biome linter. A warning is a failure.                    |
+| `npm run format`        | Formats all files with Biome.                                     |
+| `npm run format:check`  | Checks the format of all files.                                   |
+| `npm run check`         | Runs the Biome linter and the format check.                       |
+| `npm run check:fix`     | Corrects the lint and format findings that Biome can correct.     |
+| `npm run validate`      | Runs `check`, `typecheck`, `test:coverage` and the build.         |
+| `npm run pages:dev`     | Serves `dist` with Wrangler.                                      |
+| `npm run deploy`        | Builds and deploys to Cloudflare Pages.                           |
 
 ## Pre-commit hooks
 
@@ -56,7 +58,7 @@ The hooks run on each commit. CI runs them on each pull request with `pre-commit
 
 ## CI workflow
 
-The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It does not run on a push to `main`.
+The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It does not run on a push to `main`. The job `validate` does these steps:
 
 1. Installs the pinned tools with mise.
 2. Installs the dependencies with `npm ci`.
@@ -65,6 +67,14 @@ The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It 
 5. Runs the pre-commit hooks on all files.
 6. Runs the tests with coverage.
 7. Builds the application.
+
+The job `e2e` runs at the same time, on pull requests only.
+
+1. Installs the pinned tools with mise.
+2. Installs the dependencies with `npm ci`.
+3. Installs Chromium with `npx playwright install --with-deps chromium`.
+4. Runs `npm run test:e2e`.
+5. Keeps the Playwright report for 7 days if a test fails.
 
 ## Related documents
 
