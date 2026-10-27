@@ -72,6 +72,30 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.17.1',
+    date: '2026-10-27',
+    title: 'End-to-End and Accessibility Tests',
+    titleFr: 'Tests de bout en bout et d’accessibilité',
+    tagline: 'A real browser now checks the main flows and the accessibility of each view',
+    taglineFr:
+      'Un vrai navigateur vérifie maintenant les parcours principaux et l’accessibilité de chaque vue',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Added Playwright tests that run the production build in Chromium',
+      'Tested the welcome guide, a saved observation after a reload and a backup and restore round trip',
+      'Tested the chart, calendar and analytics views with the demo data',
+      'Added axe checks (WCAG 2 A and AA) on each view and on the export dialog',
+      'Ran the end-to-end tests on each pull request',
+    ],
+    highlightsFr: [
+      'Ajout de tests Playwright qui exécutent la version de production dans Chromium',
+      'Tests du guide de bienvenue, d’une observation conservée après un rechargement et d’une sauvegarde puis restauration',
+      'Tests des vues graphique, calendrier et analyses avec les données de démonstration',
+      'Ajout de contrôles axe (WCAG 2 A et AA) sur chaque vue et sur la fenêtre d’export',
+      'Exécution des tests de bout en bout sur chaque pull request',
+    ],
+  },
+  {
     version: '1.17.0',
     date: '2026-10-27',
     title: 'Confirm, Preview and Undo Data Changes',
