@@ -7,10 +7,15 @@ import { makeObservation } from '../../test/factories';
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
 const UNDO_KEY = 'fertility_care_observations_undo';
+const LAST_BACKUP_KEY = 'fertility_care_last_backup';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CycleProvider>{children}</CycleProvider>
 );
 const renderData = () => renderHook(() => useCycleData(), { wrapper });
+const EMPTY_ENVELOPE = '{"schemaVersion":1,"observations":[]}';
+/** The observations in the stored envelope. */
+const storedList = (key = STORAGE_KEY): { date: string }[] =>
+  JSON.parse(localStorage.getItem(key) ?? '{}').observations;
 
 describe('CycleDataProvider', () => {
   beforeEach(() => {
@@ -48,7 +53,7 @@ describe('CycleDataProvider', () => {
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
     expect(result.current.recoveryData).toBe('[{"date": "2026-06-01"');
     expect(result.current.recoveryKept).toBe(true);
-    expect(localStorage.getItem(STORAGE_KEY)).toBe('[]');
+    expect(localStorage.getItem(STORAGE_KEY)).toBe(EMPTY_ENVELOPE);
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('[{"date": "2026-06-01"');
   });
@@ -75,7 +80,7 @@ describe('CycleDataProvider', () => {
     expect(result.current.recoveryData).toBeNull();
     expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
   });
 
   it('does not overwrite the original data when the recovery copy fails', () => {
@@ -91,7 +96,7 @@ describe('CycleDataProvider', () => {
     expect(localStorage.getItem(RECOVERY_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_KEY)).toBe('{corrupt');
     act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
     spy.mockRestore();
   });
 
@@ -128,7 +133,7 @@ describe('CycleDataProvider', () => {
       codeString: '0',
       stamp: 'DARK_GREEN',
     });
-    expect(JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '[]')).toHaveLength(1);
+    expect(storedList()).toHaveLength(1);
   });
 
   it('replaces the observation for an existing date and keeps a given id and code string', () => {
@@ -278,8 +283,7 @@ describe('CycleDataProvider', () => {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
       return renderData();
     };
-    const storedUndoDates = () =>
-      (JSON.parse(localStorage.getItem(UNDO_KEY) as string) as { date: string }[]).map(o => o.date);
+    const storedUndoDates = () => storedList(UNDO_KEY).map(o => o.date);
 
     it('has nothing to undo at the start', () => {
       const { result } = renderSaved();
@@ -402,6 +406,14 @@ describe('CycleDataProvider', () => {
       expect(result.current.observations).toHaveLength(2);
     });
 
+    it('offers a copy in the versioned envelope', () => {
+      localStorage.setItem(UNDO_KEY, JSON.stringify({ schemaVersion: 1, observations: saved }));
+      const { result } = renderData();
+      expect(result.current.undoChange).toBe('earlier');
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations).toHaveLength(2);
+    });
+
     it('ignores a copy that it cannot read', () => {
       localStorage.setItem(UNDO_KEY, 'not json');
       const { result } = renderData();
@@ -412,6 +424,162 @@ describe('CycleDataProvider', () => {
       const { result } = renderSaved();
       act(() => result.current.undoLastChange());
       expect(result.current.observations).toHaveLength(2);
+    });
+  });
+
+  describe('storage format', () => {
+    const legacy = [
+      makeObservation({ date: '2026-06-01', bleeding: 'H', codeString: 'H' }),
+      makeObservation({ date: '2026-06-02', stretch: '10', modifiers: ['K'], notes: 'n' }),
+    ];
+
+    it('migrates the bare array of an older version to the envelope without loss', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      expect(result.current.observations.map(o => [o.date, o.stretch, o.notes])).toEqual([
+        ['2026-06-01', undefined, ''],
+        ['2026-06-02', '10', 'n'],
+      ]);
+      const stored = JSON.parse(localStorage.getItem(STORAGE_KEY) as string);
+      expect(stored.schemaVersion).toBe(1);
+      expect(stored.observations.map((o: { date: string }) => o.date)).toEqual([
+        '2026-06-01',
+        '2026-06-02',
+      ]);
+      expect(result.current.recoveryData).toBeNull();
+      expect(result.current.droppedCount).toBe(0);
+    });
+
+    it('calculates the code string again on load', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      expect(result.current.observations.map(o => o.codeString)).toEqual(['H', '10K']);
+    });
+
+    it('treats a newer schema version as unreadable and keeps it', () => {
+      const newer = JSON.stringify({ schemaVersion: 2, observations: legacy });
+      localStorage.setItem(STORAGE_KEY, newer);
+      const { result } = renderData();
+      expect(result.current.observations).toEqual([]);
+      expect(result.current.recoveryData).toBe(newer);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe(newer);
+    });
+
+    it('exports a backup in the envelope', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      const exported = JSON.parse(result.current.exportDataJson());
+      expect(exported.schemaVersion).toBe(1);
+      expect(exported.observations).toHaveLength(2);
+    });
+
+    it('imports a backup in the envelope and an old bare-array backup', () => {
+      const { result } = renderData();
+      act(() => {
+        result.current.importDataJson(JSON.stringify({ schemaVersion: 1, observations: legacy }));
+      });
+      expect(result.current.observations).toHaveLength(2);
+      act(() => {
+        result.current.importDataJson(JSON.stringify([legacy[0]]));
+      });
+      expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01']);
+    });
+
+    it('writes the undo copy in the envelope', () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(legacy));
+      const { result } = renderData();
+      act(() => result.current.clearAllData());
+      expect(JSON.parse(localStorage.getItem(UNDO_KEY) as string).schemaVersion).toBe(1);
+    });
+  });
+
+  describe('dropped records', () => {
+    const withInvalid = JSON.stringify([
+      makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+      { date: 'broken' },
+      makeObservation({ date: '2026-06-02', stretch: '0' }),
+    ]);
+
+    it('shows the valid records and keeps a copy of the original text', () => {
+      localStorage.setItem(STORAGE_KEY, withInvalid);
+      const { result } = renderData();
+      expect(result.current.observations).toHaveLength(2);
+      expect(result.current.droppedCount).toBe(1);
+      expect(result.current.recoveryData).toBe(withInvalid);
+      expect(result.current.recoveryKept).toBe(true);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe(withInvalid);
+      expect(storedList()).toHaveLength(2);
+    });
+
+    it('keeps the original text in its key when the copy cannot be kept', () => {
+      localStorage.setItem(RECOVERY_KEY, 'old copy');
+      localStorage.setItem(STORAGE_KEY, withInvalid);
+      const { result } = renderData();
+      expect(result.current.droppedCount).toBe(1);
+      expect(result.current.recoveryKept).toBe(false);
+      expect(localStorage.getItem(STORAGE_KEY)).toBe(withInvalid);
+      expect(localStorage.getItem(RECOVERY_KEY)).toBe('old copy');
+      act(() => result.current.saveObservation({ date: '2026-06-03', stretch: '0' }));
+      expect(storedList()).toHaveLength(3);
+    });
+  });
+
+  describe('save failures', () => {
+    it('reports a refused write and clears the report after a write that succeeds', () => {
+      const setItem = localStorage.setItem.bind(localStorage);
+      let refuse = true;
+      const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+        if (key === STORAGE_KEY && refuse) throw new Error('QuotaExceededError');
+        setItem(key, value);
+      });
+      const { result } = renderData();
+      expect(result.current.saveFailed).toBe(true);
+      act(() => result.current.saveObservation({ date: '2026-06-01', stretch: '0' }));
+      expect(result.current.saveFailed).toBe(true);
+      expect(result.current.observations).toHaveLength(1);
+      refuse = false;
+      act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+      expect(result.current.saveFailed).toBe(false);
+      expect(storedList()).toHaveLength(2);
+      spy.mockRestore();
+    });
+
+    it('has no failure when the writes succeed', () => {
+      expect(renderData().result.current.saveFailed).toBe(false);
+    });
+  });
+
+  describe('persistent storage', () => {
+    afterEach(() => {
+      Reflect.deleteProperty(navigator, 'storage');
+    });
+
+    it('asks the browser once to keep the data when observations exist', () => {
+      const persist = vi.fn().mockResolvedValue(true);
+      Object.defineProperty(navigator, 'storage', { value: { persist }, configurable: true });
+      const { result } = renderData();
+      expect(persist).not.toHaveBeenCalled();
+      act(() => result.current.saveObservation({ date: '2026-06-01', stretch: '0' }));
+      act(() => result.current.clearAllData());
+      act(() => result.current.saveObservation({ date: '2026-06-02', stretch: '0' }));
+      expect(persist).toHaveBeenCalledTimes(1);
+    });
+  });
+
+  describe('last backup date', () => {
+    it('reads the stored date and records a new backup with the date of today', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 9, 27, 12));
+      localStorage.setItem(LAST_BACKUP_KEY, '2026-09-01');
+      const { result } = renderData();
+      expect(result.current.lastBackupDate).toBe('2026-09-01');
+      act(() => result.current.markBackedUp());
+      expect(result.current.lastBackupDate).toBe('2026-10-27');
+      expect(localStorage.getItem(LAST_BACKUP_KEY)).toBe('2026-10-27');
+    });
+
+    it('has no date before the first backup', () => {
+      expect(renderData().result.current.lastBackupDate).toBeNull();
     });
   });
 });

@@ -140,6 +140,21 @@ describe('versionTracker Domain Engine', () => {
       expect(getStorageStats().itemCount).toBe(0);
     });
 
+    it('counts stored observations in the versioned envelope', () => {
+      localStorage.setItem(
+        STORAGE_OBSERVATIONS_KEY,
+        JSON.stringify({
+          schemaVersion: 1,
+          observations: [
+            { date: '2026-07-01', bleeding: 'H' },
+            { date: '2026-07-02', stretch: '0' },
+            { date: 'broken' },
+          ],
+        })
+      );
+      expect(getStorageStats()).toMatchObject({ observationsCount: 2, cyclesCount: 1 });
+    });
+
     it('ignores stored observations that are not an array', () => {
       localStorage.setItem(STORAGE_OBSERVATIONS_KEY, JSON.stringify({ not: 'an array' }));
       expect(getStorageStats()).toMatchObject({ observationsCount: 0, cyclesCount: 0 });

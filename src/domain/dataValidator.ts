@@ -83,35 +83,3 @@ export function validateObservation(raw: unknown): Observation | null {
     codeString,
   };
 }
-
-/**
- * Validates an array of raw items, filtering out malformed entries and deduplicating by date.
- */
-export function validateObservationsArray(rawList: unknown): Observation[] {
-  if (!Array.isArray(rawList)) return [];
-
-  const validMap = new Map<string, Observation>();
-
-  for (const item of rawList) {
-    const validated = validateObservation(item);
-    if (validated) {
-      validMap.set(validated.date, validated);
-    }
-  }
-
-  return Array.from(validMap.values()).sort((a, b) => a.date.localeCompare(b.date));
-}
-
-/**
- * Safely parses and validates a JSON string payload from backup or localStorage.
- * Returns null if the payload is not valid JSON or does not contain an array.
- */
-export function parseAndValidateObservationsJson(jsonStr: string): Observation[] | null {
-  try {
-    const parsed = JSON.parse(jsonStr);
-    if (!Array.isArray(parsed)) return null;
-    return validateObservationsArray(parsed);
-  } catch (_e) {
-    return null;
-  }
-}

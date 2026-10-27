@@ -75,4 +75,27 @@ describe('StorageRecoveryNotice', () => {
     expect(screen.queryByRole('alert')).toBeNull();
     expect(localStorage.getItem('fertility_care_observations_recovery')).toBe('old copy');
   });
+
+  describe('dropped records', () => {
+    const PARTIAL = JSON.stringify([{ date: '2026-06-01', stretch: '0' }, { date: 'x' }, 7]);
+
+    it('says how many records it dropped and that a copy is kept', () => {
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, PARTIAL);
+      renderWithProviders(<StorageRecoveryNotice />);
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        en.storageRecovery.messagePartial.replace('{count}', '2')
+      );
+      expect(screen.getByRole('button', { name: en.storageRecovery.dismiss })).toBeInTheDocument();
+    });
+
+    it('says in French that no copy is kept', () => {
+      localStorage.setItem('fertility_care_observations_recovery', 'old copy');
+      localStorage.setItem(OBSERVATIONS_STORAGE_KEY, PARTIAL);
+      renderWithProviders(<StorageRecoveryNotice />, { language: 'fr' });
+      expect(screen.getByRole('alert')).toHaveTextContent(
+        fr.storageRecovery.messagePartialNoCopy.replace('{count}', '2')
+      );
+      expect(screen.getByRole('button', { name: fr.storageRecovery.close })).toBeInTheDocument();
+    });
+  });
 });

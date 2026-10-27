@@ -8,43 +8,67 @@ The application uses `localStorage`. It sends no data to a server.
 
 | Key                                    | Content                                                                       |
 | -------------------------------------- | ----------------------------------------------------------------------------- |
-| `fertility_care_observations`          | All observations, as a JSON array.                                            |
+| `fertility_care_observations`          | All observations, in the versioned format.                                    |
 | `fertility_care_observations_recovery` | A copy of observation data that the application cannot read.                  |
 | `fertility_care_observations_undo`     | A copy of the observations from before the last restore, demo load or delete. |
+| `fertility_care_last_backup`           | The date of the last backup file, `YYYY-MM-DD`.                               |
 | `fertility_care_theme`                 | `light` or `dark`.                                                            |
 | `fertility_care_lang`                  | `en` or `fr`.                                                                 |
 | `fertility_care_entry_mode`            | The last entry mode of the **Today** page.                                    |
 | `fertility_tracker_has_seen_welcome`   | Set when you close the welcome guide.                                         |
 | `fertility_tracker_last_seen_version`  | The last application version that you opened.                                 |
 
-If the value of `fertility_care_observations` is not a JSON array, the application starts with no observations. Before it saves, it copies the value to `fertility_care_observations_recovery`.
+If the application cannot read the value of `fertility_care_observations`, it starts with no observations. Before it saves, it copies the value to `fertility_care_observations_recovery`.
+
+If the value has some items that are not valid, the application shows the valid observations. It also copies the value to `fertility_care_observations_recovery`, and a message gives the number of items that it cannot read.
 
 The application does not replace a copy that is already in `fertility_care_observations_recovery`. If the application cannot write the copy, it keeps the original value in `fertility_care_observations`. Your next change replaces that value.
 
 Before a restore, a demo load or a delete of all data, the application copies the observations to `fertility_care_observations_undo`. If a copy already exists, the application keeps the older copy. **Undo**, **Delete the copy**, a saved observation and a deleted observation delete the copy.
 
+## Versioned format
+
+The value of `fertility_care_observations`, the value of `fertility_care_observations_undo` and a backup file have the same format. The format is a JSON object with two properties:
+
+| Property        | Type                  | Description                               |
+| --------------- | --------------------- | ----------------------------------------- |
+| `schemaVersion` | number                | The version of the format. It is now `1`. |
+| `observations`  | array of observations | All the observations.                     |
+
+| Version | Format                                          | Written by                |
+| ------- | ----------------------------------------------- | ------------------------- |
+| 0       | A JSON array of observations.                   | Versions before 1.18.0.   |
+| 1       | `{ "schemaVersion": 1, "observations": [...] }` | Version 1.18.0 and later. |
+
+The application reads the two versions. When it starts, it writes version 0 data again as version 1. It keeps all the valid observations.
+
+The application cannot read a `schemaVersion` that is higher than `1`. It then keeps the data, as for data that it cannot read. The code is in `src/domain/storageFormat.ts`.
+
 ## Backup file
 
-A backup file is a JSON array of observations. It is the same as the value of `fertility_care_observations`. The file is not encrypted.
+A backup file has the versioned format. The file is not encrypted. The application also restores a backup file in version 0.
 
 ```json
-[
-  {
-    "id": "obs_2026-10-24_1761300000000",
-    "date": "2026-10-24",
-    "cycleDay": 2,
-    "stretch": "10",
-    "modifiers": ["K", "L"],
-    "frequency": "AD",
-    "symptoms": [],
-    "intercourse": false,
-    "notes": "",
-    "isManualPeak": false,
-    "stamp": "WHITE_BABY",
-    "codeString": "10KLAD",
-    "isPeakDay": true
-  }
-]
+{
+  "schemaVersion": 1,
+  "observations": [
+    {
+      "id": "obs_2026-10-24_1761300000000",
+      "date": "2026-10-24",
+      "cycleDay": 2,
+      "stretch": "10",
+      "modifiers": ["K", "L"],
+      "frequency": "AD",
+      "symptoms": [],
+      "intercourse": false,
+      "notes": "",
+      "isManualPeak": false,
+      "stamp": "WHITE_BABY",
+      "codeString": "10KLAD",
+      "isPeakDay": true
+    }
+  ]
+}
 ```
 
 ## Observation fields
@@ -64,18 +88,18 @@ A backup file is a JSON array of observations. It is the same as the value of `f
 | `isManualPeak` | boolean             | No       | `true` if you set this day as the Peak Day.                    |
 | `isCycleStart` | boolean             | No       | Your answer to the **New Cycle Start?** question.              |
 | `stamp`        | stamp type          | No       | Calculated again after each change.                            |
-| `codeString`   | string              | No       | The code of the day. Made from the fields if it is missing.    |
+| `codeString`   | string              | No       | The code of the day. Calculated again from the fields on load. |
 | `isPeakDay`    | boolean             | No       | Calculated again after each change.                            |
 
 ## Validation of a restored file
 
 When you restore a file, the application does these checks:
 
-- It accepts only a JSON array. If the file is not an array, the restore fails.
+- It accepts only the versioned format, version 0 or 1. Other files cause the restore to fail.
 - It ignores an item that has no valid `date`.
 - It ignores a code that is not in the lists of [Observation codes](observation-codes.md).
 - If two items have the same date, it keeps the last item.
-- It calculates `stamp`, `cycleDay` and `isPeakDay` again.
+- It calculates `codeString`, `stamp`, `cycleDay` and `isPeakDay` again.
 
 If you have observations, you select **Replace** or **Merge**:
 

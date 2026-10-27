@@ -1,5 +1,5 @@
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
-import type { Observation } from '../types/crms';
+import { parseObservationData } from './storageFormat';
 
 export interface VersionRelease {
   version: string;
@@ -803,14 +803,10 @@ export function getStorageStats(): StorageStats {
         }
       }
 
-      const storedObs = localStorage.getItem(STORAGE_OBSERVATIONS_KEY);
-      if (storedObs) {
-        const parsed = JSON.parse(storedObs);
-        if (Array.isArray(parsed)) {
-          observationsCount = parsed.length;
-          const cycles = groupObservationsIntoCycles(parsed as Observation[]);
-          cyclesCount = cycles.length;
-        }
+      const stored = parseObservationData(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) ?? '[]');
+      if (stored) {
+        observationsCount = stored.observations.length;
+        cyclesCount = groupObservationsIntoCycles(stored.observations).length;
       }
     }
   } catch {

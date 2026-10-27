@@ -1,9 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import {
-  validateObservation,
-  validateObservationsArray,
-  parseAndValidateObservationsJson,
-} from '../dataValidator';
+import { validateObservation } from '../dataValidator';
 
 describe('dataValidator Domain Engine', () => {
   it('returns null for non-object or invalid date inputs', () => {
@@ -53,31 +49,6 @@ describe('dataValidator Domain Engine', () => {
     expect(obs?.symptoms).toEqual(['AP']);
   });
 
-  it('validates and deduplicates arrays of observations', () => {
-    const rawList = [
-      { date: '2026-09-01', bleeding: 'M' },
-      { date: '2026-09-02', bleeding: 'L' },
-      { date: '2026-09-01', bleeding: 'H' }, // Duplicate date, replaces prior
-      { invalid: true }, // Invalid, filtered out
-      null,
-    ];
-
-    const result = validateObservationsArray(rawList);
-    expect(result.length).toBe(2);
-    expect(result[0]?.date).toBe('2026-09-01');
-    expect(result[0]?.bleeding).toBe('H');
-    expect(result[1]?.date).toBe('2026-09-02');
-  });
-
-  it('parses and validates JSON strings safely', () => {
-    const validJson = JSON.stringify([{ date: '2026-09-02', bleeding: 'M' }]);
-    expect(parseAndValidateObservationsJson(validJson)).toHaveLength(1);
-
-    expect(parseAndValidateObservationsJson('corrupt json string')).toBeNull();
-    expect(parseAndValidateObservationsJson('{"notAnArray": true}')).toBeNull();
-    expect(parseAndValidateObservationsJson('')).toBeNull();
-  });
-
   it('keeps a valid boolean isCycleStart and a positive cycleDay', () => {
     const result = validateObservation({
       date: '2026-09-01',
@@ -86,10 +57,6 @@ describe('dataValidator Domain Engine', () => {
       notes: 'note',
     });
     expect(result).toMatchObject({ isCycleStart: false, cycleDay: 4, notes: 'note' });
-  });
-
-  it('ignores a non-array payload', () => {
-    expect(validateObservationsArray({ date: '2026-09-01' })).toEqual([]);
   });
 
   it('keeps every valid field of a complete record', () => {

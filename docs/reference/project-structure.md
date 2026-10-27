@@ -58,6 +58,8 @@ fertility-tracker/
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
 | `backupImport.ts`          | Preview and merge of a restored backup file.   |
+| `storageFormat.ts`         | Versioned format of saved and backup data.     |
+| `backupReminder.ts`        | When to show the backup reminder.              |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
 | `versionTracker.ts`        | Release notes, version and storage statistics. |
 
@@ -80,6 +82,9 @@ fertility-tracker/
 | `ExportModal.tsx`                         | The export and backup dialog.                                  |
 | `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.    |
 | `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.  |
+| `StorageRecoveryNotice.tsx`               | The alert for saved data that the application cannot read.     |
+| `StorageSaveWarning.tsx`                  | The alert when the browser does not save the observations.     |
+| `BackupReminder.tsx`                      | The reminder to make a backup.                                 |
 | `PrintExportView.tsx`                     | The 35-day chart for printing.                                 |
 | `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                        |
 | `WelcomeModal.tsx`                        | The welcome guide.                                             |
