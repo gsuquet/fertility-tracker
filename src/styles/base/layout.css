@@ -26,6 +26,20 @@
     }
   }
 
+  /* Shown by ErrorBoundary when a part of the app fails to render or load */
+  .error-boundary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin: var(--space-md) 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
   .storage-recovery-notice {
     display: flex;
     flex-direction: column;

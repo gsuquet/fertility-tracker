@@ -359,4 +359,10 @@ export const fr: TranslationSchema = {
     isCycleStartLabel: 'Début de nouveau cycle',
     isCycleStartHelp: 'Désigne cette observation comme le jour 1 d’un nouveau cycle menstruel.',
   },
+  errorBoundary: {
+    title: 'Cette partie n’a pas pu se charger',
+    message:
+      'Une erreur s’est produite ou vous êtes hors ligne. Vos observations sont en sécurité dans ce navigateur. Rechargez la page pour réessayer.',
+    reload: 'Recharger',
+  },
 };
