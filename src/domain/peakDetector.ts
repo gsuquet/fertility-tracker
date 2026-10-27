@@ -1,9 +1,10 @@
-import type { Observation } from '../types/crms';
+import type { Observation, StampType } from '../types/crms';
 import { isPeakTypeMucus, calculateStamp } from './stampCalculator';
 import { getDaysDifference } from '../utils/dateUtils';
 
 /**
- * Calculates Peak Day ('P') and applies post-peak stamps (Light Green 1, 2, 3) across cycle observations.
+ * Calculates Peak Day ('P') and applies post-peak stamps (Light Green 1, 2, 3) after each run of
+ * fertile mucus and after the Peak Day.
  * Ensures observations are sorted chronologically by date and cycleDay is accurately calculated from start date.
  */
 export function processCycleObservations(
@@ -32,24 +33,28 @@ export function processCycleObservations(
     }
   }
 
-  // Update observations with stamps, Peak flags, and accurate cycleDay
+  // The three days after the last fertile day (white stamp or Peak Day) count as
+  // post-peak days. Only a day that is otherwise green gets the light green stamp.
+  const POST_PEAK_STAMPS = [
+    'LIGHT_GREEN_BABY_1',
+    'LIGHT_GREEN_BABY_2',
+    'LIGHT_GREEN_BABY_3',
+  ] as const;
+  let lastFertileDate: string | undefined;
+
   return sorted.map((obs, idx) => {
     const isPeakDay = idx === peakIndex;
-    let stamp = calculateStamp(obs.bleeding, obs.stretch, obs.modifiers || []);
+    let stamp: StampType = calculateStamp(obs.bleeding, obs.stretch, obs.modifiers || []);
 
-    // Check if it falls in post-peak count (1, 2, 3)
-    if (peakIndex !== -1 && idx > peakIndex && idx <= peakIndex + 3) {
-      const postPeakNum = idx - peakIndex;
-      if (postPeakNum === 1) stamp = 'LIGHT_GREEN_BABY_1';
-      else if (postPeakNum === 2) stamp = 'LIGHT_GREEN_BABY_2';
-      else stamp = 'LIGHT_GREEN_BABY_3';
+    if (stamp === 'WHITE_BABY' || isPeakDay) {
+      lastFertileDate = obs.date;
+    } else if (stamp === 'DARK_GREEN' && lastFertileDate) {
+      stamp = POST_PEAK_STAMPS[getDaysDifference(lastFertileDate, obs.date) - 1] ?? stamp;
     }
-
-    const calculatedCycleDay = getDaysDifference(startDate, obs.date) + 1;
 
     return {
       ...obs,
-      cycleDay: calculatedCycleDay,
+      cycleDay: getDaysDifference(startDate, obs.date) + 1,
       stamp,
       isPeakDay,
     };

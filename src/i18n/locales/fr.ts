@@ -151,6 +151,7 @@ export const fr: TranslationSchema = {
     lutealHealth: 'Santé de la Phase Lutéale',
     normalLuteal: 'Normale (9-17 jours)',
     abnormalLuteal: 'Phase lutéale courte/allongée',
+    inProgress: 'en cours',
     pendingPeak: 'Jour Sommet en attente',
   },
   chartStrip: {

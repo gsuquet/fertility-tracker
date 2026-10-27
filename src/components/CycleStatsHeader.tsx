@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
+import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
 import { Calendar, Flame, Heart, Activity } from 'lucide-react';
 
 export const CycleStatsHeader: React.FC = () => {
@@ -18,33 +19,21 @@ export const CycleStatsHeader: React.FC = () => {
   let intercourseCount = 0;
 
   if (selectedCycle) {
-    const obs = selectedCycle.observations;
-    const totalDays = obs.length;
-    const peakObs = obs.find(o => o.isPeakDay);
-    const lutealDays = peakObs ? obs.filter(o => o.cycleDay > peakObs.cycleDay).length : 0;
-    cycleLengthText = `${totalDays} ${t.stats.days}`;
-    peakDayText = peakObs ? `CD ${peakObs.cycleDay} (${peakObs.date})` : '---';
+    const { peak, lutealDays } = getCyclePhases(selectedCycle);
+    cycleLengthText = `${selectedCycle.observations.length} ${t.stats.days}`;
+    peakDayText = peak ? `CD ${peak.cycleDay} (${peak.date})` : '---';
     lutealPhaseText = `${lutealDays} ${t.stats.days}`;
-    intercourseCount = obs.filter(o => o.intercourse).length;
+    intercourseCount = selectedCycle.observations.filter(o => o.intercourse).length;
   } else {
     // All Cycles view
     cycleLengthText = `${(observations.length / cycles.length).toFixed(1)} ${t.stats.days} (avg)`;
 
     // Cycles are ordered newest first, so the first peak is the latest one
-    const peaks = cycles.flatMap(c => {
-      const peakObs = c.observations.find(o => o.isPeakDay);
-      return peakObs ? [{ peakObs, cycle: c }] : [];
-    });
-    const [latest] = peaks;
-    if (latest) {
-      peakDayText = `CD ${latest.peakObs.cycleDay} (${latest.peakObs.date})`;
-      // Average luteal phase across cycles with a peak day
-      const totalLuteal = peaks.reduce(
-        (acc, { peakObs, cycle }) =>
-          acc + cycle.observations.filter(o => o.cycleDay > peakObs.cycleDay).length,
-        0
-      );
-      lutealPhaseText = `${(totalLuteal / peaks.length).toFixed(1)} ${t.stats.days} (avg)`;
+    const latestPeak = cycles.map(c => getCyclePhases(c).peak).find(Boolean);
+    if (latestPeak) {
+      peakDayText = `CD ${latestPeak.cycleDay} (${latestPeak.date})`;
+      const { lutealDays } = averagePhases(cycles);
+      lutealPhaseText = `${lutealDays.toFixed(1)} ${t.stats.days} (avg)`;
     } else {
       lutealPhaseText = `0 ${t.stats.days}`;
     }
