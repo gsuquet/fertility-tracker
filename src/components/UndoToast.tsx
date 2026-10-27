@@ -4,14 +4,17 @@ import { useLanguage } from '../context/LanguageContext';
 
 /** After a change replaces the observations, offers to undo it or to delete the saved copy. */
 export const UndoToast: React.FC = () => {
-  const { undoChange, undoLastChange, dismissUndo } = useCycleData();
+  const { undoChange, undoLastChange, dismissUndo, undoPersisted } = useCycleData();
   const { t } = useLanguage();
 
   if (undoChange === null) return null;
 
   return (
     <div className="undo-toast" role="status">
-      <span>{t.undoToast[undoChange]}</span>
+      <span>
+        {t.undoToast[undoChange]}
+        {!undoPersisted && ` ${t.undoToast.notSaved}`}
+      </span>
       <div className="undo-toast-actions">
         <button type="button" className="btn btn-primary btn-sm" onClick={undoLastChange}>
           {t.undoToast.undo}

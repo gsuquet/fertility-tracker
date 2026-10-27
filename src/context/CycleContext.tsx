@@ -38,6 +38,8 @@ export interface CycleDataContextType {
   undoLastChange: () => void;
   /** Deletes the copy and keeps the change. */
   dismissUndo: () => void;
+  /** False when the browser refused to store the undo copy: undo then works until a reload. */
+  undoPersisted: boolean;
 }
 
 export interface CycleUiContextType {
@@ -95,12 +97,13 @@ const loadStoredState = () => {
 interface UndoState {
   change: DataChange;
   observations: Observation[];
+  persisted: boolean;
 }
 
 /** Reads the copy that an earlier session kept before a replacing change. */
 const loadStoredUndo = (): UndoState | null => {
   const saved = parseAndValidateObservationsJson(readStorage(UNDO_KEY) ?? 'null');
-  return saved ? { change: 'earlier', observations: saved } : null;
+  return saved ? { change: 'earlier', observations: saved, persisted: true } : null;
 };
 
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -127,50 +130,64 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     writeStorage(STORAGE_KEY, JSON.stringify(observations));
   }, [observations, recoveryKept, initialState.observations]);
 
-  const saveObservation = useCallback((obsData: ObservationInput) => {
-    setObservations(prev => {
-      const date = obsData.date || getTodayStr();
-      const existingIdx = prev.findIndex(o => o.date === date);
-
-      const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
-      const codeString = obsData.codeString || formatCodeString(obsData);
-
-      const newObs: Observation = {
-        id: obsData.id || `obs_${date}_${Date.now()}`,
-        date,
-        cycleDay: obsData.cycleDay || 1,
-        bleeding: obsData.bleeding,
-        stretch: obsData.stretch,
-        modifiers: obsData.modifiers || [],
-        frequency: obsData.frequency,
-        symptoms: obsData.symptoms || [],
-        intercourse: obsData.intercourse || false,
-        notes: obsData.notes || '',
-        isManualPeak: obsData.isManualPeak || false,
-        isCycleStart: obsData.isCycleStart,
-        stamp,
-        codeString,
-      };
-
-      const updatedList = [...prev];
-      if (existingIdx !== -1) {
-        updatedList[existingIdx] = newObs;
-      } else {
-        updatedList.push(newObs);
-      }
-
-      return reprocessObservations(
-        newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
-      );
-    });
+  const dismissUndo = useCallback(() => {
+    removeStorage(UNDO_KEY);
+    setUndo(null);
   }, []);
 
-  const deleteObservation = useCallback((idOrDate: string) => {
-    setObservations(prev => {
-      const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
-      return reprocessObservations(filtered);
-    });
-  }, []);
+  const saveObservation = useCallback(
+    (obsData: ObservationInput) => {
+      // A day saved after a replacing change would be lost on undo, so the copy goes.
+      dismissUndo();
+      setObservations(prev => {
+        const date = obsData.date || getTodayStr();
+        const existingIdx = prev.findIndex(o => o.date === date);
+
+        const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
+        const codeString = obsData.codeString || formatCodeString(obsData);
+
+        const newObs: Observation = {
+          id: obsData.id || `obs_${date}_${Date.now()}`,
+          date,
+          cycleDay: obsData.cycleDay || 1,
+          bleeding: obsData.bleeding,
+          stretch: obsData.stretch,
+          modifiers: obsData.modifiers || [],
+          frequency: obsData.frequency,
+          symptoms: obsData.symptoms || [],
+          intercourse: obsData.intercourse || false,
+          notes: obsData.notes || '',
+          isManualPeak: obsData.isManualPeak || false,
+          isCycleStart: obsData.isCycleStart,
+          stamp,
+          codeString,
+        };
+
+        const updatedList = [...prev];
+        if (existingIdx !== -1) {
+          updatedList[existingIdx] = newObs;
+        } else {
+          updatedList.push(newObs);
+        }
+
+        return reprocessObservations(
+          newObs.isManualPeak ? keepOneManualPeak(updatedList, date) : updatedList
+        );
+      });
+    },
+    [dismissUndo]
+  );
+
+  const deleteObservation = useCallback(
+    (idOrDate: string) => {
+      dismissUndo();
+      setObservations(prev => {
+        const filtered = prev.filter(o => o.id !== idOrDate && o.date !== idOrDate);
+        return reprocessObservations(filtered);
+      });
+    },
+    [dismissUndo]
+  );
 
   const exportDataJson = useCallback(() => {
     return JSON.stringify(observations, null, 2);
@@ -182,14 +199,21 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setSelectedCycleId(groupObservationsIntoCycles(processed)[0]?.id ?? 'all');
   }, []);
 
-  /** Keeps a copy of the current observations, then replaces them. */
+  /**
+   * Keeps a copy of the current observations, then replaces them. An existing copy stays:
+   * it holds the oldest data, which a second change must not overwrite.
+   */
   const replaceObservations = useCallback(
     (change: DataChange, list: Observation[]) => {
-      writeStorage(UNDO_KEY, JSON.stringify(observations));
-      setUndo({ change, observations });
+      if (undo) {
+        setUndo({ ...undo, change });
+      } else {
+        const persisted = writeStorage(UNDO_KEY, JSON.stringify(observations));
+        setUndo({ change, observations, persisted });
+      }
       applyObservations(list);
     },
-    [observations, applyObservations]
+    [undo, observations, applyObservations]
   );
 
   /** Deletes all observations and the copy of unreadable data. The undo copy stays. */
@@ -216,11 +240,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const loadDemoData = useCallback(() => {
     replaceObservations('demo', buildDemoObservations(getTodayStr()));
   }, [replaceObservations]);
-
-  const dismissUndo = useCallback(() => {
-    removeStorage(UNDO_KEY);
-    setUndo(null);
-  }, []);
 
   const undoLastChange = useCallback(() => {
     if (!undo) return;
@@ -251,6 +270,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       undoChange: undo ? undo.change : null,
       undoLastChange,
       dismissUndo,
+      undoPersisted: undo ? undo.persisted : true,
     }),
     [
       observations,

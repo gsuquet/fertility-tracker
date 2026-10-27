@@ -219,6 +219,7 @@ export const en = {
     earlier: 'The app keeps a copy of your observations from before the last change.',
     undo: 'Undo',
     dismiss: 'Delete the copy',
+    notSaved: 'The browser could not save the copy. Undo works only until you reload the page.',
   },
   storageRecovery: {
     message:

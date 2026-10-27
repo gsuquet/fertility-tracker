@@ -1,5 +1,5 @@
 import { screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { UndoToast } from '../UndoToast';
 import { useCycleData } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
@@ -11,7 +11,8 @@ const saved = [makeObservation({ date: '2026-06-01', bleeding: 'H' })];
 
 /** Gives the test buttons for the replacing actions and shows the number of observations. */
 const Actions = () => {
-  const { observations, loadDemoData, importDataJson, clearAllData } = useCycleData();
+  const { observations, loadDemoData, importDataJson, clearAllData, saveObservation } =
+    useCycleData();
   return (
     <>
       <span data-testid="count">{observations.length}</span>
@@ -26,6 +27,9 @@ const Actions = () => {
       </button>
       <button type="button" onClick={clearAllData}>
         clear
+      </button>
+      <button type="button" onClick={() => saveObservation({ date: '2026-06-05', stretch: '0' })}>
+        save
       </button>
     </>
   );
@@ -84,5 +88,33 @@ describe('UndoToast', () => {
     expect(screen.getByRole('status')).toHaveTextContent(fr.undoToast.earlier);
     expect(screen.getByRole('button', { name: fr.undoToast.undo })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: fr.undoToast.dismiss })).toBeInTheDocument();
+  });
+  it('closes when an observation is saved after the change', () => {
+    renderToast();
+    click('clear');
+    click('save');
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(screen.getByTestId('count')).toHaveTextContent('1');
+  });
+
+  it('warns when the copy could not be saved in the browser', () => {
+    const setItem = localStorage.setItem.bind(localStorage);
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === UNDO_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    try {
+      renderToast();
+      click('clear');
+      expect(screen.getByRole('status')).toHaveTextContent(en.undoToast.notSaved);
+    } finally {
+      spy.mockRestore();
+    }
+  });
+
+  it('does not warn when the copy is saved', () => {
+    renderToast('fr');
+    click('clear');
+    expect(screen.getByRole('status')).not.toHaveTextContent(fr.undoToast.notSaved);
   });
 });

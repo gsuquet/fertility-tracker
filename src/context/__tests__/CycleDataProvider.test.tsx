@@ -337,6 +337,45 @@ describe('CycleDataProvider', () => {
       ]);
     });
 
+    it('keeps the oldest copy when a second change follows, so undo restores the real data', () => {
+      const { result } = renderSaved();
+      act(() => result.current.loadDemoData());
+      act(() => result.current.clearAllData());
+      expect(result.current.undoChange).toBe('clear');
+      expect(storedUndoDates()).toEqual(['2026-06-01', '2026-06-02']);
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01', '2026-06-02']);
+    });
+
+    it('deletes the copy when an observation is saved or deleted after the change', () => {
+      const { result } = renderSaved();
+      act(() => result.current.clearAllData());
+      act(() => result.current.saveObservation({ date: '2026-06-10', stretch: '0' }));
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+
+      act(() => result.current.loadDemoData());
+      act(() => result.current.deleteObservation(result.current.observations[0]?.id as string));
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+    });
+
+    it('says when the copy could not be saved and still undoes in memory', () => {
+      const setItem = localStorage.setItem.bind(localStorage);
+      const spy = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+        if (key === UNDO_KEY) throw new Error('QuotaExceededError');
+        setItem(key, value);
+      });
+      const { result } = renderSaved();
+      expect(result.current.undoPersisted).toBe(true);
+      act(() => result.current.clearAllData());
+      expect(result.current.undoPersisted).toBe(false);
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations).toHaveLength(2);
+      expect(result.current.undoPersisted).toBe(true);
+      spy.mockRestore();
+    });
+
     it('does not keep a copy when an import fails', () => {
       const { result } = renderSaved();
       act(() => {

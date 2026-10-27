@@ -21,7 +21,7 @@ If the value of `fertility_care_observations` is not a JSON array, the applicati
 
 The application does not replace a copy that is already in `fertility_care_observations_recovery`. If the application cannot write the copy, it keeps the original value in `fertility_care_observations`. Your next change replaces that value.
 
-Before a restore, a demo load or a delete of all data, the application copies the observations to `fertility_care_observations_undo`. It keeps only the copy of the last change. **Undo** and **Delete the copy** delete the copy.
+Before a restore, a demo load or a delete of all data, the application copies the observations to `fertility_care_observations_undo`. If a copy already exists, the application keeps the older copy. **Undo**, **Delete the copy**, a saved observation and a deleted observation delete the copy.
 
 ## Backup file
 

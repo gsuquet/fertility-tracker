@@ -221,6 +221,8 @@ export const fr: TranslationSchema = {
     earlier: "L'application garde une copie de vos observations d'avant la dernière modification.",
     undo: 'Annuler la modification',
     dismiss: 'Supprimer la copie',
+    notSaved:
+      "Le navigateur n'a pas pu enregistrer la copie. L'annulation fonctionne seulement jusqu'au rechargement de la page.",
   },
   storageRecovery: {
     message:
