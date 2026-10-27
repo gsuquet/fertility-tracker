@@ -39,6 +39,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.2',
+    date: '2026-10-27',
+    title: 'Specification in Simplified Technical English',
+    titleFr: 'Spécification en Anglais Technique Simplifié',
+    tagline:
+      'The specification matches the application, and each commit follows one message format',
+    taglineFr:
+      'La spécification correspond à l’application, et chaque commit suit un format de message unique',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Rewrote the specification in ASD-STE100 Simplified Technical English',
+      'Corrected the specification to match the application: languages, statistics, export, backup and cycle rules',
+      'Added the specification to the automatic documentation check',
+      'Added a Conventional Commits check for commit messages and pull request titles',
+    ],
+    highlightsFr: [
+      'Spécification réécrite en anglais technique simplifié ASD-STE100',
+      'Spécification corrigée selon l’application : langues, statistiques, export, sauvegarde et règles de cycle',
+      'Ajout de la spécification à la vérification automatique de la documentation',
+      'Ajout d’une vérification Conventional Commits des messages de commit et des titres de pull request',
+    ],
+  },
+  {
     version: '1.15.1',
     date: '2026-10-27',
     title: 'Documentation in Simplified Technical English',
