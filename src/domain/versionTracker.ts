@@ -36,7 +36,8 @@ export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome'
 export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
-export const VERSION_HISTORY: VersionRelease[] = [
+/** Release notes, newest first. The tuple type guarantees at least one release. */
+export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
     version: '1.13.0',
     date: '2026-10-26',
@@ -488,18 +489,14 @@ export const VERSION_HISTORY: VersionRelease[] = [
   },
 ];
 
+/** App version, injected from package.json by Vite (`define` in vite.config.ts). */
 export function getAppVersion(): string {
-  if (typeof __APP_VERSION__ !== 'undefined') {
-    return __APP_VERSION__;
-  }
-  return '1.13.0';
+  return __APP_VERSION__;
 }
 
+/** Build timestamp, injected by Vite (`define` in vite.config.ts). */
 export function getBuildDate(): string {
-  if (typeof __BUILD_DATE__ !== 'undefined') {
-    return __BUILD_DATE__;
-  }
-  return '2026-10-26T00:00:00.000Z';
+  return __BUILD_DATE__;
 }
 
 export function getVersionInfo(): VersionInfo {
@@ -508,7 +505,7 @@ export function getVersionInfo(): VersionInfo {
     buildDate: getBuildDate(),
     crmsSpecVersion: CRMS_SPEC_VERSION,
     appName: 'Fertility Tracker',
-    environment: import.meta.env?.MODE || 'production',
+    environment: import.meta.env.MODE,
     repositoryUrl: 'https://github.com/gsuquet/fertility-tracker',
   };
 }
@@ -518,9 +515,7 @@ export function getVersionHistory(): VersionRelease[] {
 }
 
 export function getLatestRelease(): VersionRelease {
-  const [latest] = VERSION_HISTORY;
-  if (!latest) throw new Error('VERSION_HISTORY must contain at least one release');
-  return latest;
+  return VERSION_HISTORY[0];
 }
 
 export function checkAndRecordVersionSeen(): {

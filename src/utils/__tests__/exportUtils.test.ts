@@ -25,4 +25,9 @@ describe('exportUtils', () => {
     const rawInputFilename = getExportFilename('pdf', 'Cycle #2 (Special)');
     expect(rawInputFilename).toBe(`fertility-tracker-chart-cycle-2-special-${today}`);
   });
+
+  it('uses a generic PDF filename when the detail is missing or has no letters or digits', () => {
+    expect(getExportFilename('pdf')).toMatch(/^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}$/);
+    expect(getExportFilename('pdf', '***')).toMatch(/^fertility-tracker-chart-export-/);
+  });
 });

@@ -77,4 +77,50 @@ describe('dataValidator Domain Engine', () => {
     expect(parseAndValidateObservationsJson('{"notAnArray": true}')).toBeNull();
     expect(parseAndValidateObservationsJson('')).toBeNull();
   });
+
+  it('keeps a valid boolean isCycleStart and a positive cycleDay', () => {
+    const result = validateObservation({
+      date: '2026-09-01',
+      isCycleStart: false,
+      cycleDay: 4,
+      notes: 'note',
+    });
+    expect(result).toMatchObject({ isCycleStart: false, cycleDay: 4, notes: 'note' });
+  });
+
+  it('ignores a non-array payload', () => {
+    expect(validateObservationsArray({ date: '2026-09-01' })).toEqual([]);
+  });
+
+  it('keeps every valid field of a complete record', () => {
+    const raw = {
+      id: 'obs_custom',
+      date: '2026-09-03',
+      stretch: '10',
+      modifiers: ['K', 'X', 'L'],
+      frequency: 'X3',
+      symptoms: ['AP', 'NOPE'],
+      codeString: '10KLX3 custom',
+    };
+    expect(validateObservation(raw)).toMatchObject({
+      id: 'obs_custom',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      frequency: 'X3',
+      symptoms: ['AP'],
+      codeString: '10KLX3 custom',
+      stamp: 'WHITE_BABY',
+    });
+  });
+
+  it('replaces a blank id and a blank code string', () => {
+    const result = validateObservation({
+      id: '  ',
+      date: '2026-09-04',
+      stretch: '0',
+      codeString: ' ',
+    });
+    expect(result?.id).toMatch(/^obs_2026-09-04_\d+$/);
+    expect(result?.codeString).toBe('0');
+  });
 });

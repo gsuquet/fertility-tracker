@@ -76,15 +76,12 @@ export function groupObservationsIntoCycles(observations: Observation[]): Cycle[
     }
   }
 
-  // Save final current cycle
-  if (currentCycleObs.length > 0) {
-    const processedCurrent = processCycleObservations(currentCycleObs);
-    cycles.push({
-      id: `cycle_${currentCycleStartDate}`,
-      startDate: currentCycleStartDate,
-      observations: processedCurrent,
-    });
-  }
+  // Save final current cycle (always non-empty: the first observation starts it)
+  cycles.push({
+    id: `cycle_${currentCycleStartDate}`,
+    startDate: currentCycleStartDate,
+    observations: processCycleObservations(currentCycleObs),
+  });
 
   // Return cycles ordered newest to oldest (most recent cycle first)
   return cycles.reverse();
