@@ -70,10 +70,6 @@
     text-align: center;
   }
 
-  .footer-copyright-text {
-    opacity: 0.85;
-  }
-
   .footer-links {
     display: inline-flex;
     align-items: center;
@@ -99,7 +95,7 @@
   }
 
   .footer-version-btn:hover {
-    background-color: var(--accent-primary, #10b981);
+    background-color: var(--accent-solid, #10b981);
     color: #ffffff;
     border-color: var(--accent-primary, #10b981);
     transform: translateY(-1px);

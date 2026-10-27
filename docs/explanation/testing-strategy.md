@@ -40,6 +40,8 @@ The end-to-end tests are slow, so they test only the main flows. The rules and t
 
 The axe check finds errors that a test by role cannot find, for example a low color contrast. The application has some violations today, but the check must not stop all the pull requests. Thus, the test lists the violations that it expects on each screen. Each other violation makes the test fail. A listed violation that does not occur also makes the test fail. Thus, the list gets shorter after each correction.
 
+Since version 1.17.3, the list of each screen is empty. Add a violation to the list only with a link to the issue that will correct it.
+
 ## Related documents
 
 - [Write a test first](../how-to/write-a-test-first.md)
