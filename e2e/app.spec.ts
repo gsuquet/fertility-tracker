@@ -4,7 +4,8 @@ import type { Page } from '@playwright/test';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
 import { en } from '../src/i18n/locales/en';
 import { formatMessage } from '../src/i18n/format';
-import { TODAY, fixClock, labelPattern, openApp } from './fixtures';
+import { formatDateDisplay } from '../src/utils/dateUtils';
+import { TODAY, escapeRegExp, fixClock, labelPattern, openApp } from './fixtures';
 
 const directCode = (page: Page) => page.getByRole('textbox', { name: en.labels.directInput });
 
@@ -43,7 +44,14 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.reload();
 
     await expect(directCode(page)).toHaveValue('10KLX3');
-    await expect(page.getByRole('button', { name: /^Tue, 10\/27 .*10KLX3/ })).toBeVisible();
+    const dayLabel = formatDateDisplay(TODAY, en.locale, {
+      weekday: 'short',
+      month: 'numeric',
+      day: 'numeric',
+    });
+    await expect(
+      page.getByRole('button', { name: new RegExp(`^${escapeRegExp(dayLabel)} .*10KLX3`) })
+    ).toBeVisible();
   });
 
   test('restores the observations from a JSON backup', async ({ page }) => {
@@ -127,9 +135,16 @@ test.describe('Fertility Tracker in a browser', () => {
 
     await page.getByRole('tab', { name: en.tabs.calendar }).click();
     const calendar = page.getByRole('tabpanel', { name: en.tabs.calendar });
-    await expect(calendar.getByRole('heading', { name: 'October 2026' })).toBeVisible();
     await expect(
-      calendar.getByRole('button', { name: 'Date 2026-10-12, Observation 10KLAD' })
+      calendar.getByRole('heading', { name: `${en.calendar.months[9]} 2026` })
+    ).toBeVisible();
+    await expect(
+      calendar.getByRole('button', {
+        name: formatMessage(en.calendar.dayLabel, {
+          date: '2026-10-12',
+          status: formatMessage(en.calendar.observationStatus, { code: '10KLAD' }),
+        }),
+      })
     ).toBeVisible();
 
     await page.getByRole('tab', { name: en.tabs.analytics }).click();
@@ -151,7 +166,9 @@ test.describe('Fertility Tracker in a browser', () => {
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
     const peakStat = (day: number, date: string) =>
       page.getByTitle(
-        `${en.stats.peakDay}: ${formatMessage(en.common.cycleDayDate, { day, date })}`
+        new RegExp(
+          `^${escapeRegExp(en.stats.peakDay)}\\W+${escapeRegExp(formatMessage(en.common.cycleDayDate, { day, date }))}$`
+        )
       );
     const cell = (date: string, stamp: string) =>
       chart.getByRole('button', {
@@ -204,10 +221,19 @@ test.describe('Fertility Tracker in a browser', () => {
     // The toast is in the top dialog, so the focus trap of the dialog reaches Undo.
     const undo = drawer.getByRole('button', { name: en.undoToast.undo });
     await expect(undo).toBeVisible();
-    // The drawer has about 45 tab stops (the date field has more than one), Undo comes after them.
-    for (let i = 0; i < 100; i++) {
+    // Tab until Undo has the focus, or until the focus is back on the first element. A date
+    // field keeps the focus for more than one Tab, so a repeat is not the end of the cycle.
+    await page.evaluate(() => {
+      (window as unknown as { first: Element | null }).first = document.activeElement;
+    });
+    let step: 'undo' | 'first' | 'next' = 'next';
+    while (step === 'next') {
       await page.keyboard.press('Tab');
-      if (await undo.evaluate(b => b === document.activeElement)) break;
+      step = await undo.evaluate(button => {
+        const { first } = window as unknown as { first: Element | null };
+        if (document.activeElement === button) return 'undo';
+        return document.activeElement === first ? 'first' : 'next';
+      });
     }
     await expect(undo).toBeFocused();
 

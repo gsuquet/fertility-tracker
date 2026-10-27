@@ -83,6 +83,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `fixClock(page)`                 | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                                                |
 | `skipWelcome(page)`              | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                                        |
 | `labelPattern(template, values)` | `e2e/fixtures.ts` | Makes a pattern from a locale template. A placeholder without a value matches all text. |
+| `escapeRegExp(text)`             | `e2e/fixtures.ts` | Escapes the special characters of a regular expression in a text.                       |
 
 `KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. When a correction is merged, remove its pairs from the list.
 

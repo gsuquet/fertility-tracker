@@ -24,6 +24,9 @@ export const openApp = async (page: Page) => {
   await page.goto('/');
 };
 
+/** Escapes the characters that have a meaning in a regular expression. */
+export const escapeRegExp = (text: string) => text.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+
 /**
  * A pattern for a translated template, for example `en.chartStrip.filledCellLabel`.
  * Each placeholder without a value matches any text.
@@ -34,10 +37,8 @@ export const labelPattern = (template: string, values: Record<string, string | n
       .split(/(\{\w+\})/)
       .map(part => {
         const name = /^\{(\w+)\}$/.exec(part)?.[1];
-        if (name === undefined) return part.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-        return Object.hasOwn(values, name)
-          ? String(values[name]).replace(/[.*+?^${}()|[\]\\]/g, '\\$&')
-          : '.*';
+        if (name === undefined) return escapeRegExp(part);
+        return Object.hasOwn(values, name) ? escapeRegExp(String(values[name])) : '.*';
       })
       .join('')}$`
   );

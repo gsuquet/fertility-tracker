@@ -100,6 +100,5 @@ test.describe('Fertility Tracker with damaged or unavailable storage', () => {
     await directCode(page).fill('10KLX3');
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect(page.getByRole('status')).toHaveText(en.todayView.savedNotice);
-    await context.setOffline(false);
   });
 });
