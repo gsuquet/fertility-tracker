@@ -81,6 +81,7 @@ If you have observations, you select **Replace** or **Merge**:
 
 - **Replace** deletes the current observations and keeps only the file.
 - **Merge** keeps the current observations. A day of the file replaces the current day with the same date.
+- If a day of the file is a manual Peak Day, **Merge** removes the other manual Peak Days of that cycle.
 
 The validation is in `src/domain/dataValidator.ts`.
 

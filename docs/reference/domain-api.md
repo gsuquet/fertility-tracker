@@ -62,10 +62,10 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 ## backupImport.ts
 
-| Function                | Signature                                                             | Returns                                                                                               |
-| ----------------------- | --------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `summarizeObservations` | `(observations: Observation[]) => BackupSummary`                      | The number of observations, the first date and the last date. The dates are `null` for an empty list. |
-| `mergeObservations`     | `(existing: Observation[], imported: Observation[]) => Observation[]` | All the days in date order. An imported day replaces the existing day with the same date.             |
+| Function                | Signature                                                             | Returns                                                                                                                                                               |
+| ----------------------- | --------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `summarizeObservations` | `(observations: Observation[]) => BackupSummary`                      | The number of observations, the first date and the last date. The dates are `null` for an empty list.                                                                 |
+| `mergeObservations`     | `(existing: Observation[], imported: Observation[]) => Observation[]` | All the days in date order. An imported day replaces the existing day with the same date. An imported manual Peak Day clears the other manual Peak Days of its cycle. |
 
 ## demoData.ts
 
