@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.18.1  
+**Document Version:** 1.18.4  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -336,6 +336,8 @@ The user interface comprises four primary view tabs, global navigation, header s
   - **Escape:** `Escape` calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document. The native `cancel` event (the browser fires it for `Escape` when the focus is not in the dialog) also calls `onClose`, and does not close the `<dialog>` by itself, so React state always controls whether the dialog is open.
   - **Backdrop:** A click on the backdrop (the `<dialog>` element itself, outside the dialog panel) calls `onClose`. A click in the panel does not.
   - **Focus return:** When it closes, it calls `close()` on the `<dialog>` (the page is inert until then), and then moves the focus back to the element that had the focus before it opened.
+  - **Native listeners:** The `keydown` (focus trap, `Escape`) and `click` (backdrop) handlers are native listeners on the `<dialog>`, not React props. Thus they also get the events of elements that another React tree renders in the dialog with a portal (the undo toast).
+  - **Top dialog and the undo toast:** `useTopDialog()` returns the open `<dialog>` on top, or `null`. `showModal()` makes all the page outside that dialog inert, also a `popover` element in the top layer (checked in Chromium). So while a dialog is open, `UndoToast` renders in the top dialog with a portal: it stays visible above the dialog panel, **Undo** and **Delete the copy** stay clickable, and the focus trap includes them. When the dialog closes, the toast goes back to the page. In the mobile menu (≤ 640px), the toast shows at the top of the screen, so it does not cover the menu actions.
   - **Scrolling content:** A dialog body that scrolls (for example the welcome guide slides) is a `<section>` with `tabIndex={0}`, named by its heading with `aria-labelledby` (role `region`), so a keyboard user can scroll it.
 
 ---

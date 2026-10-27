@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useLayoutEffect, useRef } from 'react';
+import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
 
 const FOCUSABLE = [
@@ -16,6 +16,29 @@ const focusableIn = (dialog: HTMLDialogElement) =>
   Array.from(dialog.querySelectorAll<HTMLElement>(FOCUSABLE)).filter(
     element => element.closest('dialog') === dialog
   );
+
+/** The open dialogs, oldest first. Only the last one is not inert. */
+let openDialogs: HTMLDialogElement[] = [];
+const listeners = new Set<() => void>();
+
+const setOpenDialogs = (dialogs: HTMLDialogElement[]) => {
+  openDialogs = dialogs;
+  for (const listener of listeners) listener();
+};
+
+const subscribe = (listener: () => void) => {
+  listeners.add(listener);
+  return () => listeners.delete(listener);
+};
+
+const getTopDialog = () => openDialogs[openDialogs.length - 1] ?? null;
+
+/**
+ * The open dialog on top, or null. `showModal()` makes all the page outside it inert,
+ * so an element that must stay usable (the undo toast) renders in it with a portal.
+ */
+export const useTopDialog = (): HTMLDialogElement | null =>
+  useSyncExternalStore(subscribe, getTopDialog);
 
 interface ModalProps {
   /** The id of the dialog title. Give it or `label`. */
@@ -50,47 +73,53 @@ export const Modal: React.FC<ModalProps> = ({
   children,
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
+  const onCloseRef = useRef(onClose);
+  onCloseRef.current = onClose;
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current as HTMLDialogElement;
     const opener = document.activeElement as HTMLElement;
+
+    // A native listener, not a React one: it also gets the keys of the elements that another
+    // React tree renders in the dialog with a portal, such as the undo toast.
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === 'Escape') {
+        e.preventDefault();
+        e.stopPropagation();
+        onCloseRef.current();
+        return;
+      }
+      if (e.key !== 'Tab') return;
+      const elements = focusableIn(dialog);
+      const first = elements[0] ?? dialog;
+      const last = elements[elements.length - 1] ?? dialog;
+      const active = document.activeElement;
+      if (active === dialog || active === (e.shiftKey ? first : last)) {
+        e.preventDefault();
+        (e.shiftKey ? last : first).focus();
+      }
+    };
+
+    // Only a click on the backdrop has the dialog itself as target
+    const handleClick = (e: MouseEvent) => {
+      if (e.target === dialog) onCloseRef.current();
+    };
+
     // The browser puts the dialog in the top layer and makes the page under it inert
     dialog.showModal();
+    dialog.addEventListener('keydown', handleKeyDown);
+    dialog.addEventListener('click', handleClick);
+    setOpenDialogs([...openDialogs, dialog]);
     (initialFocusRef?.current ?? focusableIn(dialog)[0] ?? dialog).focus();
     return () => {
+      dialog.removeEventListener('keydown', handleKeyDown);
+      dialog.removeEventListener('click', handleClick);
+      setOpenDialogs(openDialogs.filter(open => open !== dialog));
       // The page stays inert while the dialog is open, so close it before the opener takes the focus
       dialog.close();
       opener.focus();
     };
   }, [initialFocusRef]);
-
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLDialogElement>) => {
-    const dialog = e.currentTarget;
-    // A dialog that opened over this one handles its own keys
-    if ((e.target as Element).closest('dialog') !== dialog) return;
-    if (e.key === 'Escape') {
-      e.preventDefault();
-      e.stopPropagation();
-      onClose();
-      return;
-    }
-    if (e.key !== 'Tab') return;
-    const elements = focusableIn(dialog);
-    const first = elements[0] ?? dialog;
-    const last = elements[elements.length - 1] ?? dialog;
-    const active = document.activeElement;
-    if (active === dialog || active === (e.shiftKey ? first : last)) {
-      e.preventDefault();
-      (e.shiftKey ? last : first).focus();
-    }
-  };
-
-  // Only a click on the backdrop has the dialog itself as target. Through the portal,
-  // React sends the clicks to the components that render the modal, so stop them here.
-  const handleClick = (e: React.MouseEvent<HTMLDialogElement>) => {
-    e.stopPropagation();
-    if (e.target === e.currentTarget) onClose();
-  };
 
   return createPortal(
     <dialog
@@ -101,8 +130,6 @@ export const Modal: React.FC<ModalProps> = ({
       aria-label={label}
       aria-describedby={describedBy}
       tabIndex={-1}
-      onKeyDown={handleKeyDown}
-      onClick={handleClick}
       // The browser fires cancel for Escape when the focus is not in the dialog. React state
       // decides when the dialog closes, so the native cancel must not close it by itself.
       onCancel={e => {

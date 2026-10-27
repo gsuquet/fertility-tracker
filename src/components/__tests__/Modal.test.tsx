@@ -1,7 +1,8 @@
 import { useRef, useState } from 'react';
+import { createPortal } from 'react-dom';
 import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
-import { Modal } from '../Modal';
+import { Modal, useTopDialog } from '../Modal';
 
 interface DialogProps {
   onClose?: () => void;
@@ -82,6 +83,17 @@ const pressTab = (shiftKey = false) => {
   });
   (document.activeElement as HTMLElement).dispatchEvent(event);
   return event;
+};
+
+/** Shows the name of the top open dialog, as the undo toast reads it. */
+const TopDialogProbe = () => (
+  <span data-testid="top">{useTopDialog()?.getAttribute('aria-label') ?? 'none'}</span>
+);
+
+/** A button that another React tree puts in the top dialog, like the undo toast. */
+const ForeignButton = () => {
+  const host = useTopDialog();
+  return host && createPortal(<button type="button">Foreign</button>, host);
 };
 
 describe('Modal', () => {
@@ -208,6 +220,44 @@ describe('Modal', () => {
     fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(trigger).toHaveFocus();
+  });
+
+  it('tells which open dialog is on top', () => {
+    render(
+      <>
+        <Opener />
+        <TopDialogProbe />
+      </>
+    );
+    const top = () => screen.getByTestId('top').textContent;
+    expect(top()).toBe('none');
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    expect(top()).toBe('Outer');
+    fireEvent.click(screen.getByRole('button', { name: 'Open inner' }));
+    expect(top()).toBe('Inner');
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+    expect(top()).toBe('Outer');
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+    expect(top()).toBe('none');
+  });
+
+  it('traps Tab and handles Escape for content that another React tree puts in it', () => {
+    const onClose = vi.fn();
+    render(
+      <>
+        <Dialog onClose={onClose} />
+        <ForeignButton />
+      </>
+    );
+    const foreign = screen.getByRole('button', { name: 'Foreign' });
+    expect(screen.getByRole('dialog')).toContainElement(foreign);
+    foreign.focus();
+    expect(pressTab().defaultPrevented).toBe(true);
+    expect(screen.getByRole('button', { name: 'First' })).toHaveFocus();
+    expect(pressTab(true).defaultPrevented).toBe(true);
+    expect(foreign).toHaveFocus();
+    fireEvent.keyDown(foreign, { key: 'Escape' });
+    expect(onClose).toHaveBeenCalledOnce();
   });
 
   it('gives the keys of an inner dialog to the inner dialog only', () => {

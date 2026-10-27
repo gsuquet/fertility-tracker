@@ -1,6 +1,8 @@
 import { screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
+import { useState } from 'react';
 import { UndoToast } from '../UndoToast';
+import { Modal } from '../Modal';
 import { useCycleData } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
@@ -45,6 +47,23 @@ const renderToast = (language: 'en' | 'fr' = 'en') =>
   );
 
 const click = (name: string) => fireEvent.click(screen.getByRole('button', { name }));
+
+/** A dialog that the test opens after the toast shows. */
+const DialogOpener = () => {
+  const [open, setOpen] = useState(false);
+  return (
+    <>
+      <button type="button" onClick={() => setOpen(true)}>
+        open dialog
+      </button>
+      {open && (
+        <Modal label="Some dialog" onClose={() => setOpen(false)} className="o" panelClassName="p">
+          <button type="button">Inside</button>
+        </Modal>
+      )}
+    </>
+  );
+};
 
 describe('UndoToast', () => {
   it('renders nothing when there is nothing to undo', () => {
@@ -116,5 +135,46 @@ describe('UndoToast', () => {
     renderToast('fr');
     click('clear');
     expect(screen.getByRole('status')).not.toHaveTextContent(fr.undoToast.notSaved);
+  });
+
+  it('moves into the top dialog, so Undo stays usable while the page is inert', () => {
+    renderWithProviders(
+      <>
+        <Actions />
+        <DialogOpener />
+        <UndoToast />
+      </>,
+      { observations: saved }
+    );
+    click('clear');
+    click('open dialog');
+    const dialog = screen.getByRole('dialog', { name: 'Some dialog' });
+    expect(dialog).toContainElement(screen.getByRole('status'));
+    // The dialog traps the focus through the toast buttons too
+    const dismiss = screen.getByRole('button', { name: en.undoToast.dismiss });
+    dismiss.focus();
+    fireEvent.keyDown(dismiss, { key: 'Tab' });
+    expect(screen.getByRole('button', { name: 'Inside' })).toHaveFocus();
+
+    click(en.undoToast.undo);
+    expect(screen.getByTestId('count')).toHaveTextContent('1');
+    expect(screen.queryByRole('status')).toBeNull();
+    expect(dialog).toBeInTheDocument();
+  });
+
+  it('goes back to the page when the dialog closes', () => {
+    renderWithProviders(
+      <>
+        <Actions />
+        <DialogOpener />
+        <UndoToast />
+      </>,
+      { observations: saved }
+    );
+    click('clear');
+    click('open dialog');
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Inside' }), { key: 'Escape' });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    expect(screen.getByRole('status').closest('dialog')).toBeNull();
   });
 });

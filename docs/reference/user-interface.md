@@ -75,7 +75,7 @@ The confirmation dialog opens before an action replaces or deletes data. The foc
 
 ## Undo toast
 
-The undo toast shows at the bottom of the page after a restore, a demo load or a delete of all data. It also shows after a reload if the copy of the old observations is still in the browser. It stays until you click a button, or until you save or delete an observation. If you make two changes, **Undo** puts back the observations from before the first change. If the browser cannot save the copy, the toast says that **Undo** works only until you reload the page.
+The undo toast shows at the bottom of the page after a restore, a demo load or a delete of all data. It also shows after a reload if the copy of the old observations is still in the browser. It stays until you click a button, or until you save or delete an observation. If you make two changes, **Undo** puts back the observations from before the first change. If the browser cannot save the copy, the toast says that **Undo** works only until you reload the page. When a dialog is open, the toast shows above the dialog, and you can click its buttons or move to them with `Tab`.
 
 | Button              | Action                                                         |
 | ------------------- | -------------------------------------------------------------- |
