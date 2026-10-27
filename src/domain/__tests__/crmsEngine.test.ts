@@ -55,7 +55,7 @@ describe('Creighton Model Domain Engine', () => {
       expect(parsed.frequency).toBe('X3');
       expect(parsed.intercourse).toBe(true);
       expect(parsed.symptoms).toEqual(['AP']);
-      expect(parsed.formattedCode).toBe('10KLX3 I');
+      expect(parsed.formattedCode).toBe('10KLX3 I AP');
     });
 
     it('parses direct text input without space between mucus and frequency', () => {
@@ -65,7 +65,7 @@ describe('Creighton Model Domain Engine', () => {
       expect(parsed.frequency).toBe('X3');
       expect(parsed.intercourse).toBe(true);
       expect(parsed.symptoms).toEqual(['AP']);
-      expect(parsed.formattedCode).toBe('10KLX3 I');
+      expect(parsed.formattedCode).toBe('10KLX3 I AP');
     });
 
     it('parses 0AD and 2WX2 with or without whitespace', () => {
