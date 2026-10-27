@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+#MISE description="Check the docs for STE writing rules, Diátaxis structure and broken links"
+set -euo pipefail
+node --input-type=module -e "import { main } from './scripts/docs/checkDocs.ts'; process.exit(main(process.cwd()) === 0 ? 0 : 1);"

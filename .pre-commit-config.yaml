@@ -41,3 +41,9 @@ repos:
         language: system
         files: \.(ts|tsx)$
         pass_filenames: false
+      - id: docs-check
+        name: docs check (STE, Diátaxis, links)
+        entry: .mise/tasks/docs
+        language: system
+        files: (\.md$|^scripts/docs/)
+        pass_filenames: false
