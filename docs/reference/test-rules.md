@@ -62,10 +62,12 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | ------------------- | -------------------------------------------------------------------------------------- |
 | Browser             | Chromium                                                                               |
 | Application         | The production build: `vite build`, then `vite preview` on port `4173`.                |
-| Date in the browser | `2026-10-27`, set with `page.clock.setFixedTime()`.                                    |
+| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.   |
 | Type check          | `e2e/tsconfig.json`.`npm run typecheck` checks it.                                     |
 | Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`.                                   |
 | Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed. |
+| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                     |
+| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                          |
 
 | Test file                   | Flows                                                                                                     |
 | --------------------------- | --------------------------------------------------------------------------------------------------------- |
@@ -78,7 +80,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `fixClock(page)`    | `e2e/fixtures.ts` | Sets the date in the browser to `TODAY`.                          |
 | `skipWelcome(page)` | `e2e/fixtures.ts` | Marks the welcome guide as seen.                                  |
 
-`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe rule ids that the application breaks today. The check ignores only these rules. A violation of a different rule makes the test fail. When a correction is merged, remove its rule id from the list.
+`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. When a correction is merged, remove its pairs from the list.
 
 ## Related documents
 

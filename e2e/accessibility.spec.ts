@@ -4,34 +4,40 @@ import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
 import { openApp } from './fixtures';
 
-/**
- * Axe rules that the application breaks today. The check ignores only these rule ids, so that it
- * passes now and fails on each new violation. Remove a rule id when its correction is merged.
- *
- * The accessibility corrections are tracked in
- * https://github.com/gsuquet/fertility-tracker/issues/34 (modals) and
- * https://github.com/gsuquet/fertility-tracker/issues/35 (hardcoded strings).
- * Neither issue covers the color contrast yet.
- */
-const KNOWN_VIOLATIONS: readonly string[] = [
-  // Text with a contrast ratio below 4.5:1 in the light theme: the "Direct Code Only" mode
-  // button, the danger buttons ("Clear Data / Reset", "Delete Entry"), the footer copyright,
-  // the cycle length pill and the symptom tags of the chart, and the section subtitle and
-  // the note of the export dialog.
-  'color-contrast',
-];
+type Screen = keyof typeof en.tabs | 'exportDialog';
 
-const checkAccessibility = async (page: Page) => {
-  const results = await new AxeBuilder({ page })
-    .withTags(['wcag2a', 'wcag2aa'])
-    .disableRules([...KNOWN_VIOLATIONS])
-    .analyze();
-  const found = results.violations.map(v => ({
-    id: v.id,
-    impact: v.impact,
-    targets: v.nodes.map(n => n.target.join(' ')),
-  }));
-  expect(found).toEqual([]);
+const FOOTER_CONTRAST = 'color-contrast .footer-copyright-text';
+const DIRECT_MODE_CONTRAST = 'color-contrast button[title="Direct Code Entry Only"] > span';
+
+/**
+ * Axe violations that the application has today, as "rule-id target" pairs for each screen.
+ * The check fails on a pair that is not in the list, and on a listed pair that does not occur
+ * any more. Thus, remove a pair when its correction is merged, and the list gets shorter.
+ *
+ * All the pairs are text with a contrast ratio below 4.5:1 in the light theme, see
+ * https://github.com/gsuquet/fertility-tracker/issues/49. The other accessibility corrections
+ * are in https://github.com/gsuquet/fertility-tracker/issues/34 (modals) and
+ * https://github.com/gsuquet/fertility-tracker/issues/35 (hardcoded strings).
+ */
+const KNOWN_VIOLATIONS: Record<Screen, readonly string[]> = {
+  today: [DIRECT_MODE_CONTRAST, 'color-contrast .btn-danger > span', FOOTER_CONTRAST],
+  chart: ['color-contrast .cycle-length-pill', 'color-contrast .cell-symptom-tag', FOOTER_CONTRAST],
+  calendar: [FOOTER_CONTRAST],
+  analytics: [FOOTER_CONTRAST],
+  exportDialog: [
+    DIRECT_MODE_CONTRAST,
+    'color-contrast button[aria-label="Delete Entry"] > span',
+    FOOTER_CONTRAST,
+    'color-contrast .section-subtitle',
+    'color-contrast .pdf-info-note',
+    'color-contrast .import-restore-section > .btn-danger.btn',
+  ],
+};
+
+const checkAccessibility = async (page: Page, screen: Screen) => {
+  const results = await new AxeBuilder({ page }).withTags(['wcag2a', 'wcag2aa']).analyze();
+  const found = results.violations.flatMap(v => v.nodes.map(n => `${v.id} ${n.target.join(' ')}`));
+  expect(found.sort()).toEqual([...KNOWN_VIOLATIONS[screen]].sort());
 };
 
 test.describe('Accessibility (axe, WCAG 2 A and AA)', () => {
@@ -42,17 +48,17 @@ test.describe('Accessibility (axe, WCAG 2 A and AA)', () => {
     await expect(page.getByRole('dialog')).toBeHidden();
   });
 
-  for (const [tab, name] of Object.entries(en.tabs)) {
-    test(`the ${tab} view has no new violations`, async ({ page }) => {
+  for (const [tab, name] of Object.entries(en.tabs) as [keyof typeof en.tabs, string][]) {
+    test(`the ${tab} view has only the known violations`, async ({ page }) => {
       await page.getByRole('tab', { name }).click();
       await expect(page.getByRole('tabpanel', { name })).toBeVisible();
-      await checkAccessibility(page);
+      await checkAccessibility(page, tab);
     });
   }
 
-  test('the export dialog has no new violations', async ({ page }) => {
+  test('the export dialog has only the known violations', async ({ page }) => {
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
     await expect(page.getByRole('dialog', { name: en.exportModal.title })).toBeVisible();
-    await checkAccessibility(page);
+    await checkAccessibility(page, 'exportDialog');
   });
 });

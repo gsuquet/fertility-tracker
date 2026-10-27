@@ -65,8 +65,11 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(directCode(page)).toHaveValue('');
 
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    page.once('dialog', dialog => dialog.accept());
+    const restoreAlert = page.waitForEvent('dialog');
     await exportDialog.getByLabel(en.actions.importJson).setInputFiles(backupPath);
+    const alert = await restoreAlert;
+    expect(alert.message()).toBe('Chart data restored successfully!');
+    await alert.accept();
     await expect(exportDialog).toBeHidden();
 
     await page.reload();

@@ -4,9 +4,9 @@ import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../src/domain/versionTracker';
 /** The date of "today" in the browser, so that the dates on the screen are stable. */
 export const TODAY = '2026-10-27';
 
-/** Fixes the browser clock at noon on {@link TODAY}. Timers keep running. */
+/** Fixes the browser clock at noon UTC on {@link TODAY}. Timers keep running. */
 export const fixClock = async (page: Page) => {
-  await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00`));
+  await page.clock.setFixedTime(new Date(`${TODAY}T12:00:00Z`));
 };
 
 /** Marks the welcome guide as seen, so that it does not cover the page. */

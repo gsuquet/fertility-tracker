@@ -38,7 +38,7 @@ The end-to-end tests are slow, so they test only the main flows. The rules and t
 
 ## Why the accessibility check has a list of known violations
 
-The axe check finds errors that a test by role cannot find, for example a low color contrast. The application has some violations today. The check must not stop all the pull requests until somebody corrects them. Thus, the test lists the rule ids that it ignores. Each other violation makes the test fail. Thus, a change cannot add a new type of violation.
+The axe check finds errors that a test by role cannot find, for example a low color contrast. The application has some violations today, but the check must not stop all the pull requests. Thus, the test lists the violations that it expects on each screen. Each other violation makes the test fail. A listed violation that does not occur also makes the test fail. Thus, the list gets shorter after each correction.
 
 ## Related documents
 

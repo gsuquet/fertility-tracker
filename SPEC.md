@@ -532,14 +532,14 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### End-to-End Tests (`e2e/`)
 
-- **Playwright** drives a real Chromium against the production bundle: `vite build`, then `vite preview` on port `4173` (Playwright `webServer` in `playwright.config.ts`). The browser clock is fixed to `2026-10-27` so that the dates are stable.
+- **Playwright** drives a real Chromium against the production bundle: `vite build`, then `vite preview` on port `4173` (Playwright `webServer` in `playwright.config.ts`). The browser time zone is UTC and the clock is fixed to `2026-10-27T12:00:00Z`, so that the dates are stable. A local run reuses a running server only when `PW_REUSE=1` is set.
 - Vitest does not run the files in `e2e/`, and the coverage report does not include them. `e2e/tsconfig.json` type-checks them; `npm run typecheck` runs it.
 - The suite covers these flows:
   1. The first visit shows the welcome guide, and the **Escape** key closes it.
   2. An observation logged in the **Today** view is still there after a reload.
   3. A JSON backup, a reset and a restore of that backup keep the observations.
   4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
-- **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit allowlist of axe rule ids in `e2e/accessibility.spec.ts`, linked to issues #34 and #35. A violation of any other rule fails the test. Remove a rule id from the allowlist when its issue is corrected.
+- **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit list of rule id and target pairs for each screen in `e2e/accessibility.spec.ts` (all `color-contrast`, issue #49; see also #34 and #35). The test fails on a pair that is not in the list and on a listed pair that no longer occurs, so the list shrinks when a correction is merged.
 - Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.
 
 ### Test Helpers (`src/test/`)
