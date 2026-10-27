@@ -3,7 +3,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
 import type { Observation } from '../types/crms';
-import { addDays } from '../utils/dateUtils';
+import { addDays, getTodayStr } from '../utils/dateUtils';
 import { formatMessage } from '../i18n';
 import { Target } from 'lucide-react';
 
@@ -24,7 +24,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
       : [
           {
             id: 'cycle_empty',
-            startDate: new Date().toISOString().slice(0, 10),
+            startDate: getTodayStr(),
             observations: [],
           },
         ];

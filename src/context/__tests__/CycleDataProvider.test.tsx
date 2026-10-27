@@ -279,6 +279,13 @@ describe('CycleDataProvider', () => {
     expect(result.current.observations).toEqual([]);
   });
 
+  it('does not delete an observation when it gets a date instead of an id', () => {
+    const { result } = renderData();
+    act(() => result.current.saveObservation({ id: 'kept', date: '2026-09-01', bleeding: 'H' }));
+    act(() => result.current.deleteObservation('2026-09-01'));
+    expect(result.current.observations.map(o => o.id)).toEqual(['kept']);
+  });
+
   it('falls back to the newest cycle when the selected cycle disappears', () => {
     const { result } = renderData();
     act(() => result.current.saveObservation({ date: '2026-09-01', bleeding: 'H' }));

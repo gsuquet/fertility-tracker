@@ -1,4 +1,11 @@
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
+import {
+  LAST_SEEN_VERSION_KEY,
+  STORAGE_HAS_SEEN_WELCOME_KEY,
+  STORAGE_LANGUAGE_KEY,
+  STORAGE_OBSERVATIONS_KEY,
+  STORAGE_THEME_KEY,
+} from '../utils/storageKeys';
 import { parseObservationData } from './storageFormat';
 
 export interface VersionRelease {
@@ -31,9 +38,6 @@ export interface StorageStats {
   observationsCount: number;
 }
 
-export const LAST_SEEN_VERSION_KEY = 'fertility_tracker_last_seen_version';
-export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome';
-export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
 /** Release notes, newest first. The tuple type guarantees at least one release. */
@@ -63,6 +67,34 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'Chaque libellé de la légende des timbres apparaît une seule fois, par exemple Jour Sommet (P)',
       'Les libellés des lecteurs d’écran et les info-bulles des boutons sont traduits, et la langue de la page suit l’application',
       'Les codes CrMS comme 10KLX3, P et I restent les mêmes dans chaque langue',
+    ],
+  },
+  {
+    version: '1.18.1',
+    date: '2026-10-27',
+    title: 'Code Cleanup',
+    titleFr: 'Nettoyage du code',
+    tagline: 'Removes unused code and makes internal APIs clearer, with no change to your data',
+    taglineFr:
+      'Supprime du code inutilisé et clarifie les API internes, sans changement pour vos données',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Removes the unused cycle-level manual Peak Day date',
+      'Deleting an observation now matches its id only',
+      'Each browser storage key is defined in one place, in storageKeys.ts',
+      'The print view uses the local date of today when there are no cycles',
+      'Toasts close a fixed time after the last message, and their timers stop when the view closes',
+      'A second print within one second keeps the original page title',
+      'The language and theme settings no longer re-render the whole app without a change',
+    ],
+    highlightsFr: [
+      'Supprime la date de Jour Sommet manuel inutilisée au niveau du cycle',
+      'La suppression d’une observation utilise maintenant son identifiant uniquement',
+      'Chaque clé de stockage du navigateur est définie à un seul endroit, dans storageKeys.ts',
+      'La vue d’impression utilise la date locale du jour quand il n’y a pas de cycle',
+      'Les notifications se ferment un temps fixe après le dernier message, et leurs minuteurs s’arrêtent quand la vue se ferme',
+      'Une deuxième impression en moins d’une seconde garde le titre d’origine de la page',
+      'Les réglages de langue et de thème ne font plus re-rendre toute l’application sans changement',
     ],
   },
   {
@@ -908,8 +940,8 @@ export function getStorageStats(): StorageStats {
         STORAGE_OBSERVATIONS_KEY,
         LAST_SEEN_VERSION_KEY,
         STORAGE_HAS_SEEN_WELCOME_KEY,
-        'fertility_care_lang',
-        'fertility_care_theme',
+        STORAGE_LANGUAGE_KEY,
+        STORAGE_THEME_KEY,
       ];
       const keysSet = new Set<string>(knownKeys);
       try {

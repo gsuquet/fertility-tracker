@@ -1,7 +1,7 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { App } from '../App';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { en } from '../i18n';
 
 const footer = () => screen.getByRole('contentinfo');
@@ -75,6 +75,52 @@ describe('App flows', () => {
     expect(document.title).toBe('Fertility Tracker');
     act(() => vi.advanceTimersByTime(2500));
     expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('restores the original title after a second print within one second', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    vi.spyOn(window, 'print').mockImplementation(() => {});
+    document.title = 'Fertility Tracker';
+    render(<App />);
+    const printAll = () => {
+      fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+      const dialog = screen.getByRole('dialog', { name: en.exportModal.title });
+      fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    };
+    // Load the lazy export dialog before the timers are fake
+    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    fireEvent.keyDown(await screen.findByRole('dialog', { name: en.exportModal.title }), {
+      key: 'Escape',
+    });
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    printAll();
+    act(() => vi.advanceTimersByTime(500));
+    printAll();
+    expect(document.title).toMatch(/all-cycles/);
+    // One title timer and one toast timer: the first ones are cancelled
+    expect(vi.getTimerCount()).toBe(2);
+
+    act(() => vi.advanceTimersByTime(1000));
+    expect(document.title).toBe('Fertility Tracker');
+    act(() => vi.advanceTimersByTime(2499));
+    expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.exportSuccess);
+    act(() => vi.advanceTimersByTime(1));
+    expect(screen.queryByRole('status')).toBeNull();
+  });
+
+  it('cancels the title and toast timers when the app unmounts', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    vi.spyOn(window, 'print').mockImplementation(() => {});
+    const { unmount } = render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
+
+    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    expect(vi.getTimerCount()).toBeGreaterThan(0);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
   });
   it('confirms the demo data over saved data and undoes it from the toast', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');

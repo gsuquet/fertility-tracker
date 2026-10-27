@@ -1,7 +1,7 @@
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { App } from '../../App';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../../domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../../utils/storageKeys';
 
 describe('App Root Component Integration', () => {
   beforeEach(() => {

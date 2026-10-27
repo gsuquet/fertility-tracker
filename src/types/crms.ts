@@ -73,7 +73,6 @@ export interface Cycle {
   id: string;
   startDate: string; // YYYY-MM-DD
   observations: Observation[];
-  manualPeakDate?: string | undefined; // YYYY-MM-DD override
   notes?: string | undefined;
 }
 
