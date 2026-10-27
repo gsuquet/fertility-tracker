@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.15.3  
+**Document Version:** 1.15.6  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
