@@ -24,6 +24,12 @@ const Controls = ({ toOpen }: { toOpen: Observation | null }) => {
       <span data-testid="saved">
         {observations.map(o => `${o.date}:${o.codeString}:${String(o.isCycleStart)}`).join('|')}
       </span>
+      <span data-testid="peaks">
+        {observations
+          .filter(o => o.isPeakDay)
+          .map(o => `${o.date}:${String(o.isManualPeak)}`)
+          .join('|')}
+      </span>
       <span data-testid="selection">{selectedObservation?.date ?? 'none'}</span>
     </>
   );
@@ -71,6 +77,22 @@ describe('ObservationDrawer flows', () => {
     press(en.actions.save);
     expect(saved()).toBe('2026-09-15:10KX3 I AP:undefined');
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('moves the Peak Day when Set Peak is saved on another day of the cycle', () => {
+    const p10 = makeObservation({
+      id: 'p10',
+      date: '2026-09-10',
+      stretch: '10',
+      modifiers: ['K'],
+      isManualPeak: true,
+    });
+    const d12 = makeObservation({ id: 'd12', date: '2026-09-12', stretch: '10', modifiers: ['K'] });
+    renderDrawer(d12, [makeObservation({ date: '2026-09-01', bleeding: 'H' }), p10, d12]);
+    expect(screen.getByTestId('peaks')).toHaveTextContent('2026-09-10:true');
+    press(en.actions.setPeak);
+    press(en.actions.save);
+    expect(screen.getByTestId('peaks').textContent).toBe('2026-09-12:true');
   });
 
   it('clears a selection when it is pressed again', () => {

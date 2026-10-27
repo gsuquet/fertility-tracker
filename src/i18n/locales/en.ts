@@ -186,6 +186,18 @@ export const en = {
     deselectAll: 'Deselect All',
     oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
     exportSuccess: 'PDF report generated successfully!',
+    pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
+    jsonDescription:
+      'Download all your observations as a JSON file. The file is not encrypted: keep it private.',
+  },
+  storageRecovery: {
+    message:
+      'The saved observations could not be read. The application keeps a copy of the original data. Download the copy before you delete it.',
+    download: 'Download unreadable data',
+    dismiss: 'Delete the copy',
+    messageNoCopy:
+      'The saved observations could not be read, and the application could not keep a copy. Download the original data now. Your next change replaces it.',
+    close: 'Close',
   },
   disclaimer: {
     trademark:
@@ -310,5 +322,11 @@ export const en = {
     cancelBtn: 'Cancel',
     isCycleStartLabel: 'Start of New Cycle',
     isCycleStartHelp: 'Designates this observation as the Day 1 boundary of a new menstrual cycle.',
+  },
+  errorBoundary: {
+    title: 'This part did not load',
+    message:
+      'An error occurred or you are offline. Your observations are safe in this browser. Reload the page to try again.',
+    reload: 'Reload',
   },
 };

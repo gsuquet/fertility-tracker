@@ -1,13 +1,7 @@
 import { describe, it, expect } from 'vitest';
 import { appendMissingSymptoms, formatCodeString, parseCodeString } from '../codeParser';
-import type {
-  BleedingCode,
-  FrequencyCode,
-  MucusModifier,
-  MucusStretch,
-  ObservationInput,
-  SymptomCode,
-} from '../../types/crms';
+import { BLEEDING_CODES, FREQUENCY_CODES, MODIFIER_CODES, STRETCH_CODES } from '../../types/crms';
+import type { MucusModifier, ObservationInput, SymptomCode } from '../../types/crms';
 
 describe('formatCodeString', () => {
   it('returns an empty string when no field is set', () => {
@@ -88,25 +82,13 @@ describe('code string round trip', () => {
   });
 
   it('keeps every field of each combination of codes', () => {
-    const bleedings: (BleedingCode | undefined)[] = [undefined, 'H', 'M', 'L', 'VL', 'B'];
-    const stretches: (MucusStretch | undefined)[] = [
-      undefined,
-      '0',
-      '2',
-      '2W',
-      '4',
-      '6',
-      '8',
-      '10',
-      '10DL',
-      '10SL',
-      '10WL',
-    ];
-    const allModifiers: MucusModifier[] = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'];
+    const bleedings = [undefined, ...BLEEDING_CODES];
+    const stretches = [undefined, ...STRETCH_CODES];
+    const allModifiers: readonly MucusModifier[] = MODIFIER_CODES;
     const modifierSets = Array.from({ length: 1 << allModifiers.length }, (_, mask) =>
       allModifiers.filter((_, i) => mask & (1 << i))
     );
-    const frequencies: (FrequencyCode | undefined)[] = [undefined, 'X1', 'X2', 'X3', 'AD'];
+    const frequencies = [undefined, ...FREQUENCY_CODES];
     const symptomSets: SymptomCode[][] = [[], ['AP'], ['RAP', 'LAP']];
     const failures: string[] = [];
     for (const bleeding of bleedings)
@@ -137,7 +119,8 @@ describe('code string round trip', () => {
                 }
               }
     expect(failures.slice(0, 10)).toEqual([]);
-  });
+    // About 507k cases: this test needs more than the default 5 s under coverage.
+  }, 60_000);
 
   it('shows the symptom of the direct code 10KLX3 I AP', () => {
     expect(parseCodeString('10klx3 i ap').formattedCode).toBe('10KLX3 I AP');
@@ -214,5 +197,13 @@ describe('parseCodeString', () => {
     expect(result.frequency).toBe('X1');
     expect(result.intercourse).toBe(true);
     expect(result.formattedCode).toBe('VL 2WX1 I');
+  });
+});
+
+describe('parseCodeString stretch codes', () => {
+  it.each(STRETCH_CODES)('reads stretch %s with the longest match before modifier K', code => {
+    const result = parseCodeString(`${code}K`);
+    expect(result.stretch).toBe(code);
+    expect(result.modifiers).toEqual(['K']);
   });
 });

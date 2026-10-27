@@ -8,6 +8,16 @@ The application keeps all observations in the `localStorage` of your browser. It
 
 Fertility data is very personal health data. Data that is not on a server cannot leak from a server. This is the most important reason for the design.
 
+## No requests to other sites
+
+The application loads all its files from its own site: scripts, styles, icons and the font. The font Plus Jakarta Sans is a file of the application. It does not come from Google Fonts or from a different font service. Thus, no other company gets a request, your IP address or the time of your visit when you open the application.
+
+The Content Security Policy in `public/_headers` enforces this rule. It permits styles and fonts only from the site of the application.
+
+## Offline use and the cache
+
+The service worker keeps a copy of the application files in the browser cache, so that the application works offline. The cache contains only the application files. It does not contain your observations. Your observations stay in `localStorage`.
+
 ## The limits of this design
 
 This design has costs. You must know them:

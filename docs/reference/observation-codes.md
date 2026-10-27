@@ -1,6 +1,6 @@
 # Observation codes
 
-This page lists the codes that the application accepts for one day of observation. The codes come from the Creighton Model FertilityCare System (CrMS). The source of the lists is `src/types/crms.ts`.
+This page lists the codes that the application accepts for one day of observation. The codes come from the Creighton Model FertilityCare System (CrMS). The source of the lists is `src/types/crms.ts`. The last section gives the names of the lists in the source.
 
 ## Code string
 
@@ -22,7 +22,7 @@ An appearance code without a stretch code can be the same as a bleeding code, fo
 
 The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
 
-Data from versions before 1.15.8 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. A stored code `B` or `L` on a day without bleeding becomes `-B` or `-L`.
+Data from versions before 1.17.2 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. A stored code `B` or `L` on a day without bleeding becomes `-B` or `-L`.
 
 ## Bleeding codes
 
@@ -81,6 +81,23 @@ A day has fertile mucus if its stretch code or one of its appearance codes is fe
 | `RAP` | Right abdominal pain |
 | `LAP` | Left abdominal pain  |
 | `I`   | Sexual intercourse   |
+
+## Code lists in the source
+
+Each list is an `as const` array in `src/types/crms.ts`. The code types come from these arrays. The domain functions and the forms use only these arrays.
+
+| Constant                  | Codes                                                       | Type            |
+| ------------------------- | ----------------------------------------------------------- | --------------- |
+| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    | `BleedingCode`  |
+| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         | `BleedingCode`  |
+| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` | `MucusStretch`  |
+| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      | `MucusStretch`  |
+| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    | `MucusModifier` |
+| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             | `MucusModifier` |
+| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      | `FrequencyCode` |
+| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          | `SymptomCode`   |
+
+`isCodeIn(list, value)` returns `true` if the value is in the list. The parser tries the stretch codes from the longest to the shortest. Thus, `10WL` matches before `10`.
 
 ## Related documents
 

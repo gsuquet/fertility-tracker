@@ -250,7 +250,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
               <Printer size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.exportModal.printPdf}</strong>
-                <span>Generates vector-crisp landscape PDF (35-day grid).</span>
+                <span>{t.exportModal.pdfDescription}</span>
               </div>
             </button>
 
@@ -262,7 +262,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ isOpen, onClose, onPre
               <Download size={24} className="export-icon" />
               <div className="export-text">
                 <strong>{t.actions.exportJson}</strong>
-                <span>Download full encrypted chart data JSON file.</span>
+                <span>{t.exportModal.jsonDescription}</span>
               </div>
             </button>
           </div>
