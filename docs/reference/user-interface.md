@@ -66,6 +66,10 @@ The **Today** page and the observation drawer have the same fields.
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
 | **About & Version Tracker** | From the header.                                                      |
 
+## Error message
+
+If a page or a dialog cannot load, the application shows the message **This part did not load** in its place. The header and the footer stay available. Click **Reload** to load the page again. Your observations stay in the browser.
+
 ## Related documents
 
 - [Record an observation](../how-to/record-an-observation.md)

@@ -312,7 +312,7 @@ export const en = {
     isCycleStartHelp: 'Designates this observation as the Day 1 boundary of a new menstrual cycle.',
   },
   errorBoundary: {
-    title: 'This part could not load',
+    title: 'This part did not load',
     message:
       'An error occurred or you are offline. Your observations are safe in this browser. Reload the page to try again.',
     reload: 'Reload',

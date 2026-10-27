@@ -622,6 +622,7 @@ See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md)
   - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
   - `activate`: Deletes every cache whose name starts with `fertility-tracker-` and is not the current cache, then calls `clients.claim()`.
   - `fetch`: Ignores requests that are not `GET` or not same-origin (for example Google Fonts).
+    - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
     - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response.
     - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached `index.html`. Without a cached response, returns a network error.
 - **Registration:** `src/main.tsx` calls `registerServiceWorker()` after the first render. It registers `./sw.js` only in a production build (`import.meta.env.PROD`), in a secure context (`https:` or `localhost`) and when the browser supports service workers. A registration failure is ignored. There is no inline script in `index.html`.
