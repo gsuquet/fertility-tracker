@@ -30,6 +30,16 @@ The tests run in jsdom, not in a real browser. jsdom does not apply CSS and does
 
 For a visual change, also look at the page in a browser. Look at the light theme and the dark theme, on a wide screen and on a phone screen. After you find a problem, a style test in `src/styles/__tests__/` keeps the correction in place.
 
+## Why there are also end-to-end tests
+
+The jsdom tests replace the browser storage, the file download and the file upload. Thus, a data loss after a reload, or a backup that does not restore, can pass all the jsdom tests. The end-to-end tests in `e2e/` run the production build in a real Chromium. They do the main flows as a user does them.
+
+The end-to-end tests are slow, so they test only the main flows. The rules and the edge cases stay in the jsdom tests.
+
+## Why the accessibility check has a list of known violations
+
+The axe check finds errors that a test by role cannot find, for example a low color contrast. The application has some violations today, but the check must not stop all the pull requests. Thus, the test lists the violations that it expects on each screen. Each other violation makes the test fail. A listed violation that does not occur also makes the test fail. Thus, the list gets shorter after each correction.
+
 ## Related documents
 
 - [Write a test first](../how-to/write-a-test-first.md)
