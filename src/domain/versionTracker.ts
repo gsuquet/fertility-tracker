@@ -71,6 +71,27 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.17.2',
+    date: '2026-10-27',
+    title: 'Symptom Codes in the Observation Code',
+    titleFr: 'Codes de Symptôme dans le Code d’Observation',
+    tagline: 'The observation code now shows the AP, RAP and LAP symptom codes',
+    taglineFr: 'Le code d’observation affiche maintenant les codes de symptôme AP, RAP et LAP',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The observation code keeps the symptom codes, for example 10KLX3 I AP',
+      'The history list, calendar and direct code field show the symptoms again',
+      'Saved data without symptoms in the code gets them back when it loads',
+      'Direct Code Entry reads B first as brown bleeding, and a lone L or B appearance code is written -L or -B',
+    ],
+    highlightsFr: [
+      'Le code d’observation garde les codes de symptôme, par exemple 10KLX3 I AP',
+      'L’historique, le calendrier et le champ de code direct affichent de nouveau les symptômes',
+      'Les données enregistrées sans symptômes dans le code les retrouvent au chargement',
+      'La saisie directe lit B en premier comme saignement brun, et un code d’aspect L ou B seul s’écrit -L ou -B',
+    ],
+  },
+  {
     version: '1.17.1',
     date: '2026-10-27',
     title: 'End-to-End and Accessibility Tests',

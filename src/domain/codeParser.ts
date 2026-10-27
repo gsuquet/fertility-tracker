@@ -1,6 +1,6 @@
 import {
+  BLEEDING_CODES,
   FREQUENCY_CODES,
-  MENSES_BLEEDING_CODES,
   MODIFIER_CODES,
   STRETCH_CODES,
   SYMPTOM_CODES,
@@ -62,7 +62,9 @@ export function formatCodeString(obs: ObservationInput): string {
   }
 
   if (mucusToken) {
-    parts.push(mucusToken);
+    // A lone appearance code that is also a bleeding code (B, L) gets a dash,
+    // so that the parser does not read it as bleeding.
+    parts.push(isCodeIn(BLEEDING_CODES, mucusToken) ? `-${mucusToken}` : mucusToken);
   }
 
   // 4. Intercourse marker ('I')
@@ -70,7 +72,22 @@ export function formatCodeString(obs: ObservationInput): string {
     parts.push('I');
   }
 
+  // 5. Symptoms (AP, RAP, LAP), each as its own token
+  if (obs.symptoms) {
+    parts.push(...obs.symptoms);
+  }
+
   return parts.join(' ').trim();
+}
+
+/**
+ * Appends each symptom code that a stored code string does not show yet.
+ * Code strings saved before symptoms were formatted lack them.
+ */
+export function appendMissingSymptoms(codeString: string, symptoms: SymptomCode[]): string {
+  const tokens = codeString.trim().toUpperCase().split(/\s+/);
+  const missing = symptoms.filter(sym => !tokens.includes(sym));
+  return [codeString.trim(), ...missing].join(' ');
 }
 
 /**
@@ -87,7 +104,7 @@ export function parseCodeString(input: string): ParsedCodeResult {
   const symptoms: SymptomCode[] = [];
   let intercourse = false;
 
-  for (const token of tokens) {
+  for (const [index, token] of tokens.entries()) {
     if (token === 'I') {
       intercourse = true;
       continue;
@@ -105,7 +122,8 @@ export function parseCodeString(input: string): ParsedCodeResult {
       continue;
     }
 
-    if (isCodeIn(MENSES_BLEEDING_CODES, token) && !bleeding) {
+    // B is brown bleeding only as the first token. Elsewhere it is the brown appearance code.
+    if (!bleeding && isCodeIn(BLEEDING_CODES, token) && (token !== 'B' || index === 0)) {
       bleeding = token;
       continue;
     }
