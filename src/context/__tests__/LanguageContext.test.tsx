@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LanguageProvider, useLanguage } from '../LanguageContext';
 
@@ -67,6 +67,13 @@ describe('LanguageContext Provider', () => {
 
     expect(screen.getByTestId('current-lang')).toHaveTextContent('fr');
     expect(screen.getByTestId('today-tab')).toHaveTextContent("Aujourd'hui");
+  });
+
+  it('keeps the same context value when the provider re-renders with the same language', () => {
+    const { result, rerender } = renderHook(() => useLanguage(), { wrapper: LanguageProvider });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
   });
 
   it('throws error when useLanguage is used outside LanguageProvider', () => {

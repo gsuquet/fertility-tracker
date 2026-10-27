@@ -8,10 +8,9 @@ import {
   getLatestRelease,
   checkAndRecordVersionSeen,
   getStorageStats,
-  LAST_SEEN_VERSION_KEY,
-  STORAGE_OBSERVATIONS_KEY,
   CRMS_SPEC_VERSION,
 } from '../versionTracker';
+import { LAST_SEEN_VERSION_KEY, STORAGE_OBSERVATIONS_KEY } from '../../utils/storageKeys';
 
 describe('versionTracker Domain Engine', () => {
   beforeEach(() => {

@@ -7,31 +7,19 @@ import { getDaysDifference } from '../utils/dateUtils';
  * fertile mucus and after the Peak Day.
  * Ensures observations are sorted chronologically by date and cycleDay is accurately calculated from start date.
  */
-export function processCycleObservations(
-  observations: Observation[],
-  manualPeakDate?: string
-): Observation[] {
+export function processCycleObservations(observations: Observation[]): Observation[] {
   // Sort observations chronologically by date
   const sorted = [...observations].sort((a, b) => a.date.localeCompare(b.date));
   const [first] = sorted;
   if (!first) return [];
   const startDate = first.date;
 
-  // Find Peak Day
-  let peakIndex = -1;
-
-  if (manualPeakDate) {
-    peakIndex = sorted.findIndex(obs => obs.date === manualPeakDate);
-  } else {
-    // Find manual flag inside observations or automatically calculate last Peak-type day
-    const manualObsIndex = sorted.findIndex(obs => obs.isManualPeak);
-    if (manualObsIndex !== -1) {
-      peakIndex = manualObsIndex;
-    } else {
-      // Find last day with peak-type mucus
-      peakIndex = sorted.findLastIndex(obs => isPeakTypeMucus(obs.stretch, obs.modifiers || []));
-    }
-  }
+  // Find Peak Day: the day flagged isManualPeak, else the last day with peak-type mucus
+  const manualObsIndex = sorted.findIndex(obs => obs.isManualPeak);
+  const peakIndex =
+    manualObsIndex !== -1
+      ? manualObsIndex
+      : sorted.findLastIndex(obs => isPeakTypeMucus(obs.stretch, obs.modifiers || []));
 
   // The three days after the last fertile day (white stamp or Peak Day) count as
   // post-peak days. Only a day that is otherwise green gets the light green stamp.

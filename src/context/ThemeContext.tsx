@@ -1,9 +1,8 @@
 import type React from 'react';
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useCallback, useContext, useEffect, useMemo, useState } from 'react';
 import type { Theme } from '../types/crms';
 import { readStorage, writeStorage } from '../utils/storage';
-
-const THEME_STORAGE_KEY = 'fertility_care_theme';
+import { STORAGE_THEME_KEY as THEME_STORAGE_KEY } from '../utils/storageKeys';
 
 interface ThemeContextType {
   theme: Theme;
@@ -27,11 +26,13 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     writeStorage(THEME_STORAGE_KEY, theme);
   }, [theme]);
 
-  const toggleTheme = () => {
+  const toggleTheme = useCallback(() => {
     setTheme(prev => (prev === 'light' ? 'dark' : 'light'));
-  };
+  }, []);
 
-  return <ThemeContext.Provider value={{ theme, toggleTheme }}>{children}</ThemeContext.Provider>;
+  const value = useMemo(() => ({ theme, toggleTheme }), [theme, toggleTheme]);
+
+  return <ThemeContext.Provider value={value}>{children}</ThemeContext.Provider>;
 };
 
 export const useTheme = () => {

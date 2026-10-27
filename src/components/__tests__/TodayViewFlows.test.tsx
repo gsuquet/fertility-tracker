@@ -64,6 +64,16 @@ describe('TodayView flows', () => {
     expect(screen.queryByRole('status')).toBeNull();
   });
 
+  it('cancels the toast timer when the view unmounts', () => {
+    vi.useFakeTimers({ toFake: ['Date', 'setTimeout', 'clearTimeout'] });
+    const { unmount } = renderToday();
+    typeCode('0ad');
+    fireEvent.click(saveButton());
+    expect(vi.getTimerCount()).toBe(1);
+    unmount();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+
   it('loads a saved observation and shows it as saved', () => {
     renderToday([makeObservation({ date: TODAY, stretch: '0', frequency: 'AD' })]);
     expect(screen.getByLabelText(en.labels.directInput)).toHaveValue('0AD');

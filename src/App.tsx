@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider } from './context/CycleContext';
 import type { ActiveTab } from './types/crms';
-import { checkAndRecordVersionSeen, STORAGE_HAS_SEEN_WELCOME_KEY } from './domain/versionTracker';
+import { checkAndRecordVersionSeen } from './domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
+import { useToast } from './hooks/useToast';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -47,7 +49,10 @@ const MainApp: React.FC = () => {
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The PDF file name detail of a pending print, or null when nothing waits to print
   const [pendingPrintDetail, setPendingPrintDetail] = useState<string | null>(null);
-  const [toastMessage, setToastMessage] = useState<string | null>(null);
+  const [toastMessage, showToast] = useToast(3500);
+  // The pending title restore of the last print, cancelled when the app unmounts
+  const titleRestore = useRef<{ title: string; timer: ReturnType<typeof setTimeout> } | null>(null);
+  useEffect(() => () => clearTimeout(titleRestore.current?.timer), []);
 
   useEffect(() => {
     checkAndRecordVersionSeen();
@@ -60,20 +65,23 @@ const MainApp: React.FC = () => {
   // The browser uses the document title as the default PDF file name.
   useEffect(() => {
     if (pendingPrintDetail === null) return;
-    const originalTitle = document.title;
+    // A print within one second of the last one keeps the title from before both prints
+    const originalTitle = titleRestore.current?.title ?? document.title;
+    clearTimeout(titleRestore.current?.timer);
     document.title = getExportFilename('pdf', pendingPrintDetail);
     window.print();
     setPendingPrintDetail(null);
-    setTimeout(() => {
+    const timer = setTimeout(() => {
       document.title = originalTitle;
+      titleRestore.current = null;
     }, 1000);
+    titleRestore.current = { title: originalTitle, timer };
   }, [pendingPrintDetail]);
 
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
     setPendingPrintDetail(fileDetail);
-    setToastMessage(t.exportModal.exportSuccess);
-    setTimeout(() => setToastMessage(null), 3500);
+    showToast(t.exportModal.exportSuccess);
   };
 
   return (

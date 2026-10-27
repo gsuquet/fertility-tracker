@@ -1,5 +1,5 @@
 import type { Page } from '@playwright/test';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../src/domain/versionTracker';
+import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../src/utils/storageKeys';
 
 /** The date of "today" in the browser, so that the dates on the screen are stable. */
 export const TODAY = '2026-10-27';
