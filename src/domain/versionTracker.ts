@@ -63,6 +63,24 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     ],
   },
   {
+    version: '1.16.3',
+    date: '2026-10-27',
+    title: 'Shared Code Buttons',
+    titleFr: 'Boutons de Codes Partagés',
+    tagline: 'The Today form and the observation drawer now share one set of code buttons',
+    taglineFr:
+      'Le formulaire du jour et le panneau d’observation partagent maintenant les mêmes boutons de codes',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The bleeding, stretch, appearance, frequency and symptom buttons are now one shared component',
+      'The Today form and the observation drawer look and work as before',
+    ],
+    highlightsFr: [
+      'Les boutons de saignement, d’étirement, d’aspect, de fréquence et de symptômes forment un seul composant partagé',
+      'Le formulaire du jour et le panneau d’observation s’affichent et fonctionnent comme avant',
+    ],
+  },
+  {
     version: '1.16.2',
     date: '2026-10-27',
     title: 'Faster Paper Chart',
