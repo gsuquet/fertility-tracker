@@ -108,11 +108,17 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   const toggleManualPeak = useCallback((date: string) => {
     setObservations(prev => {
+      // Only one manual Peak Day per cycle: clear the other days of the toggled cycle only.
+      const cycleDates = new Set(
+        groupObservationsIntoCycles(prev)
+          .find(c => c.observations.some(o => o.date === date))
+          ?.observations.map(o => o.date)
+      );
       const updated = prev.map(obs => {
         if (obs.date === date) {
           return { ...obs, isManualPeak: !obs.isManualPeak };
         }
-        return { ...obs, isManualPeak: false };
+        return cycleDates.has(obs.date) ? { ...obs, isManualPeak: false } : obs;
       });
       return reprocessObservations(updated);
     });

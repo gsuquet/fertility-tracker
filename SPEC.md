@@ -196,6 +196,7 @@ flowchart TD
 1. **Peak Day ($P$) Determination:**
    - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
    - **Manual Override Mode:** Respects user-set `isManualPeak` flag or cycle-level `manualPeakDate`.
+   - **One Manual Peak per Cycle:** `toggleManualPeak(date)` clears `isManualPeak` only on the other days of the same cycle. The manual Peak Days of other cycles stay.
 2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
    - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
      - $+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
