@@ -203,6 +203,14 @@ export const en = {
     clearMessage: 'This deletes the {count} observations in this browser.',
     clearConfirm: 'Delete all data',
   },
+  undoToast: {
+    demo: 'The demo data replaced your observations.',
+    import: 'The backup replaced your observations.',
+    clear: 'All observations are deleted.',
+    earlier: 'The app keeps a copy of your observations from before the last change.',
+    undo: 'Undo',
+    dismiss: 'Delete the copy',
+  },
   storageRecovery: {
     message:
       'The saved observations could not be read. The application keeps a copy of the original data. Download the copy before you delete it.',

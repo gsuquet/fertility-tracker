@@ -9,6 +9,9 @@ import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { buildDemoObservations } from '../domain/demoData';
 import { parseAndValidateObservationsJson } from '../domain/dataValidator';
 
+/** A change that replaced the observations and that the saved copy can undo. */
+export type DataChange = 'demo' | 'import' | 'clear' | 'earlier';
+
 export interface CycleDataContextType {
   observations: Observation[];
   cycles: Cycle[];
@@ -26,6 +29,12 @@ export interface CycleDataContextType {
   recoveryKept: boolean;
   /** Deletes the kept copy of the unreadable data, or only hides the notice when there is none. */
   dismissRecovery: () => void;
+  /** The last change that the saved copy can undo, or null when there is no copy. */
+  undoChange: DataChange | null;
+  /** Restores the observations from before the last replacing change. */
+  undoLastChange: () => void;
+  /** Deletes the copy and keeps the change. */
+  dismissUndo: () => void;
 }
 
 export interface CycleUiContextType {
@@ -42,6 +51,7 @@ const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
+const UNDO_KEY = 'fertility_care_observations_undo';
 
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
@@ -79,11 +89,23 @@ const loadStoredState = () => {
   };
 };
 
+interface UndoState {
+  change: DataChange;
+  observations: Observation[];
+}
+
+/** Reads the copy that an earlier session kept before a replacing change. */
+const loadStoredUndo = (): UndoState | null => {
+  const saved = parseAndValidateObservationsJson(readStorage(UNDO_KEY) ?? 'null');
+  return saved ? { change: 'earlier', observations: saved } : null;
+};
+
 export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [initialState] = useState(loadStoredState);
   const [observations, setObservations] = useState<Observation[]>(initialState.observations);
   const [recoveryData, setRecoveryData] = useState<string | null>(initialState.recoveryData);
   const { recoveryKept } = initialState;
+  const [undo, setUndo] = useState<UndoState | null>(loadStoredUndo);
 
   const cycles = useMemo(() => groupObservationsIntoCycles(observations), [observations]);
   const [selectedCycleId, setSelectedCycleId] = useState<string>(() => cycles[0]?.id ?? 'all');
@@ -151,33 +173,53 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     return JSON.stringify(observations, null, 2);
   }, [observations]);
 
-  const clearAllData = useCallback(() => {
-    setObservations([]);
-    setSelectedCycleId('all');
-    removeStorage(STORAGE_KEY);
-    removeStorage(RECOVERY_KEY);
-    setRecoveryData(null);
-  }, []);
-
   const applyObservations = useCallback((list: Observation[]) => {
     const processed = reprocessObservations(list);
     setObservations(processed);
     setSelectedCycleId(groupObservationsIntoCycles(processed)[0]?.id ?? 'all');
   }, []);
 
+  /** Keeps a copy of the current observations, then replaces them. */
+  const replaceObservations = useCallback(
+    (change: DataChange, list: Observation[]) => {
+      writeStorage(UNDO_KEY, JSON.stringify(observations));
+      setUndo({ change, observations });
+      applyObservations(list);
+    },
+    [observations, applyObservations]
+  );
+
+  /** Deletes all observations and the copy of unreadable data. The undo copy stays. */
+  const clearAllData = useCallback(() => {
+    replaceObservations('clear', []);
+    removeStorage(RECOVERY_KEY);
+    setRecoveryData(null);
+  }, [replaceObservations]);
+
   const importDataJson = useCallback(
     (jsonStr: string): boolean => {
       const validated = parseAndValidateObservationsJson(jsonStr);
       if (!validated) return false;
-      applyObservations(validated);
+      replaceObservations('import', validated);
       return true;
     },
-    [applyObservations]
+    [replaceObservations]
   );
 
   const loadDemoData = useCallback(() => {
-    applyObservations(buildDemoObservations(getTodayStr()));
-  }, [applyObservations]);
+    replaceObservations('demo', buildDemoObservations(getTodayStr()));
+  }, [replaceObservations]);
+
+  const dismissUndo = useCallback(() => {
+    removeStorage(UNDO_KEY);
+    setUndo(null);
+  }, []);
+
+  const undoLastChange = useCallback(() => {
+    if (!undo) return;
+    applyObservations(undo.observations);
+    dismissUndo();
+  }, [undo, applyObservations, dismissUndo]);
 
   const dismissRecovery = useCallback(() => {
     if (recoveryKept) removeStorage(RECOVERY_KEY);
@@ -199,6 +241,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       recoveryData,
       recoveryKept,
       dismissRecovery,
+      undoChange: undo ? undo.change : null,
+      undoLastChange,
+      dismissUndo,
     }),
     [
       observations,
@@ -213,6 +258,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       recoveryData,
       recoveryKept,
       dismissRecovery,
+      undo,
+      undoLastChange,
+      dismissUndo,
     ]
   );
 

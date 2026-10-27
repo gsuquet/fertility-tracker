@@ -20,6 +20,7 @@ The file name has the date, for example `fertility-tracker-data-backup-2026-10-2
 3. Select the backup file.
 4. If the dialog shows "This file is not a valid backup", select a different file.
 5. If you have observations, the **Restore this backup?** dialog opens. Click **Replace**.
+6. Look at the chart. If it is not correct, click **Undo** in the toast at the bottom of the page.
 
 ## Result
 

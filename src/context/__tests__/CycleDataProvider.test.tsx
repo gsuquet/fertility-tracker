@@ -6,6 +6,7 @@ import { makeObservation } from '../../test/factories';
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
+const UNDO_KEY = 'fertility_care_observations_undo';
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <CycleProvider>{children}</CycleProvider>
 );
@@ -267,5 +268,88 @@ describe('CycleDataProvider', () => {
     act(() => result.current.loadDemoData());
     expect(result.current.observations).toHaveLength(56);
     expect(result.current.selectedCycleId).toBe(result.current.cycles[0]?.id);
+  });
+  describe('undo of replaced data', () => {
+    const saved = [
+      makeObservation({ date: '2026-06-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-06-02', stretch: '0' }),
+    ];
+    const renderSaved = () => {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(saved));
+      return renderData();
+    };
+    const storedUndoDates = () =>
+      (JSON.parse(localStorage.getItem(UNDO_KEY) as string) as { date: string }[]).map(o => o.date);
+
+    it('has nothing to undo at the start', () => {
+      const { result } = renderSaved();
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+    });
+
+    it('keeps a copy before the demo data and restores it on undo', () => {
+      const { result } = renderSaved();
+      act(() => result.current.loadDemoData());
+      expect(result.current.undoChange).toBe('demo');
+      expect(storedUndoDates()).toEqual(['2026-06-01', '2026-06-02']);
+
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01', '2026-06-02']);
+      expect(result.current.selectedCycleId).toBe('cycle_2026-06-01');
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+    });
+
+    it('keeps a copy before an import and before clearing', () => {
+      const { result } = renderSaved();
+      act(() => {
+        result.current.importDataJson('[]');
+      });
+      expect(result.current.undoChange).toBe('import');
+      expect(storedUndoDates()).toEqual(['2026-06-01', '2026-06-02']);
+
+      act(() => result.current.undoLastChange());
+      act(() => result.current.clearAllData());
+      expect(result.current.undoChange).toBe('clear');
+      expect(storedUndoDates()).toEqual(['2026-06-01', '2026-06-02']);
+    });
+
+    it('does not keep a copy when an import fails', () => {
+      const { result } = renderSaved();
+      act(() => {
+        result.current.importDataJson('not json');
+      });
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+    });
+
+    it('keeps the change and deletes the copy on dismiss', () => {
+      const { result } = renderSaved();
+      act(() => result.current.clearAllData());
+      act(() => result.current.dismissUndo());
+      expect(result.current.observations).toEqual([]);
+      expect(result.current.undoChange).toBeNull();
+      expect(localStorage.getItem(UNDO_KEY)).toBeNull();
+    });
+
+    it('offers the copy that an earlier session kept', () => {
+      localStorage.setItem(UNDO_KEY, JSON.stringify(saved));
+      const { result } = renderData();
+      expect(result.current.undoChange).toBe('earlier');
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations).toHaveLength(2);
+    });
+
+    it('ignores a copy that it cannot read', () => {
+      localStorage.setItem(UNDO_KEY, 'not json');
+      const { result } = renderData();
+      expect(result.current.undoChange).toBeNull();
+    });
+
+    it('does nothing on undo when there is no copy', () => {
+      const { result } = renderSaved();
+      act(() => result.current.undoLastChange());
+      expect(result.current.observations).toHaveLength(2);
+    });
   });
 });

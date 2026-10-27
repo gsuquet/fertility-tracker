@@ -450,12 +450,17 @@ Interactive slide-over drawer for entering and editing observations with two syn
   - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
   - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
   - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
+- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state.
 - **Unreadable Data Recovery:** When the value of `fertility_care_observations` is not valid JSON or is not an array, the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
   - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
   - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
-  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`.
+  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`. The undo copy of the observations stays until **Undo** or **Delete the copy** in the undo toast.
   - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
+- **Undo of Replaced Data:** Before `loadDemoData()`, `importDataJson()` or `clearAllData()` changes the observations, the provider writes the current observations (a JSON array) to `fertility_care_observations_undo`. It keeps only the copy of the last change.
+  - `useCycleData()` exposes `undoChange`: the last change that the copy can undo (`'demo'`, `'import'`, `'clear'` or `'earlier'`), or `null` when there is no copy.
+  - `undoLastChange()` restores the copied observations, selects their newest cycle and deletes the copy. `dismissUndo()` deletes the copy and keeps the change.
+  - When the app starts and `fertility_care_observations_undo` holds a valid array, `undoChange` is `'earlier'`, so the copy stays visible after a reload.
+  - [UndoToast.tsx](./src/components/UndoToast.tsx) shows a translated toast (`role="status"`, `undoToast.*`) while `undoChange` is set. It tells what changed and has **Undo** and **Delete the copy** buttons. It does not close by itself.
 - **Automatic Reprocessing:** Any modification (addition, update including a manual Peak Day, deletion) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
 - **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
 
@@ -501,7 +506,8 @@ Interactive slide-over drawer for entering and editing observations with two syn
     - `cards.css`: Reusable surface containers (`.card`, `.card-surface`, `.card-glass`, `.card-interactive`, `.card-header`, `.card-body`).
     - `forms.css`: Form inputs, selects, textareas, custom checkboxes, and toggle switches.
     - `badges.css`: Indicators, pills, and biomarker badges (`.badge`, `.badge-pill`, `.stamp-badge`).
-    - `dialogs.css`: Modal backdrops, dialog containers, and slide-in drawer panels.
+    - `dialogs.css`: Modal backdrops, dialog containers, the confirmation dialog (`.confirm-overlay`, `.confirm-dialog`), and slide-in drawer panels.
+    - `toast.css`: The undo toast (`.undo-toast`) that floats above the bottom navigation.
   - `src/styles/views/`:
     - `header.css`: Global header, navigation brand, language selector, and theme switcher.
     - `cycle-picker.css`: Cycle dropdown selector and cycle summary metrics.

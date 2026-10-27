@@ -72,6 +72,15 @@ The confirmation dialog opens over the export dialog before an action replaces o
 
 **Cancel**, the `Escape` key and a click outside the dialog close it. The observations do not change.
 
+## Undo toast
+
+The undo toast shows at the bottom of the page after a restore, a demo load or a delete of all data. It also shows after a reload if the copy of the old observations is still in the browser. It stays until you click a button.
+
+| Button              | Action                                                         |
+| ------------------- | -------------------------------------------------------------- |
+| **Undo**            | Puts back the observations from before the change.             |
+| **Delete the copy** | Keeps the change and deletes the copy of the old observations. |
+
 ## Unreadable data notice
 
 The notice shows above the pages when the application cannot read the saved observations. It shows until you delete the copy or close the notice.

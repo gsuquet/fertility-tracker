@@ -14,6 +14,7 @@ import { CycleStatsHeader } from './components/CycleStatsHeader';
 import { ObservationDrawer } from './components/ObservationDrawer';
 import { Footer } from './components/Footer';
 import { StorageRecoveryNotice } from './components/StorageRecoveryNotice';
+import { UndoToast } from './components/UndoToast';
 
 const CycleAnalyticsView = React.lazy(() =>
   import('./components/CycleAnalyticsView').then(m => ({ default: m.CycleAnalyticsView }))
@@ -122,6 +123,8 @@ const MainApp: React.FC = () => {
           <span>{toastMessage}</span>
         </div>
       )}
+
+      <UndoToast />
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>

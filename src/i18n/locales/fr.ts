@@ -205,6 +205,14 @@ export const fr: TranslationSchema = {
     clearMessage: 'Cette action supprime les {count} observations de ce navigateur.',
     clearConfirm: 'Tout supprimer',
   },
+  undoToast: {
+    demo: 'Les données de démo ont remplacé vos observations.',
+    import: 'La sauvegarde a remplacé vos observations.',
+    clear: 'Toutes les observations sont supprimées.',
+    earlier: "L'application garde une copie de vos observations d'avant la dernière modification.",
+    undo: 'Annuler la modification',
+    dismiss: 'Supprimer la copie',
+  },
   storageRecovery: {
     message:
       "Les observations enregistrées n'ont pas pu être lues. L'application garde une copie des données d'origine. Téléchargez la copie avant de la supprimer.",
