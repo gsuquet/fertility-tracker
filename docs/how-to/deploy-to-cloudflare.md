@@ -53,6 +53,28 @@ Do this procedure only when the automatic deployment is not available.
    mise run pages:dev
    ```
 
+## Test offline use
+
+Do this procedure after a change to the service worker, to `public/` or to the build settings.
+
+1. Build the application:
+
+   ```bash
+   mise run build
+   ```
+
+2. Serve the `dist` folder:
+
+   ```bash
+   mise run preview
+   ```
+
+3. Open the URL that the command shows. Use a new private window.
+4. Open the developer tools of the browser. Make sure that `sw.js` is active.
+5. Set the network to offline in the developer tools.
+6. Reload the page. Make sure that the **Today** page shows.
+7. Click **Cycle Analytics**. Make sure that the page shows and that no error message shows.
+
 ## Related documents
 
 - [Commands](../reference/commands.md)

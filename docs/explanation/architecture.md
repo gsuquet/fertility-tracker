@@ -60,6 +60,23 @@ The data context and the user interface context are separate. Thus, when the dra
 
 The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same.
 
+## Offline use
+
+The application works without a network after the first visit. A service worker keeps a copy of all the application files in the browser cache.
+
+The build makes the list of these files. The Vite plugin in `scripts/pwa/serviceWorkerPlugin.ts` bundles `src/sw/entry.ts` to `sw.js`. It adds the names of all the build files, also the pages that load later, such as **Cycle Analytics**. Thus, a page that you did not open online also opens offline.
+
+The cache name contains the version and a hash of the build files. Each new build makes a new cache, and the service worker deletes the old caches. The service worker uses two strategies:
+
+| Request                   | Strategy      | Reason                                                                     |
+| ------------------------- | ------------- | -------------------------------------------------------------------------- |
+| Files in `assets/`        | Cache first   | The file name contains a hash. A file with the same name never changes.    |
+| Pages and the other files | Network first | You get the newest version online. Offline, you get the copy in the cache. |
+
+`src/main.tsx` registers the service worker. There is no inline script in `index.html`. Thus, the Content Security Policy can block all inline scripts.
+
+If a part of the application cannot load, an error boundary shows a message and a **Reload** button. The rest of the application stays available.
+
 ## Styles
 
 The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../adr/0002-css-maintainability-design-system.md) for the reasons.

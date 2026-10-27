@@ -11,8 +11,11 @@ fertility-tracker/
 │   ├── config.toml              # Pinned tools: Node.js, npm, pre-commit, gitleaks
 │   └── tasks/                   # mise tasks, one shell file for each task
 ├── docs/                        # Documentation (Diátaxis) and decision records
-├── public/                      # Static files: manifest, service worker, headers
-├── scripts/docs/                # Docs checker and its tests
+├── public/                      # Static files: manifest, icons, headers
+│   └── icons/                   # PWA icons (192, 512 and maskable 512)
+├── scripts/
+│   ├── docs/                    # Docs checker and its tests
+│   └── pwa/                     # Vite plugin that builds sw.js with the precache list
 ├── src/
 │   ├── __tests__/               # Application flow tests
 │   ├── components/              # React components
@@ -24,7 +27,9 @@ fertility-tracker/
 │   ├── hooks/                   # Shared React hooks
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
+│   ├── pwa/                     # Service worker registration
 │   ├── styles/                  # CSS in cascade layers
+│   ├── sw/                      # Service worker: precache and cache strategies
 │   ├── test/                    # Test helpers
 │   ├── types/                   # TypeScript types and code lists of the domain
 │   ├── utils/                   # Dates, export file names, safe storage
@@ -74,6 +79,7 @@ fertility-tracker/
 | `VersionModal.tsx`       | The **About & Version Tracker** dialog.                        |
 | `WelcomeModal.tsx`       | The welcome guide.                                             |
 | `Footer.tsx`             | Legal text, guide link and version.                            |
+| `ErrorBoundary.tsx`      | Message and **Reload** button when a part cannot load.         |
 
 ## Related documents
 
