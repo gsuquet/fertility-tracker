@@ -97,6 +97,10 @@ describe('TodayObservationForm', () => {
     const props = renderForm({ bleeding: 'H', isCycleStart });
     const toggle = button(`${cycleStartLabel}${suffix}`);
     expect(toggle).toHaveAttribute('aria-pressed', String(isCycleStart === true));
+    // The colors come from the stylesheet tokens, not from inline styles
+    expect(toggle).toHaveClass('cycle-start-toggle-btn');
+    expect(toggle.classList.contains('active')).toBe(isCycleStart === true);
+    expect(toggle).not.toHaveAttribute('style');
     fireEvent.click(toggle);
     expect(props.onToggleCycleStart).toHaveBeenCalledOnce();
   });

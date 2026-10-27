@@ -105,6 +105,16 @@ describe('design token contrast (WCAG 2 AA)', () => {
       expect(contrast(color('--color-warning-text'), tag)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
     });
 
+    it.each(surfaces)(
+      '--color-cycle-start-text on --color-cycle-start-surface over %s reaches 4.5:1',
+      surface => {
+        const toggle = over(color('--color-cycle-start-surface'), color(surface));
+        expect(contrast(color('--color-cycle-start-text'), toggle)).toBeGreaterThanOrEqual(
+          AA_NORMAL_TEXT
+        );
+      }
+    );
+
     it.each(['--bg-surface', '--bg-surface-elevated'])(
       '--color-success-text on --color-success-surface over %s reaches 4.5:1',
       surface => {
@@ -132,7 +142,25 @@ const cssFiles = (dir: string): string[] =>
     return path.endsWith('.css') ? [path] : [];
   });
 
+const sourceFiles = (dir: string): string[] =>
+  readdirSync(dir).flatMap(entry => {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) return entry === '__tests__' ? [] : sourceFiles(path);
+    return [path];
+  });
+
 describe('contrast-safe token usage', () => {
+  it('colors the active cycle start toggle with the cycle start tokens', () => {
+    const forms = readCss('primitives/forms.css');
+    const rule = /\.cycle-start-toggle-btn\.active\s*\{([^}]*)\}/.exec(forms);
+    expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-cycle-start-text\)/);
+    expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-cycle-start-surface\)/);
+    // It must come after .peak-toggle-btn.active, which has the same specificity
+    expect(forms.indexOf('.cycle-start-toggle-btn.active')).toBeGreaterThan(
+      forms.indexOf('.peak-toggle-btn.active')
+    );
+  });
+
   it.each(cssFiles(stylesDir).map(path => [path.slice(stylesDir.length + 1), path]))(
     '%s fills backgrounds with --accent-solid, not --accent-primary',
     (_name, path) => {
@@ -141,14 +169,17 @@ describe('contrast-safe token usage', () => {
     }
   );
 
-  it('defines in src/styles/tokens/ each custom property that a style uses', () => {
-    const files = cssFiles(stylesDir).map(path => readFileSync(path, 'utf8'));
+  it('defines in src/styles/tokens/ each custom property that a style or a component uses', () => {
+    const files = [
+      ...cssFiles(stylesDir),
+      ...sourceFiles(join(stylesDir, '..')).filter(path => path.endsWith('.tsx')),
+    ].map(path => readFileSync(path, 'utf8'));
     const tokenFiles = cssFiles(join(stylesDir, 'tokens')).map(path => readFileSync(path, 'utf8'));
     const defined = new Set(
       tokenFiles.flatMap(css => [...css.matchAll(/(--[\w-]+)\s*:/g)].map(m => m[1]))
     );
     const used = new Set(
-      files.flatMap(css => [...css.matchAll(/var\((--[\w-]+)/g)].map(m => m[1]))
+      files.flatMap(css => [...css.matchAll(/var\(\s*(--[\w-]+)/g)].map(m => m[1]))
     );
     expect([...used].filter(name => !defined.has(name))).toEqual([]);
   });

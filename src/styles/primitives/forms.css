@@ -121,6 +121,12 @@
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   }
 
+  .cycle-start-toggle-btn.active {
+    background-color: var(--color-cycle-start-surface);
+    color: var(--color-cycle-start-text);
+    border-color: var(--stamp-red);
+  }
+
   .visually-hidden-checkbox {
     position: absolute;
     width: 1px;

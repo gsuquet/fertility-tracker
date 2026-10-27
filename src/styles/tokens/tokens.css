@@ -60,6 +60,10 @@
     --color-intercourse: #db2777;
     --color-peak: #7c3aed;
 
+    /* Active Start of New Cycle toggle */
+    --color-cycle-start-text: #b91c1c;
+    --color-cycle-start-surface: rgba(239, 68, 68, 0.15);
+
     --color-white: #ffffff;
     --color-black: #000000;
 
@@ -112,6 +116,7 @@
     --color-warning-surface: rgba(245, 158, 11, 0.2);
     --color-info: #818cf8;
     --color-info-text: #60a5fa;
+    --color-cycle-start-text: #fda4af;
 
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.35);

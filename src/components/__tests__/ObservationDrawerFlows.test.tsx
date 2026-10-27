@@ -136,6 +136,12 @@ describe('ObservationDrawer flows', () => {
     renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
     press(en.codes.bleeding.H);
     press(en.cycleStartModal.isCycleStartLabel);
+    const active = screen.getByRole('button', {
+      name: `${en.cycleStartModal.isCycleStartLabel} (Yes)`,
+    });
+    // The colors come from the stylesheet tokens, not from inline styles
+    expect(active).toHaveClass('cycle-start-toggle-btn', 'active');
+    expect(active).not.toHaveAttribute('style');
     press(`${en.cycleStartModal.isCycleStartLabel} (Yes)`);
     press(`${en.cycleStartModal.isCycleStartLabel} (No)`);
     press(en.actions.save);
