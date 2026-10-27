@@ -39,6 +39,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.7',
+    date: '2026-10-27',
+    title: 'Readable Text Contrast',
+    titleFr: 'Contraste de Texte Lisible',
+    tagline: 'All the text meets the WCAG 2 AA contrast ratio in the light and dark themes',
+    taglineFr: 'Tous les textes respectent le contraste WCAG 2 AA dans les thèmes clair et sombre',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Darkened the muted text, for example the footer, the subtitles and the cycle length pill',
+      'Made the accent text lighter in the dark theme, with darker fills behind white button text',
+      'Darkened the red of the delete and clear data buttons',
+      'Made the chart symptom tag text darker in the light theme',
+      'Added a test that calculates the contrast ratio of the color tokens',
+    ],
+    highlightsFr: [
+      'Texte secondaire assombri, par exemple le pied de page, les sous-titres et la durée du cycle',
+      'Texte d’accent plus clair dans le thème sombre, avec des fonds plus foncés sous le texte blanc des boutons',
+      'Rouge des boutons de suppression et d’effacement des données assombri',
+      'Texte des étiquettes de symptômes du tableau assombri dans le thème clair',
+      'Ajout d’un test qui calcule le contraste des jetons de couleur',
+    ],
+  },
+  {
     version: '1.15.1',
     date: '2026-10-27',
     title: 'Documentation in Simplified Technical English',
