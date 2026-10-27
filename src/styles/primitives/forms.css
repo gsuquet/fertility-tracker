@@ -108,16 +108,16 @@
   }
 
   .intercourse-toggle-btn.active {
-    background-color: #ec4899;
+    background-color: var(--color-intercourse);
     color: white;
-    border-color: #ec4899;
+    border-color: var(--color-intercourse);
     box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
   }
 
   .peak-toggle-btn.active {
-    background-color: #8b5cf6;
+    background-color: var(--color-peak);
     color: white;
-    border-color: #8b5cf6;
+    border-color: var(--color-peak);
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
   }
 

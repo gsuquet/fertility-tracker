@@ -20,7 +20,7 @@
     top: 80px;
     right: 24px;
     z-index: var(--z-toast, 999);
-    background-color: var(--accent-success, #10b981);
+    background-color: var(--color-success-solid);
     color: #ffffff;
     padding: 0.75rem 1.25rem;
     border-radius: var(--radius-lg);

@@ -68,6 +68,9 @@ const whiteTextFills = [
   '--accent-solid-hover',
   '--color-danger',
   '--color-danger-hover',
+  '--color-success-solid',
+  '--color-intercourse',
+  '--color-peak',
 ];
 
 describe('design token contrast (WCAG 2 AA)', () => {
@@ -101,6 +104,24 @@ describe('design token contrast (WCAG 2 AA)', () => {
       const tag = over(color('--color-warning-surface'), color('--bg-surface'));
       expect(contrast(color('--color-warning-text'), tag)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
     });
+
+    it.each(['--bg-surface', '--bg-surface-elevated'])(
+      '--color-success-text on --color-success-surface over %s reaches 4.5:1',
+      surface => {
+        const badge = over(color('--color-success-surface'), color(surface));
+        expect(contrast(color('--color-success-text'), badge)).toBeGreaterThanOrEqual(
+          AA_NORMAL_TEXT
+        );
+      }
+    );
+
+    it.each(['--bg-surface', '--bg-surface-elevated'])(
+      '--color-info-text on --color-info-surface over %s reaches 4.5:1',
+      surface => {
+        const badge = over(color('--color-info-surface'), color(surface));
+        expect(contrast(color('--color-info-text'), badge)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+      }
+    );
   });
 });
 
@@ -119,6 +140,51 @@ describe('contrast-safe token usage', () => {
       expect(css).not.toMatch(/background(-color)?:\s*var\(--accent-primary(-hover)?[,)]/);
     }
   );
+
+  it('defines in src/styles/tokens/ each custom property that a style uses', () => {
+    const files = cssFiles(stylesDir).map(path => readFileSync(path, 'utf8'));
+    const tokenFiles = cssFiles(join(stylesDir, 'tokens')).map(path => readFileSync(path, 'utf8'));
+    const defined = new Set(
+      tokenFiles.flatMap(css => [...css.matchAll(/(--[\w-]+)\s*:/g)].map(m => m[1]))
+    );
+    const used = new Set(
+      files.flatMap(css => [...css.matchAll(/var\((--[\w-]+)/g)].map(m => m[1]))
+    );
+    expect([...used].filter(name => !defined.has(name))).toEqual([]);
+  });
+
+  it.each([
+    ['primitives/forms.css', '.intercourse-toggle-btn.active', '--color-intercourse'],
+    ['primitives/forms.css', '.peak-toggle-btn.active', '--color-peak'],
+    ['views/today.css', '.today-toast', '--color-success-solid'],
+  ])('%s fills %s with %s', (file, selector, token) => {
+    const css = readCss(file);
+    const escaped = selector.replace(/[.]/g, '\\.');
+    const rule = new RegExp(`(?:^|\\s)${escaped}\\s*\\{([^}]*)\\}`).exec(css);
+    expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(${token}\\)`));
+  });
+
+  it('colors the welcome form mode badge with the info tokens', () => {
+    const modals = readCss('views/modals.css');
+    const rule = /\.form-mode-badge\s*\{([^}]*)\}/.exec(modals);
+    expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-info-text\)/);
+    expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-info-surface\)/);
+  });
+
+  it('colors the mobile menu version badge with the success tokens', () => {
+    const header = readCss('views/header.css');
+    // The selector must beat `.sheet-action-content span`, which sets the muted text color
+    const rule = /\.sheet-action-content \.sheet-version-badge\s*\{([^}]*)\}/.exec(header);
+    expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-success-text\)/);
+    expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-success-surface\)/);
+  });
+
+  it('keeps the text of an empty chart day opaque', () => {
+    const chart = readCss('views/chart.css');
+    const rules = [...chart.matchAll(/\.empty-cell\.paper-cell(:hover)?\s*\{([^}]*)\}/g)];
+    expect(rules.length).toBeGreaterThan(0);
+    for (const rule of rules) expect(rule[2]).not.toMatch(/opacity/);
+  });
 
   it('keeps the footer copyright text opaque', () => {
     const footer = readCss('views/footer.css');

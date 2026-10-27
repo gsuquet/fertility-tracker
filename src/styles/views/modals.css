@@ -1067,8 +1067,8 @@
     font-family: inherit;
     font-size: 0.82rem;
     font-weight: 600;
-    color: #3b82f6;
-    background-color: rgba(59, 130, 246, 0.1);
+    color: var(--color-info-text);
+    background-color: var(--color-info-surface);
     border-color: rgba(59, 130, 246, 0.25);
     gap: 0.4rem;
   }
