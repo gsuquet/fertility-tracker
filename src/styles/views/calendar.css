@@ -26,6 +26,7 @@
     font-size: 1.25rem;
     font-weight: 800;
     letter-spacing: -0.01em;
+    color: var(--text-primary);
   }
 
   .calendar-grid {
@@ -59,6 +60,7 @@
     min-height: 112px;
     height: 112px;
     background-color: var(--bg-primary);
+    color: var(--text-primary);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-md);
     padding: 8px 6px;
@@ -136,6 +138,7 @@
     font-size: 0.65rem;
     font-weight: 800;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+    color: var(--text-secondary);
     text-align: center;
     overflow: hidden;
     text-overflow: ellipsis;
@@ -202,9 +205,10 @@
       width: 100%;
     }
 
+    /* The cell grows so that a long code wraps instead of being cut */
     .calendar-day {
       min-height: 76px;
-      height: 76px;
+      height: auto;
       padding: 4px 3px;
       min-width: 0;
       overflow: hidden;
@@ -215,17 +219,19 @@
     }
 
     .calendar-stamp-wrapper {
-      height: 44px;
-      min-height: 44px;
-      max-height: 44px;
+      height: 36px;
+      min-height: 36px;
+      max-height: 36px;
     }
 
     .calendar-code {
       font-size: 0.55rem;
+      line-height: 1.15;
       max-width: 100%;
-      overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
+      overflow: visible;
+      text-overflow: clip;
+      white-space: normal;
+      overflow-wrap: anywhere;
     }
 
     .calendar-add-slot {
