@@ -5,6 +5,10 @@ import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider, useCycleData } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 
+const ObservationCount = () => (
+  <span data-testid="count">{useCycleData().observations.length}</span>
+);
+
 describe('WelcomeModal Component', () => {
   it('does not render when isOpen is false', () => {
     render(
@@ -106,9 +110,6 @@ describe('WelcomeModal Component', () => {
 
   it('loads the demo data and closes from the last step', () => {
     const handleClose = vi.fn();
-    const ObservationCount = () => (
-      <span data-testid="count">{useCycleData().observations.length}</span>
-    );
     renderWithProviders(
       <>
         <WelcomeModal isOpen={true} onClose={handleClose} />
