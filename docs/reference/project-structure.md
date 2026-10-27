@@ -47,6 +47,7 @@ fertility-tracker/
 | `peakDetector.ts`          | Peak Day, count of three and cycle days.       |
 | `cycleBoundaryDetector.ts` | Puts the days into cycles.                     |
 | `cyclePhases.ts`           | Phase lengths and averages.                    |
+| `mucusScore.ts`            | Mucus score of one day.                        |
 | `observationForm.ts`       | Form values and the cycle start question.      |
 | `dataValidator.ts`         | Validation of saved and restored data.         |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |

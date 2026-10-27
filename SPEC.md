@@ -393,7 +393,7 @@ Displays key statistics for the currently selected cycle or aggregated cycles:
     - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
     - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
     - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
-  - **Mucus Cycle Score Trends:** Tracking mucus quality over time.
+  - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
   - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
 - **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
 
@@ -538,16 +538,16 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 ### Test Layers
 
-| Layer       | Location                       | Purpose                                                                                      |
-| ----------- | ------------------------------ | -------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values. |
-| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                        |
-| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                        |
-| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                             |
-| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                         |
-| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
-| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
-| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                   |
+| Layer       | Location                       | Purpose                                                                                                   |
+| ----------- | ------------------------------ | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`        | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`         | Dates, export file names, safe `localStorage` access.                                                     |
+| Hooks       | `src/hooks/__tests__/`         | `useObservationForm`, the form state that Today and the drawer share.                                     |
+| Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                                      |
+| Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                                           |
+| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
+| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                                |
 
 ### Test Helpers (`src/test/`)
 
