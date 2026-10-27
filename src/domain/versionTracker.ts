@@ -39,6 +39,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.15.4',
+    date: '2026-10-27',
+    title: 'Faster Paper Chart',
+    titleFr: 'Graphique Papier Plus Rapide',
+    tagline: 'Moving over a chart day no longer redraws the whole chart',
+    taglineFr: 'Survoler un jour du graphique ne redessine plus tout le graphique',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Hovering or focusing a chart day now redraws only that day',
+      'The paper chart code is split into small parts that are easier to maintain',
+    ],
+    highlightsFr: [
+      'Survoler ou sélectionner un jour du graphique ne redessine plus que ce jour',
+      'Le code du graphique papier est divisé en petites parties plus faciles à maintenir',
+    ],
+  },
+  {
     version: '1.15.1',
     date: '2026-10-27',
     title: 'Documentation in Simplified Technical English',
