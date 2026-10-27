@@ -1,81 +1,71 @@
-# Fertility Tracker Documentation
+# Fertility Tracker documentation
 
-Welcome to the **Fertility Tracker** documentation hub. This documentation is organized using the **[Diátaxis framework](https://diataxis.fr/)**, which structures documentation into four distinct quadrants based on user needs: **Tutorials**, **How-To Guides**, **Reference**, and **Explanation**.
+The documentation has four types of pages, from the [Diátaxis](https://diataxis.fr/) framework. Each page has one type. Find your need in the table, then go to the section.
 
-Additionally, this repository maintains formal records for architectural evolution via **Architecture Decision Records (ADRs)** and feature proposals via **Request for Comments (RFCs)**.
+| You want to                    | Read                            |
+| ------------------------------ | ------------------------------- |
+| Learn by doing, step by step   | [Tutorials](#tutorials)         |
+| Do one specific task           | [How-to guides](#how-to-guides) |
+| Find a fact, a code or a rule  | [Reference](#reference)         |
+| Know why something is as it is | [Explanation](#explanation)     |
 
----
+The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use STE and Diátaxis](explanation/documentation-approach.md).
 
-## 🧭 Documentation Map
+## Tutorials
 
-```ascii
-                          PRACTICAL
-                             ▲
-                             │
-     Tutorials               │               How-To Guides
-  (Learning-oriented)        │             (Task-oriented)
-                             │
-  • Getting Started          │             • Log Biomarker Observations
-                             │             • Export Cycle Charts
-                             │             • Add a New Language (i18n)
-                             │             • Write a Test First
-   LEARNING ───────────────────┼─────────────────── WORKING
-                             │
-     Explanation             │                 Reference
-(Understanding-oriented)     │           (Information-oriented)
-                             │
-  • CrMS Methodology         │             • CrMS Biomarker Codes
-  • Architecture Overview    │             • Domain Engine API
-  • Testing Strategy         │
-                             │             • Project Structure
-                             ▼
-                        THEORETICAL
-```
+| Page                                                                    | For          |
+| ----------------------------------------------------------------------- | ------------ |
+| [Chart your first cycle](tutorials/chart-your-first-cycle.md)           | Users        |
+| [Make your first code change](tutorials/make-your-first-code-change.md) | Contributors |
 
----
+## How-to guides
 
-## 📚 1. Tutorials (Learning-Oriented)
+### Use the application
 
-Tutorials guide newcomers step-by-step through creating their first cycle chart and understanding the core application workflow.
+- [Record an observation](how-to/record-an-observation.md)
+- [Set the Peak Day](how-to/set-the-peak-day.md)
+- [Start a new cycle](how-to/start-a-new-cycle.md)
+- [Print a chart for your practitioner](how-to/print-a-chart-for-your-practitioner.md)
+- [Back up and restore your data](how-to/back-up-and-restore-your-data.md)
+- [Delete all data](how-to/delete-all-data.md)
 
-- **[Getting Started with Fertility Tracker](tutorials/01-getting-started.md):** Hands-on walkthrough for set up, navigation, and logging your first cycle.
+### Work on the code
 
----
+- [Install and run locally](how-to/install-and-run-locally.md)
+- [Write a test first](how-to/write-a-test-first.md)
+- [Add a language](how-to/add-a-language.md)
+- [Release a new version](how-to/release-a-new-version.md)
+- [Deploy to Cloudflare Pages](how-to/deploy-to-cloudflare.md)
+- [Write documentation](how-to/write-documentation.md)
 
-## 🛠️ 2. How-To Guides (Task-Oriented)
+## Reference
 
-How-To guides provide actionable, step-by-step instructions to accomplish specific real-world tasks.
+### The method and the data
 
-- **[Log Biomarker Observations](how-to/log-biomarkers.md):** Step-by-step guide to using the observation drawer, Creighton codes, and manual Peak Day overrides.
-- **[Export Cycle Charts](how-to/export-cycle-charts.md):** Step-by-step guide to generating PDF reports, PNG chart images, or JSON data backups.
-- **[Add a New Language](how-to/add-new-language.md):** Instructions for contributing new i18n locale translations.
-- **[Write a Test First](how-to/write-a-test-first.md):** Procedure to change the code with test-driven development and keep 100% coverage.
-- **[Deploy to Cloudflare Pages](how-to/deploy-cloudflare.md):** Step-by-step guide for manual CLI deployment and GitHub Actions automated CD to Cloudflare Pages.
+- [Observation codes](reference/observation-codes.md)
+- [Stamp and Peak Day rules](reference/stamp-and-peak-rules.md)
+- [Cycle and phase rules](reference/cycle-and-phase-rules.md)
+- [User interface](reference/user-interface.md)
+- [Data format](reference/data-format.md)
 
----
+### The code
 
-## 📖 3. Reference (Information-Oriented)
+- [Domain API](reference/domain-api.md)
+- [Project structure](reference/project-structure.md)
+- [Commands](reference/commands.md)
+- [Test rules and helpers](reference/test-rules.md)
+- [Documentation rules](reference/documentation-rules.md)
+- [Full specification (SPEC.md)](../SPEC.md)
 
-Reference documentation provides precise, technical specifications and schemas for developer reference.
+## Explanation
 
-- **[Full Application Specification](../SPEC.md):** Complete technical and functional specification of the application architecture, domain algorithms, views, and data models.
-- **[CrMS Biomarker Codes & Stamp Rules](reference/crms-biomarker-codes.md):** Complete catalog of stretch, bleeding, frequency, symptom, and stamp color codes.
-- **[Domain Engine API Reference](reference/domain-engine-api.md):** Function signatures, inputs, and output types for `codeParser`, `stampCalculator`, `peakDetector`, and `cycleBoundaryDetector`.
-- **[Project & Component Structure](reference/project-structure.md):** High-level breakdown of directories, React components, context providers, and tests.
+- [The Creighton Model in this application](explanation/creighton-model.md)
+- [Privacy and data storage](explanation/privacy-and-data-storage.md)
+- [Architecture](explanation/architecture.md)
+- [Testing strategy](explanation/testing-strategy.md)
+- [Why the docs use STE and Diátaxis](explanation/documentation-approach.md)
 
----
+### Decision records
 
-## 💡 4. Explanation (Understanding-Oriented)
-
-Explanation articles offer high-level context, background concepts, and design rationales behind the system.
-
-- **[Creighton Model Methodology](explanation/crms-methodology.md):** Clinical principles of CrMS, biomarker scoring, and peak day calculation mechanics.
-- **[Architecture Overview](explanation/architecture-overview.md):** System design, data flow, reactive state management, and separation of concerns.
-- **[Testing Strategy](explanation/testing-strategy.md):** Why the project uses test-driven development and 100% coverage, the test layers and the test helpers.
-
----
-
-## 🏛️ 5. Architecture Decision Records (ADRs)
-
-- **[ADR 0001: Automated Backup & Multi-Device Synchronization with Zero-Knowledge Privacy](adr/0001-automated-backup-and-sync-privacy.md):** Analysis of zero-knowledge serverless sync, Bring-Your-Own-Storage, WebRTC P2P, key management UX, and conflict resolution models.
-- **[ADR 0002: CSS Maintainability & Layered Design System Architecture](adr/0002-css-maintainability-design-system.md):** Modular layered styling architecture (`@layer tokens, base, primitives, views, utilities`) with reusable design system primitives.
+- [ADR 0001: Automatic backup and synchronization with zero-knowledge privacy](adr/0001-automated-backup-and-sync-privacy.md)
+- [ADR 0002: CSS in cascade layers with a shared design system](adr/0002-css-maintainability-design-system.md)

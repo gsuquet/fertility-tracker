@@ -4,14 +4,14 @@ Use this procedure to change the behavior of the application with test-driven de
 
 ## Before you start
 
-- Install the toolchain: `mise install`.
-- Install the dependencies: `npm ci`.
+- Install the tools and the dependencies. Read [Install and run locally](install-and-run-locally.md).
+- Write the change in `SPEC.md` first. Read [Release a new version](release-a-new-version.md).
 
 ## Procedure
 
-1. Find the layer of the change. Read the table in [Testing strategy](../explanation/testing-strategy.md#test-layers).
+1. Find the layer of the change. Read [Test layers](../reference/test-rules.md#test-layers).
 2. Open the test file of that layer. If no test file exists, make one in the `__tests__` folder next to the source file.
-3. Write one test for the new behavior. Use `makeObservation` and `renderWithProviders` from `src/test/`.
+3. Write one test for the new behavior. Use the helpers in [Test rules and helpers](../reference/test-rules.md#test-helpers).
 4. Start the tests in watch mode:
 
    ```bash
@@ -22,13 +22,13 @@ Use this procedure to change the behavior of the application with test-driven de
 6. Write the minimum code that makes the test pass.
 7. Make the code better. Keep all the tests green.
 8. Do steps 3 to 7 again for each subsequent behavior.
-9. Run the full check:
+9. Run the tests with coverage:
 
    ```bash
    mise run coverage
    ```
 
-10. If the coverage is less than 100%, read the list of lines that the report shows. For each line, do one of these steps:
+10. If the coverage is less than 100%, read the list of lines in the report. For each line, do one of these steps:
     - Write a test for the line.
     - Remove the line if no user action or data can make it run.
 11. Run all the quality gates before you push:
@@ -65,4 +65,9 @@ This example adds `getCycleEndDate` to `src/domain/cycleBoundaryDetector.ts`.
    ```
 
 4. Run the tests. The test passes.
-5. Add a second test for a cycle with observations. Both branches now have a test.
+5. Add a second test for a cycle with observations. Now each branch has a test.
+
+## Related documents
+
+- [Testing strategy](../explanation/testing-strategy.md)
+- [Commands](../reference/commands.md)

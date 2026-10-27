@@ -1,8 +1,9 @@
-# Spec First & Version Update Rule
+# Specification and version workflow
 
-1. **Before any code modification**: Update `SPEC.md` to document the planned feature or change.
-2. **After any code modification**:
-   - Bump version in `package.json`.
-   - Add new release entry in `src/domain/versionTracker.ts` (`VERSION_HISTORY`).
-   - Sync `SPEC.md` version headers.
-3. **Test first**: Write a failing test before each behavior change. Keep coverage at 100% on all four metrics. Do not add coverage ignore comments.
+Follow the rules in [AGENTS.md](../../AGENTS.md). In summary:
+
+1. Before you change the code, write the change in `SPEC.md`.
+2. Write a test that fails before you change the behavior. Keep coverage at 100%. Do not add coverage ignore comments.
+3. After the change, increase the version in `package.json`, add a release to `VERSION_HISTORY` and set the version in `SPEC.md`.
+4. Write the documentation with the rules in `docs/reference/documentation-rules.md`.
+5. Run `mise run validate` before you push.

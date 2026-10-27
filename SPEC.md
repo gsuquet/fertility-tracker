@@ -1,6 +1,6 @@
 # Fertility Tracker Specification
 
-**Document Version:** 1.15.0  
+**Document Version:** 1.15.1  
 **Status:** Approved  
 **Last Updated:** October 27, 2026  
 **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -514,7 +514,7 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 
 - Coverage must stay at **100%** for statements, branches, functions and lines. `vite.config.ts` sets `coverage.thresholds: { 100: true }`, so `npm run test:coverage` fails below 100%. CI runs this command on each pull request.
 - Coverage ignore comments are not permitted. Code that no test can reach is removed (for example, guards for values that the types do not permit, or fallbacks for translation keys that always exist).
-- The coverage report excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
+- The coverage report includes `src/**` and `scripts/**`. It excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
 
 ### Test Layers
 
@@ -526,6 +526,8 @@ The project uses **test-driven development (TDD)**. Write a failing test before 
 | Contexts    | `src/context/__tests__/`       | Saved data, cycle selection, language and theme.                                             |
 | Components  | `src/components/**/__tests__/` | Rendered output and user actions, found by role and accessible name.                         |
 | Application | `src/__tests__/`               | Flows across components: first-visit guide, print, entry point.                              |
+| Styles      | `src/styles/__tests__/`        | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.            |
+| Tools       | `scripts/docs/__tests__/`      | The documentation checker.                                                                   |
 
 ### Test Helpers (`src/test/`)
 
@@ -554,11 +556,21 @@ npm run check:fix
 # TypeScript strict type check
 npm run typecheck
 
+# Check the docs (STE writing rules, Diátaxis structure, links)
+mise run docs
+
 # Run every CI gate locally (tasks live in .mise/tasks/)
 mise run validate
 ```
 
-See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md) and [docs/how-to/write-a-test-first.md](docs/how-to/write-a-test-first.md).
+### Documentation
+
+- The docs in `docs/` follow the [Diátaxis](https://diataxis.fr/) framework strictly. Each page is a tutorial, a how-to guide, a reference page or an explanation, in the folder of that type. Decision records are in `docs/adr/`. `docs/README.md` is the index.
+- `README.md`, `AGENTS.md` and `docs/` use a subset of ASD-STE100 Simplified Technical English: at most 20 words in a procedure step, 25 words in a descriptive sentence, 6 sentences in a paragraph, no contractions, and no word from the list of words that are not approved.
+- `scripts/docs/checkDocs.ts` checks these rules, the Diátaxis folders, the index entries, the steps in tutorials and how-to guides, and all relative links and heading anchors. `mise run docs` runs it. The `docs-check` pre-commit hook runs it in CI.
+- See [docs/reference/documentation-rules.md](docs/reference/documentation-rules.md).
+
+See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md), [docs/reference/test-rules.md](docs/reference/test-rules.md) and [docs/how-to/write-a-test-first.md](docs/how-to/write-a-test-first.md).
 
 ---
 

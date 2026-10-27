@@ -1,0 +1,70 @@
+# Architecture
+
+This page tells how the application is built and why. For the list of files, read [Project structure](../reference/project-structure.md).
+
+## A browser application without a server
+
+The application is a static React site. Vite builds it into HTML, CSS and JavaScript files. Cloudflare Pages serves the files. After the browser loads them, all the work occurs in the browser.
+
+This design keeps health data on the device of the user. It also makes the hosting simple and cheap, because there is no database and no API. Read [Privacy and data storage](privacy-and-data-storage.md) for the consequences.
+
+## The domain layer
+
+The CrMS rules are in `src/domain/`. These functions are pure: they get data and return new data. They do not use React, the DOM or the network. The only exception is `versionTracker.ts`, which reads `localStorage`.
+
+There are three reasons for this separation:
+
+- The rules are the most important part of the application. An error in a rule gives incorrect fertility guidance.
+- Pure functions are fast and easy to test. Each rule has tests without a browser.
+- The rules do not change when the user interface changes.
+
+## Data flow
+
+The application keeps one list of observations. All other values come from this list.
+
+```mermaid
+sequenceDiagram
+    participant User
+    participant Form as Today page or drawer
+    participant Context as CycleDataContext
+    participant Domain as src/domain
+    participant Storage as localStorage
+
+    User->>Form: Types 10KLAD and clicks Save Observation
+    Form->>Domain: parseCodeString, needsCycleStartChoice
+    Form->>Context: saveObservation(fields)
+    Context->>Domain: calculateStamp, formatCodeString
+    Context->>Domain: groupObservationsIntoCycles
+    Domain->>Domain: processCycleObservations for each cycle
+    Domain-->>Context: Days with cycle day, stamp and Peak Day
+    Context->>Storage: Write the list as JSON
+    Context-->>User: All pages show the new data
+```
+
+After each change, the application calculates the cycles, the stamps and the Peak Days again for all days. This is simple and always correct. A save of one day can change the Peak Day and the stamps of other days. For a few hundred days, the calculation takes less than a millisecond.
+
+## State
+
+React contexts hold the state. The application does not use a state library, because the state is small.
+
+| Context            | Content                                                                |
+| ------------------ | ---------------------------------------------------------------------- |
+| `CycleDataContext` | The observations, the cycles, the selected cycle and the data actions. |
+| `CycleUiContext`   | The open drawer and the selected day.                                  |
+| `LanguageContext`  | The language and the translations.                                     |
+| `ThemeContext`     | The light or dark theme. It sets `data-theme` on the `html` element.   |
+
+The data context and the user interface context are separate. Thus, when the drawer opens, the chart and the calendar do not render again.
+
+## Shared form logic
+
+The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same.
+
+## Styles
+
+The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../adr/0002-css-maintainability-design-system.md) for the reasons.
+
+## Related documents
+
+- [Domain API](../reference/domain-api.md)
+- [Testing strategy](testing-strategy.md)
