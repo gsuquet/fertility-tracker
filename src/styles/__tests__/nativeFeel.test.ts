@@ -163,7 +163,10 @@ describe('header in the title bar of an installed app on a computer', () => {
     // Outside the overlay, nothing uses the title bar values, so a phone and a tab do not change
     expect(header.slice(0, overlayStart)).not.toMatch(/titlebar-area|app-region/);
     // The overlay block is the last one, so it wins over the rules of a narrow window
-    expect(overlay.match(/@media/g)).toHaveLength(1);
+    expect(overlay.match(/@media \(display-mode/g)).toHaveLength(1);
+    expect(overlay).toMatch(
+      /@media \(max-width: 640px\)\s*\{\s*\.app-header\s*\{\s*height:\s*max\(54px,\s*env\(titlebar-area-height, 0px\)\);/
+    );
   });
 
   it('moves the window with an empty part of the header, but not with a control', () => {
@@ -172,8 +175,17 @@ describe('header in the title bar of an installed app on a computer', () => {
     );
     const controls = ruleBody(
       overlay,
-      /\.app-header button,\s*\.app-header a,\s*\.app-header input,\s*\.app-header select,\s*\.app-header \[role='tab'\],\s*\.app-header \[role='menu'\],\s*\.app-header \[role='listbox'\]/
+      /\.app-header button,\s*\.app-header a,\s*\.app-header input,\s*\.app-header select,\s*\.app-header \[role='tab'\]/
     );
     expect(controls).toMatch(/-webkit-app-region:\s*no-drag;\s*app-region:\s*no-drag;/);
+  });
+
+  it('gives the clicks to an open dialog, and keeps the dialogs out of the title bar', () => {
+    expect(ruleBody(overlay, /body:has\(dialog\[open\]\) \.app-header/)).toMatch(
+      /-webkit-app-region:\s*no-drag;\s*app-region:\s*no-drag;/
+    );
+    expect(ruleBody(overlay, /\.modal-overlay,\s*\.drawer-overlay/)).toMatch(
+      /top:\s*calc\(env\(titlebar-area-y, 0px\) \+ env\(titlebar-area-height, 0px\)\);/
+    );
   });
 });

@@ -36,6 +36,7 @@ describe('App launched from a shortcut of the app icon', () => {
   afterEach(() => {
     visit('/');
     Reflect.deleteProperty(window, 'launchQueue');
+    consumer = undefined;
   });
 
   it('opens the Today page with the drawer for a new observation', async () => {

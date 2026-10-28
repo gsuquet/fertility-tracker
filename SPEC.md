@@ -679,7 +679,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
 - **Chart** replaces the hash with `#chart`. Thus, a reload keeps the **Paper Chart Strip** page.
-- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
+- When the window is already open, `listenForLaunches()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
 - The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
 
 #### Back button and address
@@ -853,7 +853,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 
 ### 5.18 Desktop title bar and backup files
 
-**Modules:** [public/manifest.webmanifest](public/manifest.webmanifest), [src/styles/views/header.css](src/styles/views/header.css), [src/utils/launchShortcut.ts](src/utils/launchShortcut.ts)
+**Modules:** [public/manifest.webmanifest](public/manifest.webmanifest), [src/styles/views/header.css](src/styles/views/header.css), [src/utils/launchShortcut.ts](src/utils/launchShortcut.ts), [src/App.tsx](src/App.tsx), [src/components/ExportModal.tsx](src/components/ExportModal.tsx)
 
 Only Chromium browsers on a computer (Chrome and Edge) have these two functions. Elsewhere, nothing changes.
 
@@ -861,7 +861,10 @@ Only Chromium browsers on a computer (Chrome and Edge) have these two functions.
 
 - The manifest has `display_override: ["window-controls-overlay", "standalone"]`. The installed app on a computer puts its header in the title bar.
 - In `@media (display-mode: window-controls-overlay)`, the header uses `env(titlebar-area-x)`, `env(titlebar-area-width)` and `env(titlebar-area-height)`. The padding keeps the buttons away from the window controls.
-- An empty part of the header moves the window (`app-region: drag`). Buttons, links, fields, tabs and menus do not (`app-region: no-drag`).
+- An empty part of the header moves the window (`app-region: drag`). Buttons, links, fields and tabs do not (`app-region: no-drag`).
+- While a dialog is open, no part of the header moves the window. Thus, a click on a dialog in front of the header stays a click.
+- The dialogs and the drawer start below the title bar. Thus, the window controls never cover a close button.
+- A window of 640 pixels or less keeps the 54-pixel height of the phone header.
 - The user can turn the overlay off with the button of the browser in the title bar. The media query then stops, and the header goes back to its usual layout.
 - A phone and a browser tab never match this media query.
 
@@ -871,7 +874,7 @@ Only Chromium browsers on a computer (Chrome and Edge) have these two functions.
 - A double click on a `.ftbackup` file, or **Open with** Fertility Tracker, opens the app. The manifest asks for `focus-existing`, so an open window gets the file.
 - `listenForLaunches()` sets the one consumer of `window.launchQueue` for the shortcuts and for the files. It reads the first file and gives its text to `App`. A file that the app cannot read gives an empty text.
 - `App` opens the export dialog with the text. The dialog uses the same steps as **Restore Data**: the preview, the confirmation and the undo copy. A file that is not a valid backup shows `exportModal.importError`.
-- `clearLaunchShortcut()` removes `restore` from the address, so a reload does not open the dialog again.
+- `clearLaunchShortcut()` removes `restore` from the address. Only the launch queue gives a file: the parameter alone opens nothing.
 
 ## 6. State and data storage
 

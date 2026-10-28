@@ -32,6 +32,7 @@ The file name has the date, for example `fertility-tracker-backup-2026-10-27.ftb
 In Chrome or Edge on a computer, you can open a backup file without the export dialog. Install the application first.
 
 1. Double-click the `.ftbackup` file. Or right-click it and select **Open with** > **Fertility Tracker**.
+   The first time, the browser asks if the application can open the file. Allow it.
 2. Do steps 4 to 7 of [Restore a backup](#restore-a-backup).
 
 A backup file from version 1.29.0 or older ends with `.json`. To restore it, use **Restore Data**.
