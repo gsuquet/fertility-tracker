@@ -38,6 +38,13 @@
     <link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />
     <meta name="apple-mobile-web-app-title" content="Fertility Tracker" />
     <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <!-- The page background before the CSS loads, so that the launch screen does not flash -->
+    <style>
+      html { background: #f8f6f1; }
+      @media (prefers-color-scheme: dark) {
+        html { background: #13171d; }
+      }
+    </style>
     <title>Fertility Tracker - Creighton Model System (CrMS)</title>
   </head>
   <body>

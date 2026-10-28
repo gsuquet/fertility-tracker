@@ -53,11 +53,11 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     crmsSpecVersion: '1.1.0',
     highlights: [
       'The launch screen uses the color of the logo, so the logo no longer shows as a square',
-      'An installed app can take up to one day to show the new launch screen',
+      'An installed app can take a few days to show the new launch screen. To see it now, install the app again',
     ],
     highlightsFr: [
       'L’écran de lancement prend la couleur du logo, qui ne s’affiche plus comme un carré',
-      'Une app installée peut mettre jusqu’à un jour pour afficher le nouvel écran',
+      'Une app installée peut mettre quelques jours pour afficher le nouvel écran. Pour le voir tout de suite, installez l’app à nouveau',
     ],
   },
   {
