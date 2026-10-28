@@ -115,6 +115,24 @@ describe('useSheetDrag with the handle and the header', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('does not count the slow move before the drag starts as a flick', async () => {
+    const onClose = vi.fn();
+    render(<Sheet onClose={onClose} />);
+    const handle = screen.getByTestId('handle');
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 100 });
+    // A slow creep crosses the slop after 320 ms, then a moderate pull of 0.45 px/ms
+    vi.advanceTimersByTime(320);
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 109 });
+    for (const y of [118, 127]) {
+      vi.advanceTimersByTime(20);
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: y });
+    }
+    vi.advanceTimersByTime(5);
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('closes at once with no animation when the user prefers reduced motion', () => {
     setMedia({ reducedMotion: true });
     const onClose = vi.fn();
@@ -233,6 +251,21 @@ describe('useSheetDrag in the body', () => {
     touch('move', 300);
     touch('end', 300);
     expect(sheet().style.transform).toBe('');
+  });
+
+  it('keeps the drag of the first finger when a second finger touches the form', async () => {
+    const onClose = vi.fn();
+    render(<Sheet onClose={onClose} />);
+    touch('start', 100);
+    touch('move', 150);
+    touch('start', 150, 0, 2);
+    fireEvent.touchEnd(body(), { touches: [{ clientX: 0, clientY: 150 }] });
+    touch('move', 200);
+    expect(sheet().style.transform).toBe('translateY(100px)');
+    touch('end', 200);
+    expect(sheet().style.transform).toBe('');
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('keeps the handle drag and a touch of the body apart', async () => {

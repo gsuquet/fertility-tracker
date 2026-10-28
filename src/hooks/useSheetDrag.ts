@@ -45,7 +45,8 @@ const beginDrag = (state: GestureState, from: Element, startY: number): Drag => 
     backdrop,
     height: sheet.getBoundingClientRect().height,
     startY,
-    samples: [{ y: startY, time: performance.now() }],
+    // The first move adds the first sample. The start is older, so it would overstate a flick.
+    samples: [],
   };
   return state.drag;
 };
@@ -133,6 +134,8 @@ export function useSheetDrag(
     let owns = false;
 
     const onStart = (e: TouchEvent) => {
+      // A second finger does not stop the drag of the first one
+      if (owns) return;
       const touch = e.touches[0] as Touch;
       const free = !gesture.pointer && !gesture.drag;
       start =
@@ -162,8 +165,9 @@ export function useSheetDrag(
       moveDrag(beginDrag(gesture, body, start.y), touch.clientY);
     };
     const onEnd = (e: TouchEvent) => {
+      // The drag ends when the last finger lifts
+      if (!owns || e.touches.length > 0) return;
       start = null;
-      if (!owns) return;
       owns = false;
       endDrag(gesture, e.type === 'touchcancel');
     };
