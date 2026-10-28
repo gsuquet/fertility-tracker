@@ -4,6 +4,7 @@ import ReactDOM from 'react-dom';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
+import { useHistoryLayer } from '../hooks/useHistoryLayer';
 import { Layers, ChevronDown, Check, X, Calendar } from 'lucide-react';
 
 export const CyclePicker: React.FC = () => {
@@ -24,6 +25,8 @@ export const CyclePicker: React.FC = () => {
   }, []);
 
   const close = () => setMenuCoords(null);
+  // Back closes the open menu
+  useHistoryLayer(close, isOpen);
 
   const toggleOpen = (event: React.MouseEvent<HTMLButtonElement>) => {
     if (isOpen) {

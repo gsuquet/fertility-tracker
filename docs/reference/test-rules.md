@@ -76,6 +76,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/app.spec.ts`           | Welcome guide on the first visit, observation after a reload, backup and restore through the confirm dialog, the undo message and the import preview, demo data in each view, manual Peak Day, the undo toast in the drawer dialog. |
 | `e2e/accessibility.spec.ts` | Axe check of each view and of the export dialog.                                                                                                                                                                                    |
 | `e2e/resilience.spec.ts`    | Saved data that is not JSON, a list with one record that is not valid, a save that fails, and a reload without a network.                                                                                                           |
+| `e2e/history.spec.ts`       | **Back** on the drawer and on two stacked dialogs, **Back** after a page change and on the first page, a reload on the chart page, and an unknown hash.                                                                             |
 
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |

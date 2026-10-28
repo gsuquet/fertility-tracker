@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.20.0
+- **Document version:** 1.21.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -363,7 +363,8 @@ The application has four pages, a header, a statistics bar, an observation drawe
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
 - The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) (`role="listbox"`) is not a modal dialog.
-- The cycle menu closes with its button, its close button, `Escape`, and a click outside the menu. Its backdrop dims the page on a phone only.
+- The cycle menu closes with its button, its close button, `Escape`, **Back** and a click outside the menu. Its backdrop dims the page on a phone only.
+- The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([5.12](#back-button-and-address)).
 
 [Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog` and the phone menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
 
@@ -377,6 +378,7 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | `Escape`       | Calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document.                         |
 | `cancel` event | Calls `onClose`. It does not close the `<dialog>` itself, so React state always controls the dialog.                             |
 | Backdrop       | A click on the `<dialog>` outside the panel calls `onClose`. A click in the panel does not.                                      |
+| Back           | **Back** calls `onClose` of the top dialog only, with `useHistoryLayer` ([5.12](#back-button-and-address)).                      |
 | Focus return   | On close, it calls `close()`, then moves the focus back to the element that had it before.                                       |
 | Listeners      | `keydown` and `click` are native listeners on the `<dialog>`. Thus, they also get events from portals, such as the undo message. |
 | Scroll area    | A body that scrolls is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).                                  |
@@ -608,8 +610,32 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
+- **Chart** replaces the hash with `#chart`. Thus, a reload keeps the **Paper Chart Strip** page.
 - When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
 - The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
+
+#### Back button and address
+
+**Module:** [src/hooks/useHistoryLayer.ts](src/hooks/useHistoryLayer.ts)
+
+**Back** is the back button or back gesture of the device, or the back button of the browser. Each open layer and each page change has one entry in the browser history. A layer is a dialog of [Modal.tsx](src/components/Modal.tsx), the observation drawer, the phone menu or the cycle menu.
+
+| Action                                   | Result                                                                                                                                                                  |
+| ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A layer opens                            | The application adds one history entry. Two open layers have two entries.                                                                                               |
+| **Back** with a layer open               | Only the top layer closes. It closes as with its close button: the drawer does not keep a draft that its close button does not keep. The focus goes back to the opener. |
+| A layer closes with a button or `Escape` | The application removes its entry with `history.go()`. Thus, the next **Back** does not find an old entry.                                                              |
+| The page changes                         | The application adds an entry with the hash of the page, for example `#chart`.                                                                                          |
+| **Back** with no layer open              | The previous page opens. On the first page, **Back** leaves the application, or goes to the previous site in a browser. The application never stops **Back**.           |
+| The user changes the hash                | The page of the hash opens (`hashchange`).                                                                                                                              |
+| Reload                                   | The page of the hash opens, with no layer open. An unknown or empty hash opens **Today**.                                                                               |
+- `useHistoryLayer(onClose, open)` adds the entry of a layer while `open` is true. `Modal` and `CyclePicker` use it. No other component calls `history`.
+- `useHistoryTab(initialTab)` gives the page and the function that changes it. `App` uses it.
+- Each entry of the application has `state.ftLayerDepth`: the number of layers that were open. The application compares it to the open layers after each change, in a microtask.
+- Thus, React `StrictMode` does not add two entries. When a layer closes and another opens at the same time, they share one entry. For example, the phone menu opens the export dialog.
+- When the page changes while a layer entry is current, the application first goes back to the entry of the page. Then it adds the entry of the new page and the entries of the layers that stay open.
+- At the start, the application sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**.
+- The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([9.1](#91-offline-use-and-installation)).
 
 ## 6. State and data storage
 

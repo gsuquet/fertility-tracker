@@ -1,6 +1,7 @@
 import type React from 'react';
 import { useLayoutEffect, useRef, useSyncExternalStore } from 'react';
 import { createPortal } from 'react-dom';
+import { useHistoryLayer } from '../hooks/useHistoryLayer';
 
 const FOCUSABLE = [
   'a[href]',
@@ -46,7 +47,7 @@ interface ModalProps {
   /** The accessible name when the dialog has no visible title. */
   label?: string;
   describedBy?: string;
-  /** Escape and a click on the backdrop call it. The parent then removes the modal. */
+  /** Escape, Back and a click on the backdrop call it. The parent then removes the modal. */
   onClose: () => void;
   /** The element that gets the focus when the dialog opens. Else the first focusable element. */
   initialFocusRef?: React.RefObject<HTMLElement | null>;
@@ -60,7 +61,7 @@ interface ModalProps {
 /**
  * The one accessible modal of the app: a native `<dialog>` opened with `showModal()`.
  * It sets the initial focus, traps Tab and Shift+Tab, closes on Escape and on the backdrop,
- * and moves the focus back to the opener when it closes.
+ * closes on Back, and moves the focus back to the opener when it closes.
  */
 export const Modal: React.FC<ModalProps> = ({
   labelledBy,
@@ -75,6 +76,8 @@ export const Modal: React.FC<ModalProps> = ({
   const dialogRef = useRef<HTMLDialogElement>(null);
   const onCloseRef = useRef(onClose);
   onCloseRef.current = onClose;
+  // Back closes the top dialog, and a dialog that closes removes its history entry
+  useHistoryLayer(onClose);
 
   useLayoutEffect(() => {
     const dialog = dialogRef.current as HTMLDialogElement;
