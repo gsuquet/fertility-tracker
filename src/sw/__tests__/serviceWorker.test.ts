@@ -99,7 +99,7 @@ describe('service worker', () => {
       `${ORIGIN}/`,
       `${ORIGIN}/assets/index-abc.js`,
     ]);
-    expect(cache?.modes).toEqual(['reload', 'reload']);
+    expect(cache?.modes).toEqual(['no-cache', 'no-cache']);
     expect(scope.skipWaiting).not.toHaveBeenCalled();
   });
 
