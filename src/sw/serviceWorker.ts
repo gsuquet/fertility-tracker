@@ -16,6 +16,13 @@ export interface ExtendableEventLike {
   waitUntil(promise: Promise<unknown>): void;
 }
 
+export interface MessageEventLike {
+  data: unknown;
+}
+
+/** The message of the page that activates a waiting worker (the user chose Reload). */
+export const SKIP_WAITING = 'SKIP_WAITING';
+
 export interface FetchEventLike {
   request: Request;
   respondWith(response: Promise<Response>): void;
@@ -33,6 +40,7 @@ export interface ServiceWorkerScopeLike {
     listener: (event: ExtendableEventLike) => void
   ): void;
   addEventListener(type: 'fetch', listener: (event: FetchEventLike) => void): void;
+  addEventListener(type: 'message', listener: (event: MessageEventLike) => void): void;
 }
 
 /**
@@ -43,8 +51,14 @@ const MATCH_OPTIONS: CacheQueryOptions = { ignoreVary: true };
 
 async function precacheAll(scope: ServiceWorkerScopeLike, config: ServiceWorkerConfig) {
   const cache = await scope.caches.open(config.cacheName);
-  await cache.addAll(config.precache.map(url => new URL(url, scope.location.href).href));
-  await scope.skipWaiting();
+  // The cached shell serves the app for the whole life of the worker, so the browser must check
+  // each file with the server: an old shell would load asset names that the server removed.
+  // An unchanged file costs only that check.
+  await cache.addAll(
+    config.precache.map(
+      url => new Request(new URL(url, scope.location.href), { cache: 'no-cache' })
+    )
+  );
 }
 
 async function deleteOldCaches(scope: ServiceWorkerScopeLike, cacheName: string) {
@@ -93,9 +107,27 @@ async function networkFirst(
 }
 
 /**
+ * The app shell comes from the cache of this worker, so the page always runs the version of the
+ * active worker. A new version thus waits until the user chooses Reload.
+ */
+async function shellFirst(
+  scope: ServiceWorkerScopeLike,
+  cacheName: string,
+  request: Request,
+  shellUrl: string
+) {
+  const cache = await scope.caches.open(cacheName);
+  return (
+    (await cache.match(shellUrl, MATCH_OPTIONS)) ??
+    networkFirst(scope, cacheName, request, shellUrl)
+  );
+}
+
+/**
  * Returns the response for a request, or undefined to let the browser handle it.
- * Hashed files in `assets/` are cache-first. Navigations and other files are network-first,
- * and an offline navigation falls back to the cached app shell (`./`).
+ * Hashed files in `assets/` are cache-first. A navigation to the app (`./` or `./index.html`)
+ * gets the cached app shell first. Other navigations and files are network-first, and an
+ * offline navigation falls back to the cached app shell.
  */
 export function handleFetch(
   scope: ServiceWorkerScopeLike,
@@ -105,7 +137,12 @@ export function handleFetch(
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== scope.location.origin) return undefined;
   if (request.mode === 'navigate') {
-    return networkFirst(scope, cacheName, request, new URL('./', scope.location.href).href);
+    const shell = new URL('./', scope.location.href);
+    const isShell =
+      url.pathname === shell.pathname || url.pathname === `${shell.pathname}index.html`;
+    return isShell
+      ? shellFirst(scope, cacheName, request, shell.href)
+      : networkFirst(scope, cacheName, request, shell.href);
   }
   if (url.pathname.includes('/assets/')) return cacheFirst(scope, cacheName, request);
   return networkFirst(scope, cacheName, request);
@@ -116,6 +153,11 @@ export function installServiceWorker(scope: ServiceWorkerScopeLike, config: Serv
   scope.addEventListener('activate', event =>
     event.waitUntil(deleteOldCaches(scope, config.cacheName))
   );
+  // A new version waits until the user chooses Reload. The first install has no worker to wait
+  // for, so it activates at once.
+  scope.addEventListener('message', event => {
+    if (event.data === SKIP_WAITING) void scope.skipWaiting();
+  });
   scope.addEventListener('fetch', event => {
     const response = handleFetch(scope, config.cacheName, event.request);
     if (response) event.respondWith(response);

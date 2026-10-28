@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ExtendableEventLike, FetchEventLike, ServiceWorkerScopeLike } from '../serviceWorker';
-import { CACHE_PREFIX, handleFetch, installServiceWorker } from '../serviceWorker';
+import type {
+  ExtendableEventLike,
+  FetchEventLike,
+  MessageEventLike,
+  ServiceWorkerScopeLike,
+} from '../serviceWorker';
+import { CACHE_PREFIX, SKIP_WAITING, handleFetch, installServiceWorker } from '../serviceWorker';
 
 const ORIGIN = 'https://app.example';
 const SW_URL = `${ORIGIN}/sw.js`;
@@ -10,8 +15,13 @@ const CACHE = `${CACHE_PREFIX}1.16.0-abcd1234`;
 class FakeCache {
   entries = new Map<string, Response>();
   constructor(private readonly network: (url: string) => Promise<Response>) {}
-  async addAll(urls: string[]) {
-    for (const url of urls) this.entries.set(url, await this.network(url));
+  /** The cache modes of the requests that `addAll` got. */
+  modes: RequestCache[] = [];
+  async addAll(requests: Request[]) {
+    for (const request of requests) {
+      this.modes.push(request.cache);
+      this.entries.set(request.url, await this.network(request.url));
+    }
   }
   async put(request: Request, response: Response) {
     this.entries.set(request.url, response);
@@ -80,7 +90,7 @@ const dispatch = async (listener: Listener | undefined, event: object = {}) => {
 };
 
 describe('service worker', () => {
-  it('precaches every build file on install and activates at once', async () => {
+  it('precaches every build file on install and waits, so a new version does not take over', async () => {
     const { scope, caches, listeners } = makeScope(online);
     installServiceWorker(scope, { cacheName: CACHE, precache: ['./', 'assets/index-abc.js'] });
     await dispatch(listeners.get('install'));
@@ -89,6 +99,18 @@ describe('service worker', () => {
       `${ORIGIN}/`,
       `${ORIGIN}/assets/index-abc.js`,
     ]);
+    expect(cache?.modes).toEqual(['no-cache', 'no-cache']);
+    expect(scope.skipWaiting).not.toHaveBeenCalled();
+  });
+
+  it('activates a waiting worker only for the SKIP_WAITING message of the page', () => {
+    const { scope, listeners } = makeScope(online);
+    installServiceWorker(scope, { cacheName: CACHE, precache: [] });
+    const message = listeners.get('message') as unknown as (event: MessageEventLike) => void;
+    message({ data: 'OTHER' });
+    message({ data: { type: SKIP_WAITING } });
+    expect(scope.skipWaiting).not.toHaveBeenCalled();
+    message({ data: SKIP_WAITING });
     expect(scope.skipWaiting).toHaveBeenCalledOnce();
   });
 
@@ -165,20 +187,42 @@ describe('service worker', () => {
     expect(caches.stores.get(CACHE)?.entries.size).toBe(0);
   });
 
-  it('loads navigations from the network first and stores them', async () => {
+  it('opens the app with the shell of its own cache, so a new version waits for Reload', async () => {
     const { scope, caches } = makeScope(online);
     const cache = await caches.open(CACHE);
-    cache.entries.set(`${ORIGIN}/`, new Response('old'));
+    cache.entries.set(`${ORIGIN}/`, new Response('shell of this version'));
+    for (const path of ['/', '/?shortcut=log', '/index.html']) {
+      const response = await handleFetch(scope, CACHE, request(path, { navigate: true }));
+      expect(await response?.text()).toBe('shell of this version');
+    }
+    expect(scope.fetch).not.toHaveBeenCalled();
+  });
+
+  it('loads the app shell from the network when it is not cached, and stores it', async () => {
+    const { scope, caches } = makeScope(online);
     const response = await handleFetch(scope, CACHE, request('/', { navigate: true }));
     expect(await response?.text()).toBe(`network:${ORIGIN}/`);
-    expect(await (await cache.match(`${ORIGIN}/`))?.text()).toBe(`network:${ORIGIN}/`);
+    expect(caches.stores.get(CACHE)?.entries.has(`${ORIGIN}/`)).toBe(true);
+  });
+
+  it('loads the other navigations from the network first and stores them', async () => {
+    const { scope, caches } = makeScope(online);
+    const cache = await caches.open(CACHE);
+    cache.entries.set(`${ORIGIN}/`, new Response('shell'));
+    cache.entries.set(`${ORIGIN}/screenshots/phone.png`, new Response('old'));
+    const response = await handleFetch(
+      scope,
+      CACHE,
+      request('/screenshots/phone.png', { navigate: true })
+    );
+    expect(await response?.text()).toBe(`network:${ORIGIN}/screenshots/phone.png`);
   });
 
   it('serves the cached app shell for an offline navigation', async () => {
     const { scope, caches } = makeScope(offline);
     const cache = await caches.open(CACHE);
     cache.entries.set(`${ORIGIN}/`, new Response('shell'));
-    const response = await handleFetch(scope, CACHE, request('/?tab=chart', { navigate: true }));
+    const response = await handleFetch(scope, CACHE, request('/notes', { navigate: true }));
     expect(await response?.text()).toBe('shell');
   });
 

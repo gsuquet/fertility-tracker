@@ -21,6 +21,7 @@ import {
   MoreVertical,
   X,
   Sparkles,
+  Smartphone,
 } from 'lucide-react';
 import { getAppVersion } from '../domain/appVersion';
 import { Modal } from './Modal';
@@ -31,6 +32,8 @@ interface HeaderProps {
   onOpenExport: () => void;
   onOpenVersion: () => void;
   onOpenWelcome: () => void;
+  /** Installs the app. Not given when the app is installed or the browser cannot install it. */
+  onInstall?: (() => void) | undefined;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -39,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenExport,
   onOpenVersion,
   onOpenWelcome,
+  onInstall,
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -137,6 +141,18 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         {/* Desktop Direct Actions */}
+        {onInstall && (
+          <button
+            type="button"
+            className="icon-button desktop-only-action header-install-btn"
+            onClick={onInstall}
+            aria-label={t.install.headerLabel}
+            title={t.install.headerLabel}
+          >
+            <Smartphone size={18} />
+          </button>
+        )}
+
         <button
           type="button"
           className="icon-button desktop-only-action"
@@ -225,6 +241,25 @@ export const Header: React.FC<HeaderProps> = ({
           </div>
 
           <div className="mobile-action-sheet-body">
+            {onInstall && (
+              <button
+                type="button"
+                className="sheet-action-item"
+                onClick={() => {
+                  setIsMoreMenuOpen(false);
+                  onInstall();
+                }}
+              >
+                <div className="sheet-action-icon install-icon-bg">
+                  <Smartphone size={18} />
+                </div>
+                <div className="sheet-action-content">
+                  <strong>{t.install.menuEntry}</strong>
+                  <span>{t.install.menuHint}</span>
+                </div>
+              </button>
+            )}
+
             {/* Export Option */}
             <button
               type="button"

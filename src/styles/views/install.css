@@ -1,0 +1,143 @@
+/* ==========================================================================
+   Install banner, install guide and update message
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  /* A slim card above the page buttons. It is not a dialog: the page stays usable. */
+  .install-banner,
+  .update-prompt {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-lg);
+    translate: -50% 0;
+    z-index: var(--z-sticky);
+    width: min(32rem, calc(100vw - 2 * var(--space-md)));
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-sm) var(--space-sm) var(--space-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: var(--font-size-md);
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .install-banner-icon {
+    flex-shrink: 0;
+    border-radius: var(--radius-sm);
+  }
+
+  .install-banner-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-2xs);
+    flex: 1;
+    min-width: 0;
+  }
+
+  .install-banner-text span {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .install-banner-install {
+    flex-shrink: 0;
+  }
+
+  .update-prompt {
+    justify-content: space-between;
+    font-weight: 600;
+  }
+
+  .install-guide-note {
+    display: flex;
+    gap: var(--space-sm);
+    align-items: flex-start;
+    margin: 0 0 var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background: var(--color-info-surface);
+    color: var(--color-info-text);
+    border: 1px solid var(--color-info-border);
+    border-radius: var(--radius-sm);
+  }
+
+  .install-guide-note svg {
+    flex-shrink: 0;
+    margin-top: var(--space-2xs);
+  }
+
+  /* Numbered steps: each item stays a list item, so it keeps its number */
+  .install-guide-steps {
+    margin: 0;
+    padding-left: var(--space-lg);
+  }
+
+  .install-guide-steps li + li {
+    margin-top: var(--space-md);
+  }
+
+  .install-guide-backup {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .install-guide-done {
+    color: var(--color-success-text);
+    font-size: var(--font-size-sm);
+  }
+
+  /* Below 1440 pixels, the header has no space for one more button. Chromium then shows its own
+     install button in the address bar, and the install banner and the phone menu stay. */
+  @media (max-width: 1439px) {
+    .header-install-btn.desktop-only-action {
+      display: none;
+    }
+  }
+
+  /* The end of the page stays visible above the message */
+  body:has(.install-banner, .update-prompt) {
+    padding-bottom: var(--install-banner-space);
+  }
+
+  /* Above the page buttons on a phone. Install goes under the text, so the text keeps its width. */
+  @media (max-width: 640px) {
+    .install-banner,
+    .update-prompt {
+      bottom: calc(var(--mobile-nav-space) + var(--space-sm));
+    }
+
+    .install-banner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+    }
+
+    .install-banner-install {
+      grid-column: 2;
+      grid-row: 2;
+      justify-self: start;
+    }
+
+    .install-banner-close {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    body:has(.install-banner, .update-prompt) {
+      padding-bottom: calc(var(--mobile-nav-space) + var(--install-banner-space));
+    }
+  }
+
+  @media print {
+    .install-banner,
+    .update-prompt {
+      display: none;
+    }
+  }
+}

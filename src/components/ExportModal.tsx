@@ -12,7 +12,7 @@ import {
   CheckSquare,
   Square,
 } from 'lucide-react';
-import { getExportFilename } from '../utils/exportUtils';
+import { downloadBackupFile } from '../utils/exportUtils';
 import { parseObservationData } from '../domain/storageFormat';
 import { summarizeObservations } from '../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../domain/backupImport';
@@ -24,6 +24,8 @@ interface ExportModalProps {
   onClose: () => void;
   /** Receives the cycles to print and a short label for the PDF file name. */
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
+  /** Starts with the focus on Restore Data, for example from Restore a backup of the welcome guide. */
+  startWithRestore?: boolean | undefined;
 }
 
 /** A data action that waits for the user to confirm it. */
@@ -32,7 +34,11 @@ type PendingAction =
   | { kind: 'clear' }
   | { kind: 'import'; text: string; summary: BackupSummary };
 
-export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrint }) => {
+export const ExportModal: React.FC<ExportModalProps> = ({
+  onClose,
+  onPreparePrint,
+  startWithRestore = false,
+}) => {
   const {
     observations,
     cycles,
@@ -51,6 +57,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [importError, setImportError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  // The focus also scrolls the restore button into view on a small screen
+  const restoreButtonRef = useRef<HTMLButtonElement>(null);
 
   // The app mounts the dialog each time it opens, so each opening starts from this selection
   useEffect(() => {
@@ -100,14 +108,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
   };
 
   const handleDownloadJson = () => {
-    const jsonStr = exportDataJson();
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = getExportFilename('backup');
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBackupFile(exportDataJson());
     markBackedUp();
     onClose();
   };
@@ -187,6 +188,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
       onClose={onClose}
       className="modal-overlay"
       panelClassName="modal-container export-modal-enhanced"
+      {...(startWithRestore ? { initialFocusRef: restoreButtonRef } : {})}
     >
       <div className="modal-header">
         <h2 id="modal-title">{t.exportModal.title}</h2>
@@ -338,6 +340,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
 
         <div className="import-restore-section">
           <button
+            ref={restoreButtonRef}
             type="button"
             className="btn btn-secondary"
             onClick={() => fileInputRef.current?.click()}

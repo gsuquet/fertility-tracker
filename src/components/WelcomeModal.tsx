@@ -20,6 +20,7 @@ import {
   CalendarDays,
   PlayCircle,
   CheckCircle2,
+  Upload,
 } from 'lucide-react';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { writeStorage } from '../utils/storage';
@@ -28,9 +29,11 @@ import { formatMessage } from '../i18n';
 
 interface WelcomeModalProps {
   onClose: () => void;
+  /** Opens the restore of a backup. Given only in the installed app on iOS, without data. */
+  onRestore?: (() => void) | undefined;
 }
 
-export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
+export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }) => {
   const { t } = useLanguage();
   const { loadDemoData } = useCycle();
   const [currentStep, setCurrentStep] = useState(1);
@@ -310,6 +313,20 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose }) => {
                   <PlayCircle size={18} />
                   <span>{welcomeT.loadDemoData}</span>
                 </button>
+
+                {onRestore && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary restore-backup-btn"
+                    onClick={() => {
+                      handleDismiss();
+                      onRestore();
+                    }}
+                  >
+                    <Upload size={18} />
+                    <span>{welcomeT.restoreBackup}</span>
+                  </button>
+                )}
 
                 <button
                   type="button"

@@ -314,6 +314,28 @@ export const en = {
       'The browser could not save your observations. Your changes stay only until you close or reload the page. Back up your data now.',
     backUpNow: 'Back up now',
   },
+  install: {
+    menuEntry: 'Install app',
+    menuHint: 'Full screen, offline, and your data kept safer',
+    headerLabel: 'Install the app',
+    bannerTitle: 'Install Fertility Tracker',
+    bannerText: 'Full screen, offline, and your data kept safer.',
+    bannerInstall: 'Install',
+    bannerClose: 'Close the install message',
+    guideTitle: 'Install on iPhone',
+    guideNote:
+      'The installed app has its own storage, separate from Safari. Back up your data here, then restore it in the app.',
+    guideStepBackup: 'Back up your data.',
+    guideBackupButton: 'Back up my data',
+    guideBackupDone: 'The backup file is downloaded.',
+    guideStepShare: 'Tap Share in the toolbar of Safari.',
+    guideStepAdd: 'Choose Add to Home Screen.',
+    guideStepRestore: 'Open the app and choose Restore a backup.',
+  },
+  update: {
+    ready: 'A new version is ready.',
+    reload: 'Reload',
+  },
   backupReminder: {
     message:
       'Your last backup is more than {days} days old. Download a backup to keep a copy of your observations.',
@@ -361,6 +383,7 @@ export const en = {
     next: 'Next',
     getStarted: 'Start Fresh',
     loadDemoData: 'Explore Demo Data',
+    restoreBackup: 'Restore a backup',
     dontShowAgain: "Don't show this again automatically",
     slides: {
       slide1: {

@@ -126,6 +126,22 @@ You can install the application on a phone or a computer. The installed applicat
 
 Touch and hold the app icon (or right-click it on a computer) to see the shortcuts. The shortcuts are available on Android and in Chrome or Edge on a computer.
 
+### Install the application
+
+When the browser can install the application, the phone menu has **Install app**. The footer also has **Install app**. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
+
+| Browser                                                     | **Install** does                                                                                                 |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Chrome or Edge on Android or a computer                     | Shows the install dialog of the browser.                                                                         |
+| Safari on iPhone or iPad                                    | Opens **Install on iPhone**. Back up your data, add the application to the Home Screen, then restore the backup. |
+| Firefox, Safari on a computer, or another browser on iPhone | No install button.                                                                                               |
+
+On iPhone and iPad, the installed application does not share its data with Safari. The welcome guide of the installed application has **Restore a backup** when it has no data.
+
+### New version
+
+When a new version is ready, the message **A new version is ready** shows with a **Reload** button. The message does not show while a dialog or the observation drawer is open. If you do not choose **Reload**, the new version starts the next time that you open the application.
+
 ## Error message
 
 If a page or a dialog cannot load, the application shows the message **This part did not load** in its place. The header and the footer stay available. Click **Reload** to load the page again. Your observations stay in the browser.

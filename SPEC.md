@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.21.0
+- **Document version:** 1.22.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -35,6 +35,7 @@ This document is the full specification of the application. Change it before you
    - [5.10 Welcome guide](#510-welcome-guide)
    - [5.11 Error boundary](#511-error-boundary)
    - [5.12 Installed application and touch](#512-installed-application-and-touch)
+   - [5.13 Install and update](#513-install-and-update)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -119,11 +120,11 @@ Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinne
 
 The main chunk has only the code of the first screen. The other parts load with `React.lazy` when the user needs them.
 
-| Part                                                                | Rule                                                                                    |
-| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `CycleAnalyticsView`, `ExportModal`, `VersionModal`, `WelcomeModal` | Lazy chunks. `App.tsx` renders a dialog only while it is open.                          |
-| `VERSION_HISTORY`                                                   | Only in the `VersionModal` chunk. The main chunk gets the version from `appVersion.ts`. |
-| `PrintExportView`                                                   | A lazy chunk that the application renders from the start.                               |
+| Part                                                                                     | Rule                                                                                    |
+| ---------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `CycleAnalyticsView`, `ExportModal`, `VersionModal`, `WelcomeModal`, `InstallGuideModal` | Lazy chunks. `App.tsx` renders a dialog only while it is open.                          |
+| `VERSION_HISTORY`                                                                        | Only in the `VersionModal` chunk. The main chunk gets the version from `appVersion.ts`. |
+| `PrintExportView`                                                                        | A lazy chunk that the application renders from the start.                               |
 - Each opening of a dialog starts a new dialog. The version dialog opens on **Release Notes**, and the welcome guide opens on step 1. The export dialog opens in **Single Cycle** mode with the cycle of the cycle picker.
 - A unit test follows the static imports from `main.tsx`. It fails if they reach `versionTracker.ts` or a lazy component.
 - **Print / Save as PDF** calls `window.print()` only after the print view chunk loads and renders the selected cycles. A click before that waits for the chunk.
@@ -131,7 +132,7 @@ The main chunk has only the code of the first screen. The other parts load with 
 - If the print view chunk does not load, **Print / Save as PDF** does not print and does not show the success message. It shows the error `exportModal.printError`.
 - Each dialog and the print view has its own `React.Suspense`. Thus, a dialog that loads does not hide the print view.
 - While a page or a dialog loads, a hidden `role="status"` element announces `common.loading`. A dialog shows nothing visible while it loads. The page fallback keeps a minimum height, so the footer does not move.
-- After the first render, when the browser is idle, the application imports the four lazy chunks. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
+- After the first render, when the browser is idle, the application imports the four lazy chunks, except `InstallGuideModal`. Only Safari on iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
 - A failed preload has no effect. The part tries again when the user opens it.
 - Each lazy dialog has its own `ErrorBoundary` in dialog mode (section 5.11). A failure does not block the other dialogs, and the next opening tries again.
 - The service worker keeps all the lazy chunks (section 9.1). Thus, each lazy part also opens offline.
@@ -358,7 +359,7 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (sprout), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
 | Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                        |
 | Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer           |
-| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button. Not in the installed application.                                                                                                | The copyright and the two buttons are on separate lines. Not in the installed application.                            |
+| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **Install app** (when the browser can install the application), **User Guide** button and version button. Not in the installed application.                                | The copyright and the buttons are on separate lines. Not in the installed application.                                |
 - The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
@@ -568,6 +569,8 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 | 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
 | 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
 
+In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog with the focus on **Restore Data (JSON)** ([5.13](#513-install-and-update)).
+
 The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dialog component gives `Escape`, the focus trap and the focus return. The slide body can get the focus and scroll. The guide is in English and in French.
 
 ### 5.11 Error boundary
@@ -639,6 +642,66 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - Else, it sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**.
 - The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([9.1](#91-offline-use-and-installation)).
 
+### 5.13 Install and update
+
+**Modules:** [src/pwa/installPrompt.ts](src/pwa/installPrompt.ts), [src/pwa/registerServiceWorker.ts](src/pwa/registerServiceWorker.ts), [src/components/InstallBanner.tsx](src/components/InstallBanner.tsx), [src/components/InstallGuideModal.tsx](src/components/InstallGuideModal.tsx), [src/components/UpdatePrompt.tsx](src/components/UpdatePrompt.tsx)
+
+The application offers installation one time, after it has some data. It never applies a new version while the user works.
+
+#### Install
+
+`installPrompt.ts` finds how the browser installs the application:
+
+| Mode     | Condition                                                                                                                                                                                                                                                              | **Install** does                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `prompt` | The browser sent `beforeinstallprompt` (Chromium on Android, Windows, macOS, ChromeOS and Linux). The app prevents the default mini-infobar and keeps the event.                                                                                                       | Calls `prompt()` of the event. The event is then used, so the mode becomes `null`. |
+| `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). The other browsers of iOS and the in-app browsers (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`, Facebook, Instagram, LINE) give `null`, because the guide gives the steps of Safari. | Opens the guide **Install on iPhone**.                                             |
+| `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                   | Nothing. No button shows.                                                          |
+- The application is installed when a display mode of [5.12](#512-installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
+- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it. The footer has **Install app** on each screen width.
+- The application does not record if the user installed it.
+
+The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
+
+- The install mode is not `null`.
+- The user saved 3 observations or more.
+- `fertility_tracker_install_banner_closed` is not in `localStorage`.
+- No dialog and no drawer is open (`useTopDialog()` is `null`).
+- No update is ready. The update message comes first.
+- The undo message does not show. It has the same place on the screen ([6.7](#67-undo-of-replaced-data)).
+
+On a phone, **Install** is under the text, so the text keeps its width. While the banner or the update message shows, the body gets a bottom padding of `--install-banner-space`. Thus, the end of the page can scroll above the message.
+
+The close button and **Install** set `fertility_tracker_install_banner_closed`. Then the banner never shows again. The menu entry and the header button stay.
+
+The guide **Install on iPhone** is a dialog of [Modal.tsx](src/components/Modal.tsx). At the top, a note says that the installed application has its own storage, separate from Safari. Then it has these steps, in this order:
+
+1. Back up your data, with a **Back up my data** button. The button downloads the JSON backup, as the export dialog does ([5.8](#58-export-backup-and-print)).
+2. Tap **Share** in the toolbar of Safari.
+3. Choose **Add to Home Screen**.
+4. Open the application and choose **Restore a backup** ([5.10](#510-welcome-guide)).
+
+The steps are a numbered list (`<ol>`).
+
+#### Update
+
+The service worker of a new version waits ([9.1](#91-offline-use-and-installation)). The active worker gives the app shell from its own cache. Thus, the page always runs the version of the active worker, also after a normal reload. `registerServiceWorker()` finds a waiting worker when the page already has a controller:
+
+- after the registration, from `registration.waiting`
+- when an installing worker gets the state `installed`
+
+The first install has no controller. Thus, it activates at once and the application works offline from the first visit.
+
+| Step                            | Result                                                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A worker waits                  | `UpdatePrompt` shows **A new version is ready** with a **Reload** button (`role="status"`).                                                                         |
+| A dialog or the drawer opens    | The message hides until the dialog closes. Thus, an update never interrupts an entry. It also hides while the undo message shows.                                   |
+| **Reload**                      | The page sends `SKIP_WAITING` to the waiting worker. On `controllerchange`, the page reloads one time.                                                              |
+| Another window chose **Reload** | The new worker takes control of this window too, but this window does not reload: the user can finish an entry. Its message stays, and its **Reload** only reloads. |
+| A newer version installs        | The older waiting worker becomes `redundant`, and the message is for the newer worker.                                                                              |
+| No **Reload**                   | The new version starts when all windows of the application are closed and opened again.                                                                             |
+- After the reload, `checkAndRecordVersionSeen()` finds the new version, and the version dialog shows its release notes.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -660,19 +723,20 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 
 [storageKeys.ts](src/utils/storageKeys.ts) defines each key one time. All modules import the keys from this file.
 
-| Constant                            | Key                                    | Content                                 |
-| ----------------------------------- | -------------------------------------- | --------------------------------------- |
-| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`          | All observations                        |
-| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery` | Copy of saved data that is not readable |
-| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`     | Copy before the last replacing change   |
-| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`           | Date of the last JSON backup            |
-| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start` | Start date of the backup reminder       |
-| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`  | End date of the reminder snooze         |
-| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                  | Language                                |
-| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                 | Theme                                   |
-| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`            | Last entry mode of the Today page       |
-| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`  | Last version that the user opened       |
-| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`   | The user closed the welcome guide       |
+| Constant                            | Key                                       | Content                                                       |
+| ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
+| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`             | All observations                                              |
+| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery`    | Copy of saved data that is not readable                       |
+| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`        | Copy before the last replacing change                         |
+| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup                                  |
+| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder                             |
+| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze                               |
+| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language                                                      |
+| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme                                                         |
+| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | Last entry mode of the Today page                             |
+| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                             |
+| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                             |
+| `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it |
 
 ### 6.3 Storage format
 
@@ -1032,15 +1096,17 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 - The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
 - Thus, each build with a different output installs a new cache.
 
-| Event      | Action                                                                                                                     |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `install`  | Adds each precache URL to the new cache, then calls `skipWaiting()`.                                                       |
-| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`. |
-| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                          |
+| Event      | Action                                                                                                                                                                                                                                |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install`  | Adds each precache URL to the new cache, with `cache: 'no-cache'`: the browser checks each file with the server, so its HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([5.13](#update)). |
+| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                                                            |
+| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                                                                     |
+| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                                                                     |
 - Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
-- Pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
+- A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([5.13](#update)).
+- Other pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
 - For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
 
 Other rules:
@@ -1057,6 +1123,7 @@ Other rules:
 - `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
 - The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
 - The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
+- The page code does not import `src/sw/`. Else the build puts the worker code in a shared chunk, and `sw.js` cannot import it as a classic worker script. A unit test checks this rule. `registerServiceWorker.ts` has its own copy of the `SKIP_WAITING` message, and a test checks that the two are equal.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
 
 ### 9.2 Security headers
