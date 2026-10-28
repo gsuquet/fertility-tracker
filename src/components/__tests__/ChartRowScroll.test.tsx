@@ -10,8 +10,8 @@ import type { Observation } from '../../types/crms';
 const TODAY = '2026-09-15';
 
 /**
- * jsdom has no layout: the strip starts at x 20 and shows 340 pixels, today's cell is 48 pixels
- * wide at x 1900, and the strip is 2000 pixels wide.
+ * jsdom has no layout, so this gives one. The strip starts at x 20, shows 340 pixels and is 2000
+ * pixels wide. The cell of today is 48 pixels wide at x 1900.
  */
 const fakeLayout = () => {
   const rect = (left: number, width: number) => ({ left, width }) as DOMRect;
@@ -22,6 +22,8 @@ const fakeLayout = () => {
   });
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(340);
   vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(2000);
+  // The fake cells do not move, so the strip stays at 0 for the next read
+  vi.spyOn(Element.prototype, 'scrollLeft', 'get').mockReturnValue(0);
   return vi.spyOn(Element.prototype, 'scrollLeft', 'set');
 };
 
@@ -47,6 +49,7 @@ describe('ChartRow opening position', () => {
     renderChart(buildDemoObservations(TODAY));
     // 1900 - 20 - (340 - 48) / 2: only the row of the current cycle moves
     expect(setScrollLeft.mock.calls).toEqual([[1734]]);
+    expect(setScrollLeft.mock.contexts).toEqual([document.querySelector('.chart-row-scroll')]);
   });
 
   it('keeps a past cycle at day 1', () => {
@@ -71,7 +74,7 @@ describe('ChartRow opening position', () => {
     expect(setScrollLeft.mock.calls).toEqual([[2000]]);
   });
 
-  it('moves to today again when the view mode changes the cells', () => {
+  it('moves to today again each time the view mode changes the cells', () => {
     const setScrollLeft = fakeLayout();
     renderChart([
       makeObservation({ date: '2026-09-01', bleeding: 'H' }),
@@ -79,6 +82,7 @@ describe('ChartRow opening position', () => {
     ]);
     // In the compact strip, today has no observation and thus no cell
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.compactGrid }));
-    expect(setScrollLeft.mock.calls).toEqual([[1734], [2000]]);
+    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.fullGrid }));
+    expect(setScrollLeft.mock.calls).toEqual([[1734], [2000], [1734]]);
   });
 });

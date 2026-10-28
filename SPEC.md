@@ -462,8 +462,8 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 - Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows a minimum of 35 cells. A longer cycle adds cells in groups of 7. **Compact Strip** shows only the recorded days.
 - Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark.
 - Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
-- When the chart opens, the row of the current cycle shows today in the middle of its scroll area. The current cycle is the newest cycle, when today is on or after its start date.
-  - If today has no cell, for example after the 35 cells of the grid or in **Compact Strip**, the row opens at its end.
+- When the chart opens, the row of the current cycle shows today near the middle of its scroll area, or at its end when the row stops there. The current cycle is the newest cycle, when today is on or after its start date.
+  - If today has no cell, the row opens at its end. For example, today is after the last cell of the grid, or has no observation in **Compact Strip**.
   - The row sets `scrollLeft` at once, before the browser paints. There is no smooth scroll, and the page does not scroll vertically.
   - A change of the grid mode puts today in view again.
   - The rows of past cycles open at day 1.

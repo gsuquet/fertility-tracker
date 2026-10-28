@@ -54,6 +54,7 @@ describe('ChartRow interactions', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    vi.restoreAllMocks();
   });
 
   it('opens an empty day of the empty grid', () => {
@@ -178,6 +179,7 @@ describe('ChartRow interactions', () => {
     const scrollTo = vi.fn();
     const scrollIntoView = vi.fn();
     Object.assign(HTMLElement.prototype, { scrollBy, scrollTo, scrollIntoView });
+    vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(2000);
     renderChart(rich);
     fireEvent.click(screen.getByRole('button', { name: 'Scroll left' }));
     fireEvent.click(screen.getByRole('button', { name: 'Scroll right' }));
@@ -189,7 +191,7 @@ describe('ChartRow interactions', () => {
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToLatest }));
     expect(scrollTo.mock.calls).toEqual([
       [{ left: 0, behavior: 'smooth' }],
-      [{ left: 0, behavior: 'smooth' }],
+      [{ left: 2000, behavior: 'smooth' }],
     ]);
     fireEvent.click(screen.getByRole('button', { name: 'P' }));
     expect(scrollIntoView).toHaveBeenCalledOnce();
