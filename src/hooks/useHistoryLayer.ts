@@ -109,8 +109,9 @@ const start = (initialTab: ActiveTab) => {
   // find an old layer entry. After that, the sync adds the hash of the page if it must.
   const depth = depthOf(window.history.state);
   if (depth > 0 && depth < window.history.length) {
+    // StrictMode calls this two times before the browser goes back
+    if (!traversing) window.history.go(-depth);
     traversing = true;
-    window.history.go(-depth);
     return;
   }
   const hash = parseTabHash(window.location.hash) === initialTab ? undefined : `#${initialTab}`;
@@ -140,7 +141,6 @@ export const useHistoryTab = (initialTab: ActiveTab): [ActiveTab, (tab: ActiveTa
     mounted = true;
     return () => {
       mounted = false;
-      traversing = false;
     };
   }, []);
   return [useSyncExternalStore(subscribe, getActiveTab), changeTab];

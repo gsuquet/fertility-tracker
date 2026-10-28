@@ -205,7 +205,8 @@ describe('useHistoryTab', () => {
     window.history.pushState({ ftLayerDepth: 2 }, '');
     const go = vi.spyOn(window.history, 'go');
     const push = pushes();
-    const { result } = renderHook(() => useHistoryTab('chart'));
+    const { result } = renderHook(() => useHistoryTab('chart'), { wrapper: StrictMode });
+    expect(go).toHaveBeenCalledTimes(1);
     expect(go).toHaveBeenCalledWith(-2);
     await waitFor(() => expect(window.location.hash).toBe('#chart'));
     expect(result.current[0]).toBe('chart');
