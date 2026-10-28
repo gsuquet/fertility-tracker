@@ -1,11 +1,19 @@
 {
+  "id": "./",
   "name": "Fertility Tracker - Creighton Model System",
   "short_name": "Fertility Tracker",
   "description": "Private digital paper-chart charting for the Creighton Model System (CrMS)",
+  "lang": "en",
+  "dir": "ltr",
   "start_url": "./",
+  "scope": "./",
   "display": "standalone",
+  "launch_handler": {
+    "client_mode": ["focus-existing", "auto"]
+  },
   "background_color": "#f8f6f1",
   "theme_color": "#1f3a5f",
+  "categories": ["health", "medical", "lifestyle"],
   "icons": [
     {
       "src": "icons/icon-192.png",
@@ -24,6 +32,50 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "shortcuts": [
+    {
+      "name": "Log today",
+      "short_name": "Log today",
+      "description": "Record the observation of today",
+      "url": "./?shortcut=log",
+      "icons": [
+        {
+          "src": "icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    },
+    {
+      "name": "Chart",
+      "short_name": "Chart",
+      "description": "Open the paper chart strip",
+      "url": "./?shortcut=chart",
+      "icons": [
+        {
+          "src": "icons/icon-96.png",
+          "sizes": "96x96",
+          "type": "image/png"
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "screenshots/phone.png",
+      "sizes": "780x1688",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "Today page with the observation of the day and its stamp"
+    },
+    {
+      "src": "screenshots/desktop.png",
+      "sizes": "1440x900",
+      "type": "image/png",
+      "form_factor": "wide",
+      "label": "Paper chart strip with the stamps of each cycle"
     }
   ]
 }

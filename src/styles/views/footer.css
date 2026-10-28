@@ -4,6 +4,14 @@
    ========================================================================== */
 
 @layer views {
+  /* The installed application has no web page footer. The version dialog shows the legal notice. */
+  @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui),
+    (display-mode: window-controls-overlay) {
+    .app-footer {
+      display: none;
+    }
+  }
+
   .app-footer {
     margin-top: 3rem;
     padding: 1.5rem 0 2rem 0;
@@ -104,7 +112,8 @@
   @media (max-width: 640px) {
     .app-footer {
       margin-top: 2rem;
-      padding: 1.25rem 0 calc(72px + env(safe-area-inset-bottom, 16px)) 0;
+      /* The body keeps the space of the page buttons */
+      padding: 1.25rem 0 var(--space-md) 0;
     }
 
     .footer-copyright {

@@ -27,6 +27,10 @@
     --font-size-xl: 1.375rem;
     --font-size-2xl: 1.75rem;
 
+    /* Phone page buttons: their height, and the space they take above the home indicator */
+    --mobile-nav-height: 62px;
+    --mobile-nav-space: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+
     /* Semantic Z-Index Scale */
     --z-base: 1;
     --z-raised: 10;

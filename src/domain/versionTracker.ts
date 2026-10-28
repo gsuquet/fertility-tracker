@@ -44,6 +44,32 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.20.0',
+    date: '2026-10-28',
+    title: 'Feels Like an App',
+    titleFr: 'Comme une vraie application',
+    tagline: 'The installed app behaves like the other apps of your phone and computer',
+    taglineFr:
+      'L’application installée se comporte comme les autres applications de votre téléphone et de votre ordinateur',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'All text uses the font of your device',
+      'A pull at the top of a page no longer reloads the app, and taps no longer flash',
+      'The header and the page buttons stay clear of the notch and the home bar',
+      'The installed app has no web page footer. The legal notice is in the About dialog',
+      'Touch and hold the app icon for the Log today and Chart shortcuts (Android, Chrome and Edge)',
+      'Android shows screenshots of the app before you install it',
+    ],
+    highlightsFr: [
+      'Tout le texte utilise la police de votre appareil',
+      'Tirer vers le bas en haut d’une page ne recharge plus l’application, et les touches ne clignotent plus',
+      'L’en-tête et les boutons de page restent à l’écart de l’encoche et de la barre d’accueil',
+      'L’application installée n’a plus de pied de page web. Les mentions légales sont dans la fenêtre À propos',
+      'Appuyez longuement sur l’icône pour les raccourcis Log today et Chart (Android, Chrome et Edge)',
+      'Android montre des captures de l’application avant son installation',
+    ],
+  },
+  {
     version: '1.19.1',
     date: '2026-10-28',
     title: 'One Design System',

@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.19.1
+- **Document version:** 1.20.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -34,6 +34,7 @@ This document is the full specification of the application. Change it before you
    - [5.9 Version dialog](#59-version-dialog)
    - [5.10 Welcome guide](#510-welcome-guide)
    - [5.11 Error boundary](#511-error-boundary)
+   - [5.12 Installed application and touch](#512-installed-application-and-touch)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -107,7 +108,7 @@ Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinne
 | Lint and format    | Biome                                      | `@biomejs/biome 2.6.3` for TS, TSX, CSS, JSON, YAML and Markdown. A warning is a failure.           |
 | Git hooks          | pre-commit                                 | `pre-commit 4.7.0`, `pre-commit-hooks 6.0.0`, `gitleaks 8.30.1`, local hooks                        |
 | Icons              | Lucide React                               | `1.61.0`                                                                                            |
-| Font               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans 5.3.0`, self-hosted variable woff2                          |
+| Font               | Font of the operating system               | `system-ui` stack, no font file                                                                     |
 | Styles             | CSS                                        | Custom properties, cascade layers, grid and flexbox                                                 |
 | Unit tests         | Vitest, React Testing Library, V8 coverage | `vitest 5.0.5`, `@vitest/coverage-v8 5.0.5`, `@testing-library/react 16.3.3`, `jsdom 30.1.3`        |
 | End-to-end tests   | Playwright and axe                         | `@playwright/test` and `@axe-core/playwright`, pinned in `package.json`                             |
@@ -357,7 +358,7 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (sprout), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
 | Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                        |
 | Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer           |
-| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button                                                                                                                                   | The copyright and the two buttons are on separate lines                                                               |
+| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button. Not in the installed application.                                                                                                | The copyright and the two buttons are on separate lines. Not in the installed application.                            |
 - The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
@@ -545,10 +546,11 @@ The print layout:
 
 **Module:** [src/components/VersionModal.tsx](src/components/VersionModal.tsx)
 
-- The info button in the header and the version button in the footer open the dialog.
+- The info button in the header, the **About & Version Tracker** item of the phone menu and the version button in the footer open the dialog.
 - The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.
 - The **System Information** tab shows the version, the CrMS version, the build date and the environment. It also has the repository link.
 - The tab also shows the storage statistics: the number of storage keys, cycles and observations, and the size in KB.
+- At the end, the tab shows the legal notice of the footer ([LegalNotice.tsx](src/components/LegalNotice.tsx)): the trademark text, the medical text and the copyright. Thus, the installed application, which has no footer, also shows this text.
 - The dialog uses the surface tokens `--bg-surface`, `--bg-primary` and `--bg-surface-border`.
 
 ### 5.10 Welcome guide
@@ -577,6 +579,37 @@ The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dia
 - With an `onClose` property, the boundary shows the alert in the dialog component, named by the alert title. It adds a **Close** button (`errorBoundary.close`).
 - In this dialog mode, **Close**, `Escape` and the backdrop call `onClose`. Each lazy dialog uses this mode.
 - With an `onError` property, the boundary calls it one time when a child fails. The print view uses it to show `exportModal.printError`.
+
+### 5.12 Installed application and touch
+
+**Modules:** [src/styles/base/reset.css](src/styles/base/reset.css), [src/styles/base/layout.css](src/styles/base/layout.css), [src/styles/views/footer.css](src/styles/views/footer.css), [src/utils/launchShortcut.ts](src/utils/launchShortcut.ts)
+
+The installed application must behave like the other applications of the device. The installed application has the display mode `standalone`, `fullscreen`, `minimal-ui` or `window-controls-overlay`.
+
+| Behavior          | Rule                                                                                                                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull to refresh   | In an installed display mode, `html` has `overscroll-behavior: none`. A pull at the top of a page does not reload the application, and the page does not bounce. A browser tab keeps the pull to refresh of the browser.                                      |
+| Scroll chaining   | Each element that scrolls has `overscroll-behavior: contain`. At its end, the page under it does not scroll.                                                                                                                                                  |
+| Tap highlight     | `html` has `-webkit-tap-highlight-color: transparent`. The `:focus-visible` outlines do not change.                                                                                                                                                           |
+| Double tap        | Buttons, links, form fields and labels have `touch-action: manipulation`. A double tap does not zoom. Pinch zoom stays available (`maximum-scale=5.0`).                                                                                                       |
+| Long press        | Buttons, tabs, the header and the page buttons have `user-select: none` and `-webkit-touch-callout: none`. The text of fields, notes, dialogs and release notes stays selectable.                                                                             |
+| Safe areas        | The header adds `env(safe-area-inset-top)` above its height (68 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. The toasts at the top add the top inset. |
+| Space for buttons | `--mobile-nav-height` (62 pixels) and `--mobile-nav-space` (that height and `env(safe-area-inset-bottom)`) are the only values for the page buttons. The body, the toasts and the chart popover use them.                                                     |
+| Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([5.9](#59-version-dialog)).                                                                                                                           |
+
+#### Launch shortcuts
+
+The manifest has two shortcuts. A long press (or a right click) on the application icon shows them on Android and in Chromium on a computer.
+
+| Shortcut  | URL                 | Result                                                                      |
+| --------- | ------------------- | --------------------------------------------------------------------------- |
+| Log today | `./?shortcut=log`   | The **Today** page, with the observation drawer open for a new observation. |
+| Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                             |
+- `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
+- Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
+- At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
+- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
+- The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
 
 ## 6. State and data storage
 
@@ -746,7 +779,7 @@ The layer order is:
 | Folder        | Files                                                                                                                                                                                                              |
 | ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | `tokens/`     | `tokens.css`: fonts, brand colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
-| `base/`       | `fonts.css`: Plus Jakarta Sans. `reset.css`: box sizing, resets and font smoothing. `layout.css`: application frame, phone navigation space and focus outlines.                                                    |
+| `base/`       | `reset.css`: box sizing, resets, font smoothing and touch behavior. `layout.css`: application frame, phone navigation space, safe areas and focus outlines.                                                        |
 | `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                                         |
 | `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
 | `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
@@ -776,11 +809,10 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 
 #### Fonts
 
-- Running text and controls use the font of the operating system (`--font-family`: `system-ui`, SF Pro, Segoe UI or Roboto).
-- The wordmark and the `h1`, `h2` and `h3` headings use Plus Jakarta Sans (`--font-display`). Print keeps its own font, also for headings.
-- `fonts.css` declares only the `latin` and `latin-ext` woff2 files of Plus Jakarta Sans, with weights from 200 to 800 and `font-display: swap`.
-- The font `url()` values are package paths. Vite copies the files to `assets/` with a hash, and the service worker keeps them.
-- No font or stylesheet comes from another host, such as Google Fonts.
+- All the text uses the font of the operating system: SF Pro on Apple devices, Roboto on Android and Segoe UI on Windows. Thus, the application looks like the other applications of the device.
+- `--font-family` has this stack: `system-ui`, `-apple-system`, `BlinkMacSystemFont`, `'Segoe UI'`, `Roboto`, `'Helvetica Neue'`, `Arial`, `sans-serif`.
+- The wordmark and the `h1`, `h2` and `h3` headings use `--font-display`, which is `var(--font-family)`. The size and the weight of the type scale make the difference between headings and text. Print keeps its own font, also for headings.
+- The application has no font file and no `@font-face` rule. No font or stylesheet comes from another host, such as Google Fonts.
 - Each custom property that a style or a component uses has a definition in `src/styles/tokens/`.
 - Only `src/styles/tokens/` and `views/print.css` contain color values, such as `#1f3a5f`, `rgba()` or `white`. The other style files use tokens. Print has its own colors for paper.
 - Outside `views/print.css`, each `font-size` is a type scale token (`--font-size-*`), or `100%` in `reset.css`. Each `border-radius` is a radius token, `0` or `50%`. Print uses `pt` sizes.
@@ -896,6 +928,9 @@ mise run docs
 # Draw the PNG app icons again from public/icons/logo.svg
 mise run icons
 
+# Take the install screenshots again, with demo data
+mise run screenshots
+
 # Run the Playwright end-to-end and accessibility tests
 mise run e2e
 
@@ -964,7 +999,8 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 
 - The precache list has `./`, that is the application shell. The server answers `./` with `index.html`, so the list does not have `index.html` under its own name.
 - The list also has each other file of the build (all files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons).
-- The list does not have source maps, `sw.js` or `_headers`.
+- The list does not have source maps, `sw.js`, `_headers` or the files in `screenshots/`. Only the install dialog of the browser uses the screenshots, and the application does not need them offline.
+- The list has no font file.
 - The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
 - Thus, each build with a different output installs a new cache.
 
@@ -984,6 +1020,13 @@ Other rules:
 - `src/main.tsx` calls `registerServiceWorker()` after the first render. The function registers `./sw.js` only in a production build (`import.meta.env.PROD`).
 - The registration also needs a secure context (`https:` or `localhost`) and a browser with service workers. A failure has no effect. `index.html` has no inline script.
 - [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
+- The manifest `id` and `scope` are `./`. Thus, the installed application keeps its identity if `start_url` changes.
+- The manifest has `lang` (`en`), `dir` (`ltr`) and `categories` (`health`, `medical`, `lifestyle`).
+- `launch_handler` has `client_mode: ["focus-existing", "auto"]`. In Chromium, a second launch shows the open window and does not reload it. Thus, a draft in the drawer stays.
+- `shortcuts` has **Log today** and **Chart**, each with `icons/icon-96.png` ([5.12](#launch-shortcuts)).
+- `screenshots` has `screenshots/phone.png` (`narrow`, 780 × 1688) and `screenshots/desktop.png` (`wide`, 1440 × 900). Android shows them in the install dialog. They show only demo data. The task `mise run screenshots` makes them again.
+- A test reads the manifest and checks that each icon and screenshot file exists.
+- `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
 - The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
 - The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.

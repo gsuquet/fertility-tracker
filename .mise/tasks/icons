@@ -16,6 +16,7 @@ const square = scale =>
 
 // any: the rounded tile with transparent corners. maskable: the sprout in the 80% safe zone. Apple: a full square.
 const icons = [
+  ['icon-96.png', logo, 96],
   ['icon-192.png', logo, 192],
   ['icon-512.png', logo, 512],
   ['icon-maskable-512.png', square(0.62), 512],

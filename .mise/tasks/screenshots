@@ -1,0 +1,55 @@
+#!/usr/bin/env bash
+#MISE description="Build the app and take the install screenshots of the manifest, with demo data"
+set -euo pipefail
+
+PORT="${PW_PORT:-4174}"
+npx --no-install vite build
+./node_modules/.bin/vite preview --host 127.0.0.1 --port "$PORT" --strictPort >/dev/null 2>&1 &
+SERVER=$!
+trap 'kill "$SERVER" 2>/dev/null || true' EXIT
+for _ in $(seq 60); do
+  curl -sf "http://127.0.0.1:$PORT/" >/dev/null && break
+  sleep 0.5
+done
+
+PORT="$PORT" node --input-type=module -e "
+import { mkdirSync } from 'node:fs';
+import { chromium } from '@playwright/test';
+
+const url = 'http://127.0.0.1:' + process.env.PORT + '/';
+const dir = 'public/screenshots';
+mkdirSync(dir, { recursive: true });
+
+// Each screenshot shows only the demo data. The sizes match the manifest.
+const shots = [
+  { file: 'phone.png', viewport: { width: 390, height: 844 }, scale: 2, mobile: true, tab: null },
+  { file: 'desktop.png', viewport: { width: 1440, height: 900 }, scale: 1, mobile: false, tab: 'Paper Chart Strip' },
+];
+
+// CHROMIUM_PATH selects a Chromium other than the one of npx playwright install
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH });
+for (const shot of shots) {
+  const page = await browser.newPage({
+    viewport: shot.viewport,
+    deviceScaleFactor: shot.scale,
+    isMobile: shot.mobile,
+    hasTouch: shot.mobile,
+    colorScheme: 'light',
+  });
+  await page.goto(url);
+  // The demo button is on the last slide of the welcome guide
+  const guide = page.getByRole('dialog');
+  while (!(await guide.getByRole('button', { name: 'Explore Demo Data' }).isVisible())) {
+    await guide.getByRole('button', { name: 'Next', exact: true }).click();
+  }
+  await guide.getByRole('button', { name: 'Explore Demo Data' }).click();
+  // Close the undo message, and show the page as the installed application, without the footer
+  await page.getByRole('button', { name: 'Delete the copy' }).click();
+  await page.addStyleTag({ content: '.app-footer { display: none; }' });
+  if (shot.tab) await page.getByRole('tab', { name: shot.tab }).click();
+  await page.waitForTimeout(500);
+  await page.screenshot({ path: dir + '/' + shot.file });
+  await page.close();
+}
+await browser.close();
+"

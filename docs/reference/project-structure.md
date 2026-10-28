@@ -94,7 +94,8 @@ fertility-tracker/
 | `PrintExportView.tsx`                     | The 35-day chart for printing.                                 |
 | `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                        |
 | `WelcomeModal.tsx`                        | The welcome guide.                                             |
-| `Footer.tsx`                              | Legal text, guide link and version.                            |
+| `Footer.tsx`                              | Legal text, guide link and version. Not in the installed app.  |
+| `LegalNotice.tsx`                         | The trademark text, the medical text and the copyright.        |
 | `ErrorBoundary.tsx`                       | Message and **Reload** button when a part cannot load.         |
 | `LoadingStatus.tsx`                       | The loading text for a screen reader while a lazy part loads.  |
 

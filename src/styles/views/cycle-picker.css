@@ -117,6 +117,7 @@
     margin-top: 0.5rem;
     max-height: 320px;
     overflow-y: auto;
+    overscroll-behavior: contain;
   }
 
   .cycle-option-item {

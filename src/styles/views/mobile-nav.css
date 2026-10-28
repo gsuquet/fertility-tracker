@@ -23,8 +23,11 @@
       bottom: 0;
       left: 0;
       right: 0;
-      height: calc(62px + env(safe-area-inset-bottom, 0px));
+      height: var(--mobile-nav-space);
       padding-bottom: env(safe-area-inset-bottom, 0px);
+      -webkit-user-select: none;
+      user-select: none;
+      -webkit-touch-callout: none;
       background-color: var(--glass-bg);
       backdrop-filter: blur(20px);
       -webkit-backdrop-filter: blur(20px);
@@ -32,8 +35,8 @@
       z-index: var(--z-mobile-nav);
       align-items: center;
       justify-content: space-around;
-      padding-left: 0.25rem;
-      padding-right: 0.25rem;
+      padding-left: max(0.25rem, env(safe-area-inset-left, 0px));
+      padding-right: max(0.25rem, env(safe-area-inset-right, 0px));
       box-shadow: var(--shadow-bar);
     }
 

@@ -17,10 +17,11 @@ const files = [
   { url: 'icons/icon-192.png', content: new Uint8Array([1, 2, 3]) },
   { url: '_headers', content: '/*' },
   { url: SW_FILE_NAME, content: 'worker' },
+  { url: 'screenshots/phone.png', content: new Uint8Array([4, 5, 6]) },
 ];
 
 describe('buildPrecache', () => {
-  it('lists the app shell and every build file, without maps, headers and the worker', () => {
+  it('lists the app shell and every build file, without maps, headers, worker and screenshots', () => {
     expect(buildPrecache(files, '1.16.0').precache).toEqual([
       './',
       'assets/index-abc.js',

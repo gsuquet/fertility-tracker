@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CycleProvider } from './context/CycleContext';
+import { CycleProvider, useCycleUi } from './context/CycleContext';
 import type { ActiveTab } from './types/crms';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
@@ -60,10 +60,24 @@ const ChunkReady: React.FC<{ onReady: (state: 'ready') => void }> = ({ onReady }
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
+import type { LaunchShortcut } from './utils/launchShortcut';
+import {
+  clearLaunchShortcut,
+  listenForLaunchShortcuts,
+  readLaunchShortcut,
+} from './utils/launchShortcut';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('today');
+  const { setSelectedObservation, isDrawerOpen, setIsDrawerOpen } = useCycleUi();
+  // The launch-queue listener is set once, so it reads the drawer state through a ref
+  const drawerOpenRef = useRef(isDrawerOpen);
+  drawerOpenRef.current = isDrawerOpen;
+  // A shortcut of the app icon chooses the first page. Reading it does not change the address.
+  const [launchShortcut] = useState(readLaunchShortcut);
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    launchShortcut === 'chart' ? 'chart' : 'today'
+  );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
@@ -85,6 +99,22 @@ const MainApp: React.FC = () => {
       }),
     []
   );
+
+  // Log today opens the drawer for a new observation, as the + button does. At the first visit,
+  // the welcome guide comes first, so the drawer does not open under it. A drawer that is already
+  // open keeps its observation and its draft.
+  useEffect(() => {
+    const openShortcut = (shortcut: LaunchShortcut) => {
+      if (shortcut === 'log' && drawerOpenRef.current) return;
+      setActiveTab(shortcut === 'chart' ? 'chart' : 'today');
+      if (shortcut !== 'log' || !readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) return;
+      setSelectedObservation(null);
+      setIsDrawerOpen(true);
+    };
+    clearLaunchShortcut();
+    if (launchShortcut) openShortcut(launchShortcut);
+    listenForLaunchShortcuts(openShortcut);
+  }, [launchShortcut, setSelectedObservation, setIsDrawerOpen]);
 
   useEffect(() => {
     checkAndRecordVersionSeen();

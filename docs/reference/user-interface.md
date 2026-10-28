@@ -110,6 +110,19 @@ All the dialogs, the observation drawer and the mobile menu use the same keyboar
 | A click outside the dialog | Closes the dialog.                                                   |
 | The dialog closes          | The focus goes back to the button that opened the dialog.            |
 
+## Installed application
+
+You can install the application on a phone or a computer. The installed application has these differences:
+
+| Function             | Installed application                                                                   |
+| -------------------- | --------------------------------------------------------------------------------------- |
+| Footer               | Not shown. **About & Version Tracker** > **System Information** shows the legal notice. |
+| Pull down at the top | Does not reload the application.                                                        |
+| **Log today**        | Shortcut of the app icon. Opens the observation drawer for a new observation.           |
+| **Chart**            | Shortcut of the app icon. Opens the **Paper Chart Strip** page.                         |
+
+Touch and hold the app icon (or right-click it on a computer) to see the shortcuts. The shortcuts are available on Android and in Chrome or Edge on a computer.
+
 ## Error message
 
 If a page or a dialog cannot load, the application shows the message **This part did not load** in its place. The header and the footer stay available. Click **Reload** to load the page again. Your observations stay in the browser.

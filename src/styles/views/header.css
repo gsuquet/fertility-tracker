@@ -5,7 +5,8 @@
 
 @layer views {
   .app-header {
-    height: 68px;
+    /* The header stays under the status bar and away from the notch */
+    height: calc(68px + env(safe-area-inset-top, 0px));
     background-color: var(--glass-bg);
     backdrop-filter: blur(16px);
     -webkit-backdrop-filter: blur(16px);
@@ -14,6 +15,12 @@
     align-items: center;
     justify-content: space-between;
     padding: 0 1.25rem;
+    padding-top: env(safe-area-inset-top, 0px);
+    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
+    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+    -webkit-user-select: none;
+    user-select: none;
+    -webkit-touch-callout: none;
     position: sticky;
     top: 0;
     z-index: var(--z-sticky);
@@ -158,8 +165,11 @@
   /* Responsive Mobile Header */
   @media (max-width: 640px) {
     .app-header {
-      height: 54px;
+      height: calc(54px + env(safe-area-inset-top, 0px));
       padding: 0 0.5rem;
+      padding-top: env(safe-area-inset-top, 0px);
+      padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
+      padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
       gap: 0.25rem;
       overflow: visible;
       justify-content: space-between;

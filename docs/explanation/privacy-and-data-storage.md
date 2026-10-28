@@ -10,7 +10,7 @@ Fertility data is very personal health data. Data that is not on a server cannot
 
 ## No requests to other sites
 
-The application loads all its files from its own site: scripts, styles, icons and the font. The font Plus Jakarta Sans is a file of the application. It does not come from Google Fonts or from a different font service. Thus, no other company gets a request, your IP address or the time of your visit when you open the application.
+The application loads all its files from its own site: scripts, styles and icons. The text uses the font of your device, so the application loads no font from Google Fonts or from a different font service. Thus, no other company gets a request, your IP address or the time of your visit when you open the application.
 
 The Content Security Policy in `public/_headers` enforces this rule. It permits styles and fonts only from the site of the application.
 

@@ -36,12 +36,12 @@
   /* Keep the toast above the bottom navigation bar */
   @media (max-width: 640px) {
     .undo-toast {
-      bottom: calc(62px + env(safe-area-inset-bottom, 0px) + var(--space-sm));
+      bottom: calc(var(--mobile-nav-space) + var(--space-sm));
     }
 
     /* In the mobile menu, the toast goes to the top, so it does not cover the menu actions */
     .mobile-menu-overlay .undo-toast {
-      top: var(--space-md);
+      top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
       bottom: auto;
     }
   }

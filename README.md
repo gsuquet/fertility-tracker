@@ -61,8 +61,6 @@ Report a problem or ask for a feature in [GitHub Issues](https://github.com/gsuq
 
 The code has the [MIT License](LICENSE).
 
-Third-party: Plus Jakarta Sans © 2020 The Plus Jakarta Sans Project Authors, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/). The application includes the font files from the npm package `@fontsource-variable/plus-jakarta-sans`.
-
 ## Trademarks
 
 FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are trademarks of the Saint Paul VI Institute for the Study of Human Reproduction.
