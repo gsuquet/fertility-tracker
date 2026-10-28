@@ -202,6 +202,27 @@ describe('ObservationDrawer flows', () => {
     expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
   });
 
+  it('closes on a phone after a long drag down on the handle', () => {
+    // A phone width, with reduced motion so that the sheet closes at once
+    const media = vi.mocked(window.matchMedia).getMockImplementation();
+    vi.mocked(window.matchMedia).mockImplementation(
+      query => ({ matches: true, media: query }) as MediaQueryList
+    );
+    Element.prototype.setPointerCapture = vi.fn();
+    const box = vi
+      .spyOn(HTMLElement.prototype, 'getBoundingClientRect')
+      .mockReturnValue({ height: 800 } as DOMRect);
+    renderDrawer(null);
+    const handle = drawer().querySelector('.sheet-handle') as HTMLElement;
+    expect(handle).toHaveAttribute('aria-hidden', 'true');
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 0 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 400 });
+    fireEvent.pointerUp(handle, { pointerId: 1, clientY: 400 });
+    expect(screen.queryByRole('dialog')).toBeNull();
+    box.mockRestore();
+    vi.mocked(window.matchMedia).mockImplementation(media as typeof window.matchMedia);
+  });
+
   it('treats a blank calendar day as a new entry on its date', () => {
     renderDrawer(makeObservation({ id: '', date: '2026-09-11' }));
     expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);

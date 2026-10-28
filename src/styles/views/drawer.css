@@ -26,6 +26,11 @@
     animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
+  /* The grab handle of the bottom sheet. It shows on a phone only. */
+  .sheet-handle {
+    display: none;
+  }
+
   .drawer-header {
     padding: 1.15rem 1.25rem;
     border-bottom: 1px solid var(--bg-surface-border);
@@ -86,8 +91,38 @@
 
   /* Responsive Media Queries */
   @media (max-width: 640px) {
+    /* The backdrop fades while the user drags the sheet down (useSheetDrag.ts) */
     .drawer-overlay {
       align-items: flex-end;
+      background-color: color-mix(
+        in srgb,
+        var(--bg-overlay) calc(100% * (1 - var(--sheet-drag))),
+        transparent
+      );
+      backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
+      -webkit-backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
+    }
+
+    .sheet-handle {
+      display: block;
+      flex-shrink: 0;
+      position: relative;
+      height: 1.25rem;
+      touch-action: none;
+      cursor: grab;
+    }
+
+    .sheet-handle::before {
+      content: '';
+      position: absolute;
+      top: 0.5rem;
+      left: 50%;
+      width: 2.25rem;
+      height: 0.25rem;
+      transform: translateX(-50%);
+      border-radius: var(--radius-full);
+      background-color: var(--text-muted);
+      opacity: 0.5;
     }
 
     .drawer-container {
@@ -98,9 +133,10 @@
       animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* The header is part of the drag area, below the grab handle */
     .drawer-header {
-      padding: 1rem 1.15rem;
-      padding-top: max(1rem, env(safe-area-inset-top, 0px));
+      padding: 0.25rem 1.15rem 1rem;
+      touch-action: none;
     }
 
     .drawer-body {
@@ -128,6 +164,12 @@
       flex-shrink: 1;
       min-width: 0;
       padding: 0.6rem 0.85rem;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .drawer-container {
+        animation: none;
+      }
     }
 
     /* The delete button keeps its icon and its aria-label */

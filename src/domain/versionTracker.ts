@@ -44,6 +44,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.23.0',
+    date: '2026-10-28',
+    title: 'Swipe to Close',
+    titleFr: 'Glisser pour fermer',
+    tagline: 'On a phone, pull the observation sheet down to close it',
+    taglineFr: 'Sur téléphone, tirez le panneau d’observation vers le bas pour le fermer',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A handle at the top of the observation sheet on phones',
+      'Pull the sheet down, or flick it, to close it with one thumb',
+      'From the top of the form, a pull down also moves the sheet',
+      'With reduced motion on, the sheet opens and closes without animation',
+    ],
+    highlightsFr: [
+      'Une poignée en haut du panneau d’observation sur téléphone',
+      'Tirez le panneau vers le bas, ou faites-le glisser vite, pour le fermer d’un pouce',
+      'En haut du formulaire, tirer vers le bas déplace aussi le panneau',
+      'Avec les animations réduites, le panneau s’ouvre et se ferme sans animation',
+    ],
+  },
+  {
     version: '1.22.1',
     date: '2026-10-28',
     title: 'Your Day Stays Safe',
