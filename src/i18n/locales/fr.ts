@@ -72,8 +72,8 @@ export const fr: TranslationSchema = {
   actions: {
     newEntry: 'Saisir une observation',
     exportPdf: 'Export Praticien PDF / PNG',
-    exportJson: 'Sauvegarder (JSON)',
-    importJson: 'Restaurer (JSON)',
+    exportJson: 'Sauvegarder les données',
+    importJson: 'Restaurer les données',
     clearData: 'Réinitialiser',
     loadDemo: 'Charger Cycle Démo',
     save: 'Enregistrer',
@@ -261,9 +261,9 @@ export const fr: TranslationSchema = {
     printError: 'La vue d’impression ne s’est pas chargée. Rechargez la page pour réessayer.',
     pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
     jsonDescription:
-      "Téléchargez toutes vos observations dans un fichier JSON. Le fichier n'est pas chiffré : gardez-le privé.",
+      "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
     importError:
-      "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde JSON de Fertility Tracker.",
+      "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde de Fertility Tracker (.ftbackup ou .json).",
     close: 'Fermer la fenêtre d’export',
   },
   confirmDialog: {

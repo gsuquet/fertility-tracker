@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.29.0
+- **Document version:** 1.30.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -40,6 +40,7 @@ This document is the full specification of the application. Change it before you
    - [5.15 Page slide](#515-page-slide)
    - [5.16 App icon badge](#516-app-icon-badge)
    - [5.17 Haptic feedback](#517-haptic-feedback)
+   - [5.18 Desktop title bar and backup files](#518-desktop-title-bar-and-backup-files)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -550,22 +551,24 @@ It reads the values and functions of `useObservationForm`. The drawer and the To
 
 **Modules:** [ExportModal.tsx](src/components/ExportModal.tsx), [PrintExportView.tsx](src/components/PrintExportView.tsx), [exportUtils.ts](src/utils/exportUtils.ts), [backupImport.ts](src/domain/backupImport.ts)
 
-| Action                 | Result                                                                                 |
-| ---------------------- | -------------------------------------------------------------------------------------- |
-| Print / Save as PDF    | Prints one cycle or the selected cycles with the browser print dialog.                 |
-| Download Backup (JSON) | Downloads `fertility-tracker-data-backup-YYYY-MM-DD.json` and records the backup date. |
-| Restore Data (JSON)    | Shows a preview, then replaces or merges the observations with the file.               |
-| Load Demo Cycle        | Replaces all observations with the demo data.                                          |
-| Clear Data / Reset     | Deletes all observations.                                                              |
+| Action              | Result                                                                                |
+| ------------------- | ------------------------------------------------------------------------------------- |
+| Print / Save as PDF | Prints one cycle or the selected cycles with the browser print dialog.                |
+| Backup Data         | Downloads `fertility-tracker-backup-YYYY-MM-DD.ftbackup` and records the backup date. |
+| Restore Data        | Shows a preview, then replaces or merges the observations with the file.              |
+| Load Demo Cycle     | Replaces all observations with the demo data.                                         |
+| Clear Data / Reset  | Deletes all observations.                                                             |
 
 `getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export.
 
 #### Backup file
 
 - The file uses the write format of the browser storage (section 6.3). In this version, that is a bare JSON array, so older versions can restore it.
-- **Restore Data (JSON)** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
+- **Restore Data** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
 - The file is plain JSON. It is not encrypted. The texts `exportModal.jsonDescription` and `exportModal.pdfDescription` tell this to the user.
-- **Restore Data (JSON)** is a button that opens a hidden file input. Thus, the keyboard can reach it.
+- **Restore Data** is a button that opens a hidden file input. Thus, the keyboard can reach it.
+- The file has the extension `.ftbackup` and the type `application/octet-stream`. With `application/json`, a browser can add `.json` after the name. The content is plain JSON, and any text editor can open it.
+- The file input has no `accept` filter. iOS greys out a file with an extension that it does not know. The application checks the contents, not the extension. Thus, a `.ftbackup` file and an old `.json` backup both restore.
 - A file that is not a valid backup shows `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
 
 #### Confirmation
@@ -574,8 +577,8 @@ It reads the values and functions of `useObservationForm`. The drawer and the To
 
 - It opens over the export dialog, with `aria-labelledby` (its title) and `aria-describedby` (its message). All its text comes from the dictionary (`confirmDialog.*`, `actions.cancel`).
 - When it opens, the focus goes to **Cancel**. `Escape`, **Cancel** and a click on the backdrop cancel it. They do not close the export dialog.
-- **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist.
-- Without observations, **Load Demo Cycle** and **Restore Data (JSON)** act immediately, and **Clear Data / Reset** is disabled.
+- **Load Demo Cycle**, **Restore Data** and **Clear Data / Reset** open it when observations exist.
+- Without observations, **Load Demo Cycle** and **Restore Data** act immediately, and **Clear Data / Reset** is disabled.
 - The message for **Clear Data / Reset** says that a copy stays on the device until the user selects **Delete the copy**.
 
 Before a backup changes existing observations, the dialog shows a preview from `summarizeObservations()`. The preview gives the number of observations in the file and the first and last date. If the file has no observations, the preview says so.
@@ -631,7 +634,7 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 | 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
 | 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
 
-In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog with the focus on **Restore Data (JSON)** ([5.13](#513-install-and-update)).
+In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog with the focus on **Restore Data** ([5.13](#513-install-and-update)).
 
 The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dialog component gives `Escape`, the focus trap and the focus return. The slide body can get the focus and scroll. The guide is in English and in French.
 
@@ -676,7 +679,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
 - **Chart** replaces the hash with `#chart`. Thus, a reload keeps the **Paper Chart Strip** page.
-- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
+- When the window is already open, `listenForLaunches()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
 - The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
 
 #### Back button and address
@@ -848,6 +851,31 @@ The first install has no controller. Thus, it activates at once and the applicat
 - The vibrations are on by default. The **Vibration : On** button in the phone menu, below the language and theme buttons, turns them off or on. The button shows only when the browser has the Vibration API. The application saves the choice in `fertility_tracker_haptics_off`.
 - The choice stays in memory when the browser cannot save it.
 
+### 5.18 Desktop title bar and backup files
+
+**Modules:** [public/manifest.webmanifest](public/manifest.webmanifest), [src/styles/views/header.css](src/styles/views/header.css), [src/utils/launchShortcut.ts](src/utils/launchShortcut.ts), [src/App.tsx](src/App.tsx), [src/components/ExportModal.tsx](src/components/ExportModal.tsx)
+
+Only Chromium browsers on a computer (Chrome and Edge) have these two functions. Elsewhere, nothing changes.
+
+#### Title bar
+
+- The manifest has `display_override: ["window-controls-overlay", "standalone"]`. The installed app on a computer puts its header in the title bar.
+- In `@media (display-mode: window-controls-overlay)`, the header uses `env(titlebar-area-x)`, `env(titlebar-area-width)` and `env(titlebar-area-height)`. The padding keeps the buttons away from the window controls.
+- An empty part of the header moves the window (`app-region: drag`). Buttons, links, fields and tabs do not (`app-region: no-drag`).
+- While a dialog is open, no part of the header moves the window. Thus, a click on a dialog in front of the header stays a click.
+- The dialogs and the drawer start below the title bar. Thus, the window controls never cover a close button.
+- A window of 640 pixels or less keeps the 54-pixel height of the phone header.
+- The user can turn the overlay off with the button of the browser in the title bar. The media query then stops, and the header goes back to its usual layout.
+- A phone and a browser tab never match this media query.
+
+#### Open a backup file with the app
+
+- The manifest has one `file_handlers` entry. It accepts only `.ftbackup`, never `.json`. Its `action` is `./?restore=file`.
+- A double click on a `.ftbackup` file, or **Open with** Fertility Tracker, opens the app. The manifest asks for `focus-existing`, so an open window gets the file.
+- `listenForLaunches()` sets the one consumer of `window.launchQueue` for the shortcuts and for the files. It reads the first file and gives its text to `App`. A file that the app cannot read gives an empty text.
+- `App` opens the export dialog with the text. The dialog uses the same steps as **Restore Data**: the preview, the confirmation and the undo copy. A file that is not a valid backup shows `exportModal.importError`.
+- `clearLaunchShortcut()` removes `restore` from the address. Only the launch queue gives a file: the parameter alone opens nothing.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -945,7 +973,7 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 
 **Modules:** [backupReminder.ts](src/domain/backupReminder.ts), [BackupReminder.tsx](src/components/BackupReminder.tsx)
 
-- **Download Backup (JSON)** calls `markBackedUp()`. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
+- **Backup Data** calls `markBackedUp()`. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
 - When the first observation that is not demo data exists, the provider saves today in `fertility_care_backup_reminder_start` (`backupReminderStart`). Before that, `backupReminderStart` is `null`. A value that exists does not change.
 - `saveObservation()` gives a new `id` (`obs_DATE_TIME`) to a day whose `id` starts with `demo_`. Thus, a changed demo day is an observation of the user.
 - Delete, the manual Peak Day and the merge find a day by its new `id` or by its date.

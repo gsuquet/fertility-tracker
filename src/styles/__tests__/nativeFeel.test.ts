@@ -146,3 +146,46 @@ describe('footer of the installed application', () => {
     expect(footer).toMatch(query);
   });
 });
+
+describe('header in the title bar of an installed app on a computer', () => {
+  const header = readCss('views/header.css');
+  const overlayStart = header.indexOf('@media (display-mode: window-controls-overlay)');
+  const overlay = header.slice(overlayStart);
+
+  it('uses the free area of the title bar only when the overlay is on', () => {
+    expect(overlayStart).toBeGreaterThan(-1);
+    const rule = ruleBody(overlay, /\.app-header/);
+    expect(rule).toMatch(/height:\s*max\(68px,\s*env\(titlebar-area-height, 0px\)\);/);
+    expect(rule).toMatch(/padding-left:\s*calc\(env\(titlebar-area-x, 0px\)/);
+    expect(rule).toMatch(
+      /padding-right:\s*calc\(\s*100vw\s*-\s*env\(titlebar-area-x, 0px\)\s*-\s*env\(titlebar-area-width, 100vw\)/
+    );
+    // Outside the overlay, nothing uses the title bar values, so a phone and a tab do not change
+    expect(header.slice(0, overlayStart)).not.toMatch(/titlebar-area|app-region/);
+    // The overlay block is the last one, so it wins over the rules of a narrow window
+    expect(overlay.match(/@media \(display-mode/g)).toHaveLength(1);
+    expect(overlay).toMatch(
+      /@media \(max-width: 640px\)\s*\{\s*\.app-header\s*\{\s*height:\s*max\(54px,\s*env\(titlebar-area-height, 0px\)\);/
+    );
+  });
+
+  it('moves the window with an empty part of the header, but not with a control', () => {
+    expect(ruleBody(overlay, /\.app-header/)).toMatch(
+      /-webkit-app-region:\s*drag;\s*app-region:\s*drag;/
+    );
+    const controls = ruleBody(
+      overlay,
+      /\.app-header button,\s*\.app-header a,\s*\.app-header input,\s*\.app-header select,\s*\.app-header \[role='tab'\]/
+    );
+    expect(controls).toMatch(/-webkit-app-region:\s*no-drag;\s*app-region:\s*no-drag;/);
+  });
+
+  it('gives the clicks to an open dialog, and keeps the dialogs out of the title bar', () => {
+    expect(ruleBody(overlay, /body:has\(dialog\[open\]\) \.app-header/)).toMatch(
+      /-webkit-app-region:\s*no-drag;\s*app-region:\s*no-drag;/
+    );
+    expect(ruleBody(overlay, /\.modal-overlay,\s*\.drawer-overlay/)).toMatch(
+      /top:\s*calc\(env\(titlebar-area-y, 0px\) \+ env\(titlebar-area-height, 0px\)\);/
+    );
+  });
+});

@@ -86,11 +86,7 @@ import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
 import type { LaunchShortcut } from './utils/launchShortcut';
-import {
-  clearLaunchShortcut,
-  listenForLaunchShortcuts,
-  readLaunchShortcut,
-} from './utils/launchShortcut';
+import { clearLaunchShortcut, listenForLaunches, readLaunchShortcut } from './utils/launchShortcut';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
@@ -112,6 +108,9 @@ const MainApp: React.FC = () => {
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   // Restore a backup of the welcome guide opens the export dialog on its restore button
   const [exportStartsWithRestore, setExportStartsWithRestore] = useState(false);
+  // A backup file that the user opened with the app. Each file is a new object, so the export
+  // dialog restores it also when it has the same text as the last one.
+  const [launchedBackup, setLaunchedBackup] = useState<{ text: string } | null>(null);
   const { observations } = useCycleData();
   const installMode = useInstallMode();
   // The dot on the app icon while today has no observation, when the user turned it on
@@ -146,9 +145,14 @@ const MainApp: React.FC = () => {
       setSelectedObservation(null);
       setIsDrawerOpen(true);
     };
+    // A backup file opens the export dialog, which restores it as Restore Data does
+    const openBackupFile = (text: string) => {
+      setLaunchedBackup({ text });
+      setIsExportModalOpen(true);
+    };
     clearLaunchShortcut();
     if (launchShortcut) openShortcut(launchShortcut);
-    listenForLaunchShortcuts(openShortcut);
+    listenForLaunches(openShortcut, openBackupFile);
   }, [launchShortcut, setSelectedObservation, setIsDrawerOpen, setActiveTab]);
 
   useEffect(() => {
@@ -183,6 +187,7 @@ const MainApp: React.FC = () => {
   const closeExportModal = () => {
     setIsExportModalOpen(false);
     setExportStartsWithRestore(false);
+    setLaunchedBackup(null);
   };
   const closeVersionModal = () => setIsVersionModalOpen(false);
   const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
@@ -282,6 +287,7 @@ const MainApp: React.FC = () => {
               onClose={closeExportModal}
               onPreparePrint={handlePreparePrint}
               startWithRestore={exportStartsWithRestore}
+              launchedBackup={launchedBackup}
             />
           </React.Suspense>
         </ErrorBoundary>

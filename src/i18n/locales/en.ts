@@ -71,8 +71,8 @@ export const en = {
   actions: {
     newEntry: 'Log Observation',
     exportPdf: 'Practitioner PDF / PNG',
-    exportJson: 'Backup Data (JSON)',
-    importJson: 'Restore Data (JSON)',
+    exportJson: 'Backup Data',
+    importJson: 'Restore Data',
     clearData: 'Clear Data / Reset',
     loadDemo: 'Load Demo Cycle',
     save: 'Save Observation',
@@ -259,9 +259,9 @@ export const en = {
     printError: 'The print view did not load. Reload the page to try again.',
     pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
     jsonDescription:
-      'Download all your observations as a JSON file. The file is not encrypted: keep it private.',
+      'Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private.',
     importError:
-      'This file is not a valid backup. Select a JSON backup file from Fertility Tracker.',
+      'This file is not a valid backup. Select a backup file from Fertility Tracker (.ftbackup or .json).',
     close: 'Close export dialog',
   },
   confirmDialog: {
