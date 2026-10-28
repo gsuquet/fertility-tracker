@@ -4,7 +4,8 @@ import type { ActiveTab } from '../types/crms';
 /**
  * Back (the back button or gesture of the device, or of the browser) closes the top layer, then
  * goes to the previous page. Each open layer and each page change has one history entry. This is
- * the only module that calls `history`.
+ * the only module that adds history entries or goes back. `clearLaunchShortcut` only removes a
+ * query parameter from the address, and keeps the state.
  */
 
 const TABS: readonly ActiveTab[] = ['today', 'chart', 'calendar', 'analytics'];
@@ -101,9 +102,17 @@ export const useHistoryLayer = (onClose: () => void, open = true): void => {
   }, [open]);
 };
 
-/** Sets the first page. A layer entry of the last session does not count as an open layer. */
+/** Sets the first page. No layer is open after a reload. */
 const start = (initialTab: ActiveTab) => {
   activeTab = initialTab;
+  // A reload with layers open: go back to the entry of the page, so that the next Back does not
+  // find an old layer entry. After that, the sync adds the hash of the page if it must.
+  const depth = depthOf(window.history.state);
+  if (depth > 0 && depth < window.history.length) {
+    traversing = true;
+    window.history.go(-depth);
+    return;
+  }
   const hash = parseTabHash(window.location.hash) === initialTab ? undefined : `#${initialTab}`;
   window.history.replaceState({ [DEPTH_KEY]: 0 }, '', hash);
 };

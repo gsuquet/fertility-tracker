@@ -88,6 +88,10 @@ test.describe('Back button and address', () => {
     await page.reload();
     await expect(panel(page, 'chart')).toBeVisible();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // The entry of the closed drawer is gone: Back opens the previous page at once
+    await pressBack(page);
+    await expect(panel(page, 'today')).toBeVisible();
   });
 
   test('opens Today for an unknown hash', async ({ page }) => {

@@ -189,14 +189,36 @@ describe('useHistoryLayer', () => {
 });
 
 describe('useHistoryTab', () => {
-  beforeEach(() => window.history.replaceState({ ftLayerDepth: 2 }, '', '/'));
+  beforeEach(() => window.history.replaceState({ ftLayerDepth: 0 }, '', '/'));
   afterEach(() => window.history.replaceState(null, '', '/'));
 
   it('starts with no layer entry and keeps an empty hash on Today', () => {
+    window.history.replaceState({ other: true }, '', '/');
     const { result } = renderHook(() => useHistoryTab('today'));
     expect(result.current[0]).toBe('today');
     expect(depth()).toBe(0);
     expect(window.location.hash).toBe('');
+  });
+
+  it('goes back to the entry of the page after a reload with layers open', async () => {
+    window.history.pushState({ ftLayerDepth: 1 }, '');
+    window.history.pushState({ ftLayerDepth: 2 }, '');
+    const go = vi.spyOn(window.history, 'go');
+    const push = pushes();
+    const { result } = renderHook(() => useHistoryTab('chart'));
+    expect(go).toHaveBeenCalledWith(-2);
+    await waitFor(() => expect(window.location.hash).toBe('#chart'));
+    expect(result.current[0]).toBe('chart');
+    expect(depth()).toBe(0);
+    expect(push).toHaveBeenCalledTimes(1);
+  });
+
+  it('only resets a layer entry that has no page entry before it', () => {
+    window.history.replaceState({ ftLayerDepth: window.history.length }, '', '/');
+    const go = vi.spyOn(window.history, 'go');
+    renderHook(() => useHistoryTab('today'));
+    expect(go).not.toHaveBeenCalled();
+    expect(depth()).toBe(0);
   });
 
   it('puts the first page in the hash when the hash does not show it', () => {
