@@ -75,7 +75,7 @@ export const CyclePicker: React.FC = () => {
 
   const menuContent = menuCoords ? (
     <Modal
-      label={t.cyclePicker.menuTitle}
+      labelledBy="cycle-menu-title"
       onClose={close}
       initialFocusRef={selectedRef}
       className="cycle-dropdown-backdrop"
@@ -94,7 +94,7 @@ export const CyclePicker: React.FC = () => {
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="cycle-dropdown-header" {...dragHandlers}>
-        <span>{t.cyclePicker.menuTitle}</span>
+        <span id="cycle-menu-title">{t.cyclePicker.menuTitle}</span>
         <button
           type="button"
           className="cycle-dropdown-close"
@@ -108,7 +108,7 @@ export const CyclePicker: React.FC = () => {
         ref={bodyRef}
         className="cycle-dropdown-list"
         role="listbox"
-        aria-label={t.cyclePicker.menuTitle}
+        aria-labelledby="cycle-menu-title"
       >
         <button
           ref={selectedCycleId === 'all' ? selectedRef : undefined}

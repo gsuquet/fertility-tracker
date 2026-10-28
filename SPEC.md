@@ -522,7 +522,7 @@ On a phone, the drawer, the phone menu and the cycle menu are bottom sheets (sec
 - A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
 - A drag in the body scrolls the body. It moves the sheet only when the body is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll. A drag that starts on a button of the body also moves the sheet, and the button does not get a click.
 - A swipe on the sheet never scrolls the page under it:
-  - A body that has nothing to scroll stops the scroll of the browser for each move of one finger.
+  - A body that has nothing to scroll stops the scroll of the browser for each move of one finger. A move that starts in a field, or in an element of the body that scrolls by itself, keeps its scroll.
   - A body that scrolls has `overscroll-behavior: contain`. At its end, the page does not scroll.
   - A move of one finger outside the body, for example on the backdrop, stops the scroll of the browser.
   - A pinch with two fingers stays available, so the user can zoom.

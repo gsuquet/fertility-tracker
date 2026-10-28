@@ -100,6 +100,21 @@ export interface SheetDragHandlers {
 /** True when the body has content to scroll. */
 const canScroll = (body: HTMLElement) => body.scrollHeight > body.clientHeight;
 
+/** Fields keep their own gestures, for example the scroll of a text area. */
+const OWN_GESTURE = 'input, textarea, select, [contenteditable="true"]';
+
+/** True when the touch starts in a field or in an element of the body that scrolls by itself. */
+const startsInOwnScroll = (target: Element, body: HTMLElement) => {
+  for (let el: Element | null = target; el && el !== body; el = el.parentElement) {
+    if (el.matches(OWN_GESTURE)) return true;
+    const { overflowX, overflowY } = window.getComputedStyle(el);
+    const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll';
+    if (scrolls(overflowY) && el.scrollHeight > el.clientHeight) return true;
+    if (scrolls(overflowX) && el.scrollWidth > el.clientWidth) return true;
+  }
+  return false;
+};
+
 /**
  * Lets the user drag a bottom sheet down to close it, on a phone only. Put `handlers` on the
  * grab handle and the header, and `bodyRef` on the scrollable body. The sheet is the panel of
@@ -146,11 +161,12 @@ export function useSheetDrag<Body extends HTMLElement = HTMLFormElement>(
       const free = !gesture.pointer && !gesture.drag;
       const one = e.touches.length === 1 && matches(PHONE_QUERY);
       // A second finger is a pinch: the browser must be able to zoom
-      locked = one && !canScroll(body);
+      locked = one && !canScroll(body) && !startsInOwnScroll(e.target as Element, body);
       start = free && one ? { x: touch.clientX, y: touch.clientY } : null;
     };
     const onMove = (e: TouchEvent) => {
-      if (locked) e.preventDefault();
+      // A second finger outside the body makes a pinch, which the browser must be able to zoom
+      if (locked && e.touches.length === 1) e.preventDefault();
       if (!start) return;
       const touch = e.touches[0] as Touch;
       if (owns) {

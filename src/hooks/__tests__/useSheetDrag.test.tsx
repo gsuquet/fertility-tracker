@@ -356,6 +356,58 @@ describe('useSheetDrag in the body', () => {
     expect(sheet().style.transform).toBe('translateY(50px)');
   });
 
+  it('lets a pinch zoom when the second finger touches outside the body', () => {
+    vi.mocked(
+      Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number
+    ).mockReturnValue(0);
+    render(<Sheet onClose={vi.fn()} />);
+    touch('start', 300);
+    // The second finger lands on the header, so the body gets no second touchstart
+    expect(prevented(body(), 250, { count: 2 })).toBe(false);
+  });
+
+  it('keeps the scroll of a field or of an element that scrolls by itself in the body', () => {
+    const scrollHeight = vi.mocked(
+      Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number
+    );
+    render(<Sheet onClose={vi.fn()} />);
+    const notes = document.createElement('textarea');
+    const row = document.createElement('div');
+    row.style.overflowY = 'auto';
+    const tall = document.createElement('div');
+    row.style.overflowX = 'scroll';
+    const wide = document.createElement('span');
+    tall.append(wide);
+    row.append(tall);
+    body().append(notes, row);
+    // Only the row has content to scroll
+    scrollHeight.mockImplementation(function (this: Element) {
+      return this === row ? 500 : 0;
+    });
+    const start = (target: Element) =>
+      fireEvent.touchStart(target, { touches: [{ clientX: 0, clientY: 300 }] });
+
+    start(notes);
+    expect(prevented(notes, 250)).toBe(false);
+    touch('end', 250);
+    start(wide);
+    expect(prevented(wide, 250)).toBe(false);
+    touch('end', 250);
+
+    // A row that scrolls only to the side keeps its side scroll
+    scrollHeight.mockReturnValue(0);
+    vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockImplementation(function (this: Element) {
+      return this === row ? 900 : 0;
+    });
+    start(wide);
+    expect(prevented(wide, 250)).toBe(false);
+    touch('end', 250);
+
+    // Elsewhere in the body, the move is stopped
+    start(body());
+    expect(prevented(body(), 250)).toBe(true);
+  });
+
   it('lets a body with content scroll up and down', () => {
     render(<Sheet onClose={vi.fn()} />);
     body().scrollTop = 40;
