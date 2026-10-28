@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.27.0
+- **Document version:** 1.27.1
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -1242,7 +1242,8 @@ Other rules:
 - A test reads the manifest and checks that each icon and screenshot file exists.
 - `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
 - The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
-- The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
+- The manifest `background_color` is `--brand-tile` and `theme_color` is `--brand-ink`, from the light theme. The splash screen of Android fills the screen with `background_color` and puts the icon in the middle. With the color of the logo tile, the screen is navy from edge to edge, and the tile has no visible edge.
+- `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
 - The page code does not import `src/sw/`. Else the build puts the worker code in a shared chunk, and `sw.js` cannot import it as a classic worker script. A unit test checks this rule. `registerServiceWorker.ts` has its own copy of the `SKIP_WAITING` message, and a test checks that the two are equal.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
 
