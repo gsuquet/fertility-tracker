@@ -150,7 +150,7 @@ describe('with a docs folder', () => {
     ]);
   });
 
-  it('accepts pages in the four Diátaxis folders that the index lists', () => {
+  it('accepts pages in the Diátaxis and record folders that the index lists', () => {
     write(
       'docs/README.md',
       '[a](how-to/a.md) [b](reference/b.md) [d](adr/0001-d.md) [r](records/rfcs/0001-r.md) [e](records/adrs/0003-e.md)'

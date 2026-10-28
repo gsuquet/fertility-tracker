@@ -15,12 +15,12 @@ Each page has one type from [Diátaxis](https://diataxis.fr/). Do not mix two ty
 
 A decision record goes in `adr/`. It records one decision, its context and its consequences. A proposal for a large change goes in `records/rfcs/`. Copy the [RFC template](../records/rfcs/0000-template.md) to start one.
 
-| Rule                                                                | Checked |
-| ------------------------------------------------------------------- | ------- |
-| The page is in one of the four folders, in `adr/` or in `records/`. | Yes     |
-| `docs/README.md` links to the page.                                 | Yes     |
-| A tutorial or a how-to guide has numbered steps.                    | Yes     |
-| A reference page or an explanation page has no steps.               | No      |
+| Rule                                                                                         | Checked |
+| -------------------------------------------------------------------------------------------- | ------- |
+| The page is in one of the four folders, in `adr/`, in `records/rfcs/` or in `records/adrs/`. | Yes     |
+| `docs/README.md` links to the page.                                                          | Yes     |
+| A tutorial or a how-to guide has numbered steps.                                             | Yes     |
+| A reference page or an explanation page has no steps.                                        | No      |
 
 ## Page templates
 
