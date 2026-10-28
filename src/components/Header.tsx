@@ -23,11 +23,14 @@ import {
   Sparkles,
   Smartphone,
   Keyboard,
+  Vibrate,
+  VibrateOff,
 } from 'lucide-react';
 import { getAppVersion } from '../domain/appVersion';
 import { Modal } from './Modal';
 import { useShortcutHint } from '../hooks/useKeyboardShortcuts';
 import { useSheetDrag } from '../hooks/useSheetDrag';
+import { isHapticsSupported, setHapticsEnabled, useHapticsEnabled } from '../utils/haptics';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -54,6 +57,7 @@ export const Header: React.FC<HeaderProps> = ({
   const { setSelectedObservation } = useCycle();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const hint = useShortcutHint();
+  const hapticsOn = useHapticsEnabled();
   // On a phone, a drag down closes the menu as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(
     () => setIsMoreMenuOpen(false),
@@ -369,6 +373,18 @@ export const Header: React.FC<HeaderProps> = ({
                 {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
                 <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
               </button>
+
+              {/* Only a browser with the Vibration API can vibrate: Safari on iOS cannot */}
+              {isHapticsSupported() && (
+                <button
+                  type="button"
+                  className="sheet-toggle-btn sheet-toggle-wide"
+                  onClick={() => setHapticsEnabled(!hapticsOn)}
+                >
+                  {hapticsOn ? <Vibrate size={16} /> : <VibrateOff size={16} />}
+                  <span>{hapticsOn ? t.menu.hapticsOn : t.menu.hapticsOff}</span>
+                </button>
+              )}
             </div>
           </div>
         </Modal>

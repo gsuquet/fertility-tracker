@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.29.0
+- **Document version:** 1.30.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -39,6 +39,7 @@ This document is the full specification of the application. Change it before you
    - [5.14 Keyboard shortcuts](#514-keyboard-shortcuts)
    - [5.15 Page slide](#515-page-slide)
    - [5.16 App icon badge](#516-app-icon-badge)
+   - [5.17 Haptic feedback](#517-haptic-feedback)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -831,6 +832,24 @@ The first install has no controller. Thus, it activates at once and the applicat
 - All the calls do nothing when the browser has no Badging API or the app is not installed. A refused call does nothing too.
 - Without a server, the dot changes only while the app runs. If the user does not open the app on a day, the icon keeps the state of the last update.
 
+### 5.17 Haptic feedback
+
+**Module:** [src/utils/haptics.ts](src/utils/haptics.ts)
+
+- `haptic(kind)` gives a short vibration with `navigator.vibrate`. A `light` vibration is 10 ms. A `success` vibration is 15 ms.
+- Only three actions vibrate:
+  - A save of an observation, on the **Today** page or in the drawer: `success`.
+  - A tap on **Designate Peak Day (P)** or **Remove Peak Day (P)**, on the **Today** page or in the drawer: `light`.
+  - A tap on the **Log** button of the phone navigation bar: `light`.
+- No other action vibrates. More vibrations make the signal less useful.
+- `haptic` does nothing in these cases:
+  - The browser has no Vibration API. Safari on iOS and iPadOS has none, so these devices never vibrate.
+  - The user prefers reduced motion (`prefers-reduced-motion: reduce`).
+  - The user turned the vibrations off.
+- A vibration that the browser refuses does nothing.
+- The vibrations are on by default. The **Vibration : On** button in the phone menu, below the language and theme buttons, turns them off or on. The button shows only when the browser has the Vibration API. The application saves the choice in `fertility_tracker_haptics_off`.
+- The choice stays in memory when the browser cannot save it.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -868,6 +887,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 | `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it |
 | `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off (5.14) |
 | `STORAGE_BADGE_ON_KEY`              | `fertility_tracker_badge_on`              | `true` when the user turned the app icon badge on (5.16)      |
+| `STORAGE_HAPTICS_OFF_KEY`           | `fertility_tracker_haptics_off`           | `true` when the user turned the vibrations off (5.17)         |
 
 ### 6.3 Storage format
 

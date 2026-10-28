@@ -83,6 +83,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/pageTransition.spec.ts` | On a computer, a page change slides in the page order, also on Back. With reduced motion, no transition starts.                                                                                                                     |
 | `e2e/shortcuts.spec.ts`      | On a computer, the keys change the page and the day. A key in a field stays in it, and the switch turns the keys off.                                                                                                               |
 | `e2e/swipe.spec.ts`          | With touch on a phone, a swipe to the left opens the next day, and a swipe to the right opens the previous day. A vertical drag keeps the day.                                                                                      |
+| `e2e/haptics.spec.ts`        | On a phone, a save and the Peak Day button vibrate. After the menu turns the vibrations off, nothing vibrates, also after a reload.                                                                                                 |
 
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |

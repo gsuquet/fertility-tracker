@@ -12,6 +12,7 @@ import { TodayHistoryList } from './today/TodayHistoryList';
 import { TodayObservationForm } from './today/TodayObservationForm';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { getTodayStr, addDays } from '../utils/dateUtils';
+import { haptic } from '../utils/haptics';
 import { readStorage, writeStorage } from '../utils/storage';
 import { STORAGE_ENTRY_MODE_KEY as ENTRY_MODE_STORAGE_KEY } from '../utils/storageKeys';
 import { useToast } from '../hooks/useToast';
@@ -92,6 +93,7 @@ export const TodayView: React.FC = () => {
 
   const executeSave = (isCycleStart: boolean | undefined) => {
     saveObservation(form.toInput(selectedDate, currentObs?.id, isCycleStart));
+    haptic('success');
     showToast(t.todayView.savedNotice);
     setShowCycleStartModal(false);
   };

@@ -44,7 +44,7 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.29.0',
+    version: '1.30.0',
     date: '2026-10-28',
     title: 'Swipe Every Dialog Closed',
     titleFr: 'Fermez chaque fenêtre en glissant',
@@ -58,6 +58,25 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlightsFr: [
       'Faites glisser vers le bas les fenêtres d’export, de version, du guide, d’installation, des raccourcis, de début de cycle et de confirmation pour les fermer',
       'Un glissement sur une fenêtre ne fait plus défiler la page derrière',
+    ],
+  },
+  {
+    version: '1.29.0',
+    date: '2026-10-28',
+    title: 'Feel Your Saves',
+    titleFr: 'Sentez vos enregistrements',
+    tagline: 'On Android, the phone vibrates briefly when you save an observation',
+    taglineFr: 'Sur Android, le téléphone vibre brièvement quand vous enregistrez une observation',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A short vibration when you save an observation, mark a Peak Day or tap the Log button',
+      'Turn the vibrations off in the phone menu, below the language and the theme',
+      'No vibration when your system asks for reduced motion. iPhone and iPad do not vibrate',
+    ],
+    highlightsFr: [
+      'Une courte vibration quand vous enregistrez une observation, marquez un Jour Sommet ou touchez le bouton Saisie',
+      'Désactivez les vibrations dans le menu du téléphone, sous la langue et le thème',
+      'Pas de vibration quand votre système demande moins d’animations. L’iPhone et l’iPad ne vibrent pas',
     ],
   },
   {

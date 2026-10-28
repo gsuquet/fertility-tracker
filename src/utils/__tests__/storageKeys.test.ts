@@ -18,6 +18,7 @@ describe('storageKeys', () => {
       STORAGE_INSTALL_BANNER_CLOSED_KEY: 'fertility_tracker_install_banner_closed',
       STORAGE_SHORTCUTS_OFF_KEY: 'fertility_tracker_shortcuts_off',
       STORAGE_BADGE_ON_KEY: 'fertility_tracker_badge_on',
+      STORAGE_HAPTICS_OFF_KEY: 'fertility_tracker_haptics_off',
     });
   });
 });
