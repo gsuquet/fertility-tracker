@@ -35,6 +35,39 @@ const Layer = ({ onClose, open = true }: { onClose: () => void; open?: boolean }
   return null;
 };
 
+/** Two layers. Each one closes itself on Back, and the output shows how many are open. */
+const Stack = () => {
+  const [open, setOpen] = useState(2);
+  return (
+    <>
+      {open >= 1 && <Layer onClose={() => setOpen(0)} />}
+      {open >= 2 && <Layer onClose={() => setOpen(1)} />}
+      <output>{open}</output>
+    </>
+  );
+};
+
+/** One layer, or another layer in its place. */
+const Swap = ({ second }: { second: boolean }) =>
+  second ? <Layer key="b" onClose={() => {}} /> : <Layer key="a" onClose={() => {}} />;
+
+/** Layer a, no layer, or layer b. */
+const Toggle = ({ which }: { which: 'a' | 'none' | 'b' }) =>
+  which === 'none' ? null : <Layer key={which} onClose={() => {}} />;
+
+/** An app with one open layer and a button that opens the chart page. */
+const PageWithLayer = () => {
+  const [tab, setTab] = useHistoryTab('today');
+  return (
+    <>
+      <Layer onClose={() => {}} />
+      <button type="button" onClick={() => setTab('chart')}>
+        {tab}
+      </button>
+    </>
+  );
+};
+
 describe('parseTabHash', () => {
   it('gives the page of a known hash, else Today', () => {
     expect(parseTabHash('#chart')).toBe('chart');
@@ -86,16 +119,6 @@ describe('useHistoryLayer', () => {
   });
 
   it('closes the layers one by one with two Back presses', async () => {
-    const Stack = () => {
-      const [open, setOpen] = useState(2);
-      return (
-        <>
-          {open >= 1 && <Layer onClose={() => setOpen(0)} />}
-          {open >= 2 && <Layer onClose={() => setOpen(1)} />}
-          <output>{open}</output>
-        </>
-      );
-    };
     const { container } = render(<Stack />);
     await flush();
     await back();
@@ -120,8 +143,6 @@ describe('useHistoryLayer', () => {
   });
 
   it('keeps one entry when a layer replaces another in the same change', async () => {
-    const Swap = ({ second }: { second: boolean }) =>
-      second ? <Layer key="b" onClose={vi.fn()} /> : <Layer key="a" onClose={vi.fn()} />;
     const { rerender } = render(<Swap second={false} />);
     await flush();
     const push = pushes();
@@ -134,8 +155,6 @@ describe('useHistoryLayer', () => {
   });
 
   it('adds the entry of a new layer only after the Back of a closed layer ends', async () => {
-    const Toggle = ({ which }: { which: 'a' | 'none' | 'b' }) =>
-      which === 'none' ? null : <Layer key={which} onClose={vi.fn()} />;
     const { rerender } = render(<Toggle which="a" />);
     await flush();
     rerender(<Toggle which="none" />);
@@ -219,18 +238,7 @@ describe('useHistoryTab', () => {
   });
 
   it('closes the layers of the old page before it adds the entry of the new page', async () => {
-    const App = () => {
-      const [tab, setTab] = useHistoryTab('today');
-      return (
-        <>
-          <Layer onClose={vi.fn()} />
-          <button type="button" onClick={() => setTab('chart')}>
-            {tab}
-          </button>
-        </>
-      );
-    };
-    const { getByRole } = render(<App />);
+    const { getByRole } = render(<PageWithLayer />);
     await flush();
     expect(depth()).toBe(1);
     const push = pushes();
@@ -258,10 +266,9 @@ describe('useHistoryTab', () => {
     const { result } = renderHook(() => useHistoryTab('today'));
     act(() => result.current[1]('chart'));
     await flush();
-    const Closing = ({ open }: { open: boolean }) => <Layer onClose={vi.fn()} open={open} />;
-    const { rerender } = render(<Closing open />);
+    const { rerender } = render(<Layer onClose={vi.fn()} />);
     await flush();
-    rerender(<Closing open={false} />);
+    rerender(<Layer onClose={vi.fn()} open={false} />);
     await flush();
     // The Back of the closed layer is pending: a hash change now does not change the page
     window.dispatchEvent(new HashChangeEvent('hashchange'));
