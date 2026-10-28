@@ -18,6 +18,7 @@ import { summarizeObservations } from '../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../domain/backupImport';
 import { ConfirmDialog } from './ConfirmDialog';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
 
 interface ExportModalProps {
@@ -53,6 +54,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     markBackedUp,
   } = useCycle();
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
 
   const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
   const [selectedSingleId, setSelectedSingleId] = useState<string>('');
@@ -205,7 +208,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       panelClassName="modal-container export-modal-enhanced"
       {...(startWithRestore ? { initialFocusRef: restoreButtonRef } : {})}
     >
-      <div className="modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header" {...dragHandlers}>
         <h2 id="modal-title">{t.exportModal.title}</h2>
         <button
           type="button"
@@ -217,7 +221,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         </button>
       </div>
 
-      <div className="modal-body">
+      <div className="modal-body" ref={bodyRef}>
         <p className="modal-description">{t.exportModal.description}</p>
 
         {/* PDF Scope Configurator Section */}

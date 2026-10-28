@@ -44,7 +44,7 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.31.0',
+    version: '1.32.0',
     date: '2026-10-28',
     title: 'The Chart Opens on Today',
     titleFr: 'Le graphique s’ouvre sur aujourd’hui',
@@ -58,6 +58,23 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlightsFr: [
       'En fin de cycle, le graphique montre aujourd’hui sans défilement ni appui sur Dernier Jour',
       'Les cycles passés s’ouvrent toujours au jour 1',
+    ],
+  },
+  {
+    version: '1.31.0',
+    date: '2026-10-28',
+    title: 'Swipe Every Dialog Closed',
+    titleFr: 'Fermez chaque fenêtre en glissant',
+    tagline: 'On a phone, each dialog closes with a swipe down, as the menus do',
+    taglineFr: 'Sur un téléphone, chaque fenêtre se ferme en glissant vers le bas, comme les menus',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Drag the export, version, guide, install, shortcuts, New Cycle Start and confirmation dialogs down to close them',
+      'A swipe on a dialog no longer scrolls the page behind it',
+    ],
+    highlightsFr: [
+      'Faites glisser vers le bas les fenêtres d’export, de version, du guide, d’installation, des raccourcis, de début de cycle et de confirmation pour les fermer',
+      'Un glissement sur une fenêtre ne fait plus défiler la page derrière',
     ],
   },
   {
