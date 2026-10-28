@@ -72,14 +72,14 @@ An accepted RFC can contain a decision. In that case, the project does not write
 
 The status is only in the header of the record. The index in `docs/README.md` does not show it. These are the status values of an RFC:
 
-| Status    | Meaning                                                 | Set by                        |
-| --------- | ------------------------------------------------------- | ----------------------------- |
-| Draft     | The author writes the RFC. The pull request is a draft. | The author                    |
-| Proposed  | The RFC is ready for discussion.                        | The author                    |
-| Accepted  | The project does the work of the RFC.                   | The maintainer, at the merge  |
-| Rejected  | The project does not do the work.                       | The maintainer, at the merge  |
-| Withdrawn | The author stops the RFC before a decision.             | The author                    |
-| Completed | All the steps of the work are merged.                   | The last pull request of work |
+| Status    | Meaning                                                 | Set by                                          |
+| --------- | ------------------------------------------------------- | ----------------------------------------------- |
+| Draft     | The author writes the RFC. The pull request is a draft. | The author                                      |
+| Proposed  | The RFC is ready for discussion.                        | The author                                      |
+| Accepted  | The project does the work of the RFC.                   | The maintainer, at the merge                    |
+| Rejected  | The project does not do the work.                       | The maintainer, at the merge                    |
+| Withdrawn | The author stops the RFC before a decision.             | The author                                      |
+| Completed | All the steps of the work are merged.                   | The author of the last pull request of the work |
 
 These are the status values of an ADR: **Proposed**, **Accepted**, **Deprecated** and **Superseded**. They come from MADR.
 
@@ -87,24 +87,25 @@ These are the status values of an ADR: **Proposed**, **Accepted**, **Deprecated*
 
 Each section of `SPEC.md` moves to one or more reference pages. A reason or a background text moves to an explanation page.
 
-| Section of SPEC.md               | New page                                                                                                                                 |
-| -------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------- |
-| 1. Summary                       | `docs/README.md` and `explanation/architecture.md`                                                                                       |
-| 2. Architecture and technology   | `reference/technology.md` and `reference/project-structure.md`. The reasons go to `explanation/architecture.md`.                         |
-| 3.1 to 3.6 Domain rules          | `reference/observation-codes.md`, `reference/stamp-and-peak-rules.md`, `reference/cycle-and-phase-rules.md`                              |
-| 3.2 Code parser                  | `reference/domain-api.md`                                                                                                                |
-| 3.7 Version tracker              | `reference/version-tracker.md`                                                                                                           |
-| 4. Data types                    | `reference/data-format.md`                                                                                                               |
-| 5.1 Navigation and dialogs       | `reference/screens/navigation.md` for the header, the bottom navigation and the footer. `reference/dialog-component.md` for `Modal.tsx`. |
-| 5.2 to 5.16 Screens and dialogs  | `reference/screens/*.md`, one page for each screen and dialog                                                                            |
-| 6. State and data storage        | `reference/data-storage.md`                                                                                                              |
-| 7. Languages and design system   | `reference/languages.md` and `reference/design-system.md`                                                                                |
-| 8.1 to 8.3 Coverage and tests    | `reference/test-rules.md`                                                                                                                |
-| 8.4 Commands                     | `reference/commands.md`                                                                                                                  |
-| 8.5 Documentation                | `reference/documentation-rules.md`                                                                                                       |
-| 8.6 Commit messages              | `reference/commit-messages.md`                                                                                                           |
-| 9. Deployment and CI             | `reference/deployment.md`                                                                                                                |
-| 10. Privacy, trademarks, medical | `reference/legal-and-medical-limits.md`. The reasons stay in `explanation/privacy-and-data-storage.md`.                                  |
+| Section of SPEC.md                           | New page                                                                                                                                                              |
+| -------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1. Summary                                   | `docs/README.md` and `explanation/architecture.md`                                                                                                                    |
+| 2. Architecture and technology               | `reference/technology.md` and `reference/project-structure.md`. The reasons go to `explanation/architecture.md`.                                                      |
+| 3.1 to 3.6 Domain rules                      | `reference/observation-codes.md`, `reference/stamp-and-peak-rules.md`, `reference/cycle-and-phase-rules.md`                                                           |
+| 3.2 Code parser                              | `reference/domain-api.md`                                                                                                                                             |
+| 3.7 Version tracker                          | `reference/version-tracker.md`                                                                                                                                        |
+| 4. Data types                                | `reference/data-format.md`                                                                                                                                            |
+| 5.1 Navigation and dialogs                   | `reference/screens/navigation.md` for the header, the bottom navigation and the footer. `reference/dialog-component.md` for `Modal.tsx`.                              |
+| 5.2 to 5.11 Screens and dialogs              | `reference/screens/*.md`, one page for each screen and dialog                                                                                                         |
+| 5.12 to 5.18 Behavior of all the application | `reference/application-behavior.md`: installed application, install and update, keyboard shortcuts, page slide, app icon badge, haptic feedback and desktop title bar |
+| 6. State and data storage                    | `reference/data-storage.md`                                                                                                                                           |
+| 7. Languages and design system               | `reference/languages.md` and `reference/design-system.md`                                                                                                             |
+| 8.1 to 8.3 Coverage and tests                | `reference/test-rules.md`                                                                                                                                             |
+| 8.4 Commands                                 | `reference/commands.md`                                                                                                                                               |
+| 8.5 Documentation                            | `reference/documentation-rules.md`                                                                                                                                    |
+| 8.6 Commit messages                          | `reference/commit-messages.md`                                                                                                                                        |
+| 9. Deployment and CI                         | `reference/deployment.md`                                                                                                                                             |
+| 10. Privacy, trademarks, medical             | `reference/legal-and-medical-limits.md`. The reasons stay in `explanation/privacy-and-data-storage.md`.                                                               |
 
 The pages in the right column that exist now get the facts of `SPEC.md`. Unresolved question 3 asks what occurs to `reference/user-interface.md`. When the project answers it, each fact is in one place only.
 
@@ -147,15 +148,16 @@ This is an example of the phone frame of the **Today** screen. It shows the form
 ┌──────────────────────────────────────┐
 │ [1] <logo>  [2] All Cycles ▾       ⋮ │
 ├──────────────────────────────────────┤
-│ [3] ‹ Wednesday, October 28, 2026 ›  │
-│     Today · Day 12 · <date picker>   │
+│ [3] ‹  <date picker>  ›              │
+│     Wednesday, October 28, 2026      │
+│     Today · Day 12 · <status>        │
 ├──────────────────────────────────────┤
-│ [4] Fertility Status & Guidance      │
-│     <stamp> <code> <guidance text>   │
+│ [4] <stamp> <code> <guidance text>   │
 ├──────────────────────────────────────┤
 │ [5] Direct Code Only | Detailed Form │
 │     <code buttons>                   │
-│     Intercourse (I)    Peak Day (P)  │
+│     I - Sexual Intercourse           │
+│     Designate Peak Day (P)           │
 │     <notes>                          │
 │     Save Observation    Delete Entry │
 ├──────────────────────────────────────┤
@@ -169,7 +171,7 @@ This is an example of the phone frame of the **Today** screen. It shows the form
 | ---- | ----------------- | ----------------------------------------------------------------------------------- |
 | 1    | Header            | Logo and menu button (`⋮`). The buttons are 38 pixels high.                         |
 | 2    | Cycle picker      | Opens the cycle menu as a bottom sheet.                                             |
-| 3    | Date bar          | Previous day, date, next day, the status of the date and the date picker.           |
+| 3    | Date bar          | Previous day, date picker, next day, the date, and the status of the date.          |
 | 4    | Guidance          | Stamp preview, code and guidance text, as a banner.                                 |
 | 5    | Form              | The observation form. **Delete Entry** shows only when the date has an observation. |
 | 6    | History           | The selected date and the 4 days before it.                                         |
