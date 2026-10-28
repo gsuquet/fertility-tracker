@@ -4,6 +4,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
 import { useObservationForm } from '../hooks/useObservationForm';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 import { CycleStartModal } from './CycleStartModal';
 import { Modal } from './Modal';
 import { StampBadge } from './StampBadge';
@@ -61,6 +62,12 @@ export const ObservationDrawer: React.FC = () => {
     show(findSaved(day));
   }, [selectedObservation, isDrawerOpen, show]);
 
+  // On a phone, a drag down closes the sheet as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag(
+    () => setIsDrawerOpen(false),
+    isDrawerOpen
+  );
+
   if (!isDrawerOpen) return null;
 
   const savedId = saved?.id;
@@ -112,7 +119,8 @@ export const ObservationDrawer: React.FC = () => {
       className="drawer-overlay"
       panelClassName="drawer-container"
     >
-      <div className="drawer-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="drawer-header" {...dragHandlers}>
         <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
         <button
           type="button"
@@ -124,7 +132,7 @@ export const ObservationDrawer: React.FC = () => {
         </button>
       </div>
 
-      <form onSubmit={handleSave} className="drawer-body">
+      <form ref={bodyRef} onSubmit={handleSave} className="drawer-body">
         {/* Live Stamp & Code Preview */}
         <div className="preview-card" aria-live="polite">
           <div className="preview-stamp">

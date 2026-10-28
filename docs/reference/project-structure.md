@@ -64,6 +64,7 @@ fertility-tracker/
 | `backupImport.ts`          | Preview and merge of a restored backup file.   |
 | `storageFormat.ts`         | Versioned format of saved and backup data.     |
 | `backupReminder.ts`        | When to show the backup reminder.              |
+| `sheetDrag.ts`             | When a drag closes the bottom sheet.           |
 | `demoData.ts`              | Demo data: two 28-day cycles.                  |
 | `versionTracker.ts`        | Release notes, version and storage statistics. |
 | `appVersion.ts`            | Version, build date and last version seen.     |

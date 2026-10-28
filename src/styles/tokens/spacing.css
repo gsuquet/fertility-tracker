@@ -32,6 +32,8 @@
     --mobile-nav-space: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
     /* The height of the install banner or the update message on a phone, and a margin */
     --install-banner-space: 11rem;
+    /* How far the user dragged the bottom sheet down, from 0 to 1. useSheetDrag.ts sets it. */
+    --sheet-drag: 0;
 
     /* Semantic Z-Index Scale */
     --z-base: 1;

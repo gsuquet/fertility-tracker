@@ -113,6 +113,8 @@ All the dialogs, the observation drawer and the mobile menu use the same keyboar
 | **Back**                   | Closes the top dialog only. The cycle menu also closes with **Back**. |
 | The dialog closes          | The focus goes back to the button that opened the dialog.             |
 
+On a phone, you can also drag the observation drawer down by its handle to close it. A short drag puts the drawer back.
+
 ## Installed application
 
 You can install the application on a phone or a computer. The installed application has these differences:

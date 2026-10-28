@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.22.1
+- **Document version:** 1.23.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -482,6 +482,23 @@ On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics**
 - The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
 - On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
 
+#### Drag down to close
+
+On a phone, the drawer is a bottom sheet. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag it down to close it. On a larger screen, nothing changes.
+
+- A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
+- A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
+- A drag in the form body scrolls the form. It moves the sheet only when the form is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll.
+- One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
+- A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
+- The backdrop becomes lighter in proportion to the drag.
+- At the release, [sheetDrag.ts](src/domain/sheetDrag.ts) decides:
+  - The sheet closes when the drag is more than 25% of the sheet height.
+  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
+  - Else the sheet goes back to its position.
+- A close by drag does the same as the close button. The draft is not kept, and the history entry of the drawer goes (section 5.12).
+- The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
+
 [ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
 
 - Bleeding.
@@ -956,18 +973,18 @@ The project uses test-driven development (TDD). Write a test that fails before e
 
 ### 8.2 Test layers
 
-| Layer       | Location                                  | Content                                                                                 |
-| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                  |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm` and `useToast`.                                                    |
-| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                        |
-| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.               |
-| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.          |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                            |
-| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.            |
-| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.        |
-| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                   |
+| Layer       | Location                                  | Content                                                                                                   |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score, sheet drag rules. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                                    |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, `useToast`, `useHistoryLayer` and `useSheetDrag`.                                   |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
+| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.                                 |
+| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.                            |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                                              |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.                              |
+| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.                          |
+| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                                     |
 
 The helpers are in `src/test/`:
 
@@ -995,6 +1012,7 @@ The helpers are in `src/test/`:
 | 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                                                                                                                                        |
 | 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, the title becomes **Log Observation**, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
 | 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
+| 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 

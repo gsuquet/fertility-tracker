@@ -78,7 +78,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/resilience.spec.ts`    | Saved data that is not JSON, a list with one record that is not valid, a save that fails, and a reload without a network, also on the address of a page.                                                                            |
 | `e2e/history.spec.ts`       | **Back** on the drawer and on two stacked dialogs, **Back** after a page change and on the first page, a reload on the chart page, and an unknown hash.                                                                             |
 | `e2e/install.spec.ts`       | No install offer before the browser can install, the header button and the banner after 3 observations, **Install**, and the close button.                                                                                          |
-| `e2e/drawer.spec.ts`        | **+** opens the saved observation of today, and a save with no change keeps it.                                                                                                                                                     |
+| `e2e/drawer.spec.ts`        | **+** opens the saved observation of today, and a save with no change keeps it. A long drag on the handle closes the drawer, and a short drag puts it back.                                                                         |
 
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
