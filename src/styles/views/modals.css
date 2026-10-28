@@ -1166,8 +1166,11 @@
 
   /* Responsive Mobile Bottom-Sheet for all Modals */
   @media (max-width: 640px) {
-    /* The backdrop fades while the user drags the sheet down (useSheetDrag.ts) */
+    /* A bottom sheet, as the other dialogs. The backdrop fades while the user drags the sheet
+       down (useSheetDrag.ts). */
     .cycle-start-modal-overlay {
+      padding: 0;
+      align-items: flex-end;
       background-color: color-mix(
         in srgb,
         var(--bg-overlay) calc(100% * (1 - var(--sheet-drag))),
@@ -1217,6 +1220,7 @@
 
     .cycle-start-modal-container {
       padding-top: 0;
+      padding-bottom: max(1.75rem, env(safe-area-inset-bottom, 0px));
     }
 
     .welcome-stepper-bar {

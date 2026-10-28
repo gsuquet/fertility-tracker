@@ -52,11 +52,11 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     taglineFr: 'Sur un téléphone, chaque fenêtre se ferme en glissant vers le bas, comme les menus',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'Drag the export, version, guide, shortcuts and confirmation dialogs down to close them',
+      'Drag the export, version, guide, install, shortcuts, New Cycle Start and confirmation dialogs down to close them',
       'A swipe on a dialog no longer scrolls the page behind it',
     ],
     highlightsFr: [
-      'Faites glisser vers le bas les fenêtres d’export, de version, du guide, des raccourcis et de confirmation pour les fermer',
+      'Faites glisser vers le bas les fenêtres d’export, de version, du guide, d’installation, des raccourcis, de début de cycle et de confirmation pour les fermer',
       'Un glissement sur une fenêtre ne fait plus défiler la page derrière',
     ],
   },

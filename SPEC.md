@@ -371,7 +371,7 @@ The application has four pages, a header, a statistics bar, an observation drawe
 - On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it (section 5.7). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
 - The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([5.12](#back-button-and-address)).
 
-[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
+[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, `InstallGuideModal`, `KeyboardShortcutsModal`, `ErrorBoundary`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
 
 | Function       | Rule                                                                                                                             |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------- |

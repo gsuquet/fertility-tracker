@@ -155,6 +155,19 @@ test.describe('Dialog sheets with touch', () => {
     await swipe(120, header.y + header.height / 2, 0, 500);
     await expect(dialog).toBeHidden();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // A swipe down from the top of the body closes it too
+    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
+    await page
+      .getByRole('dialog', { name: en.menu.mobileMenuLabel })
+      .getByRole('button', { name: new RegExp(en.actions.exportPdf) })
+      .click();
+    await expect(dialog).toBeVisible();
+    await settledBox(dialog.locator('.modal-container'));
+    const body = await dialog.locator('.modal-body').boundingBox();
+    if (!body) throw new Error('The body has no box');
+    await swipe(195, body.y + 40, 0, 500);
+    await expect(dialog).toBeHidden();
   });
 });
 
