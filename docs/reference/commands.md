@@ -18,6 +18,7 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 | `mise run check`      | Runs the Biome linter and the format check.                          |
 | `mise run docs`       | Checks the docs: writing rules, Diátaxis structure and links.        |
 | `mise run e2e`        | Runs the Playwright end-to-end and accessibility tests.              |
+| `mise run icons`      | Draws the PNG app icons from `public/icons/logo.svg`.                |
 | `mise run build`      | Runs the type check and builds the application in `dist`.            |
 | `mise run preview`    | Serves `dist` on port `4173`.                                        |
 | `mise run pages:dev`  | Serves `dist` with Wrangler, as Cloudflare Pages does.               |
