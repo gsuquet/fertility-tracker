@@ -208,9 +208,9 @@
     .print-intercourse {
       font-size: 6.5pt;
       font-weight: 800;
-      color: #4f46e5;
-      background: rgba(99, 102, 241, 0.12);
-      border: 1px solid #6366f1;
+      color: var(--brand-ink);
+      background: rgba(31, 58, 95, 0.1);
+      border: 1px solid var(--brand-ink);
       border-radius: 3px;
       padding: 0 3px;
       line-height: 1.1;
@@ -324,7 +324,7 @@
       color: #ffffff;
     }
     .print-badge-sample.intercourse-legend {
-      background-color: #6366f1;
+      background-color: var(--brand-ink);
       color: #ffffff;
     }
   }

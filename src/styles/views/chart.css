@@ -492,9 +492,9 @@
 
   .chart-cell.paper-cell.is-today {
     border: 2px solid var(--accent-primary) !important;
-    background-color: var(--accent-soft, rgba(99, 102, 241, 0.06));
+    background-color: var(--accent-soft);
     box-shadow:
-      0 0 10px rgba(99, 102, 241, 0.3),
+      0 0 10px var(--accent-glow),
       var(--shadow-sm);
     z-index: 5;
   }

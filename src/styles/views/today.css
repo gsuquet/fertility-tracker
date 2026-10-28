@@ -372,8 +372,8 @@
     display: flex;
     align-items: flex-start;
     gap: 0.65rem;
-    background-color: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.2);
+    background-color: var(--accent-soft);
+    border: 1px solid var(--accent-glow);
     border-radius: var(--radius-md);
     padding: 0.85rem;
     font-size: 0.82rem;
@@ -429,7 +429,7 @@
   .recent-day-item:hover,
   .recent-day-item.active {
     border-color: var(--accent-primary);
-    background-color: rgba(99, 102, 241, 0.05);
+    background-color: var(--accent-soft);
   }
 
   .recent-date-label {
@@ -481,7 +481,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    background: linear-gradient(135deg, var(--bg-surface) 0%, rgba(99, 102, 241, 0.03) 100%);
+    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--accent-soft) 100%);
   }
 
   .status-stamp-hero {
@@ -513,8 +513,8 @@
     font-size: 0.85rem;
     line-height: 1.4;
     color: var(--text-secondary);
-    background-color: rgba(99, 102, 241, 0.08);
-    border: 1px solid rgba(99, 102, 241, 0.18);
+    background-color: var(--accent-soft);
+    border: 1px solid var(--accent-glow);
     padding: 0.65rem 0.95rem;
     border-radius: var(--radius-md);
   }

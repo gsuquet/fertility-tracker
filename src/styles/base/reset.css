@@ -28,6 +28,12 @@
     overflow-x: hidden;
   }
 
+  h1,
+  h2,
+  h3 {
+    font-family: var(--font-display);
+  }
+
   @media (min-width: 641px) {
     body {
       padding-bottom: 0;

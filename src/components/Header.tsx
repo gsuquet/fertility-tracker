@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { CyclePicker } from './CyclePicker';
+import { BrandMark } from './icons/BrandMark';
 import type { ActiveTab } from '../types/crms';
 import {
   Sun,
@@ -61,7 +62,7 @@ export const Header: React.FC<HeaderProps> = ({
         aria-label={t.menu.homeLabel}
       >
         <div className="brand-logo" aria-hidden="true">
-          🌱
+          <BrandMark />
         </div>
         <div className="brand-text">
           <h1 className="brand-title">{t.appTitle}</h1>

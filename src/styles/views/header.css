@@ -40,15 +40,15 @@
   }
 
   .brand-logo {
-    font-size: 1.6rem;
-    line-height: 1;
-    filter: drop-shadow(0 2px 4px rgba(79, 70, 229, 0.2));
+    display: flex;
+    width: 34px;
+    height: 34px;
     transition: transform 0.2s ease;
   }
 
   .header-brand-btn:hover .brand-logo,
   .header-brand:hover .brand-logo {
-    transform: scale(1.1) rotate(5deg);
+    transform: scale(1.06);
   }
 
   .brand-text {
@@ -56,7 +56,32 @@
     flex-direction: column;
   }
 
+  .brand-logo .brand-mark {
+    width: 100%;
+    height: 100%;
+  }
+
+  .brand-mark-tile {
+    fill: var(--brand-tile);
+  }
+
+  .brand-mark-stem {
+    fill: none;
+    stroke: var(--color-white);
+    stroke-width: 5;
+    stroke-linecap: round;
+  }
+
+  .brand-mark-leaf {
+    fill: var(--brand-leaf);
+  }
+
+  .brand-mark-leaf-light {
+    fill: var(--brand-leaf-light);
+  }
+
   .brand-title {
+    font-family: var(--font-display);
     font-size: 1.15rem;
     font-weight: 800;
     line-height: 1.15;
@@ -148,7 +173,8 @@
     }
 
     .brand-logo {
-      font-size: 1.35rem;
+      width: 30px;
+      height: 30px;
     }
 
     /* On mobile, collapse brand text completely (only logo stays) to preserve space for controls */
@@ -301,9 +327,9 @@
   }
 
   .info-icon-bg {
-    background: rgba(99, 102, 241, 0.12);
-    color: #6366f1;
-    border: 1px solid rgba(99, 102, 241, 0.25);
+    background: var(--accent-light);
+    color: var(--accent-primary);
+    border: 1px solid var(--accent-glow);
   }
 
   .sheet-action-content {

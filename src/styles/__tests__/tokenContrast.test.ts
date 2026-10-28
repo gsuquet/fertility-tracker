@@ -55,6 +55,8 @@ const contrast = (a: Rgba, b: Rgba) => {
 };
 
 const AA_NORMAL_TEXT = 4.5;
+// WCAG 2 SC 1.4.11: the edge of a user interface component
+const AA_NON_TEXT = 3;
 
 const themes = [
   ['light', lightTokens],
@@ -98,6 +100,24 @@ describe('design token contrast (WCAG 2 AA)', () => {
 
     it.each(whiteTextFills)('white text on %s reaches 4.5:1', fill => {
       expect(contrast(color('--color-white'), color(fill))).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+    });
+
+    it.each([
+      ['--stamp-white-border', '--stamp-white'],
+      ['--stamp-white-border', '--bg-surface'],
+      ['--stamp-white-border', '--bg-primary'],
+      ['--stamp-light-green-border', '--bg-surface'],
+      ['--stamp-light-green-border', '--bg-primary'],
+    ])('stamp edge %s on %s reaches 3:1', (edge, surface) => {
+      expect(contrast(color(edge), color(surface))).toBeGreaterThanOrEqual(AA_NON_TEXT);
+    });
+
+    it.each([
+      ['--stamp-light-green-text', '--stamp-light-green'],
+      ['--color-white', '--stamp-red'],
+      ['--color-white', '--stamp-dark-green'],
+    ])('stamp text %s on %s reaches 4.5:1', (text, fill) => {
+      expect(contrast(color(text), color(fill))).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
     });
 
     it('--color-warning-text on --color-warning-surface reaches 4.5:1', () => {
@@ -193,6 +213,16 @@ describe('contrast-safe token usage', () => {
     const escaped = selector.replace(/[.]/g, '\\.');
     const rule = new RegExp(`(?:^|\\s)${escaped}\\s*\\{([^}]*)\\}`).exec(css);
     expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(${token}\\)`));
+  });
+
+  it.each([
+    ['.stamp-white_baby', '--stamp-white-border'],
+    ['.stamp-light_green_baby_3', '--stamp-light-green-border'],
+  ])('draws the edge of %s with %s', (selector, token) => {
+    const badges = readCss('primitives/badges.css');
+    const escaped = selector.replace(/[.]/g, '\\.');
+    const rule = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(badges);
+    expect(rule?.[1]).toMatch(new RegExp(`border:\\s*[\\d.]+px solid var\\(${token}\\)`));
   });
 
   it('colors the welcome form mode badge with the info tokens', () => {

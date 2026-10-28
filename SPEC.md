@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.18.6
+- **Document version:** 1.19.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -352,12 +352,12 @@ The application has four pages, a header, a statistics bar, an observation drawe
 
 ### 5.1 Navigation and dialogs
 
-| Part                                                         | Wide screen                                                                                                                                                                            | Phone screen                                                                                                        |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (`🌱`), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
-| Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                      |
-| Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer         |
-| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button                                                                                                                                   | The copyright and the two buttons are on separate lines                                                             |
+| Part                                                         | Wide screen                                                                                                                                                                            | Phone screen                                                                                                          |
+| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (sprout), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
+| Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                        |
+| Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer           |
+| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button                                                                                                                                   | The copyright and the two buttons are on separate lines                                                               |
 - The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
@@ -743,13 +743,13 @@ The layer order is:
 @layer tokens, base, primitives, views, utilities;
 ```
 
-| Folder        | Files                                                                                                                                                                                                 |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `tokens/`     | `tokens.css`: colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
-| `base/`       | `fonts.css`: Plus Jakarta Sans. `reset.css`: box sizing, resets and font smoothing. `layout.css`: application frame, phone navigation space and focus outlines.                                       |
-| `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                            |
-| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                              |
-| `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                  |
+| Folder        | Files                                                                                                                                                                                                              |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `tokens/`     | `tokens.css`: fonts, brand colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
+| `base/`       | `fonts.css`: Plus Jakarta Sans. `reset.css`: box sizing, resets and font smoothing. `layout.css`: application frame, phone navigation space and focus outlines.                                                    |
+| `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                                         |
+| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
+| `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
 
 | Scale   | Values                                                                                                                                                                                      |
 | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -757,6 +757,25 @@ The layer order is:
 | Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200 |
 - `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
 - The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
+#### Brand
+
+The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS chart. The stamps are the only strong colors on the screen. The brand hue (navy, about 213°) is far from the red and green hues of the stamps.
+
+| Token                                | Light                | Dark      | Use                                                    |
+| ------------------------------------ | -------------------- | --------- | ------------------------------------------------------ |
+| `--brand-ink`                        | `#1f3a5f`            | `#1f3a5f` | Manifest theme color, the `I` mark on stamps and print |
+| `--brand-tile`                       | `#1f3a5f`            | `#2b5080` | Tile of the logo                                       |
+| `--brand-leaf`, `--brand-leaf-light` | `#86efac`, `#bbf7d0` | Same      | Leaves of the logo                                     |
+| `--bg-primary`                       | `#f8f6f1` (paper)    | `#13171d` | Page                                                   |
+| `--accent-primary`                   | `#1f3a5f`            | `#a9c1e0` | Accent text, icons and borders                         |
+| `--accent-solid`                     | `#1f3a5f`            | `#34659e` | Fills behind white text                                |
+- The logo is a sprout on an ink tile. [BrandMark.tsx](src/components/icons/BrandMark.tsx) draws it in the header. [public/icons/logo.svg](public/icons/logo.svg) is the same drawing for the favicon. The PNG icons come from this drawing.
+- [BabyIcon.tsx](src/components/icons/BabyIcon.tsx) is the only drawing of the baby of the white and light green stamps: a round head with a curl and a swaddled body. The stamps, the chart legend and the print legend use it.
+
+#### Fonts
+
+- Running text and controls use the font of the operating system (`--font-family`: `system-ui`, SF Pro, Segoe UI or Roboto).
+- The wordmark and the `h1`, `h2` and `h3` headings use Plus Jakarta Sans (`--font-display`).
 - `fonts.css` declares only the `latin` and `latin-ext` woff2 files of Plus Jakarta Sans, with weights from 200 to 800 and `font-display: swap`.
 - The font `url()` values are package paths. Vite copies the files to `assets/` with a hash, and the service worker keeps them.
 - No font or stylesheet comes from another host, such as Google Fonts.
@@ -777,6 +796,10 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 | `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                      |
 | `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                        |
 | `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag of the chart (`.cell-symptom-tag`)                       |
+| `--stamp-light-green-text`, white                                        | `--stamp-light-green`; `--stamp-red` and `--stamp-dark-green`                                       |
+
+The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`.
+
 - A rule with white text on an accent color uses `--accent-solid`, not `--accent-primary`.
 - The footer copyright and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.
 
@@ -950,7 +973,8 @@ Other rules:
 - `src/main.tsx` calls `registerServiceWorker()` after the first render. The function registers `./sw.js` only in a production build (`import.meta.env.PROD`).
 - The registration also needs a secure context (`https:` or `localhost`) and a browser with service workers. A failure has no effect. `index.html` has no inline script.
 - [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
-- The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/icon-192.png` as the `apple-touch-icon`.
+- The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
+- The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
 
 ### 9.2 Security headers
