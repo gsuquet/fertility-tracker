@@ -27,6 +27,14 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 | Language button (**EN** or **FR**) | Menu                | Changes the language.                               |
 | Theme button                       | Menu                | Changes between the light theme and the dark theme. |
 
+## App icon badge
+
+In the installed app, the icon can show a dot while today has no observation. The badge is off by default.
+
+To turn it on, open **About & Version Tracker**, then **System Information**. Select **Show a dot on the app icon when today has no observation**. The checkbox shows only when the browser can show a badge.
+
+On iPhone, iPad and Mac, the system asks for the permission for notifications. The app never sends notifications. The dot changes only while the app is open.
+
 ## Change the page
 
 The page slides when it changes. A page on the right comes from the right, and a page on the left comes from the left. With reduced motion in the settings of the system, the page changes at once.

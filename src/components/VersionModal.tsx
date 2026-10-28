@@ -41,6 +41,7 @@ import {
   getStorageStats,
 } from '../domain/versionTracker';
 import { Modal } from './Modal';
+import { AppBadgeSetting } from './AppBadgeSetting';
 import { formatMessage } from '../i18n';
 import { Copyright, LegalDisclaimers } from './LegalNotice';
 
@@ -259,6 +260,9 @@ export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShort
                 </div>
               </div>
             </div>
+
+            {/* The settings of the installed app */}
+            <AppBadgeSetting />
 
             {/* Storage Diagnostics Card */}
             <div className="system-info-card storage-card">

@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.27.0',
+    date: '2026-10-28',
+    title: 'App Icon Reminder',
+    titleFr: 'Rappel sur l’icône',
+    tagline: 'A quiet dot on the app icon when today is not logged',
+    taglineFr: 'Un point discret sur l’icône quand aujourd’hui n’est pas saisi',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Turn it on in the About dialog, tab System Information. It is off by default',
+      'The dot shows while today has no observation, and goes when you save one',
+      'No notifications and no server: the dot changes only while the app is open',
+    ],
+    highlightsFr: [
+      'Activez-le dans À propos, onglet Informations système. Il est désactivé par défaut',
+      'Le point s’affiche tant qu’aujourd’hui n’a pas d’observation, et part à la saisie',
+      'Ni notification ni serveur : le point change seulement quand l’app est ouverte',
+    ],
+  },
+  {
     version: '1.26.0',
     date: '2026-10-28',
     title: 'Smooth Page Changes',

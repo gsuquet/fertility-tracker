@@ -4,6 +4,7 @@ import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider, useCycleData, useCycleUi } from './context/CycleContext';
 import { isInstalled, isIos, promptInstall, useInstallMode } from './pwa/installPrompt';
+import { useAppBadge } from './pwa/appBadge';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
@@ -113,6 +114,8 @@ const MainApp: React.FC = () => {
   const [exportStartsWithRestore, setExportStartsWithRestore] = useState(false);
   const { observations } = useCycleData();
   const installMode = useInstallMode();
+  // The dot on the app icon while today has no observation, when the user turned it on
+  useAppBadge(observations);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');

@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.26.0
+- **Document version:** 1.27.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -38,6 +38,7 @@ This document is the full specification of the application. Change it before you
    - [5.13 Install and update](#513-install-and-update)
    - [5.14 Keyboard shortcuts](#514-keyboard-shortcuts)
    - [5.15 Page slide](#515-page-slide)
+   - [5.16 App icon badge](#516-app-icon-badge)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -793,6 +794,26 @@ The first install has no controller. Thus, it activates at once and the applicat
   - The **Analytics** page has not shown yet. Its lazy component shows the loading status first, and a slide to it would show the loading status.
 - An observation that opens from the chart or the calendar keeps the slide of the drawer (5.7). It has no shared-element transition.
 
+### 5.16 App icon badge
+
+**Modules:** [src/pwa/appBadge.ts](src/pwa/appBadge.ts), [src/components/AppBadgeSetting.tsx](src/components/AppBadgeSetting.tsx)
+
+- When the badge is on, the icon of the installed app shows a dot while today has no observation. The dot goes when an observation of today is saved. Demo data does not count as an observation.
+- The dot is `navigator.setAppBadge()` with no number. It never shows a number or data of the cycle. `navigator.clearAppBadge()` removes it.
+- The badge is off by default. The checkbox **Show a dot on the app icon when today has no observation** turns it on or off. It is in the **System Information** tab of the **About & Version Tracker** dialog. The application saves the choice in `fertility_tracker_badge_on`.
+- The checkbox shows only when the browser has the Badging API. Its hint tells that the dot changes only while the app is open.
+- In the web apps of WebKit (iOS, iPadOS and the Dock of macOS), the badge needs the permission for notifications. When the user turns the badge on there, the application asks for the permission. The hint tells why. The application never sends notifications.
+- While the system asks, the checkbox is disabled, so a second tap does not ask again. A request that fails is a refusal.
+- If the user refuses the permission, the badge stays off, and a message tells how to allow it in the settings of the system.
+- `useAppBadge(observations)` in `App` updates the badge in these cases:
+  - When the app starts.
+  - After each change of the observations, for example a save, a delete or a restore.
+  - When the date changes while the app is open. The application looks for a new date each minute, not with a timer to midnight. A timer stops while the computer sleeps, and the time zone can change.
+  - When the app shows again (`visibilitychange`).
+- When the badge is off, the application removes the dot.
+- All the calls do nothing when the browser has no Badging API or the app is not installed. A refused call does nothing too.
+- Without a server, the dot changes only while the app runs. If the user does not open the app on a day, the icon keeps the state of the last update.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -829,6 +850,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 | `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                             |
 | `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it |
 | `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off (5.14) |
+| `STORAGE_BADGE_ON_KEY`              | `fertility_tracker_badge_on`              | `true` when the user turned the app icon badge on (5.16)      |
 
 ### 6.3 Storage format
 
@@ -1085,6 +1107,7 @@ The helpers are in `src/test/`:
 | 13   | On a phone with touch, a swipe to the left on **Today** opens the next day, and a swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                   |
 | 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
 | 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
+| 16   | In the installed app, after **Show a dot on the app icon**, the dot shows while today has no observation. A save removes it, and the choice stays after a reload.                                                                                                        |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 
