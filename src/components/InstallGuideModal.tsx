@@ -5,6 +5,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { downloadBackupFile } from '../utils/exportUtils';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 
 interface InstallGuideModalProps {
   onClose: () => void;
@@ -16,6 +17,8 @@ interface InstallGuideModalProps {
  */
 export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({ onClose }) => {
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLElement>(onClose, true);
   const { exportDataJson, markBackedUp } = useCycle();
   const [backedUp, setBackedUp] = useState(false);
 
@@ -33,7 +36,8 @@ export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({ onClose })
       className="modal-overlay"
       panelClassName="modal-container install-guide-container"
     >
-      <div className="modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header" {...dragHandlers}>
         <h2 id="install-guide-title">{t.install.guideTitle}</h2>
         <button
           type="button"
@@ -48,6 +52,7 @@ export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({ onClose })
 
       {/* The body scrolls on a small screen, so the keyboard can focus it */}
       <section
+        ref={bodyRef}
         className="modal-body install-guide-body"
         aria-labelledby="install-guide-title"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable needs a focusable scrolling body

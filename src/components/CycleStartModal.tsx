@@ -2,6 +2,7 @@ import type React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Calendar } from 'lucide-react';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 
 interface CycleStartModalProps {
   isOpen: boolean;
@@ -17,6 +18,8 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
   onCancel,
 }) => {
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onCancel, isOpen);
 
   if (!isOpen) return null;
 
@@ -27,7 +30,8 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
       className="modal-overlay cycle-start-modal-overlay"
       panelClassName="modal-container cycle-start-modal-container"
     >
-      <div className="cycle-start-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="cycle-start-header" {...dragHandlers}>
         <div className="cycle-start-header-left">
           <div className="cycle-start-icon-box">
             <Calendar size={22} />
@@ -44,7 +48,7 @@ export const CycleStartModal: React.FC<CycleStartModalProps> = ({
         </button>
       </div>
 
-      <div className="cycle-start-body">
+      <div className="cycle-start-body" ref={bodyRef}>
         <p className="cycle-start-question">{t.cycleStartModal.question}</p>
         <p className="cycle-start-description">{t.cycleStartModal.description}</p>
       </div>

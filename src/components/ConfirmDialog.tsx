@@ -2,6 +2,7 @@ import type React from 'react';
 import { useId, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 
 export interface ConfirmAction {
   label: string;
@@ -29,6 +30,8 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   onCancel,
 }) => {
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onCancel, true);
   const id = useId();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -41,10 +44,11 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       className="modal-overlay confirm-overlay"
       panelClassName="modal-container confirm-dialog"
     >
-      <div className="modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header" {...dragHandlers}>
         <h2 id={`${id}-title`}>{title}</h2>
       </div>
-      <div className="modal-body" id={`${id}-message`}>
+      <div className="modal-body" id={`${id}-message`} ref={bodyRef}>
         {children}
       </div>
       <div className="modal-footer">
