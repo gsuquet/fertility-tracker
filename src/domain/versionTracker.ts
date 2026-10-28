@@ -44,6 +44,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.28.0',
+    date: '2026-10-28',
+    title: 'Swipe the Menus and the Calendar',
+    titleFr: 'Glissez les menus et le calendrier',
+    tagline:
+      'On a phone, the menus close with a swipe down, and the calendar changes month with a swipe',
+    taglineFr:
+      'Sur un téléphone, les menus se ferment en glissant vers le bas, et le calendrier change de mois en glissant',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Drag the menu and the cycle menu down to close them, as the observation sheet',
+      'A swipe on a menu no longer scrolls the page behind it, and the menu slides up when it opens',
+      'On the calendar, swipe to the right for the previous month and to the left for the next one',
+    ],
+    highlightsFr: [
+      'Faites glisser le menu et le menu des cycles vers le bas pour les fermer, comme la fiche d’observation',
+      'Un glissement sur un menu ne fait plus défiler la page derrière, et le menu monte en glissant à l’ouverture',
+      'Dans le calendrier, glissez vers la droite pour le mois précédent et vers la gauche pour le suivant',
+    ],
+  },
+  {
     version: '1.27.1',
     date: '2026-10-28',
     title: 'Full-Screen Launch Screen',

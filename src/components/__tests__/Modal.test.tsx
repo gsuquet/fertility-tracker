@@ -118,6 +118,33 @@ describe('Modal', () => {
     expect(screen.getByRole('button', { name: 'Third' })).toHaveFocus();
   });
 
+  it('undoes the scroll of the dialog to the focus, so the slide up of a sheet is not cancelled', () => {
+    // The browser scrolls the backdrop to show the focused element under the screen
+    const focus = vi.spyOn(HTMLElement.prototype, 'focus').mockImplementation(function (
+      this: HTMLElement
+    ) {
+      (this.closest('dialog') as HTMLDialogElement).scrollTop = 460;
+    });
+    render(<Dialog />);
+    expect(screen.getByRole('dialog').scrollTop).toBe(0);
+    focus.mockRestore();
+  });
+
+  it('gives the inline styles to the panel', () => {
+    render(
+      <Modal
+        label="Styled"
+        onClose={() => {}}
+        className="o"
+        panelClassName="p"
+        panelStyle={{ top: '6px' }}
+      >
+        <button type="button">Inside</button>
+      </Modal>
+    );
+    expect(screen.getByRole('dialog').firstElementChild).toHaveStyle({ top: '6px' });
+  });
+
   it('focuses the dialog itself when it has no focusable element, and keeps the focus there', () => {
     render(
       <Modal label="Empty" onClose={vi.fn()} className="o" panelClassName="p">

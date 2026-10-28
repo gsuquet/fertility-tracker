@@ -242,6 +242,7 @@
   }
 
   .mobile-action-sheet {
+    max-height: 88dvh;
     width: 100vw;
     max-width: 480px;
     background-color: var(--bg-surface);
@@ -289,6 +290,40 @@
     display: flex;
     flex-direction: column;
     gap: 0.65rem;
+    /* On a short screen, the list scrolls in the sheet and not the page under it */
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+  }
+
+  /* A bottom sheet that the user drags down to close it (useSheetDrag.ts) */
+  @media (max-width: 640px) {
+    /* The backdrop fades while the user drags the sheet down */
+    .mobile-menu-overlay {
+      background-color: color-mix(
+        in srgb,
+        var(--bg-overlay) calc(100% * (1 - var(--sheet-drag))),
+        transparent
+      );
+      backdrop-filter: blur(calc(8px * (1 - var(--sheet-drag))));
+      -webkit-backdrop-filter: blur(calc(8px * (1 - var(--sheet-drag))));
+    }
+
+    /* The grab handle gives the space at the top */
+    .mobile-action-sheet {
+      padding-top: 0;
+    }
+
+    .mobile-action-sheet-header {
+      touch-action: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .mobile-action-sheet {
+        animation: none;
+      }
+    }
   }
 
   .sheet-action-item {

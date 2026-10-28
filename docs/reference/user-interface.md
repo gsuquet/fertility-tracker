@@ -43,6 +43,8 @@ The page slides when it changes. A page on the right comes from the right, and a
 
 On the **Today** page, the arrow buttons open the previous day and the next day. On a touch screen, you can also swipe. Swipe to the left to open the next day. Swipe to the right to open the previous day. A swipe that starts in a field does not change the day.
 
+On the **Monthly Calendar** page, swipe to the left to open the next month and to the right to open the previous month. A swipe does not open a month after the current month.
+
 ## Keyboard shortcuts
 
 On a computer, one key starts an action. A shortcut does nothing while a dialog is open or while the focus is in a field.
@@ -132,18 +134,18 @@ The notice shows above the pages when the application cannot read the saved obse
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
 | **About & Version Tracker** | From the header.                                                      |
 
-All the dialogs, the observation drawer and the mobile menu use the same keyboard rules:
+All the dialogs, the observation drawer, the mobile menu and the cycle menu use the same keyboard rules:
 
-| Key or action              | Result                                                                |
-| -------------------------- | --------------------------------------------------------------------- |
-| The dialog opens           | The focus goes to the first button of the dialog.                     |
-| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page.  |
-| `Escape`                   | Closes the top dialog only. A dialog under it stays open.             |
-| A click outside the dialog | Closes the dialog.                                                    |
-| **Back**                   | Closes the top dialog only. The cycle menu also closes with **Back**. |
-| The dialog closes          | The focus goes back to the button that opened the dialog.             |
+| Key or action              | Result                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
+| The dialog opens           | The focus goes to the first button of the dialog, or to the selected cycle in the cycle menu. |
+| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page.                          |
+| `Escape`                   | Closes the top dialog only. A dialog under it stays open.                                     |
+| A click outside the dialog | Closes the dialog.                                                                            |
+| **Back**                   | Closes the top dialog only.                                                                   |
+| The dialog closes          | The focus goes back to the button that opened the dialog.                                     |
 
-On a phone, you can also drag the observation drawer down by its handle to close it. A short drag puts the drawer back.
+On a phone, you can also drag the observation drawer, the mobile menu and the cycle menu down to close them. Drag the handle, the header, or the list when it is at the top. A short drag puts the sheet back. A swipe on these sheets does not scroll the page behind them.
 
 ## Installed application
 

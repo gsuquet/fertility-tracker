@@ -53,15 +53,12 @@
     display: none;
   }
 
+  /* The <dialog> of Modal.tsx. On a wide screen, it is a transparent layer under the menu. */
   .cycle-dropdown-backdrop {
     display: block;
     position: fixed;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
+    inset: 0;
     background: transparent;
-    z-index: 9998;
   }
 
   .cycle-dropdown-menu {
@@ -71,7 +68,6 @@
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    z-index: 9999;
     padding: 0.6rem;
     animation: fadeInDown 0.15s ease-out;
   }
@@ -101,7 +97,9 @@
   }
 
   .cycle-dropdown-close {
-    display: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
     background: none;
     border: none;
     color: var(--text-secondary);
@@ -205,38 +203,50 @@
       text-overflow: ellipsis;
     }
 
+    /* The backdrop fades while the user drags the sheet down (useSheetDrag.ts) */
     .cycle-dropdown-backdrop {
-      display: block;
-      background: var(--bg-overlay);
-      backdrop-filter: blur(4px);
-      -webkit-backdrop-filter: blur(4px);
-      z-index: 9998;
+      background: color-mix(
+        in srgb,
+        var(--bg-overlay) calc(100% * (1 - var(--sheet-drag))),
+        transparent
+      );
+      backdrop-filter: blur(calc(4px * (1 - var(--sheet-drag))));
+      -webkit-backdrop-filter: blur(calc(4px * (1 - var(--sheet-drag))));
     }
 
+    /* A bottom sheet. The grab handle gives the space at the top. */
     .cycle-dropdown-menu {
-      position: fixed !important;
-      top: auto !important;
-      bottom: 0 !important;
-      left: 0 !important;
-      right: 0 !important;
-      width: 100% !important;
-      min-width: 100% !important;
-      border-radius: var(--radius-lg) var(--radius-lg) 0 0 !important;
-      padding: 1rem 0.85rem !important;
-      max-height: 80vh !important;
-      box-shadow: var(--shadow-sheet) !important;
-      z-index: 9999 !important;
-      animation: slideUp 0.2s ease-out !important;
+      position: fixed;
+      top: auto;
+      bottom: 0;
+      left: 0;
+      right: 0;
+      width: 100%;
+      min-width: 100%;
+      display: flex;
+      flex-direction: column;
+      border-radius: var(--radius-lg) var(--radius-lg) 0 0;
+      padding: 0 0.85rem max(1rem, env(safe-area-inset-bottom, 0px));
+      max-height: 80dvh;
+      box-shadow: var(--shadow-sheet);
+      animation: slideUp 0.2s ease-out;
     }
 
     .cycle-dropdown-header {
       padding-bottom: 0.75rem;
+      touch-action: none;
     }
 
-    .cycle-dropdown-close {
-      display: flex;
-      align-items: center;
-      justify-content: center;
+    .cycle-dropdown-list {
+      flex: 1;
+      min-height: 0;
+      max-height: none;
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      .cycle-dropdown-menu {
+        animation: none;
+      }
     }
   }
 }

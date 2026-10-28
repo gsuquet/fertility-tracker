@@ -13,6 +13,8 @@
     box-sizing: border-box;
     width: 100%;
     overflow: hidden;
+    /* A horizontal swipe changes the month (useDaySwipe.ts). The browser keeps the vertical scroll. */
+    touch-action: pan-y pinch-zoom;
   }
 
   .calendar-header {

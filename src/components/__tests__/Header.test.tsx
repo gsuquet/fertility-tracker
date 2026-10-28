@@ -170,4 +170,27 @@ describe('Header', () => {
     fireEvent.click(within(openSheet()).getByText('Menu & Options'));
     expect(screen.getByRole('dialog')).toBeInTheDocument();
   });
+
+  it('closes the sheet with a drag down on its handle on a phone', () => {
+    const media = vi.mocked(window.matchMedia);
+    const original = media.getMockImplementation();
+    // A phone that prefers reduced motion: the sheet closes at the release
+    media.mockImplementation(query => ({ matches: true, media: query }) as MediaQueryList);
+    // jsdom has no pointer capture
+    const nativeCapture = Element.prototype.setPointerCapture;
+    Element.prototype.setPointerCapture = vi.fn();
+    try {
+      renderHeader();
+      const sheet = openSheet();
+      const handle = sheet.querySelector('.sheet-handle') as HTMLElement;
+      expect(handle).toHaveAttribute('aria-hidden', 'true');
+      fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 100 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 700 });
+      fireEvent.pointerUp(handle, { pointerId: 1, clientY: 700 });
+      expect(screen.queryByRole('dialog')).toBeNull();
+    } finally {
+      media.mockImplementation(original as (query: string) => MediaQueryList);
+      Element.prototype.setPointerCapture = nativeCapture;
+    }
+  });
 });

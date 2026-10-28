@@ -54,14 +54,20 @@ export interface DaySwipeHandlers {
  * A horizontal swipe with a finger or a pen calls `onSwipe` with the direction: `next` to the
  * left, `prev` to the right. Put `handlers` on the page and `contentRef` on the part that
  * follows the finger. A vertical drag stays a scroll, because the page has `touch-action: pan-y`.
+ * When `canSwipe` returns false for the direction, the content goes back and nothing changes.
  */
-export function useDaySwipe(onSwipe: (direction: SwipeDirection) => void): {
+export function useDaySwipe(
+  onSwipe: (direction: SwipeDirection) => void,
+  canSwipe: (direction: SwipeDirection) => boolean = () => true
+): {
   handlers: DaySwipeHandlers;
   pageRef: React.RefObject<HTMLDivElement | null>;
   contentRef: React.RefObject<HTMLDivElement | null>;
 } {
   const onSwipeRef = useRef(onSwipe);
   onSwipeRef.current = onSwipe;
+  const canSwipeRef = useRef(canSwipe);
+  canSwipeRef.current = canSwipe;
   const pageRef = useRef<HTMLDivElement>(null);
   const contentRef = useRef<HTMLDivElement>(null);
   /** The day change that waits for the end of the slide out. */
@@ -137,7 +143,7 @@ export function useDaySwipe(onSwipe: (direction: SwipeDirection) => void): {
     // A button under the finger must not get a click from a swipe. A tap that only moved a
     // little is not a swipe, so its click stays.
     if (direction) clickBlockedUntil.current = performance.now() + CLICK_AFTER_SWIPE;
-    finish(direction);
+    finish(direction && canSwipeRef.current(direction) ? direction : null);
   };
 
   const handlers: DaySwipeHandlers = {

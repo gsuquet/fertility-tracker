@@ -1,5 +1,5 @@
 import { act, screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, it, expect } from 'vitest';
+import { afterEach, describe, it, expect, vi } from 'vitest';
 import { CyclePicker } from '../CyclePicker';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
@@ -11,6 +11,8 @@ const openMenu = () => {
   fireEvent.click(pickerButton());
   return screen.getByRole('listbox');
 };
+
+const panel = () => document.querySelector('.cycle-dropdown-menu') as HTMLElement;
 
 const setWidth = (width: number) => {
   Object.defineProperty(window, 'innerWidth', { configurable: true, value: width });
@@ -57,13 +59,23 @@ describe('CyclePicker menu', () => {
     );
   });
 
-  it('closes from the toggle, the close button, the backdrop and Escape', () => {
+  it('opens a modal dialog with the focus on the selected cycle', () => {
+    renderWithProviders(<CyclePicker />, { observations: demo });
+    expect(pickerButton()).toHaveAttribute('aria-haspopup', 'dialog');
+    openMenu();
+    const dialog = screen.getByRole('dialog', { name: 'Filter Cycle View' });
+    expect(dialog).toHaveAttribute('aria-modal', 'true');
+    expect(within(dialog).getByRole('option', { name: /Cycle 2/ })).toHaveFocus();
+
+    // The focus follows the selection the next time the menu opens
+    fireEvent.click(within(dialog).getByRole('option', { name: /All Cycles/ }));
+    expect(within(openMenu()).getByRole('option', { name: /All Cycles/ })).toHaveFocus();
+  });
+
+  it('closes from the close button, the backdrop and Escape', () => {
     renderWithProviders(<CyclePicker />, { observations: demo });
     openMenu();
-    fireEvent.click(pickerButton());
-    expect(screen.queryByRole('listbox')).toBeNull();
-
-    fireEvent.click(within(openMenu()).getByRole('button', { name: 'Close cycle menu' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Close cycle menu' }));
     expect(screen.queryByRole('listbox')).toBeNull();
 
     openMenu();
@@ -71,9 +83,10 @@ describe('CyclePicker menu', () => {
     expect(screen.queryByRole('listbox')).toBeNull();
 
     openMenu();
-    fireEvent.keyDown(document, { key: 'Enter' });
+    const dialog = screen.getByRole('dialog');
+    fireEvent.keyDown(dialog, { key: 'Enter' });
     expect(screen.getByRole('listbox')).toBeInTheDocument();
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(screen.queryByRole('listbox')).toBeNull();
   });
 
@@ -86,29 +99,52 @@ describe('CyclePicker menu', () => {
     await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
   });
 
-  it('closes on a click outside the menu only', () => {
+  it('stays open on a click in the menu', () => {
     renderWithProviders(<CyclePicker />, { observations: demo });
-    fireEvent.click(within(openMenu()).getByText('Filter Cycle View'));
+    openMenu();
+    fireEvent.click(within(panel()).getByText('Filter Cycle View'));
     expect(screen.getByRole('listbox')).toBeInTheDocument();
-    fireEvent.click(document.body);
-    expect(screen.queryByRole('listbox')).toBeNull();
   });
 
   it('places the menu under the button on desktop and follows it on scroll and resize', () => {
     renderWithProviders(<CyclePicker />, { observations: demo });
-    const menu = openMenu();
-    expect(menu.style.position).toBe('fixed');
-    expect(menu.style.top).toBe('6px');
+    openMenu();
+    expect(panel().style.position).toBe('fixed');
+    expect(panel().style.top).toBe('6px');
 
     setWidth(800);
     fireEvent.scroll(window);
     fireEvent(window, new Event('resize'));
-    expect(screen.getByRole('listbox').style.right).toBe('800px');
+    expect(panel().style.right).toBe('800px');
   });
 
   it('lets the stylesheet place the menu on mobile', () => {
     setWidth(400);
     renderWithProviders(<CyclePicker />, { observations: demo });
-    expect(openMenu().getAttribute('style')).toBeNull();
+    openMenu();
+    expect(panel().getAttribute('style')).toBeNull();
+  });
+
+  it('closes with a drag down on its handle on a phone', () => {
+    setWidth(400);
+    const media = vi.mocked(window.matchMedia);
+    const original = media.getMockImplementation();
+    // A phone that prefers reduced motion: the sheet closes at the release
+    media.mockImplementation(query => ({ matches: true, media: query }) as MediaQueryList);
+    // jsdom has no pointer capture
+    const nativeCapture = Element.prototype.setPointerCapture;
+    Element.prototype.setPointerCapture = vi.fn();
+    try {
+      renderWithProviders(<CyclePicker />, { observations: demo });
+      openMenu();
+      const handle = panel().querySelector('.sheet-handle') as HTMLElement;
+      fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 100 });
+      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 700 });
+      fireEvent.pointerUp(handle, { pointerId: 1, clientY: 700 });
+      expect(screen.queryByRole('listbox')).toBeNull();
+    } finally {
+      media.mockImplementation(original as (query: string) => MediaQueryList);
+      Element.prototype.setPointerCapture = nativeCapture;
+    }
   });
 });

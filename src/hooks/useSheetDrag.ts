@@ -97,15 +97,34 @@ export interface SheetDragHandlers {
   onPointerCancel: (e: React.PointerEvent<HTMLElement>) => void;
 }
 
+/** True when the body has content to scroll. */
+const canScroll = (body: HTMLElement) => body.scrollHeight > body.clientHeight;
+
+/** A text area keeps its own gestures, for example its scroll and the selection of text. */
+const OWN_GESTURE = 'textarea, [contenteditable="true"]';
+
+/** True when the touch starts in a text area or in an element of the body that scrolls by itself. */
+const startsInOwnScroll = (target: Element, body: HTMLElement) => {
+  for (let el: Element | null = target; el && el !== body; el = el.parentElement) {
+    if (el.matches(OWN_GESTURE)) return true;
+    const { overflowX, overflowY } = window.getComputedStyle(el);
+    const scrolls = (overflow: string) => overflow === 'auto' || overflow === 'scroll';
+    if (scrolls(overflowY) && el.scrollHeight > el.clientHeight) return true;
+    if (scrolls(overflowX) && el.scrollWidth > el.clientWidth) return true;
+  }
+  return false;
+};
+
 /**
  * Lets the user drag a bottom sheet down to close it, on a phone only. Put `handlers` on the
  * grab handle and the header, and `bodyRef` on the scrollable body. The sheet is the panel of
- * the Modal dialog. A close by drag calls `onClose`, as the close button does.
+ * the Modal dialog. A close by drag calls `onClose`, as the close button does. A swipe on the
+ * sheet or on its backdrop never scrolls the page under it.
  */
-export function useSheetDrag(
+export function useSheetDrag<Body extends HTMLElement = HTMLFormElement>(
   onClose: () => void,
   open: boolean
-): { handlers: SheetDragHandlers; bodyRef: React.RefObject<HTMLFormElement | null> } {
+): { handlers: SheetDragHandlers; bodyRef: React.RefObject<Body | null> } {
   const stateRef = useRef<GestureState>({
     drag: null,
     pointer: null,
@@ -114,7 +133,7 @@ export function useSheetDrag(
   });
   const state = stateRef.current;
   state.onClose = onClose;
-  const bodyRef = useRef<HTMLFormElement>(null);
+  const bodyRef = useRef<Body>(null);
   // A close in another way (Escape, Back) during the slide stops the timer, so that it cannot
   // close a drawer that opens again
   // biome-ignore lint/correctness/useExhaustiveDependencies: the cleanup must run each time open changes
@@ -132,18 +151,22 @@ export function useSheetDrag(
     let start: { x: number; y: number } | null = null;
     // True while the body moves the sheet. A drag of the handle is not the body's to end.
     let owns = false;
+    // True while a body with nothing to scroll stops the scroll, so the page does not scroll
+    let locked = false;
 
     const onStart = (e: TouchEvent) => {
       // A second finger does not stop the drag of the first one
       if (owns) return;
       const touch = e.touches[0] as Touch;
       const free = !gesture.pointer && !gesture.drag;
-      start =
-        free && e.touches.length === 1 && matches(PHONE_QUERY)
-          ? { x: touch.clientX, y: touch.clientY }
-          : null;
+      const one = e.touches.length === 1 && matches(PHONE_QUERY);
+      // A second finger is a pinch: the browser must be able to zoom
+      locked = one && !canScroll(body) && !startsInOwnScroll(e.target as Element, body);
+      start = free && one ? { x: touch.clientX, y: touch.clientY } : null;
     };
     const onMove = (e: TouchEvent) => {
+      // A second finger outside the body makes a pinch, which the browser must be able to zoom
+      if (locked && e.touches.length === 1) e.preventDefault();
       if (!start) return;
       const touch = e.touches[0] as Touch;
       if (owns) {
@@ -151,8 +174,13 @@ export function useSheetDrag(
         moveDrag(gesture.drag as Drag, touch.clientY);
         return;
       }
+      // Two fingers are a pinch, also when the second one lands outside the body
+      if (e.touches.length > 1) {
+        start = null;
+        return;
+      }
       const dy = touch.clientY - start.y;
-      // A scroll up, a form that is not at the top or a side move is a scroll
+      // A scroll up, a body that is not at the top or a side move is a scroll
       if (body.scrollTop > 0 || dy < 0 || Math.abs(touch.clientX - start.x) > dy) {
         start = null;
         return;
@@ -165,6 +193,7 @@ export function useSheetDrag(
       moveDrag(beginDrag(gesture, body, start.y), touch.clientY);
     };
     const onEnd = (e: TouchEvent) => {
+      if (e.touches.length === 0) locked = false;
       // The drag ends when the last finger lifts
       if (!owns || e.touches.length > 0) return;
       start = null;
@@ -172,15 +201,25 @@ export function useSheetDrag(
       endDrag(gesture, e.type === 'touchcancel');
     };
 
+    // A move of one finger outside the body (the backdrop, the header, the sides of the panel)
+    // has nothing to scroll in the sheet. Without this, the browser scrolls the page under it.
+    const dialog = body.closest('dialog') as HTMLDialogElement;
+    const onOutsideMove = (e: TouchEvent) => {
+      if (e.touches.length !== 1 || !matches(PHONE_QUERY)) return;
+      if (!body.contains(e.target as Node)) e.preventDefault();
+    };
+
     body.addEventListener('touchstart', onStart, { passive: true });
     body.addEventListener('touchmove', onMove, { passive: false });
     body.addEventListener('touchend', onEnd);
     body.addEventListener('touchcancel', onEnd);
+    dialog.addEventListener('touchmove', onOutsideMove, { passive: false });
     return () => {
       body.removeEventListener('touchstart', onStart);
       body.removeEventListener('touchmove', onMove);
       body.removeEventListener('touchend', onEnd);
       body.removeEventListener('touchcancel', onEnd);
+      dialog.removeEventListener('touchmove', onOutsideMove);
     };
   }, [open]);
 

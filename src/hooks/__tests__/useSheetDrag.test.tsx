@@ -32,6 +32,15 @@ const sheet = () => screen.getByTestId('sheet');
 const backdrop = () => screen.getByTestId('backdrop');
 const body = () => screen.getByTestId('body');
 
+/** Sends a cancelable touchmove of `count` fingers at (x, y) to the element, and tells if it was prevented. */
+const prevented = (element: Element, y: number, { x = 0, count = 1 } = {}) => {
+  const move = new TouchEvent('touchmove', { cancelable: true, bubbles: true });
+  const touches = Array.from({ length: count }, () => ({ clientX: x, clientY: y }));
+  Object.defineProperty(move, 'touches', { value: touches });
+  element.dispatchEvent(move);
+  return move.defaultPrevented;
+};
+
 /** Waits `ms` milliseconds of the fake clock. */
 const wait = (ms: number) => act(() => vi.advanceTimersByTime(ms));
 
@@ -65,6 +74,8 @@ beforeEach(() => {
     height: 800,
   } as DOMRect);
   Element.prototype.setPointerCapture = vi.fn();
+  // The body has content to scroll, as the form of the drawer
+  vi.spyOn(Element.prototype, 'scrollHeight', 'get').mockReturnValue(1000);
 });
 
 afterEach(() => {
@@ -316,5 +327,123 @@ describe('useSheetDrag in the body', () => {
     touch('start', 100);
     touch('move', 400);
     expect(sheet().style.transform).toBe('');
+  });
+
+  it('stops the scroll of the page for each move in a body with nothing to scroll', () => {
+    vi.mocked(
+      Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number
+    ).mockReturnValue(0);
+    render(<Sheet onClose={vi.fn()} />);
+    // A move up and a move to the side do not drag the sheet, and do not scroll the page
+    touch('start', 300);
+    expect(prevented(body(), 250)).toBe(true);
+    expect(prevented(body(), 400)).toBe(true);
+    expect(sheet().style.transform).toBe('');
+    touch('end', 400);
+    touch('start', 300);
+    expect(prevented(body(), 310, { x: 80 })).toBe(true);
+    touch('end', 310);
+
+    // A second finger is a pinch: the browser can zoom
+    touch('start', 300);
+    touch('start', 300, 0, 2);
+    expect(prevented(body(), 250, { count: 2 })).toBe(false);
+    touch('end', 250);
+
+    // A move down from the top still drags the sheet
+    touch('start', 100);
+    touch('move', 150);
+    expect(sheet().style.transform).toBe('translateY(50px)');
+  });
+
+  it('lets a pinch zoom when the second finger touches outside the body', () => {
+    vi.mocked(
+      Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number
+    ).mockReturnValue(0);
+    render(<Sheet onClose={vi.fn()} />);
+    touch('start', 300);
+    // The second finger lands on the header, so the body gets no second touchstart
+    expect(prevented(body(), 250, { count: 2 })).toBe(false);
+  });
+
+  it('does not move or close the sheet for a pinch that moves down from the top of the body', async () => {
+    const onClose = vi.fn();
+    render(<Sheet onClose={onClose} />);
+    touch('start', 100);
+    // The second finger lands on the header, and the fingers spread apart
+    expect(prevented(body(), 150, { count: 2 })).toBe(false);
+    expect(prevented(body(), 300, { count: 2 })).toBe(false);
+    expect(sheet().style.transform).toBe('');
+    touch('end', 300);
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
+  it('keeps the scroll of a field or of an element that scrolls by itself in the body', () => {
+    const scrollHeight = vi.mocked(
+      Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number
+    );
+    render(<Sheet onClose={vi.fn()} />);
+    const notes = document.createElement('textarea');
+    const row = document.createElement('div');
+    row.style.overflowY = 'auto';
+    const tall = document.createElement('div');
+    row.style.overflowX = 'scroll';
+    const wide = document.createElement('span');
+    tall.append(wide);
+    row.append(tall);
+    body().append(notes, row);
+    // Only the row has content to scroll
+    scrollHeight.mockImplementation(function (this: Element) {
+      return this === row ? 500 : 0;
+    });
+    const start = (target: Element) =>
+      fireEvent.touchStart(target, { touches: [{ clientX: 0, clientY: 300 }] });
+
+    start(notes);
+    expect(prevented(notes, 250)).toBe(false);
+    touch('end', 250);
+    start(wide);
+    expect(prevented(wide, 250)).toBe(false);
+    touch('end', 250);
+
+    // A row that scrolls only to the side keeps its side scroll
+    scrollHeight.mockReturnValue(0);
+    vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockImplementation(function (this: Element) {
+      return this === row ? 900 : 0;
+    });
+    start(wide);
+    expect(prevented(wide, 250)).toBe(false);
+    touch('end', 250);
+
+    // Elsewhere in the body, the move is stopped
+    start(body());
+    expect(prevented(body(), 250)).toBe(true);
+  });
+
+  it('lets a body with content scroll up and down', () => {
+    render(<Sheet onClose={vi.fn()} />);
+    body().scrollTop = 40;
+    touch('start', 300);
+    expect(prevented(body(), 250)).toBe(false);
+    expect(prevented(body(), 400)).toBe(false);
+  });
+});
+
+describe('useSheetDrag outside the body', () => {
+  it('stops the scroll of the page for a move of one finger on the backdrop or the header', () => {
+    render(<Sheet onClose={vi.fn()} />);
+    expect(prevented(backdrop(), 300)).toBe(true);
+    expect(prevented(screen.getByTestId('header'), 300)).toBe(true);
+    expect(prevented(backdrop(), 300, { count: 2 })).toBe(false);
+  });
+
+  it('lets the page scroll on a larger screen or after the sheet closes', () => {
+    const { rerender } = render(<Sheet onClose={vi.fn()} />);
+    setMedia({ phone: false });
+    expect(prevented(backdrop(), 300)).toBe(false);
+    setMedia();
+    rerender(<Sheet onClose={vi.fn()} open={false} />);
+    expect(prevented(backdrop(), 300)).toBe(false);
   });
 });
