@@ -87,6 +87,7 @@ export const ChartRow: React.FC = () => {
           viewMode={viewMode}
           showPhaseBar={showPhaseBar}
           todayStr={todayStr}
+          isCurrent={cycle.id === cycles[0]?.id && todayStr >= cycle.startDate}
           t={t}
           onOpenObservation={openObservation}
           onOpenDay={openEmptyDay}
