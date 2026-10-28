@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.19.0
+- **Document version:** 1.19.1
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -751,10 +751,12 @@ The layer order is:
 | `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
 | `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
 
-| Scale   | Values                                                                                                                                                                                      |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                      |
-| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200 |
+| Scale   | Values                                                                                                                                                                                            |
+| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                            |
+| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200       |
+| Type    | `--text-4xs` 9px, `--text-3xs` 10px, `--text-2xs` 11px, `--text-xs` 12px, `--text-sm` 13px, `--text-md` 14px, `--text-base` 16px, `--text-lg` 18px, `--text-xl` 22px, `--text-2xl` 28px, in `rem` |
+| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                            |
 - `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
 - The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
 #### Brand
@@ -780,6 +782,10 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 - The font `url()` values are package paths. Vite copies the files to `assets/` with a hash, and the service worker keeps them.
 - No font or stylesheet comes from another host, such as Google Fonts.
 - Each custom property that a style or a component uses has a definition in `src/styles/tokens/`.
+- Only `src/styles/tokens/` and `views/print.css` contain color values, such as `#1f3a5f`, `rgba()` or `white`. The other style files use tokens. Print has its own colors for paper.
+- Outside `views/print.css`, each `font-size` is a type scale token, and each `border-radius` is a radius token, `0` or `50%`. Print uses `pt` sizes.
+- A token has the values of both themes. Thus, a view has no `[data-theme='dark']` rule.
+- The test `src/styles/__tests__/tokenUsage.test.ts` checks these rules.
 
 ### 7.3 Text contrast
 

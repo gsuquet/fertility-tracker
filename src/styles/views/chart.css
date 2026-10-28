@@ -38,14 +38,14 @@
   }
 
   .strip-main-title {
-    font-size: 1.1rem;
+    font-size: var(--text-lg);
     font-weight: 800;
     color: var(--text-primary);
     letter-spacing: -0.01em;
   }
 
   .strip-subtitle-badge {
-    font-size: 0.72rem;
+    font-size: var(--text-2xs);
     font-weight: 700;
     color: var(--accent-primary);
     text-transform: uppercase;
@@ -70,7 +70,7 @@
     border: none;
     background: transparent;
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.15s ease;
@@ -95,7 +95,7 @@
     border: 1px solid var(--bg-surface-border);
     background-color: var(--bg-surface);
     color: var(--text-secondary);
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     cursor: pointer;
     transition: all 0.18s ease;
@@ -124,7 +124,7 @@
   }
 
   .legend-title {
-    font-size: 0.78rem;
+    font-size: var(--text-xs);
     font-weight: 800;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -147,11 +147,11 @@
   .legend-badge {
     width: 24px;
     height: 24px;
-    border-radius: 5px;
+    border-radius: var(--radius-2xs);
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
     font-weight: 800;
     box-shadow: var(--shadow-sm);
     position: relative;
@@ -160,12 +160,12 @@
   .legend-badge.stamp-white_baby {
     background-color: var(--stamp-white);
     border: 1.5px solid var(--stamp-white-border);
-    color: #0f172a;
+    color: var(--stamp-white-text);
   }
 
   .legend-badge.stamp-light_green_baby_1 {
-    background-color: #4ade80;
-    color: #064e3b;
+    background-color: var(--stamp-light-green);
+    color: var(--stamp-light-green-text);
   }
 
   .legend-badge .baby-svg {
@@ -174,22 +174,22 @@
   }
 
   .legend-badge.stamp-light_green_baby_1 .num {
-    font-size: 0.55rem;
+    font-size: var(--text-4xs);
     font-weight: 900;
   }
 
   .legend-badge.peak-legend {
-    background-color: #f59e0b;
-    color: white;
+    background-color: var(--color-warning);
+    color: var(--color-white);
   }
 
   .legend-badge.intercourse-legend {
     background-color: var(--brand-ink);
-    color: white;
+    color: var(--color-white);
   }
 
   .legend-label {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     font-weight: 600;
     color: var(--text-secondary);
   }
@@ -220,7 +220,7 @@
   }
 
   .cycle-title-badge {
-    font-size: 0.85rem;
+    font-size: var(--text-md);
     font-weight: 800;
     color: var(--accent-primary);
     background-color: var(--accent-light);
@@ -229,13 +229,13 @@
   }
 
   .cycle-date-range {
-    font-size: 0.85rem;
+    font-size: var(--text-md);
     font-weight: 700;
     color: var(--text-primary);
   }
 
   .cycle-length-pill {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     color: var(--text-muted);
     background-color: var(--bg-primary);
@@ -248,26 +248,20 @@
     display: flex;
     align-items: center;
     gap: 0.3rem;
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 800;
-    color: #b45309;
-    background-color: #fef3c7;
+    color: var(--color-warning-text);
+    background-color: var(--color-warning-surface);
     padding: 0.25rem 0.65rem;
     border-radius: var(--radius-sm);
-    border: 1px solid #fde68a;
-  }
-
-  [data-theme='dark'] .cycle-peak-pill {
-    color: #fbbf24;
-    background-color: rgba(245, 158, 11, 0.2);
-    border-color: rgba(245, 158, 11, 0.35);
+    border: 1px solid var(--color-warning-border);
   }
 
   .cycle-helper-hint {
     display: flex;
     align-items: center;
     gap: 0.4rem;
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     color: var(--text-muted);
     font-weight: 500;
   }
@@ -283,7 +277,7 @@
   }
 
   .nav-icon-btn {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 700;
     padding: 0.3rem 0.65rem;
     border-radius: var(--radius-sm);
@@ -305,15 +299,9 @@
   }
 
   .nav-icon-btn.peak-btn {
-    color: #d97706;
-    border-color: #fcd34d;
-    background-color: #fffbeb;
-  }
-
-  [data-theme='dark'] .nav-icon-btn.peak-btn {
-    color: #fbbf24;
-    border-color: rgba(245, 158, 11, 0.3);
-    background-color: rgba(245, 158, 11, 0.15);
+    color: var(--color-warning-text);
+    border-color: var(--color-warning-border);
+    background-color: var(--color-warning-surface);
   }
 
   .scroll-arrows {
@@ -338,7 +326,7 @@
 
   .scroll-btn:hover {
     background-color: var(--accent-solid);
-    color: white;
+    color: var(--color-white);
     border-color: var(--accent-primary);
   }
 
@@ -354,7 +342,7 @@
     display: flex;
     width: 100%;
     height: 8px;
-    border-radius: 4px;
+    border-radius: var(--radius-2xs);
     overflow: hidden;
     background-color: var(--bg-primary);
     gap: 1px;
@@ -372,13 +360,17 @@
   }
 
   .phase-menses {
-    background: linear-gradient(135deg, #f43f5e 0%, var(--stamp-red) 100%);
+    background: linear-gradient(135deg, var(--stamp-red-light) 0%, var(--stamp-red) 100%);
   }
 
   .phase-infertile,
   .phase-follicular,
   .phase-luteal {
-    background: linear-gradient(135deg, #16a34a 0%, var(--stamp-dark-green) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--stamp-dark-green-light) 0%,
+      var(--stamp-dark-green) 100%
+    );
   }
 
   .phase-fertile {
@@ -387,12 +379,16 @@
   }
 
   .phase-peak {
-    background-color: #f59e0b;
-    box-shadow: 0 0 6px rgba(245, 158, 11, 0.8);
+    background-color: var(--color-warning);
+    box-shadow: var(--shadow-warning-glow);
   }
 
   .phase-post-peak {
-    background: linear-gradient(135deg, #86efac 0%, var(--stamp-light-green) 100%);
+    background: linear-gradient(
+      135deg,
+      var(--stamp-light-green-light) 0%,
+      var(--stamp-light-green) 100%
+    );
   }
 
   .phase-unknown {
@@ -405,9 +401,9 @@
     top: -10px;
     left: 50%;
     transform: translateX(-50%);
-    font-size: 0.55rem;
+    font-size: var(--text-4xs);
     font-weight: 900;
-    color: #b45309;
+    color: var(--color-warning-text);
   }
 
   /* Paper Grid Strip Container */
@@ -427,7 +423,7 @@
 
   .chart-row-scroll::-webkit-scrollbar-thumb {
     background-color: var(--bg-surface-border-strong);
-    border-radius: 3px;
+    border-radius: var(--radius-2xs);
   }
 
   .chart-row-strip.paper-grid-strip {
@@ -443,7 +439,7 @@
     min-height: 156px;
     max-height: 156px;
     background-color: var(--bg-primary);
-    background-image: linear-gradient(to bottom, rgba(148, 163, 184, 0.08) 1px, transparent 1px);
+    background-image: linear-gradient(to bottom, var(--chart-grid-line) 1px, transparent 1px);
     background-size: 100% 20px;
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-md);
@@ -489,9 +485,9 @@
   }
 
   .chart-cell.peak-cell {
-    border-color: #f59e0b !important;
+    border-color: var(--color-warning) !important;
     box-shadow:
-      0 0 0 2px rgba(245, 158, 11, 0.4),
+      0 0 0 2px var(--color-warning-ring),
       var(--shadow-sm);
   }
 
@@ -505,17 +501,17 @@
   }
 
   .cell-today-pill {
-    font-size: 0.55rem;
+    font-size: var(--text-4xs);
     font-weight: 800;
     text-transform: uppercase;
     background-color: var(--accent-solid);
-    color: #ffffff;
+    color: var(--color-white);
     padding: 1px 4px;
-    border-radius: 4px;
+    border-radius: var(--radius-2xs);
     letter-spacing: 0.3px;
     line-height: 1;
     margin-bottom: 2px;
-    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-xs);
   }
 
   .cell-header {
@@ -530,13 +526,13 @@
   }
 
   .cell-day-num {
-    font-size: 0.75rem;
+    font-size: var(--text-xs);
     font-weight: 800;
     color: var(--text-primary);
   }
 
   .cell-day-name {
-    font-size: 0.58rem;
+    font-size: var(--text-4xs);
     font-weight: 700;
     color: var(--text-muted);
     text-transform: uppercase;
@@ -544,7 +540,7 @@
   }
 
   .cell-date {
-    font-size: 0.6rem;
+    font-size: var(--text-3xs);
     color: var(--text-muted);
     font-weight: 500;
   }
@@ -565,7 +561,7 @@
     display: flex;
     align-items: center;
     justify-content: center;
-    font-size: 0.62rem;
+    font-size: var(--text-3xs);
     font-weight: 800;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     text-align: center;
@@ -574,7 +570,7 @@
     color: var(--text-primary);
     background-color: var(--bg-surface);
     padding: 1px 3px;
-    border-radius: 4px;
+    border-radius: var(--radius-2xs);
     border: 1px solid var(--bg-surface-border);
     width: 100%;
     flex-shrink: 0;
@@ -593,12 +589,12 @@
   }
 
   .cell-symptom-tag {
-    font-size: 0.58rem;
+    font-size: var(--text-4xs);
     font-weight: 800;
     color: var(--color-warning-text);
     background-color: var(--color-warning-surface);
     padding: 0 4px;
-    border-radius: 3px;
+    border-radius: var(--radius-2xs);
   }
 
   .cell-notes-icon {
@@ -637,7 +633,7 @@
   }
 
   .add-label {
-    font-size: 0.55rem;
+    font-size: var(--text-4xs);
     font-weight: 800;
     color: var(--accent-primary);
   }
@@ -680,13 +676,13 @@
   }
 
   .popover-day {
-    font-size: 0.8rem;
+    font-size: var(--text-sm);
     font-weight: 800;
     color: var(--text-primary);
   }
 
   .popover-date {
-    font-size: 0.7rem;
+    font-size: var(--text-2xs);
     color: var(--text-muted);
     font-weight: 600;
   }
@@ -695,7 +691,7 @@
     display: flex;
     flex-direction: column;
     gap: 0.25rem;
-    font-size: 0.72rem;
+    font-size: var(--text-2xs);
   }
 
   .popover-row {
@@ -720,7 +716,7 @@
   }
 
   .intercourse-text {
-    color: #ec4899;
+    color: var(--color-intercourse);
     font-weight: 800;
   }
 
@@ -730,14 +726,14 @@
     border-top: 1px dashed var(--bg-surface-border);
     font-style: italic;
     color: var(--text-secondary);
-    font-size: 0.68rem;
+    font-size: var(--text-2xs);
     word-break: break-word;
   }
 
   .popover-footer {
     margin-top: 0.45rem;
     text-align: center;
-    font-size: 0.65rem;
+    font-size: var(--text-3xs);
     font-weight: 800;
     color: var(--accent-primary);
     text-transform: uppercase;
@@ -747,13 +743,13 @@
   /* Responsive Media Queries */
   @media (max-width: 640px) {
     .strip-subtitle-badge {
-      font-size: 0.68rem;
+      font-size: var(--text-2xs);
     }
 
     .view-mode-toggle .toggle-btn,
     .toolbar-btn {
       padding: 0.35rem 0.55rem;
-      font-size: 0.75rem;
+      font-size: var(--text-xs);
     }
 
     .chart-row-container.paper-theme {
@@ -761,17 +757,17 @@
     }
 
     .cycle-title-badge {
-      font-size: 0.8rem;
+      font-size: var(--text-sm);
       padding: 0.25rem 0.6rem;
     }
 
     .cycle-date-range {
-      font-size: 0.75rem;
+      font-size: var(--text-xs);
     }
 
     .cycle-length-pill,
     .cycle-peak-pill {
-      font-size: 0.7rem;
+      font-size: var(--text-2xs);
       padding: 0.2rem 0.5rem;
     }
 
@@ -794,11 +790,11 @@
     }
 
     .cell-day-num {
-      font-size: 0.7rem;
+      font-size: var(--text-2xs);
     }
 
     .cell-day-name {
-      font-size: 0.52rem;
+      font-size: var(--text-4xs);
     }
 
     .cell-stamp-wrapper {
@@ -812,7 +808,7 @@
 
     .cell-code {
       height: 26px;
-      font-size: 0.58rem;
+      font-size: var(--text-4xs);
       padding: 1px 2px;
     }
 
@@ -827,7 +823,7 @@
       transform: translateX(-50%);
       width: 92vw;
       max-width: 340px;
-      box-shadow: 0 12px 28px -4px rgba(0, 0, 0, 0.3);
+      box-shadow: var(--shadow-xl);
       z-index: 100;
     }
 

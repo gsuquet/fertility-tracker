@@ -15,6 +15,18 @@
     --space-2xl: 48px;
     --space-3xl: 64px;
 
+    /* Type Scale: 9, 10, 11, 12, 13, 14, 16, 18, 22 and 28 pixels */
+    --text-4xs: 0.5625rem;
+    --text-3xs: 0.625rem;
+    --text-2xs: 0.6875rem;
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-md: 0.875rem;
+    --text-base: 1rem;
+    --text-lg: 1.125rem;
+    --text-xl: 1.375rem;
+    --text-2xl: 1.75rem;
+
     /* Semantic Z-Index Scale */
     --z-base: 1;
     --z-raised: 10;
