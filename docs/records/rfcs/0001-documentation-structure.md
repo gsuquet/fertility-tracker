@@ -57,7 +57,7 @@ docs/
     └── adrs/                 # Decisions: 0000-template.md, 0001-..., 0002-...
 ```
 
-The current ADR 0001 and ADR 0002 move to `docs/records/adrs/`. They keep their numbers. Unresolved question 1 asks if their text changes to the MADR template.
+The current ADR 0001 and ADR 0002 move to `docs/records/adrs/`. They keep their numbers and their text, because a record does not change after the merge. Only new ADRs use MADR.
 
 ### RFC and ADR
 
@@ -68,7 +68,9 @@ The current ADR 0001 and ADR 0002 move to `docs/records/adrs/`. They keep their 
 | Page type        | A record. It is not a Diátaxis page.                 | A record. It is not a Diátaxis page.                        |
 | After the merge  | The text does not change. The status can change.     | The text does not change. A new ADR can replace an old ADR. |
 
-An accepted RFC can contain a decision. In that case, the project does not write an ADR for the same decision.
+When the project accepts an RFC, the author writes a short ADR for each decision in the RFC. The ADR links to the RFC in its **More information** section. Thus, a reader finds all the decisions in `records/adrs/`.
+
+The two series have different numbers that both start at 0001. A reference to a record always has its prefix, for example "RFC 0001" or "ADR 0002", never "0001" alone.
 
 The status is only in the header of the record. The index in `docs/README.md` does not show it. These are the status values of an RFC:
 
@@ -76,12 +78,22 @@ The status is only in the header of the record. The index in `docs/README.md` do
 | --------- | ------------------------------------------------------- | ----------------------------------------------- |
 | Draft     | The author writes the RFC. The pull request is a draft. | The author                                      |
 | Proposed  | The RFC is ready for discussion.                        | The author                                      |
-| Accepted  | The project does the work of the RFC.                   | The maintainer, at the merge                    |
-| Rejected  | The project does not do the work.                       | The maintainer, at the merge                    |
+| Accepted  | The project does the work of the RFC.                   | The maintainer                                  |
+| Rejected  | The project does not do the work.                       | The maintainer                                  |
 | Withdrawn | The author stops the RFC before a decision.             | The author                                      |
 | Completed | All the steps of the work are merged.                   | The author of the last pull request of the work |
 
 These are the status values of an ADR: **Proposed**, **Accepted**, **Deprecated** and **Superseded**. They come from MADR.
+
+### Decision on an RFC
+
+1. The maintainer writes the decision, **Accepted** or **Rejected**, in a comment on the pull request of the RFC.
+2. The author pushes a commit that sets this status in the header of the RFC.
+3. The maintainer merges the pull request. Each RFC is merged, also a rejected RFC, so that its reasons stay in the repository.
+
+A coding agent never sets **Accepted** or **Rejected** without a written decision of the maintainer. A coding agent never merges an RFC pull request without this decision. This rule applies also when the review is clean and CI passes.
+
+This pull request adds the `records/` folders, the RFC template and the change to the docs check before the decision. If the maintainer rejects RFC 0001, these parts stay, because they let the project discuss the next RFC.
 
 ### Split of SPEC.md
 
@@ -107,9 +119,20 @@ Each section of `SPEC.md` moves to one or more reference pages. A reason or a ba
 | 9. Deployment and CI                         | `reference/deployment.md`                                                                                                                                             |
 | 10. Privacy, trademarks, medical             | `reference/legal-and-medical-limits.md`. The reasons stay in `explanation/privacy-and-data-storage.md`.                                                               |
 
-The pages in the right column that exist now get the facts of `SPEC.md`. Unresolved question 3 asks what occurs to `reference/user-interface.md`. When the project answers it, each fact is in one place only.
+The pages in the right column that exist now get the facts of `SPEC.md`. Thus, each rule is in one place only.
 
-`SPEC.md` stays as a short index page. It says that the specification is the set of reference pages, and it links to each page. Thus, the current links to `SPEC.md` stay correct.
+`SPEC.md` stays as a short index page. It says that the specification is the set of reference pages, and it links to each page. It also has a table that gives the page of each source folder and of each source file that has no folder page. A contributor or a coding agent uses this table to find the page to change before the code.
+
+A link to the file `SPEC.md` stays correct after the split. A reference to a section number does not stay correct:
+
+- The code comments refer to sections, for example `src/App.tsx` (SPEC 5.15), `src/styles/views/page-transition.css` (SPEC 5.15), `src/components/AppBadgeSetting.tsx` (SPEC 5.16) and `src/domain/keyboardShortcuts.ts` (SPEC 5.14). The docs check does not read code comments.
+- `SPEC.md` has 62 links to its own headings, for example the link of `5.12` to the heading `back-button-and-address`. Each one becomes a link to another page. The docs check finds each broken link.
+
+After the split, a code comment refers to the path of the page, for example `docs/reference/screens/today.md`, not to a section number. The pull request that moves a section changes the comments that refer to it.
+
+### Transition
+
+Step 3 has many pull requests. The pull request that moves a section also replaces that section in `SPEC.md` with a link to the new page. Thus, `SPEC.md` never has a second copy of a rule.
 
 ### Version of the specification
 
@@ -117,30 +140,35 @@ The pages do not have a document version. The version of the application in `pac
 
 ### Screen pages
 
+The screen pages are for contributors. `reference/user-interface.md` stays as the overview for users. It gives the names, the locations and the actions of the buttons, and it links to the screen pages. It does not copy a rule from a screen page.
+
+All the pages in `reference/` are the specification. The pages of the other types are not. Thus, a page does not need a line that marks it as part of the specification.
+
 Each page in `reference/screens/` has the reference template and these sections:
 
 1. **Layout**: one frame for a phone screen and one frame for a wide screen.
 2. **Zones**: a table with one row for each number in the frames.
 3. **Behavior**: the rules of the screen, for example gestures, keys and messages.
-4. **Accessibility**: roles, names and focus rules.
+4. **Accessibility**: roles, names and focus rules. Each screen must meet WCAG 2.2 level AA.
 5. **Implementation**: the source files of the screen.
-6. **Related documents**: links.
-
-A user reads the first three sections of a screen page. A contributor reads all the sections.
+6. **Related documents**: links. Always link to `reference/application-behavior.md`. Link to `reference/dialog-component.md` when the screen opens a dialog.
 
 ### Frame format
 
 A frame is a text drawing in a `text` code block. It shows the position of each zone, not the colors or the exact sizes.
 
-| Rule                 | Value                                                                        |
-| -------------------- | ---------------------------------------------------------------------------- |
-| Characters           | Box-drawing characters: `┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼`                              |
-| Width of a phone     | 40 characters. This is a screen of 640 pixels or less.                       |
-| Width of a wide view | 100 characters                                                               |
-| Zone label           | A number in square brackets, for example `[3]`. The zones table explains it. |
-| Text in the frame    | The English text of the screen, from `src/i18n/locales/en.ts`                |
-| Part with no text    | A name in angle brackets, for example `<logo>` or `<code buttons>`           |
-| Sizes                | In the zones table, in pixels or CSS units. Not in the frame.                |
+| Rule                 | Value                                                                           |
+| -------------------- | ------------------------------------------------------------------------------- |
+| Characters           | Box-drawing characters: `┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼`                                 |
+| Symbols              | `▾ ⋮ ‹ › ·                                                                      | `. A symbol that is not in this list uses a name in angle brackets, for example `<+>`. |
+| Width of a phone     | 40 characters, for a phone screen of 390 pixels. One column is about 10 pixels. |
+| Width of a wide view | 100 characters                                                                  |
+| Zone label           | A number in square brackets, for example `[3]`. The zones table explains it.    |
+| Text in the frame    | The English text of the screen, from `src/i18n/locales/en.ts`                   |
+| Part with no text    | A name in angle brackets, for example `<logo>` or `<code buttons>`              |
+| Sizes                | In the zones table, in pixels or CSS units. Not in the frame.                   |
+
+A frame does not show line wrap. A frame shows the English text only. When a text can wrap or overflow, also in French, the zones table gives the behavior.
 
 This is an example of the phone frame of the **Today** screen. It shows the format only. It does not change the current layout.
 
@@ -163,30 +191,43 @@ This is an example of the phone frame of the **Today** screen. It shows the form
 ├──────────────────────────────────────┤
 │ [6] Recent 5-Day Observation History │
 ├──────────────────────────────────────┤
-│ [7] Today Chart + Calendar Analytics │
+│ [7]                                  │
+│ Today Chart <+> Calendar Analytics   │
 └──────────────────────────────────────┘
 ```
 
-| Zone | Name              | Content                                                                             |
-| ---- | ----------------- | ----------------------------------------------------------------------------------- |
-| 1    | Header            | Logo and menu button (`⋮`). The buttons are 38 pixels high.                         |
-| 2    | Cycle picker      | Opens the cycle menu as a bottom sheet.                                             |
-| 3    | Date bar          | Previous day, date picker, next day, the date, and the status of the date.          |
-| 4    | Guidance          | Stamp preview, code and guidance text, as a banner.                                 |
-| 5    | Form              | The observation form. **Delete Entry** shows only when the date has an observation. |
-| 6    | History           | The selected date and the 4 days before it.                                         |
-| 7    | Bottom navigation | Fixed at the bottom of the screen, with the **+** button.                           |
+| Zone | Name              | Content                                                                                           |
+| ---- | ----------------- | ------------------------------------------------------------------------------------------------- |
+| 1    | Header            | Logo and menu button (`⋮`). The buttons are 38 pixels high.                                       |
+| 2    | Cycle picker      | Opens the cycle menu as a bottom sheet.                                                           |
+| 3    | Date bar          | Previous day, date picker, next day, the date, and the status of the date.                        |
+| 4    | Guidance          | Stamp preview, code and guidance text, as a banner.                                               |
+| 5    | Form              | The observation form. **Delete Entry** shows only when the date has an observation.               |
+| 6    | History           | The selected date and the 4 days before it.                                                       |
+| 7    | Bottom navigation | Fixed at the bottom of the screen. `<+>` is the **+** button, which opens the observation drawer. |
 
 ### Rules for behavior
 
 A rule uses "must" for a requirement and "can" for something that is possible, as the STE rules of the project say. The project does not use the other keywords of RFC 2119, because STE does not approve them.
 
-A rule with a condition uses a table with the columns **Condition** and **Result**. This format is near to the Given, When and Then steps of Gherkin. Each row gives one test.
+A rule with a condition uses a table with the columns **Condition** and **Result**. This format is almost the same as the Given, When and Then steps of Gherkin. These rules apply to each table:
 
-| Condition                                                         | Result                  |
-| ----------------------------------------------------------------- | ----------------------- |
-| The user drags a bottom sheet down by more than 25% of its height | The sheet closes.       |
-| The user drags a bottom sheet down by 10% of its height, slowly   | The sheet goes back up. |
+- The rows apply in sequence. The first row with a true condition gives the result.
+- The rows cover all the conditions. The last row is **Else**.
+- Each value has a number and a unit. Do not use words such as "slowly" or "fast".
+- Each row gives one test.
+
+This example is the rule of `SPEC.md` 5.7 for the release of a bottom sheet:
+
+| Condition                                                                                                   | Result                               |
+| ----------------------------------------------------------------------------------------------------------- | ------------------------------------ |
+| The drag is more than 25% of the sheet height.                                                              | The sheet closes.                    |
+| The speed down is 0.5 pixels per millisecond or more, over 24 pixels or more, in the last 100 milliseconds. | The sheet closes.                    |
+| Else                                                                                                        | The sheet goes back to its position. |
+
+### STE in tables
+
+After the split, most of the rules are in tables. Thus, the docs check also reads the text of each table cell. It applies the 25-word limit and the list of words that are not approved. It does not read a cell in code format or a frame in a `text` code block. These contain code and the real text of the screen.
 
 ### Documentation rules and docs check
 
@@ -201,16 +242,18 @@ These pages change:
 - [Write a test first](../../how-to/write-a-test-first.md), [Commit messages](../../reference/commit-messages.md) and [Project structure](../../reference/project-structure.md): change the links to `SPEC.md` and the tree of `docs/`.
 - Section 8.5 of `SPEC.md`: add the records. This pull request adds this change.
 - `scripts/docs/checkDocs.ts`: accept pages in `records/rfcs/` and `records/adrs/`. This pull request adds this change.
+- `scripts/docs/checkDocs.ts`: read the table cells (step 3), and check the frames (step 4).
+- The code comments that refer to a section of `SPEC.md`: refer to the path of the page (step 3).
 
 ### Steps of the work
 
 Each step is one pull request:
 
 1. This RFC, the RFC template and the change to the docs check.
-2. Move the ADRs to `docs/records/adrs/` and add the MADR template. Change section 8.5 of `SPEC.md` and `reference/project-structure.md`.
-3. Move the sections of `SPEC.md` to the reference pages, one group of sections in each pull request.
-4. Add the frames of the current screens to `reference/screens/`.
-5. Make `SPEC.md` an index page. Change `AGENTS.md`, the two agent rule files, the release procedure and the pages that link to `SPEC.md`.
+2. Move the ADRs to `docs/records/adrs/` and add the MADR template. Change section 8.5 of `SPEC.md` and `reference/project-structure.md`. Remove `adr` from the folders that the docs check accepts, and change its message.
+3. Let the docs check read the table cells, and correct the findings. Then move the sections of `SPEC.md` to the reference pages, one group of sections in each pull request. Each pull request replaces the moved section with a link, and changes the code comments that refer to it.
+4. Let the docs check verify the frames. Each line of a frame has 40 or 100 characters. Each `[n]` in a frame has a row in the zones table, and the reverse. Then add the frames of the current screens to `reference/screens/`.
+5. Make `SPEC.md` an index page with the table of source files. Change `AGENTS.md`, the two agent rule files, the release procedure and the pages that link to `SPEC.md`.
 
 ## Drawbacks
 
@@ -254,15 +297,19 @@ The design work starts without a place for proposals and without frames. The dec
 - [Diátaxis](https://diataxis.fr/): the four page types.
 - [ASD-STE100](https://www.asd-ste100.org/): the controlled language of the docs.
 - [Gherkin](https://cucumber.io/docs/gherkin/reference/): the Given, When and Then form of a behavior rule.
-- [WCAG 2.2](https://www.w3.org/TR/WCAG22/): the accessibility guidelines. Unresolved question 5 asks which level each screen must meet.
+- [WCAG 2.2](https://www.w3.org/TR/WCAG22/): level AA for each screen. The text contrast rule of `SPEC.md` 7.3 is success criterion 1.4.3, and the stamp edge rule is 1.4.11.
 
 ## Unresolved questions
 
-1. Do the ADR 0001 and ADR 0002 change to the MADR template, or do they keep their current form?
-2. Does a screen page need a line that marks it as part of the specification, for example **Normative: Yes**?
-3. Does `reference/user-interface.md` stay as a short overview for users, or do the screen pages replace it?
-4. Does the docs check verify the width of the frames and the zone numbers?
-5. Is WCAG 2.2 level AA the required level for each screen?
+1. What keeps the text in a frame equal to `src/i18n/locales/en.ts`? When a label changes, no check fails. One option is a docs check that finds each text of a frame in `en.ts`. The other option is to accept the difference and correct the frame when the screen changes.
+
+The discussion of this RFC answered these questions:
+
+- ADR 0001 and ADR 0002 keep their text. Read [Folders](#folders).
+- A screen page does not need a line that marks it as the specification. All the pages in `reference/` are the specification. Read [Screen pages](#screen-pages).
+- `reference/user-interface.md` stays as the overview for users, with no copied rules. Read [Screen pages](#screen-pages).
+- The docs check verifies the width of the frames and the zone numbers. Read [Steps of the work](#steps-of-the-work).
+- Each screen must meet WCAG 2.2 level AA. Read [Screen pages](#screen-pages).
 
 ## Future possibilities
 
