@@ -15,6 +15,7 @@ fertility-tracker/
 ├── public/                      # Static files: manifest, icons, headers
 │   └── icons/                   # PWA icons (192, 512 and maskable 512)
 ├── scripts/
+│   ├── commits/                 # Commit message checker and its tests
 │   ├── docs/                    # Docs checker and its tests
 │   └── pwa/                     # Vite plugin that builds sw.js with the precache list
 ├── src/

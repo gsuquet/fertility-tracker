@@ -12,14 +12,15 @@ Use this procedure for each change to the application code. The repository rules
    - Increase the major number for a change that is not compatible with old data.
 4. Run `npm install` to write the new version in `package-lock.json`.
 5. Add a release at the start of `VERSION_HISTORY` in `src/domain/versionTracker.ts`. Give the text in English and in French.
-6. Set **Document Version** and **Last Updated** at the top of `SPEC.md`.
+6. Set **Document version** and **Last updated** at the top of `SPEC.md`.
 7. Run all the quality gates:
 
    ```bash
    mise run validate
    ```
 
-8. Open a pull request.
+8. Commit the change. Write the message in the [Conventional Commits](../reference/commit-messages.md) format, for example `fix(calendar): show long codes`.
+9. Open a pull request. Give it a title in the same format.
 
 ## Result
 

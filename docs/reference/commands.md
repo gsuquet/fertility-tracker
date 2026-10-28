@@ -6,22 +6,23 @@ This page lists the commands of the project. Run the commands in the project fol
 
 The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 
-| Command              | Action                                                            |
-| -------------------- | ----------------------------------------------------------------- |
-| `mise install`       | Installs the pinned tools: Node.js, npm, pre-commit and gitleaks. |
-| `mise run install`   | Installs the dependencies from `package-lock.json` (`npm ci`).    |
-| `mise run hooks`     | Installs the Git pre-commit hooks.                                |
-| `mise run dev`       | Starts the development server on port `5173`.                     |
-| `mise run test`      | Runs the tests one time.                                          |
-| `mise run coverage`  | Runs the tests with coverage. Fails below 100%.                   |
-| `mise run check`     | Runs the Biome linter and the format check.                       |
-| `mise run docs`      | Checks the docs: writing rules, Diátaxis structure and links.     |
-| `mise run e2e`       | Runs the Playwright end-to-end and accessibility tests.           |
-| `mise run build`     | Runs the type check and builds the application in `dist`.         |
-| `mise run preview`   | Serves `dist` on port `4173`.                                     |
-| `mise run pages:dev` | Serves `dist` with Wrangler, as Cloudflare Pages does.            |
-| `mise run deploy`    | Builds the application and deploys it to Cloudflare Pages.        |
-| `mise run validate`  | Runs all the CI quality gates.                                    |
+| Command               | Action                                                               |
+| --------------------- | -------------------------------------------------------------------- |
+| `mise install`        | Installs the pinned tools: Node.js, npm, pre-commit and gitleaks.    |
+| `mise run install`    | Installs the dependencies from `package-lock.json` (`npm ci`).       |
+| `mise run hooks`      | Installs the Git pre-commit and commit-msg hooks.                    |
+| `mise run commit-msg` | Checks a commit message. Read [Commit messages](commit-messages.md). |
+| `mise run dev`        | Starts the development server on port `5173`.                        |
+| `mise run test`       | Runs the tests one time.                                             |
+| `mise run coverage`   | Runs the tests with coverage. Fails below 100%.                      |
+| `mise run check`      | Runs the Biome linter and the format check.                          |
+| `mise run docs`       | Checks the docs: writing rules, Diátaxis structure and links.        |
+| `mise run e2e`        | Runs the Playwright end-to-end and accessibility tests.              |
+| `mise run build`      | Runs the type check and builds the application in `dist`.            |
+| `mise run preview`    | Serves `dist` on port `4173`.                                        |
+| `mise run pages:dev`  | Serves `dist` with Wrangler, as Cloudflare Pages does.               |
+| `mise run deploy`     | Builds the application and deploys it to Cloudflare Pages.           |
+| `mise run validate`   | Runs all the CI quality gates.                                       |
 
 ## npm scripts
 
@@ -48,13 +49,14 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 
 The hooks run on each commit. CI runs them on each pull request with `pre-commit run --all-files`.
 
-| Hook          | Check                                                                                  |
-| ------------- | -------------------------------------------------------------------------------------- |
-| File hygiene  | Large files, case conflicts, merge markers, JSON, TOML, YAML, line endings and spaces. |
-| `gitleaks`    | Secrets in the staged changes. CI scans the pull request commits instead.              |
-| `biome-check` | Lint and format.                                                                       |
-| `typecheck`   | TypeScript types.                                                                      |
-| `docs-check`  | The docs, with `mise run docs`.                                                        |
+| Hook                  | Check                                                                                  |
+| --------------------- | -------------------------------------------------------------------------------------- |
+| File hygiene          | Large files, case conflicts, merge markers, JSON, TOML, YAML, line endings and spaces. |
+| `gitleaks`            | Secrets in the staged changes. CI scans the pull request commits instead.              |
+| `biome-check`         | Lint and format.                                                                       |
+| `typecheck`           | TypeScript types.                                                                      |
+| `docs-check`          | The docs, with `mise run docs`.                                                        |
+| `conventional-commit` | The commit message. It runs at the `commit-msg` stage. CI does not run it.             |
 
 ## CI workflow
 
@@ -75,6 +77,8 @@ The job `e2e` runs at the same time, on pull requests only.
 3. Installs Chromium with `npx playwright install --with-deps chromium`.
 4. Runs `npm run test:e2e`.
 5. Keeps the Playwright report for 7 days if a test fails.
+
+The workflow `.github/workflows/pr-title.yml` checks that the pull request title follows [Conventional Commits](commit-messages.md). It runs when a pull request opens, changes or gets new commits.
 
 ## Related documents
 

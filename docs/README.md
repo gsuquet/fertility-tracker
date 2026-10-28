@@ -55,6 +55,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Commands](reference/commands.md)
 - [Test rules and helpers](reference/test-rules.md)
 - [Documentation rules](reference/documentation-rules.md)
+- [Commit messages](reference/commit-messages.md)
 - [Full specification (SPEC.md)](../SPEC.md)
 
 ## Explanation

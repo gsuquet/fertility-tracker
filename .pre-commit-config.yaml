@@ -1,7 +1,8 @@
 # Hooks run on every commit. Install once with: mise run hooks
 # Remote hook revisions are pinned to commit SHAs; local hooks use the versions pinned by mise
 # (.mise/config.toml) and package-lock.json.
-default_install_hook_types: [pre-commit]
+default_install_hook_types: [pre-commit, commit-msg]
+default_stages: [pre-commit]
 fail_fast: false
 
 repos:
@@ -47,3 +48,9 @@ repos:
         language: system
         files: (\.md$|^scripts/docs/)
         pass_filenames: false
+      # Runs on the commit message. CI checks the pull request title with the same script.
+      - id: conventional-commit
+        name: conventional commit message
+        entry: .mise/tasks/commit-msg
+        language: system
+        stages: [commit-msg]

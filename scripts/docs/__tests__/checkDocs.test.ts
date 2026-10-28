@@ -113,13 +113,19 @@ describe('with a docs folder', () => {
     rmSync(root, { recursive: true, force: true });
   });
 
-  it('lists README, AGENTS and every docs page', () => {
+  it('lists README, AGENTS, SPEC and every docs page', () => {
     write('README.md', '# R');
     write('AGENTS.md', '# A');
+    write('SPEC.md', '# S');
     write('docs/how-to/a.md', '# A');
     write('docs/how-to/image.png', '');
     write('src/notes.md', '# Not docs');
-    expect(listMarkdownFiles(root)).toEqual(['AGENTS.md', 'README.md', 'docs/how-to/a.md']);
+    expect(listMarkdownFiles(root)).toEqual([
+      'AGENTS.md',
+      'README.md',
+      'SPEC.md',
+      'docs/how-to/a.md',
+    ]);
   });
 
   it('lists only the top-level files when there is no docs folder', () => {

@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+#MISE description="Check that a commit message follows Conventional Commits"
+set -euo pipefail
+node --input-type=module -e "
+import { readFileSync } from 'node:fs';
+import { main } from './scripts/commits/checkCommitMessage.ts';
+const args = process.argv.slice(1);
+const hasFile = args.some(arg => arg !== '--strict');
+process.exit(main(args, hasFile ? '' : readFileSync(0, 'utf8')));
+" -- "$@"
