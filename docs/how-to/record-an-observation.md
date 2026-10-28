@@ -25,7 +25,7 @@ Use this procedure to record the observation of one day. You can use the **Today
 1. Open the drawer:
    - Click **Log Observation**. On a phone, click **+**.
    - Or click a day in **Paper Chart Strip** or **Monthly Calendar**.
-2. In **Date**, make sure that the date is correct.
+2. In **Date**, make sure that the date is correct. When the date has an observation, the drawer shows it. Change it or delete it.
 3. Enter the observation in **Direct Code Entry** or with the buttons.
 4. Click **Save Observation**.
 

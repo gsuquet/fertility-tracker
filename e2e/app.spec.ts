@@ -215,8 +215,11 @@ test.describe('Fertility Tracker in a browser', () => {
         name: labelPattern(en.chartStrip.filledCellLabel, { date: '2026-10-12' }),
       })
       .click();
-    const drawer = page.getByRole('dialog', { name: en.drawer.editTitle });
-    await expect(drawer).toBeVisible();
+    // The title follows the saved data of the date, so it changes after Undo
+    const drawer = page.getByRole('dialog', {
+      name: new RegExp(`${en.drawer.editTitle}|${en.actions.newEntry}`),
+    });
+    await expect(drawer).toHaveAccessibleName(en.drawer.editTitle);
 
     // The toast is in the top dialog, so the focus trap of the dialog reaches Undo.
     const undo = drawer.getByRole('button', { name: en.undoToast.undo });
@@ -240,6 +243,7 @@ test.describe('Fertility Tracker in a browser', () => {
     await undo.click();
     await expect(toast).toBeHidden();
     await expect(drawer).toBeFocused();
+    await expect(drawer).toHaveAccessibleName(en.actions.newEntry);
     await expect(filledCells).toHaveCount(0);
 
     await page.keyboard.press('Escape');

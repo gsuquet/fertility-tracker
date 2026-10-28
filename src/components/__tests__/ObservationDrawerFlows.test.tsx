@@ -8,7 +8,7 @@ import { en } from '../../i18n';
 import type { Observation } from '../../types/crms';
 
 const Controls = ({ toOpen }: { toOpen: Observation | null }) => {
-  const { observations } = useCycleData();
+  const { observations, clearAllData, undoLastChange } = useCycleData();
   const { setIsDrawerOpen, setSelectedObservation, selectedObservation } = useCycleUi();
   return (
     <>
@@ -20,6 +20,12 @@ const Controls = ({ toOpen }: { toOpen: Observation | null }) => {
         }}
       >
         open
+      </button>
+      <button type="button" onClick={clearAllData}>
+        clear
+      </button>
+      <button type="button" onClick={undoLastChange}>
+        undo
       </button>
       <span data-testid="saved">
         {observations.map(o => `${o.date}:${o.codeString}:${String(o.isCycleStart)}`).join('|')}
@@ -116,6 +122,84 @@ describe('ObservationDrawer flows', () => {
     press(en.actions.delete);
     expect(saved()).toBe('');
     expect(screen.getByTestId('selection')).toHaveTextContent('none');
+  });
+
+  it('opens the saved observation of today when nothing is selected', () => {
+    const today = makeObservation({
+      id: 'today',
+      date: '2026-09-15',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      codeString: '10KL',
+      notes: 'today note',
+    });
+    renderDrawer(null, [today]);
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
+    expect(within(drawer()).getByLabelText(en.labels.notes)).toHaveValue('today note');
+    expect(within(drawer()).getByRole('button', { name: en.actions.delete })).toBeInTheDocument();
+    // A save with no change keeps the saved values
+    press(en.actions.save);
+    expect(saved()).toBe('2026-09-15:10KL:undefined');
+  });
+
+  it('loads the saved observation of a date that the user picks', () => {
+    const saved10 = makeObservation({ date: '2026-09-10', stretch: '0', codeString: '0' });
+    renderDrawer(null, [saved10]);
+    const dateInput = within(drawer()).getByLabelText(en.labels.date);
+    fireEvent.change(dateInput, { target: { value: '2026-09-10' } });
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('0');
+
+    // A date with no observation does not copy the values of the saved day
+    fireEvent.change(dateInput, { target: { value: '2026-09-11' } });
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('');
+    expect(within(drawer()).queryByRole('button', { name: en.actions.delete })).toBeNull();
+  });
+
+  it('keeps a changed draft when the date moves from a saved day to an empty day', () => {
+    const saved10 = makeObservation({ date: '2026-09-10', stretch: '0', codeString: '0' });
+    renderDrawer(saved10, [saved10]);
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '10KL' },
+    });
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.date), {
+      target: { value: '2026-09-11' },
+    });
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
+  });
+
+  it('shows the saved values that Undo brings back while the form is not changed', () => {
+    const today = makeObservation({
+      date: '2026-09-15',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      codeString: '10KL',
+    });
+    renderDrawer(null, [today]);
+    press(en.actions.cancel);
+    fireEvent.click(screen.getByRole('button', { name: 'clear' }));
+    fireEvent.click(screen.getByRole('button', { name: 'open' }));
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
+
+    fireEvent.click(screen.getByRole('button', { name: 'undo' }));
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
+    press(en.actions.save);
+    expect(saved()).toBe('2026-09-15:10KL:undefined');
+  });
+
+  it('keeps a changed draft when the saved data changes', () => {
+    const today = makeObservation({ date: '2026-09-15', stretch: '0', codeString: '0' });
+    renderDrawer(null, [today]);
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '10KL' },
+    });
+    fireEvent.click(screen.getByRole('button', { name: 'clear' }));
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
   });
 
   it('treats a blank calendar day as a new entry on its date', () => {

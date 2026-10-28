@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.22.1',
+    date: '2026-10-28',
+    title: 'Your Day Stays Safe',
+    titleFr: 'Votre journée reste protégée',
+    tagline: 'The + button opens the observation that you saved today',
+    taglineFr: 'Le bouton + ouvre l’observation que vous avez enregistrée aujourd’hui',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The + button and the Log today shortcut open the saved observation of today',
+      'A save with no change in the drawer never erases a saved day',
+      'A date that you pick in the drawer shows its saved observation',
+    ],
+    highlightsFr: [
+      'Le bouton + et le raccourci Log today ouvrent l’observation enregistrée du jour',
+      'Un enregistrement sans changement dans le panneau n’efface jamais un jour enregistré',
+      'Une date choisie dans le panneau montre son observation enregistrée',
+    ],
+  },
+  {
     version: '1.22.0',
     date: '2026-10-28',
     title: 'Install and Update',
