@@ -1,5 +1,5 @@
 import { expect, test } from '@playwright/test';
-import type { CDPSession, Page } from '@playwright/test';
+import type { CDPSession, Locator, Page } from '@playwright/test';
 import { buildDemoObservations } from '../src/domain/demoData';
 import { en } from '../src/i18n/locales/en';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
@@ -35,6 +35,14 @@ const finger =
 
 const scrollY = (page: Page) => page.evaluate(() => window.scrollY);
 
+/** The box of a sheet at the end of its slide up, so that a swipe lands on it. */
+const settledBox = async (sheet: Locator) => {
+  await sheet.evaluate(element => Promise.all(element.getAnimations().map(a => a.finished)));
+  const box = await sheet.boundingBox();
+  if (!box) throw new Error('The sheet has no box');
+  return box;
+};
+
 test.describe('Bottom sheets with touch', () => {
   test('closes the phone menu with a swipe down, and a swipe up does not scroll the page', async ({
     page,
@@ -49,8 +57,7 @@ test.describe('Bottom sheets with touch', () => {
     };
 
     const menu = await open();
-    const box = await menu.locator('.mobile-action-sheet').boundingBox();
-    if (!box) throw new Error('The menu has no box');
+    const box = await settledBox(menu.locator('.mobile-action-sheet'));
     // A swipe up on the list and on the backdrop keeps the page in place
     await swipe(195, box.y + 150, 0, -300);
     await swipe(195, box.y - 100, 0, -200);
@@ -65,6 +72,7 @@ test.describe('Bottom sheets with touch', () => {
 
     // A swipe down on the header closes it too
     const again = await open();
+    await settledBox(again.locator('.mobile-action-sheet'));
     const header = await again.locator('.mobile-action-sheet-header').boundingBox();
     if (!header) throw new Error('The header has no box');
     await swipe(120, header.y + header.height / 2, 0, 400);
@@ -106,8 +114,7 @@ test.describe('Bottom sheets with touch', () => {
     await page.getByRole('button', { name: en.cyclePicker.buttonLabel }).click();
     const menu = page.getByRole('dialog', { name: en.cyclePicker.menuTitle });
     await expect(menu).toBeVisible();
-    const box = await menu.locator('.cycle-dropdown-menu').boundingBox();
-    if (!box) throw new Error('The cycle menu has no box');
+    const box = await settledBox(menu.locator('.cycle-dropdown-menu'));
 
     await swipe(195, box.y + 100, 0, -300);
     await page.waitForTimeout(300);
