@@ -108,7 +108,7 @@ Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinne
 | Lint and format    | Biome                                      | `@biomejs/biome 2.6.3` for TS, TSX, CSS, JSON, YAML and Markdown. A warning is a failure.           |
 | Git hooks          | pre-commit                                 | `pre-commit 4.7.0`, `pre-commit-hooks 6.0.0`, `gitleaks 8.30.1`, local hooks                        |
 | Icons              | Lucide React                               | `1.61.0`                                                                                            |
-| Font               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans 5.3.0`, self-hosted variable woff2                          |
+| Font               | Font of the operating system               | `system-ui` stack, no font file                                                                     |
 | Styles             | CSS                                        | Custom properties, cascade layers, grid and flexbox                                                 |
 | Unit tests         | Vitest, React Testing Library, V8 coverage | `vitest 5.0.5`, `@vitest/coverage-v8 5.0.5`, `@testing-library/react 16.3.3`, `jsdom 30.1.3`        |
 | End-to-end tests   | Playwright and axe                         | `@playwright/test` and `@axe-core/playwright`, pinned in `package.json`                             |
@@ -586,16 +586,16 @@ The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dia
 
 The installed application must behave like the other applications of the device. The installed application has the display mode `standalone`, `fullscreen`, `minimal-ui` or `window-controls-overlay`.
 
-| Behavior          | Rule                                                                                                                                                                                                                 |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Pull to refresh   | `html` has `overscroll-behavior: none`. A pull at the top of a page does not reload the application, and the page does not bounce.                                                                                   |
-| Scroll chaining   | Each element that scrolls (dialog body, drawer body, cycle menu) has `overscroll-behavior: contain`. At its end, the page under it does not scroll.                                                                  |
-| Tap highlight     | `html` has `-webkit-tap-highlight-color: transparent`. The `:focus-visible` outlines do not change.                                                                                                                  |
-| Double tap        | Buttons, links, form fields and labels have `touch-action: manipulation`. A double tap does not zoom. Pinch zoom stays available (`maximum-scale=5.0`).                                                              |
-| Long press        | Buttons, tabs, the header and the page buttons have `user-select: none` and `-webkit-touch-callout: none`. The text of fields, notes, dialogs and release notes stays selectable.                                    |
-| Safe areas        | The header adds `env(safe-area-inset-top)` above its height (68 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. |
-| Space for buttons | `--mobile-nav-height` (62 pixels) and `--mobile-nav-space` (that height and `env(safe-area-inset-bottom)`) are the only values for the page buttons. The body, the toasts and the chart popover use them.            |
-| Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([5.9](#59-version-dialog)).                                                                                  |
+| Behavior          | Rule                                                                                                                                                                                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Pull to refresh   | In an installed display mode, `html` has `overscroll-behavior: none`. A pull at the top of a page does not reload the application, and the page does not bounce. A browser tab keeps the pull to refresh of the browser.                                      |
+| Scroll chaining   | Each element that scrolls has `overscroll-behavior: contain`. At its end, the page under it does not scroll.                                                                                                                                                  |
+| Tap highlight     | `html` has `-webkit-tap-highlight-color: transparent`. The `:focus-visible` outlines do not change.                                                                                                                                                           |
+| Double tap        | Buttons, links, form fields and labels have `touch-action: manipulation`. A double tap does not zoom. Pinch zoom stays available (`maximum-scale=5.0`).                                                                                                       |
+| Long press        | Buttons, tabs, the header and the page buttons have `user-select: none` and `-webkit-touch-callout: none`. The text of fields, notes, dialogs and release notes stays selectable.                                                                             |
+| Safe areas        | The header adds `env(safe-area-inset-top)` above its height (68 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. The toasts at the top add the top inset. |
+| Space for buttons | `--mobile-nav-height` (62 pixels) and `--mobile-nav-space` (that height and `env(safe-area-inset-bottom)`) are the only values for the page buttons. The body, the toasts and the chart popover use them.                                                     |
+| Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([5.9](#59-version-dialog)).                                                                                                                           |
 
 #### Launch shortcuts
 
@@ -607,6 +607,8 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 | Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                             |
 - `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
+- At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
+- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload.
 - The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
 
 ## 6. State and data storage
@@ -1020,7 +1022,7 @@ Other rules:
 - [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
 - The manifest `id` and `scope` are `./`. Thus, the installed application keeps its identity if `start_url` changes.
 - The manifest has `lang` (`en`), `dir` (`ltr`) and `categories` (`health`, `medical`, `lifestyle`).
-- `launch_handler` has `client_mode: ["navigate-existing", "auto"]`. A second launch uses the open window in Chromium.
+- `launch_handler` has `client_mode: ["focus-existing", "auto"]`. In Chromium, a second launch shows the open window and does not reload it. Thus, a draft in the drawer stays.
 - `shortcuts` has **Log today** and **Chart**, each with `icons/icon-96.png` ([5.12](#launch-shortcuts)).
 - `screenshots` has `screenshots/phone.png` (`narrow`, 780 × 1688) and `screenshots/desktop.png` (`wide`, 1440 × 900). Android shows them in the install dialog. They show only demo data. The task `mise run screenshots` makes them again.
 - A test reads the manifest and checks that each icon and screenshot file exists.

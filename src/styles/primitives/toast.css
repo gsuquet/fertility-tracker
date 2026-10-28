@@ -41,7 +41,7 @@
 
     /* In the mobile menu, the toast goes to the top, so it does not cover the menu actions */
     .mobile-menu-overlay .undo-toast {
-      top: var(--space-md);
+      top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
       bottom: auto;
     }
   }

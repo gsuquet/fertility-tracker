@@ -17,8 +17,8 @@
 
   .today-toast {
     position: fixed;
-    top: 80px;
-    right: 24px;
+    top: calc(80px + env(safe-area-inset-top, 0px));
+    right: max(24px, env(safe-area-inset-right, 0px));
     z-index: var(--z-toast);
     background-color: var(--color-success-solid);
     color: var(--color-white);

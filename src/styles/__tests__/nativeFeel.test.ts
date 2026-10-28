@@ -21,10 +21,15 @@ const ruleBody = (css: string, selector: RegExp) =>
 describe('touch behavior of an installed application', () => {
   const reset = readCss('base/reset.css');
 
-  it('stops pull to refresh and the tap highlight on the whole page', () => {
-    const html = ruleBody(reset, /html/);
-    expect(html).toMatch(/overscroll-behavior:\s*none;/);
-    expect(html).toMatch(/-webkit-tap-highlight-color:\s*transparent;/);
+  it('stops the tap highlight on the whole page', () => {
+    expect(ruleBody(reset, /html/)).toMatch(/-webkit-tap-highlight-color:\s*transparent;/);
+  });
+
+  it('stops pull to refresh only in the installed application, so a browser tab keeps it', () => {
+    const installed =
+      /@media \(display-mode: standalone\),\s*\(display-mode: fullscreen\),\s*\(display-mode: minimal-ui\),\s*\(display-mode: window-controls-overlay\)\s*\{\s*html\s*\{\s*overscroll-behavior:\s*none;\s*\}\s*\}/;
+    expect(reset).toMatch(installed);
+    expect(reset.replace(installed, '')).not.toMatch(/overscroll-behavior/);
   });
 
   it('stops the double-tap zoom on controls, but keeps pinch zoom', () => {
@@ -48,16 +53,16 @@ describe('touch behavior of an installed application', () => {
     }
   });
 
-  it.each([
-    ['primitives/dialogs.css'],
-    ['views/drawer.css'],
-    ['views/cycle-picker.css'],
-    ['views/modals.css'],
-  ])('keeps each scroll area of %s from scrolling the page under it', file => {
-    const css = readCss(file).replace(/\/\*[\s\S]*?\*\//g, '');
-    const scrollRules = [...css.matchAll(/\{([^{}]*overflow-y:\s*auto;[^{}]*)\}/g)];
-    expect(scrollRules.length).toBeGreaterThan(0);
-    for (const [, body] of scrollRules) {
+  it('keeps each scroll area from scrolling the page under it', () => {
+    const scrollRules = cssFiles(stylesDir).flatMap(file =>
+      [
+        ...readFileSync(file, 'utf8')
+          .replace(/\/\*[\s\S]*?\*\//g, '')
+          .matchAll(/\{([^{}]*overflow(?:-y)?:\s*(?:auto|scroll);[^{}]*)\}/g),
+      ].map(([, body]) => body ?? '')
+    );
+    expect(scrollRules.length).toBeGreaterThan(5);
+    for (const body of scrollRules) {
       expect(body).toMatch(/overscroll-behavior:\s*contain;/);
     }
   });
@@ -102,6 +107,25 @@ describe('safe areas and the space of the page buttons', () => {
     expect(header).toMatch(/padding-top:\s*env\(safe-area-inset-top, 0px\);/);
     expect(header).toMatch(/padding-left:\s*max\(0\.5rem, env\(safe-area-inset-left, 0px\)\);/);
     expect(header).toMatch(/padding-right:\s*max\(0\.5rem, env\(safe-area-inset-right, 0px\)\);/);
+  });
+
+  it('never resets a safe-area padding with a later padding shorthand in the same rule', () => {
+    for (const file of cssFiles(stylesDir)) {
+      for (const [, body] of readFileSync(file, 'utf8').matchAll(/\{([^{}]*)\}/g)) {
+        const longhand = body?.search(/padding-(?:top|left|right|bottom):[^;]*safe-area/) ?? -1;
+        if (longhand < 0) continue;
+        expect(body?.slice(longhand)).not.toMatch(/(^|[\s;])padding:/);
+      }
+    }
+  });
+
+  it('keeps the toasts at the top clear of the status bar and the notch', () => {
+    const today = ruleBody(readCss('views/today.css'), /\.today-toast/);
+    expect(today).toMatch(/top:\s*calc\(80px \+ env\(safe-area-inset-top, 0px\)\);/);
+    expect(today).toMatch(/right:\s*max\(24px, env\(safe-area-inset-right, 0px\)\);/);
+    expect(ruleBody(readCss('primitives/toast.css'), /\.mobile-menu-overlay \.undo-toast/)).toMatch(
+      /top:\s*calc\(var\(--space-md\) \+ env\(safe-area-inset-top, 0px\)\);/
+    );
   });
 
   it('keeps the page content and the page buttons away from the notch in landscape', () => {

@@ -87,7 +87,8 @@ describe('web app manifest', () => {
     expect(manifest.lang).toBe('en');
     expect(manifest.dir).toBe('ltr');
     expect(manifest.categories).toEqual(['health', 'medical', 'lifestyle']);
-    expect(manifest.launch_handler).toEqual({ client_mode: ['navigate-existing', 'auto'] });
+    // focus-existing does not reload the window, so a draft in the drawer stays
+    expect(manifest.launch_handler).toEqual({ client_mode: ['focus-existing', 'auto'] });
   });
 
   it('has the Log today and Chart shortcuts, each with a 96-pixel PNG icon', () => {

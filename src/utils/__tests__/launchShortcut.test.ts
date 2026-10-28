@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { clearLaunchShortcut, readLaunchShortcut } from '../launchShortcut';
+import {
+  clearLaunchShortcut,
+  listenForLaunchShortcuts,
+  readLaunchShortcut,
+} from '../launchShortcut';
 
 const visit = (path: string) => window.history.replaceState(null, '', path);
 
@@ -40,6 +44,28 @@ describe('launch shortcuts of the manifest', () => {
     visit('/?shortcut=log');
     clearLaunchShortcut();
     expect(window.location.href).toBe(`${window.location.origin}/`);
+  });
+
+  it('gives each later launch of the open window to the callback', () => {
+    let consumer: ((params: { targetURL?: string }) => void) | undefined;
+    Object.defineProperty(window, 'launchQueue', {
+      configurable: true,
+      value: { setConsumer: (fn: typeof consumer) => (consumer = fn) },
+    });
+    const onShortcut = vi.fn();
+    listenForLaunchShortcuts(onShortcut);
+    consumer?.({ targetURL: 'https://example.com/?shortcut=chart' });
+    consumer?.({ targetURL: 'https://example.com/?shortcut=other' });
+    consumer?.({ targetURL: 'https://example.com/' });
+    consumer?.({});
+    expect(onShortcut.mock.calls).toEqual([['chart']]);
+    Reflect.deleteProperty(window, 'launchQueue');
+  });
+
+  it('does nothing in a browser without a launch queue', () => {
+    const onShortcut = vi.fn();
+    expect(() => listenForLaunchShortcuts(onShortcut)).not.toThrow();
+    expect(onShortcut).not.toHaveBeenCalled();
   });
 
   it('does not touch the history when the address has no shortcut', () => {

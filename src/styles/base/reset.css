@@ -15,9 +15,16 @@
   html {
     -webkit-text-size-adjust: 100%;
     tab-size: 4;
-    /* An installed application does not reload on a pull at the top, and the page does not bounce */
-    overscroll-behavior: none;
     -webkit-tap-highlight-color: transparent;
+  }
+
+  /* An installed application does not reload on a pull at the top, and the page does not bounce.
+     A browser tab keeps the pull to refresh of the browser. */
+  @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui),
+    (display-mode: window-controls-overlay) {
+    html {
+      overscroll-behavior: none;
+    }
   }
 
   body {

@@ -60,7 +60,12 @@ const ChunkReady: React.FC<{ onReady: (state: 'ready') => void }> = ({ onReady }
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
-import { clearLaunchShortcut, readLaunchShortcut } from './utils/launchShortcut';
+import type { LaunchShortcut } from './utils/launchShortcut';
+import {
+  clearLaunchShortcut,
+  listenForLaunchShortcuts,
+  readLaunchShortcut,
+} from './utils/launchShortcut';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
@@ -92,12 +97,18 @@ const MainApp: React.FC = () => {
     []
   );
 
-  // The Log today shortcut opens the drawer for a new observation, as the + button does
+  // Log today opens the drawer for a new observation, as the + button does. At the first visit,
+  // the welcome guide comes first, so the drawer does not open under it.
   useEffect(() => {
+    const openShortcut = (shortcut: LaunchShortcut) => {
+      setActiveTab(shortcut === 'chart' ? 'chart' : 'today');
+      if (shortcut !== 'log' || !readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) return;
+      setSelectedObservation(null);
+      setIsDrawerOpen(true);
+    };
     clearLaunchShortcut();
-    if (launchShortcut !== 'log') return;
-    setSelectedObservation(null);
-    setIsDrawerOpen(true);
+    if (launchShortcut) openShortcut(launchShortcut);
+    listenForLaunchShortcuts(openShortcut);
   }, [launchShortcut, setSelectedObservation, setIsDrawerOpen]);
 
   useEffect(() => {
