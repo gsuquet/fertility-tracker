@@ -27,6 +27,10 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 | Language button (**EN** or **FR**) | Menu                | Changes the language.                               |
 | Theme button                       | Menu                | Changes between the light theme and the dark theme. |
 
+## Change the day
+
+On the **Today** page, the arrow buttons open the previous day and the next day. On a touch screen, you can also swipe. Swipe to the left to open the next day. Swipe to the right to open the previous day. A swipe that starts in a field does not change the day.
+
 ## Observation form
 
 The **Today** page and the observation drawer have the same fields.

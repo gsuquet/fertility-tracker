@@ -79,6 +79,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/history.spec.ts`       | **Back** on the drawer and on two stacked dialogs, **Back** after a page change and on the first page, a reload on the chart page, and an unknown hash.                                                                             |
 | `e2e/install.spec.ts`       | No install offer before the browser can install, the header button and the banner after 3 observations, **Install**, and the close button.                                                                                          |
 | `e2e/drawer.spec.ts`        | **+** opens the saved observation of today, and a save with no change keeps it. A long drag on the handle closes the drawer, and a short drag puts it back.                                                                         |
+| `e2e/swipe.spec.ts`         | With touch on a phone, a swipe to the left opens the next day, and a swipe to the right opens the previous day. A vertical drag keeps the day.                                                                                      |
 
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |

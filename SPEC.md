@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.23.0
+- **Document version:** 1.24.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -419,6 +419,22 @@ On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics**
 - The entry mode selector is a `role="radiogroup"` with two native radio inputs (`name="entry-mode"`). Each input is in a `<label>`, and the arrow keys move between them.
 - The application saves the last entry mode in `fertility_care_entry_mode`.
 - A save or a delete shows a message (`role="status"`). The message closes 3 seconds after the last save or delete. The page stops the timer when it unmounts.
+
+#### Swipe between days
+
+On a touch screen, a swipe on the **Today** page changes the day. The hook [useDaySwipe.ts](src/hooks/useDaySwipe.ts) uses Pointer Events of `touch` and `pen` type only. Thus, a mouse does not swipe, and the arrow buttons stay for the keyboard and the desktop.
+
+- A swipe to the left opens the next day. A swipe to the right opens the previous day. The swipe calls the same functions as the arrow buttons, with the same rules.
+- [swipe.ts](src/domain/swipe.ts) decides at the release:
+  - The angle of the swipe must be less than 30 degrees from horizontal.
+  - The swipe must be longer than 60 pixels, or a fast flick: at least 0.5 pixels per millisecond over at least 24 pixels.
+- The page has `touch-action: pan-y pinch-zoom`. Thus, a vertical drag scrolls the page and the browser cancels the swipe. A vertical drag never changes the day.
+- These swipes do nothing:
+  - A swipe that starts in an input, a text area, a select or an element that scrolls horizontally.
+  - A swipe that starts less than 20 pixels from the left or right edge of the screen. The back and forward gestures of iOS use these edges.
+  - A swipe that starts its move with an angle of 30 degrees or more from horizontal.
+- During the swipe, the main grid follows the finger by 40% of the move. After a swipe, the grid slides out in the swipe direction in 150 milliseconds. Then the day changes, and the grid slides in from the other side. Else the grid goes back.
+- With `prefers-reduced-motion: reduce`, the grid does not move. The day changes at the release.
 
 ### 5.4 Paper Chart Strip page
 
@@ -973,18 +989,18 @@ The project uses test-driven development (TDD). Write a test that fails before e
 
 ### 8.2 Test layers
 
-| Layer       | Location                                  | Content                                                                                                   |
-| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score, sheet drag rules. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                                    |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, `useToast`, `useHistoryLayer` and `useSheetDrag`.                                   |
-| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
-| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.                                 |
-| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.                            |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                                              |
-| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.                              |
-| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.                          |
-| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                                     |
+| Layer       | Location                                  | Content                                                                                                             |
+| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score, sheet drag and swipe rules. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                                              |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, `useToast`, `useHistoryLayer`, `useSheetDrag` and `useDaySwipe`.                              |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                                    |
+| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.                                           |
+| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.                                      |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                                                        |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.                                        |
+| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.                                    |
+| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                                               |
 
 The helpers are in `src/test/`:
 
@@ -1013,6 +1029,7 @@ The helpers are in `src/test/`:
 | 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, the title becomes **Log Observation**, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
 | 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
 | 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
+| 13   | On a phone with touch, a swipe to the left on **Today** opens the next day, and a swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                   |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 
