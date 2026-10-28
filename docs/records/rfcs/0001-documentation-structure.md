@@ -3,7 +3,7 @@
 - **Start date:** 2026-10-28
 - **Status:** Proposed
 - **Author:** Gabriel
-- **Pull request:** to be added
+- **Pull request:** [#100](https://github.com/gsuquet/fertility-tracker/pull/100)
 
 ## Summary
 
