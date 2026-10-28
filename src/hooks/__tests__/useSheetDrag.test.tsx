@@ -56,6 +56,8 @@ const touch = (type: 'start' | 'move' | 'end' | 'cancel', y: number, x = 0, coun
   if (type === 'cancel') fireEvent.touchCancel(body(), init);
 };
 
+const nativeCapture = Element.prototype.setPointerCapture;
+
 beforeEach(() => {
   vi.useFakeTimers();
   setMedia();
@@ -68,6 +70,7 @@ beforeEach(() => {
 afterEach(() => {
   vi.useRealTimers();
   vi.restoreAllMocks();
+  Element.prototype.setPointerCapture = nativeCapture;
 });
 
 describe('useSheetDrag with the handle and the header', () => {
@@ -85,6 +88,7 @@ describe('useSheetDrag with the handle and the header', () => {
     render(<Sheet onClose={onClose} />);
     dragHandle(300);
     expect(sheet().style.transform).toBe('translateY(100%)');
+    expect(sheet().style.pointerEvents).toBe('none');
     expect(backdrop().style.getPropertyValue('--sheet-drag')).toBe('1');
     expect(onClose).not.toHaveBeenCalled();
     await wait(200);
@@ -160,6 +164,16 @@ describe('useSheetDrag with the handle and the header', () => {
     expect(onClose).not.toHaveBeenCalled();
   });
 
+  it('does not close a drawer that closed in another way and opened again during the slide', async () => {
+    const onClose = vi.fn();
+    const { rerender } = render(<Sheet onClose={onClose} />);
+    dragHandle(300);
+    rerender(<Sheet onClose={onClose} open={false} />);
+    rerender(<Sheet onClose={onClose} />);
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('does not close after it unmounts during the slide', async () => {
     const onClose = vi.fn();
     const { unmount } = render(<Sheet onClose={onClose} />);
@@ -188,6 +202,11 @@ describe('useSheetDrag in the body', () => {
   it('stops the scroll of the browser while the finger moves the sheet', () => {
     render(<Sheet onClose={vi.fn()} />);
     touch('start', 100);
+    // A first move with no direction does not stop the scroll
+    const still = new TouchEvent('touchmove', { cancelable: true });
+    Object.defineProperty(still, 'touches', { value: [{ clientX: 0, clientY: 100 }] });
+    body().dispatchEvent(still);
+    expect(still.defaultPrevented).toBe(false);
     const pull = new TouchEvent('touchmove', { cancelable: true });
     Object.defineProperty(pull, 'touches', { value: [{ clientX: 0, clientY: 200 }] });
     body().dispatchEvent(pull);
@@ -214,6 +233,30 @@ describe('useSheetDrag in the body', () => {
     touch('move', 300);
     touch('end', 300);
     expect(sheet().style.transform).toBe('');
+  });
+
+  it('keeps the handle drag and a touch of the body apart', async () => {
+    const onClose = vi.fn();
+    render(<Sheet onClose={onClose} />);
+    const handle = screen.getByTestId('handle');
+    fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 100 });
+    fireEvent.pointerMove(handle, { pointerId: 1, clientY: 150 });
+    // A second finger on the form does not move or end the drag of the handle
+    touch('start', 300);
+    touch('move', 600);
+    touch('end', 600);
+    expect(sheet().style.transform).toBe('translateY(50px)');
+    fireEvent.pointerUp(handle, { pointerId: 1 });
+
+    // A pointer on the handle does not take a drag of the body
+    touch('start', 100);
+    touch('move', 150);
+    fireEvent.pointerDown(handle, { pointerId: 2, button: 0, clientY: 100 });
+    fireEvent.pointerMove(handle, { pointerId: 2, clientY: 600 });
+    expect(sheet().style.transform).toBe('translateY(50px)');
+    touch('end', 150);
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
   });
 
   it('ignores two fingers, a larger screen, a closed sheet and a cancelled touch', async () => {

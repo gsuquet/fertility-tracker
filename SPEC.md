@@ -489,10 +489,12 @@ On a phone, the drawer is a bottom sheet. The hook [useSheetDrag.ts](src/hooks/u
 - A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
 - A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
 - A drag in the form body scrolls the form. It moves the sheet only when the form is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll.
+- One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
+- A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
 - The backdrop becomes lighter in proportion to the drag.
 - At the release, [sheetDrag.ts](src/domain/sheetDrag.ts) decides:
   - The sheet closes when the drag is more than 25% of the sheet height.
-  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels.
+  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
   - Else the sheet goes back to its position.
 - A close by drag does the same as the close button. The draft is not kept, and the history entry of the drawer goes (section 5.12).
 - The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.

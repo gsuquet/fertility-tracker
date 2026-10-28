@@ -1,8 +1,11 @@
 import type React from 'react';
 import { useEffect, useRef } from 'react';
+import type { DragSample } from '../domain/sheetDrag';
 import {
   SHEET_CLOSE_DURATION,
   SHEET_DRAG_SLOP,
+  SHEET_FLICK_WINDOW,
+  flickVelocity,
   sheetDragProgress,
   shouldCloseSheet,
 } from '../domain/sheetDrag';
@@ -10,8 +13,6 @@ import {
 /** The width where the drawer is a bottom sheet. It is the phone width of drawer.css. */
 const PHONE_QUERY = '(max-width: 640px)';
 const REDUCED_MOTION_QUERY = '(prefers-reduced-motion: reduce)';
-/** A pause longer than this before the release is not a flick. */
-const FLICK_MAX_PAUSE = 100;
 
 const matches = (query: string) => window.matchMedia(query).matches;
 
@@ -22,9 +23,8 @@ interface Drag {
   backdrop: HTMLElement;
   height: number;
   startY: number;
-  lastY: number;
-  lastTime: number;
-  velocity: number;
+  /** The moves of the last part of the drag, for the speed of a flick. */
+  samples: DragSample[];
 }
 
 /** The state of the gesture. It lives in a ref, so the functions below never go stale. */
@@ -45,18 +45,14 @@ const beginDrag = (state: GestureState, from: Element, startY: number): Drag => 
     backdrop,
     height: sheet.getBoundingClientRect().height,
     startY,
-    lastY: startY,
-    lastTime: performance.now(),
-    velocity: 0,
+    samples: [{ y: startY, time: performance.now() }],
   };
   return state.drag;
 };
 
 const moveDrag = (d: Drag, y: number) => {
-  const now = performance.now();
-  d.velocity = (y - d.lastY) / Math.max(1, now - d.lastTime);
-  d.lastY = y;
-  d.lastTime = now;
+  const time = performance.now();
+  d.samples = [...d.samples.filter(s => time - s.time <= SHEET_FLICK_WINDOW), { y, time }];
   const distance = Math.max(0, y - d.startY);
   d.sheet.style.transform = `translateY(${distance}px)`;
   d.backdrop.style.setProperty('--sheet-drag', String(sheetDragProgress(distance, d.height)));
@@ -67,8 +63,9 @@ const endDrag = (state: GestureState, cancelled: boolean) => {
   const d = state.drag;
   if (!d) return;
   state.drag = null;
-  const velocity = performance.now() - d.lastTime > FLICK_MAX_PAUSE ? 0 : d.velocity;
-  const distance = Math.max(0, d.lastY - d.startY);
+  const velocity = flickVelocity(d.samples, performance.now());
+  const lastY = (d.samples[d.samples.length - 1] as DragSample).y;
+  const distance = Math.max(0, lastY - d.startY);
   const close = !cancelled && shouldCloseSheet({ distance, height: d.height, velocity });
   const animate = !matches(REDUCED_MOTION_QUERY);
   const timing = `${SHEET_CLOSE_DURATION}ms ease-out`;
@@ -85,6 +82,8 @@ const endDrag = (state: GestureState, cancelled: boolean) => {
     state.onClose();
     return;
   }
+  // The sheet slides away: a tap during the slide does nothing
+  d.sheet.style.pointerEvents = 'none';
   d.sheet.style.transform = 'translateY(100%)';
   d.backdrop.style.setProperty('--sheet-drag', '1');
   state.closeTimer = setTimeout(() => state.onClose(), SHEET_CLOSE_DURATION);
@@ -115,7 +114,13 @@ export function useSheetDrag(
   const state = stateRef.current;
   state.onClose = onClose;
   const bodyRef = useRef<HTMLFormElement>(null);
-  useEffect(() => () => clearTimeout(stateRef.current.closeTimer), []);
+  // A close in another way (Escape, Back) during the slide stops the timer, so that it cannot
+  // close a drawer that opens again
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the cleanup must run each time open changes
+  useEffect(() => {
+    const gesture = stateRef.current;
+    return () => clearTimeout(gesture.closeTimer);
+  }, [open]);
 
   // A drag in the body moves the sheet only from the top of the form. Touch events, and not
   // Pointer Events, can stop the scroll of the browser, so the two gestures do not fight.
@@ -124,20 +129,23 @@ export function useSheetDrag(
     if (!open || !body) return;
     const gesture = stateRef.current;
     let start: { x: number; y: number } | null = null;
+    // True while the body moves the sheet. A drag of the handle is not the body's to end.
+    let owns = false;
 
     const onStart = (e: TouchEvent) => {
       const touch = e.touches[0] as Touch;
+      const free = !gesture.pointer && !gesture.drag;
       start =
-        e.touches.length === 1 && matches(PHONE_QUERY)
+        free && e.touches.length === 1 && matches(PHONE_QUERY)
           ? { x: touch.clientX, y: touch.clientY }
           : null;
     };
     const onMove = (e: TouchEvent) => {
       if (!start) return;
       const touch = e.touches[0] as Touch;
-      if (gesture.drag) {
+      if (owns) {
         e.preventDefault();
-        moveDrag(gesture.drag, touch.clientY);
+        moveDrag(gesture.drag as Drag, touch.clientY);
         return;
       }
       const dy = touch.clientY - start.y;
@@ -146,12 +154,17 @@ export function useSheetDrag(
         start = null;
         return;
       }
+      // A move with no direction yet does not stop the scroll. iOS decides on the first move.
+      if (dy === 0) return;
       e.preventDefault();
       if (dy < SHEET_DRAG_SLOP) return;
+      owns = true;
       moveDrag(beginDrag(gesture, body, start.y), touch.clientY);
     };
     const onEnd = (e: TouchEvent) => {
       start = null;
+      if (!owns) return;
+      owns = false;
       endDrag(gesture, e.type === 'touchcancel');
     };
 
@@ -176,7 +189,7 @@ export function useSheetDrag(
   const handlers: SheetDragHandlers = {
     onPointerDown: e => {
       // A press on the close button stays a click
-      if (state.pointer || e.button !== 0 || !matches(PHONE_QUERY)) return;
+      if (state.pointer || state.drag || e.button !== 0 || !matches(PHONE_QUERY)) return;
       if ((e.target as Element).closest('button')) return;
       // The capture keeps the moves of a mouse that leaves the handle at once
       e.currentTarget.setPointerCapture(e.pointerId);

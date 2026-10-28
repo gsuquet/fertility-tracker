@@ -111,8 +111,9 @@ All the dialogs, the observation drawer and the mobile menu use the same keyboar
 | `Escape`                   | Closes the top dialog only. A dialog under it stays open.             |
 | A click outside the dialog | Closes the dialog.                                                    |
 | **Back**                   | Closes the top dialog only. The cycle menu also closes with **Back**. |
-| A drag down on the handle  | On a phone, closes the observation drawer. A short drag puts it back. |
 | The dialog closes          | The focus goes back to the button that opened the dialog.             |
+
+On a phone, you can also drag the observation drawer down by its handle to close it. A short drag puts the drawer back.
 
 ## Installed application
 

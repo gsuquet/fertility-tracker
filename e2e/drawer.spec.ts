@@ -1,4 +1,5 @@
 import { expect, test } from '@playwright/test';
+import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
 import { openApp } from './fixtures';
 
@@ -67,5 +68,63 @@ test.describe('Observation drawer', () => {
         page.evaluate(() => (window.history.state as { ftLayerDepth?: number })?.ftLayerDepth ?? 0)
       )
       .toBe(0);
+  });
+});
+
+test.describe('Observation drawer with touch', () => {
+  test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
+
+  /** Opens the drawer, and gives a finger that moves through points, with a pause at the end. */
+  const setUp = async (page: Page) => {
+    await openApp(page);
+    const nav = page.getByRole('navigation', { name: en.mobileTabs.navLabel });
+    await nav.getByRole('button', { name: en.mobileTabs.log }).click();
+    const drawer = page.getByRole('dialog', { name: en.actions.newEntry });
+    await expect(drawer).toBeVisible();
+    const cdp = await page.context().newCDPSession(page);
+    const swipe = async (x: number, from: number, to: number) => {
+      await cdp.send('Input.dispatchTouchEvent', {
+        type: 'touchStart',
+        touchPoints: [{ x, y: from }],
+      });
+      for (let step = 1; step <= 10; step++) {
+        const y = from + ((to - from) * step) / 10;
+        await cdp.send('Input.dispatchTouchEvent', { type: 'touchMove', touchPoints: [{ x, y }] });
+      }
+      await page.waitForTimeout(150);
+      await cdp.send('Input.dispatchTouchEvent', { type: 'touchEnd', touchPoints: [] });
+    };
+    return { drawer, swipe };
+  };
+
+  test('closes the sheet with a finger on the handle', async ({ page }) => {
+    const { drawer, swipe } = await setUp(page);
+    const box = await drawer.locator('.sheet-handle').boundingBox();
+    if (!box) throw new Error('The handle has no box');
+    await swipe(box.x + box.width / 2, box.y + box.height / 2, 700);
+    await expect(drawer).toBeHidden();
+  });
+
+  test('moves the sheet from the top of the form, and scrolls a form that is not at the top', async ({
+    page,
+  }) => {
+    const { drawer, swipe } = await setUp(page);
+    const form = drawer.locator('form');
+    const box = await form.boundingBox();
+    if (!box) throw new Error('The form has no box');
+    const x = box.x + box.width / 2;
+
+    await form.evaluate(element => {
+      element.scrollTop = 200;
+    });
+    await swipe(x, box.y + 100, box.y + 400);
+    await expect(drawer).toBeVisible();
+    await expect.poll(() => form.evaluate(element => element.scrollTop)).toBeLessThan(200);
+
+    await form.evaluate(element => {
+      element.scrollTop = 0;
+    });
+    await swipe(x, box.y + 100, box.y + 600);
+    await expect(drawer).toBeHidden();
   });
 });
