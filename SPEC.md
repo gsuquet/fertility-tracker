@@ -477,8 +477,8 @@ On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics**
   - When the date has an observation, the title is **Edit Observation**, the fields show the saved values and **Delete** shows.
   - When the date has no observation, the title is **Log Observation** and the form is empty.
   - Thus, a save with no change never replaces a saved day with an empty observation.
-- A change of the date input loads the observation of the new date. When the new date has no observation, the form becomes empty if it showed a saved observation. Else the form keeps the draft.
-- When the saved data changes while the drawer is open, for example with **Undo**, the title and **Delete** follow the saved data of the date. The fields keep the draft.
+- A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
+- The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
 - The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
 - On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
 

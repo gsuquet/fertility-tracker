@@ -1,8 +1,8 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { needsCycleStartChoice } from '../domain/observationForm';
+import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { Modal } from './Modal';
@@ -10,6 +10,7 @@ import { StampBadge } from './StampBadge';
 import { ObservationCodeSelector } from './observation/ObservationCodeSelector';
 import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
+import type { Observation } from '../types/crms';
 
 export const ObservationDrawer: React.FC = () => {
   const {
@@ -29,25 +30,48 @@ export const ObservationDrawer: React.FC = () => {
   const { intercourse, isCycleStart } = fields;
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
+  // The observation that the form loaded last, or undefined for an empty form
+  const [loaded, setLoaded] = useState<Observation | undefined>();
+  const show = useCallback(
+    (obs: Observation | undefined) => {
+      setLoaded(obs);
+      load(obs);
+    },
+    [load]
+  );
+
   const findSaved = (day: string) => observations.find(o => o.date === day);
+  const saved = isDrawerOpen ? findSaved(date) : undefined;
+  const isDraft = hasFieldChanges(fields, loaded);
+
+  // When the saved data changes while the drawer is open (for example with Undo), a form with no
+  // change shows the new saved values. Thus, a save with no change never writes old values.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: only a change of the saved data reloads the form, and a draft stays
+  useEffect(() => {
+    if (saved !== loaded && !isDraft) show(saved);
+  }, [saved]);
 
   // The form shows the saved observation of its date, as the Today form does. Thus, a save with
-  // no change never replaces a saved day with an empty observation.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens. A change to the observations does not reset a draft.
+  // no change never replaces a saved day with an empty observation. This effect runs after the
+  // effect above, so the date of the drawer that opens wins.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens
   useEffect(() => {
     const day = selectedObservation?.date ?? getTodayStr();
     setDate(day);
-    load(findSaved(day));
-  }, [selectedObservation, isDrawerOpen, load]);
+    show(findSaved(day));
+  }, [selectedObservation, isDrawerOpen, show]);
 
   if (!isDrawerOpen) return null;
 
-  const savedId = findSaved(date)?.id;
+  const savedId = saved?.id;
 
-  /** Loads the saved observation of the new date. Values of a saved day are not copied to another day. */
+  /**
+   * Loads the saved observation of the new date. A form with no change follows the date, so the
+   * values of a saved day are not copied to another day. A draft stays on a date with no observation.
+   */
   const changeDate = (day: string) => {
     const next = findSaved(day);
-    if (next || savedId) load(next);
+    if (next || !isDraft) show(next);
     setDate(day);
   };
 
