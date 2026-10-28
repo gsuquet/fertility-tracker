@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useRef } from 'react';
+import { useLayoutEffect, useRef } from 'react';
 import { ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import type { Cycle, Observation } from '../../types/crms';
 import type { TranslationSchema } from '../../i18n';
@@ -16,6 +16,8 @@ interface ChartCycleRowProps {
   viewMode: ChartViewMode;
   showPhaseBar: boolean;
   todayStr: string;
+  /** True for the newest cycle when today is in it: the row opens with today in view. */
+  isCurrent: boolean;
   t: TranslationSchema;
   onOpenObservation: (obs: Observation) => void;
   onOpenDay: (date: string, dayNum: number) => void;
@@ -56,11 +58,29 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   viewMode,
   showPhaseBar,
   todayStr,
+  isCurrent,
   t,
   onOpenObservation,
   onOpenDay,
 }) => {
   const scrollRef = useRef<HTMLDivElement | null>(null);
+
+  // The current cycle opens with today in the middle of the strip, or at its end when today has
+  // no cell. scrollLeft moves at once, with no smooth scroll, and moves only the strip, so the page
+  // does not move. A past cycle stays at day 1.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: the strip scrolls again when the view mode changes its cells
+  useLayoutEffect(() => {
+    const strip = scrollRef.current;
+    if (!isCurrent || !strip) return;
+    const today = strip.querySelector('.is-today');
+    let left = strip.scrollWidth;
+    if (today) {
+      const cell = today.getBoundingClientRect();
+      const offset = cell.left - strip.getBoundingClientRect().left + strip.scrollLeft;
+      left = offset - (strip.clientWidth - cell.width) / 2;
+    }
+    strip.scrollLeft = left;
+  }, [isCurrent, viewMode]);
   const daysCount = cycle.observations.length;
   const peakDayNum = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
   const { slots, totalSlots } = buildSlots(cycle, viewMode);

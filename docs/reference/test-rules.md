@@ -84,6 +84,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/shortcuts.spec.ts`      | On a computer, the keys change the page and the day. A key in a field stays in it, and the switch turns the keys off.                                                                                                               |
 | `e2e/swipe.spec.ts`          | With touch on a phone, a swipe to the left opens the next day, and a swipe to the right opens the previous day. A vertical drag keeps the day.                                                                                      |
 | `e2e/haptics.spec.ts`        | On a phone, a save and the Peak Day button vibrate. After the menu turns the vibrations off, nothing vibrates, also after a reload.                                                                                                 |
+| `e2e/chartScroll.spec.ts`    | At 390 and 1440 pixels, the chart opens with the cell of today in view, also after a reload and a page change.                                                                                                                      |
 
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |

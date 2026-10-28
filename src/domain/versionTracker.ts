@@ -44,6 +44,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.31.0',
+    date: '2026-10-28',
+    title: 'The Chart Opens on Today',
+    titleFr: 'Le graphique s’ouvre sur aujourd’hui',
+    tagline: 'The current cycle of the chart opens with today in view',
+    taglineFr: 'Le cycle en cours du graphique s’ouvre avec aujourd’hui à l’écran',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Late in a cycle, the chart shows today without a scroll or a tap on Jump to Latest',
+      'Past cycles still open at day 1',
+    ],
+    highlightsFr: [
+      'En fin de cycle, le graphique montre aujourd’hui sans défilement ni appui sur Dernier Jour',
+      'Les cycles passés s’ouvrent toujours au jour 1',
+    ],
+  },
+  {
     version: '1.30.0',
     date: '2026-10-28',
     title: 'Desktop Title Bar and Backup Files',

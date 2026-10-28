@@ -187,7 +187,10 @@ describe('ChartRow interactions', () => {
     ]);
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToStart }));
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToLatest }));
-    expect(scrollTo).toHaveBeenCalledTimes(2);
+    expect(scrollTo.mock.calls).toEqual([
+      [{ left: 0, behavior: 'smooth' }],
+      [{ left: 0, behavior: 'smooth' }],
+    ]);
     fireEvent.click(screen.getByRole('button', { name: 'P' }));
     expect(scrollIntoView).toHaveBeenCalledOnce();
   });

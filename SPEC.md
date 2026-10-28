@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.30.0
+- **Document version:** 1.31.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -462,6 +462,11 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 - Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows a minimum of 35 cells. A longer cycle adds cells in groups of 7. **Compact Strip** shows only the recorded days.
 - Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark.
 - Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
+- When the chart opens, the row of the current cycle shows today in the middle of its scroll area. The current cycle is the newest cycle, when today is on or after its start date.
+  - If today has no cell, for example after the 35 cells of the grid or in **Compact Strip**, the row opens at its end.
+  - The row sets `scrollLeft` at once, before the browser paints. There is no smooth scroll, and the page does not scroll vertically.
+  - A change of the grid mode puts today in view again.
+  - The rows of past cycles open at day 1.
 - A click, `Enter` or `Space` on a cell opens the observation drawer. The user sets or removes the manual Peak Day there with **Designate Peak Day (P)**.
 - The details show when the mouse is on a filled cell or when the cell has the focus. Each cell has its own hover state, so a hover does not render other cells again.
 - Two details can show at the same time: one on the cell with the focus and one under the mouse.
