@@ -23,7 +23,7 @@
   }
 
   .calendar-month-title {
-    font-size: var(--text-xl);
+    font-size: var(--font-size-xl);
     font-weight: 800;
     letter-spacing: -0.01em;
     color: var(--text-primary);
@@ -39,7 +39,7 @@
 
   .calendar-weekday-header {
     text-align: center;
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     font-weight: 800;
     color: var(--text-muted);
     padding-bottom: 8px;
@@ -93,7 +93,7 @@
   }
 
   .calendar-day-num {
-    font-size: var(--text-sm);
+    font-size: var(--font-size-sm);
     font-weight: 800;
     color: var(--text-primary);
     line-height: 1;
@@ -135,7 +135,7 @@
   }
 
   .calendar-code {
-    font-size: var(--text-3xs);
+    font-size: var(--font-size-3xs);
     font-weight: 800;
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
     color: var(--text-secondary);
@@ -165,7 +165,7 @@
     border: 1px dashed var(--bg-surface-border-strong);
     background-color: var(--bg-surface);
     color: var(--text-muted);
-    font-size: var(--text-2xs);
+    font-size: var(--font-size-2xs);
     font-weight: 700;
     transition: all 0.18s ease;
   }
@@ -186,7 +186,7 @@
     }
 
     .calendar-month-title {
-      font-size: var(--text-base);
+      font-size: var(--font-size-base);
     }
 
     .calendar-weekday-header .weekday-full {
@@ -195,7 +195,7 @@
 
     .calendar-weekday-header .weekday-short {
       display: inline;
-      font-size: var(--text-2xs);
+      font-size: var(--font-size-2xs);
       font-weight: 800;
     }
 
@@ -215,7 +215,7 @@
     }
 
     .calendar-day-num {
-      font-size: var(--text-2xs);
+      font-size: var(--font-size-2xs);
     }
 
     .calendar-stamp-wrapper {
@@ -225,7 +225,7 @@
     }
 
     .calendar-code {
-      font-size: var(--text-4xs);
+      font-size: var(--font-size-4xs);
       line-height: 1.15;
       max-width: 100%;
       overflow: visible;

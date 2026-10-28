@@ -88,7 +88,7 @@ The project uses option A.
    ```
 
 2. The folders have these files:
-   - `tokens/`: `tokens.css` (colors, radii, shadows, stamp colors, light and dark themes), `spacing.css` (spacing and z-index scales) and `animations.css` (keyframes).
+   - `tokens/`: `tokens.css` (colors, radii, shadows, stamp colors, light and dark themes), `spacing.css` (spacing, type and z-index scales) and `animations.css` (keyframes).
    - `base/`: `reset.css` (box sizing, resets, focus outline) and `layout.css` (application frame and page padding).
    - `primitives/`: `buttons.css`, `forms.css`, `badges.css` and `dialogs.css`.
    - `views/`: one file for each page or dialog, for example `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css` and `print.css`.

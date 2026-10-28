@@ -751,12 +751,12 @@ The layer order is:
 | `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
 | `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
 
-| Scale   | Values                                                                                                                                                                                            |
-| ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                            |
-| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200       |
-| Type    | `--text-4xs` 9px, `--text-3xs` 10px, `--text-2xs` 11px, `--text-xs` 12px, `--text-sm` 13px, `--text-md` 14px, `--text-base` 16px, `--text-lg` 18px, `--text-xl` 22px, `--text-2xl` 28px, in `rem` |
-| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                            |
+| Scale   | Values                                                                                                                                                                                                                                              |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                              |
+| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                         |
+| Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
+| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                                                                              |
 - `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
 - The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
 #### Brand
@@ -783,7 +783,7 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 - No font or stylesheet comes from another host, such as Google Fonts.
 - Each custom property that a style or a component uses has a definition in `src/styles/tokens/`.
 - Only `src/styles/tokens/` and `views/print.css` contain color values, such as `#1f3a5f`, `rgba()` or `white`. The other style files use tokens. Print has its own colors for paper.
-- Outside `views/print.css`, each `font-size` is a type scale token, and each `border-radius` is a radius token, `0` or `50%`. Print uses `pt` sizes.
+- Outside `views/print.css`, each `font-size` is a type scale token (`--font-size-*`), or `100%` in `reset.css`. Each `border-radius` is a radius token, `0` or `50%`. Print uses `pt` sizes.
 - A token has the values of both themes. Thus, a view has no `[data-theme='dark']` rule.
 - The test `src/styles/__tests__/tokenUsage.test.ts` checks these rules.
 
@@ -794,6 +794,7 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 | Text color                                                               | Surface or use                                                                                      |
 | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
 | `--text-primary`, `--text-secondary`, `--text-muted`, `--accent-primary` | `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`                                          |
+| `--color-intercourse-text`, `--color-peak-text`                          | The same surfaces: the intercourse text of the chart and the purple icon of the welcome guide       |
 | `--accent-primary`                                                       | Also `--accent-light`                                                                               |
 | White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                             |
 | White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                         |
@@ -801,7 +802,8 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 | `--color-info-text`                                                      | `--color-info-surface`: the entry mode badge of the welcome guide                                   |
 | `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                      |
 | `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                        |
-| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag of the chart (`.cell-symptom-tag`)                       |
+| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag, the Peak Day pill and the Peak Day button of the chart  |
+| `--stamp-yellow-text`                                                    | `--color-warning`: the `P` key of the chart legend                                                  |
 | `--stamp-light-green-text`, white                                        | `--stamp-light-green`; `--stamp-red` and `--stamp-dark-green`                                       |
 
 The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`.

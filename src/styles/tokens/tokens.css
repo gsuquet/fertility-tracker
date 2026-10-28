@@ -83,10 +83,14 @@
     --color-info: #3b6ea5;
     --color-info-text: #1f4f86;
     --color-info-surface: rgba(59, 110, 165, 0.12);
+    --color-info-border: rgba(59, 110, 165, 0.3);
 
     /* Observation toggle fills behind white text */
     --color-intercourse: #db2777;
     --color-peak: #7c3aed;
+    /* The same hues as text on the page */
+    --color-intercourse-text: #be185d;
+    --color-peak-text: #6d28d9;
     /* Peak Day bar of the mucus score trend */
     --color-peak-bar: #ec4899;
 
@@ -104,7 +108,7 @@
     --shadow-glow: 0 0 16px rgba(31, 58, 95, 0.15);
     --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
     --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.05);
-    /* drop-shadow() of the baby icon */
+    /* drop-shadow() of the baby icon: one shadow, no spread and no inset, else the filter fails */
     --shadow-icon: 0 1px 1px rgba(0, 0, 0, 0.1);
     /* Bottom sheets and the phone navigation bar cast up */
     --shadow-sheet: 0 -10px 30px rgba(0, 0, 0, 0.35);
@@ -169,6 +173,9 @@
     --color-info-text: #8fb3dd;
     --color-info-surface: rgba(59, 110, 165, 0.2);
     --color-cycle-start-text: #fda4af;
+    --color-intercourse-text: #f472b6;
+    --color-peak-text: #a78bfa;
+    --color-info-border: rgba(143, 179, 221, 0.3);
 
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.35);

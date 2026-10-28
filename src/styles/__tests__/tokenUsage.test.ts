@@ -16,6 +16,15 @@ const screenFiles = cssFiles(stylesDir)
   .map(path => path.slice(stylesDir.length + 1))
   .filter(name => !name.startsWith('tokens/') && name !== 'views/print.css');
 
+// The value part of each declaration, without comments
+const declarationValues = (css: string) =>
+  [...css.replace(/\/\*[\s\S]*?\*\//g, '').matchAll(/:([^;{}]*)[;}]/g)].map(
+    match => match[1] ?? ''
+  );
+
+const COLOR_LITERAL =
+  /#[0-9a-f]{3,8}\b|\b(?:rgba?|hsla?|hwb|lab|lch|oklab|oklch)\(|(?<![\w-])(?:white|black|red|green|blue|gray|grey|yellow|orange|pink|purple)(?![\w-])/i;
+
 const declarations = (file: string, property: string) =>
   [
     ...readFileSync(join(stylesDir, file), 'utf8').matchAll(
@@ -24,27 +33,32 @@ const declarations = (file: string, property: string) =>
   ].map(match => match[1]?.trim() ?? '');
 
 const TYPE_SCALE = [
-  '--text-4xs',
-  '--text-3xs',
-  '--text-2xs',
-  '--text-xs',
-  '--text-sm',
-  '--text-md',
-  '--text-base',
-  '--text-lg',
-  '--text-xl',
-  '--text-2xl',
+  '--font-size-4xs',
+  '--font-size-3xs',
+  '--font-size-2xs',
+  '--font-size-xs',
+  '--font-size-sm',
+  '--font-size-md',
+  '--font-size-base',
+  '--font-size-lg',
+  '--font-size-xl',
+  '--font-size-2xl',
 ];
 
 describe('design token usage in the screen styles', () => {
   it.each(screenFiles)('%s writes no color literal', file => {
     const css = readFileSync(join(stylesDir, file), 'utf8');
-    const literals = css.match(/#[0-9a-f]{3,8}\b|rgba?\(|hsla?\(|:\s*(white|black)\b/gi) ?? [];
-    expect(literals).toEqual([]);
+    expect(declarationValues(css).filter(value => COLOR_LITERAL.test(value))).toEqual([]);
+  });
+
+  it.each(screenFiles)('%s has no theme rule, because the tokens carry both themes', file => {
+    expect(readFileSync(join(stylesDir, file), 'utf8')).not.toMatch(/\[data-theme/);
   });
 
   it.each(screenFiles)('%s takes each font size from the type scale', file => {
-    const sizes = declarations(file, 'font-size').filter(value => value !== '100%');
+    const sizes = declarations(file, 'font-size')
+      .map(value => value.replace(/\s*!important$/, ''))
+      .filter(value => value !== '100%');
     for (const size of sizes) {
       expect(TYPE_SCALE.map(token => `var(${token})`)).toContain(size);
     }

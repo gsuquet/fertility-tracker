@@ -64,7 +64,14 @@ const themes = [
 ] as const;
 
 const surfaces = ['--bg-primary', '--bg-surface', '--bg-surface-elevated'];
-const textTokens = ['--text-primary', '--text-secondary', '--text-muted', '--accent-primary'];
+const textTokens = [
+  '--text-primary',
+  '--text-secondary',
+  '--text-muted',
+  '--accent-primary',
+  '--color-intercourse-text',
+  '--color-peak-text',
+];
 const whiteTextFills = [
   '--accent-solid',
   '--accent-solid-hover',
@@ -113,6 +120,7 @@ describe('design token contrast (WCAG 2 AA)', () => {
     });
 
     it.each([
+      ['--stamp-yellow-text', '--color-warning'],
       ['--stamp-light-green-text', '--stamp-light-green'],
       ['--color-white', '--stamp-red'],
       ['--color-white', '--stamp-dark-green'],
@@ -241,6 +249,21 @@ describe('contrast-safe token usage', () => {
     expect(/\.legend-badge\.intercourse-legend\s*\{([^}]*)\}/.exec(chart)?.[1]).toMatch(
       /background-color:\s*var\(--brand-ink\);/
     );
+  });
+
+  it.each([
+    ['.legend-badge.peak-legend', 'color', '--stamp-yellow-text'],
+    ['.intercourse-text', 'color', '--color-intercourse-text'],
+  ])('colors %s with %s %s', (selector, property, token) => {
+    const chart = readCss('views/chart.css');
+    const escaped = selector.replace(/[.]/g, '\\.');
+    const rule = new RegExp(`(?:^|\\s)${escaped}\\s*\\{([^}]*)\\}`).exec(chart);
+    expect(rule?.[1]).toMatch(new RegExp(`(^|\\s)${property}:\\s*var\\(${token}\\);`));
+  });
+
+  it('colors the purple icon of the welcome guide with --color-peak-text', () => {
+    const rule = /\.text-purple\s*\{([^}]*)\}/.exec(readCss('views/modals.css'));
+    expect(rule?.[1]).toMatch(/color:\s*var\(--color-peak-text\);/);
   });
 
   it('keeps the print font on printed headings', () => {

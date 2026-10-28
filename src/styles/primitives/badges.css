@@ -109,7 +109,7 @@
     right: -6px;
     background-color: var(--stamp-light-green-text);
     color: var(--color-white);
-    font-size: var(--text-3xs);
+    font-size: var(--font-size-3xs);
     font-weight: 800;
     width: 15px;
     height: 15px;
@@ -126,7 +126,7 @@
     left: 1px;
     background-color: var(--brand-ink);
     color: var(--color-white);
-    font-size: var(--text-3xs);
+    font-size: var(--font-size-3xs);
     font-weight: 800;
     width: 14px;
     height: 14px;
@@ -142,7 +142,7 @@
   .stamp-sm .intercourse-stamp-overlay {
     top: 1px;
     left: 1px;
-    font-size: var(--text-4xs);
+    font-size: var(--font-size-4xs);
     width: 11px;
     height: 11px;
   }
@@ -153,7 +153,7 @@
     right: -4px;
     background-color: var(--color-peak);
     color: var(--color-white);
-    font-size: var(--text-3xs);
+    font-size: var(--font-size-3xs);
     font-weight: 800;
     width: 16px;
     height: 16px;
@@ -166,7 +166,7 @@
 
   /* Badge Utilities */
   .badge-sm {
-    font-size: var(--text-2xs);
+    font-size: var(--font-size-2xs);
     font-weight: 700;
     padding: 2px 8px;
     border-radius: var(--radius-full);
