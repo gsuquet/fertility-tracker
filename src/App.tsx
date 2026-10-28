@@ -70,7 +70,7 @@ import {
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
   const { setSelectedObservation, isDrawerOpen, setIsDrawerOpen } = useCycleUi();
-  // The launch queue keeps the first listener, so it reads the drawer state through a ref
+  // The launch-queue listener is set once, so it reads the drawer state through a ref
   const drawerOpenRef = useRef(isDrawerOpen);
   drawerOpenRef.current = isDrawerOpen;
   // A shortcut of the app icon chooses the first page. Reading it does not change the address.
