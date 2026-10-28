@@ -19,6 +19,11 @@ export const parseTabHash = (hash: string): ActiveTab =>
 /** The open layers, oldest first. */
 let layers: { close: () => void }[] = [];
 let activeTab: ActiveTab = 'today';
+/**
+ * The page that React shows. During a slide, it changes only in the transition, after the browser
+ * has captured the old page. `activeTab` changes at once, for the history and the direction.
+ */
+let shownTab: ActiveTab = 'today';
 /** True while the root of the app is mounted. Without it, the hash does not follow a page. */
 let mounted = false;
 /** True between a `history.go()` of this module and its `popstate`. */
@@ -43,6 +48,7 @@ const setActiveTab = (tab: ActiveTab, animate = true) => {
   const direction = TABS.indexOf(tab) > TABS.indexOf(activeTab) ? 'forward' : 'back';
   activeTab = tab;
   const notify = () => {
+    shownTab = activeTab;
     for (const listener of tabListeners) listener();
   };
   if (animate && mounted && canAnimateTo(tab)) runViewTransition(notify, direction);
@@ -120,6 +126,7 @@ export const useHistoryLayer = (onClose: () => void, open = true): void => {
 /** Sets the first page. No layer is open after a reload. */
 const start = (initialTab: ActiveTab) => {
   activeTab = initialTab;
+  shownTab = initialTab;
   // A reload with layers open: go back to the entry of the page, so that the next Back does not
   // find an old layer entry. After that, the sync adds the hash of the page if it must.
   const depth = depthOf(window.history.state);
@@ -138,7 +145,7 @@ const subscribe = (listener: () => void) => {
   return () => tabListeners.delete(listener);
 };
 
-const getActiveTab = () => activeTab;
+const getShownTab = () => shownTab;
 
 /** Changes the page and adds its history entry. */
 const changeTab = (tab: ActiveTab) => {
@@ -163,5 +170,5 @@ export const useHistoryTab = (
       mounted = false;
     };
   }, []);
-  return [useSyncExternalStore(subscribe, getActiveTab), changeTab];
+  return [useSyncExternalStore(subscribe, getShownTab), changeTab];
 };

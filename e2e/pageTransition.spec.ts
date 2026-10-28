@@ -3,15 +3,38 @@ import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
 import { openApp } from './fixtures';
 
-/** Records the direction of each view transition that the app starts. */
+/**
+ * Records each view transition that the app starts: its direction, the name of the header in it,
+ * and the page before and after its update.
+ */
 const recordTransitions = async (page: Page) => {
   await page.addInitScript(() => {
-    const transitions: (string | undefined)[] = [];
-    Object.assign(window, { transitions });
+    const transitions: string[] = [];
+    const durations: number[] = [];
+    Object.assign(window, { transitions, durations });
+    const panel = () => document.querySelector('[role="tabpanel"]')?.id;
     const start = document.startViewTransition.bind(document);
     document.startViewTransition = (update?: ViewTransitionUpdateCallback) => {
-      transitions.push(document.documentElement.dataset.pageTransition);
-      return start(update);
+      const header = document.querySelector('.app-header') as HTMLElement;
+      const name = getComputedStyle(header).viewTransitionName;
+      const before = panel();
+      const transition = start(async () => {
+        await update?.();
+        const after = panel();
+        transitions.push(
+          `${document.documentElement.dataset.pageTransition} ${name} ${before}>${after}`
+        );
+      });
+      // The longest animation of the transition, from the timing that the CSS gives
+      void transition.ready.then(() => {
+        const timings = document
+          .getAnimations()
+          .map(animation => animation.effect as KeyframeEffect)
+          .filter(effect => effect.pseudoElement?.startsWith('::view-transition'))
+          .map(effect => Number(effect.getComputedTiming().endTime));
+        durations.push(Math.max(...timings));
+      });
+      return transition;
     };
   });
 };
@@ -32,17 +55,33 @@ test.describe('Page slide', () => {
     await openApp(page);
     await openTab(page, en.tabs.calendar);
     await openTab(page, en.tabs.chart);
-    expect(await transitions(page)).toEqual(['forward', 'back']);
-    await expect(page.locator('.app-header')).toHaveCSS('view-transition-name', 'app-header');
+    await expect
+      .poll(() => transitions(page))
+      .toEqual([
+        'forward app-header today-panel>calendar-panel',
+        'back app-header calendar-panel>chart-panel',
+      ]);
+    // Each part of the transition takes 180 ms
+    const durations = await page.evaluate(
+      () => (window as unknown as { durations: number[] }).durations
+    );
+    expect(durations.length).toBeGreaterThan(0);
+    expect(durations).toEqual(durations.map(() => 180));
+    // Out of a transition, the header has no name, so it makes no stacking context
+    await expect(page.locator('.app-header')).toHaveCSS('view-transition-name', 'none');
     // The analytics page slides only after its first load
     await openTab(page, en.tabs.analytics);
     await openTab(page, en.tabs.today);
     await openTab(page, en.tabs.analytics);
-    expect(await transitions(page)).toEqual(['forward', 'back', 'back', 'forward']);
+    await expect
+      .poll(async () => (await transitions(page)).map(entry => entry.split(' ')[0]))
+      .toEqual(['forward', 'back', 'back', 'forward']);
     // Back goes to the page on the left
     await page.goBack();
     await expect(page.getByRole('tabpanel', { name: en.tabs.today })).toBeVisible();
-    expect((await transitions(page)).at(-1)).toBe('back');
+    await expect
+      .poll(async () => (await transitions(page)).at(-1))
+      .toBe('back app-header analytics-panel>today-panel');
     await expect
       .poll(() => page.evaluate(() => document.documentElement.dataset.pageTransition))
       .toBeUndefined();

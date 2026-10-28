@@ -782,7 +782,10 @@ The first install has no controller. Thus, it activates at once and the applicat
 - A page change slides the page in 180 ms. The page order is **Today**, **Chart**, **Calendar**, **Analytics**. A page on the right comes from the right, and a page on the left comes from the left.
 - All page changes use `setActiveTab` of `useHistoryLayer`: the tabs, the bottom bar, the shortcuts, the hash and **Back**. Thus, **Back** slides back to the left page.
 - `runViewTransition(update, direction)` calls `document.startViewTransition`. The update renders in it with `flushSync`. The direction is `data-page-transition` on the root element until the transition ends.
-- The page area (`.page-view`) has a `view-transition-name`. The header and the bottom bar have their own names and stay in place, above the page. The rest of the screen changes at once.
+- During a page change, the page area (`.page-view`) has a `view-transition-name`. The header and the bottom bar have their own names and stay in place, above the page. The rest of the screen changes at once.
+- The names are only there during a page change. A name makes a stacking context. With it, a toast of the page cannot go above the drawer.
+- All the parts of the transition take 180 ms, also the root. Thus, the page takes clicks again after 180 ms.
+- The module keeps two values. `activeTab` changes at once, for the history and the direction. The page that React shows changes only in the transition, after the browser has captured the old page.
 - In these cases, the page changes at once, as before this feature:
   - The browser has no View Transitions API.
   - The user prefers reduced motion (`prefers-reduced-motion: reduce`).

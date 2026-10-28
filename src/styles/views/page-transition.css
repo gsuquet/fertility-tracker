@@ -4,17 +4,26 @@
    ========================================================================== */
 
 @layer views {
-  /* The page slides. The header and the bottom bar stay in place, above the page. */
-  .page-view {
+  /* The page slides. The header and the bottom bar stay in place, above the page. A name makes a
+     stacking context, so the names are only there during a page change: else a toast of the page
+     could not go above the drawer. */
+  :root[data-page-transition] .page-view {
     view-transition-name: page-view;
   }
 
-  .app-header {
+  :root[data-page-transition] .app-header {
     view-transition-name: app-header;
   }
 
-  .mobile-nav-bar {
+  :root[data-page-transition] .mobile-nav-bar {
     view-transition-name: mobile-nav;
+  }
+
+  /* All the parts end together, also the root, so the page takes clicks again after 180 ms */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 180ms;
   }
 
   /* The rest of the screen changes at once, without the default cross-fade */
@@ -26,11 +35,6 @@
   ::view-transition-group(app-header),
   ::view-transition-group(mobile-nav) {
     z-index: 1;
-    animation-duration: 180ms;
-  }
-
-  ::view-transition-group(page-view) {
-    animation-duration: 180ms;
   }
 
   /* A page on the right comes from the right. A page on the left comes from the left. The script

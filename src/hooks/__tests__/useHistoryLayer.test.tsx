@@ -326,6 +326,18 @@ describe('useHistoryTab', () => {
       expect(result.current[0]).toBe('today');
     });
 
+    it('shows the new page only in the transition, after the capture of the old page', () => {
+      let update = () => {};
+      vi.mocked(runViewTransition).mockImplementation(next => {
+        update = next;
+      });
+      const { result } = renderHook(() => useHistoryTab('today'));
+      act(() => result.current[1]('chart'));
+      expect(result.current[0]).toBe('today');
+      act(() => update());
+      expect(result.current[0]).toBe('chart');
+    });
+
     it('does not slide to a page that cannot show at once', () => {
       const { result } = renderHook(() => useHistoryTab('today', tab => tab !== 'calendar'));
       act(() => result.current[1]('calendar'));
