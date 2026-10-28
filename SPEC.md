@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.30.0
+- **Document version:** 1.31.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -370,10 +370,10 @@ The application has four pages, a header, a statistics bar, an observation drawe
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
 - The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) uses the dialog component below (`aria-label="Filter Cycle View"`). Its list of cycles is a `role="listbox"` element. On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
 - The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only. When it opens, the focus goes to the selected cycle.
-- On a phone, the phone menu and the cycle menu are bottom sheets, like the drawer. The user drags them down to close them (section 5.7).
+- On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it (section 5.7). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
 - The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([5.12](#back-button-and-address)).
 
-[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
+[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, `InstallGuideModal`, `KeyboardShortcutsModal`, `ErrorBoundary`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
 
 | Function       | Rule                                                                                                                             |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
@@ -519,7 +519,9 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 
 #### Drag down to close
 
-On a phone, the drawer, the phone menu and the cycle menu are bottom sheets (section 5.1). The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes. The rules below apply to the three sheets. The body is the form of the drawer, the list of actions of the phone menu, and the list of cycles of the cycle menu.
+On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets (section 5.1). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
+
+The rules below apply to all these sheets. The body is the part that scrolls. It is the form of the drawer, the list of a menu, or the body of a dialog.
 
 - A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
 - A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
@@ -536,7 +538,7 @@ On a phone, the drawer, the phone menu and the cycle menu are bottom sheets (sec
   - The sheet closes when the drag is more than 25% of the sheet height.
   - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
   - Else the sheet goes back to its position.
-- A close by drag does the same as the close button. The draft is not kept, and the history entry of the drawer goes (section 5.12).
+- A close by drag does the same as the close button (for the confirmation dialog and **New Cycle Start?**: the cancel). The draft is not kept, and the history entry of the sheet goes (section 5.12).
 - The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
 
 [ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
@@ -1171,7 +1173,7 @@ The helpers are in `src/test/`:
 | 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
 | 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
 | 16   | In the installed app, after **Show a dot on the app icon**, the dot shows while today has no observation. A save removes it, and the choice stays after a reload.                                                                                                        |
-| 17   | On a phone with touch, a swipe down on the phone menu and on the cycle menu closes them. A swipe up on them does not scroll the page. When the phone menu opens, it slides up from the bottom of the screen.                                                             |
+| 17   | On a phone with touch, a swipe down on the phone menu, the cycle menu and the export dialog closes them. A swipe up on them does not scroll the page. When the phone menu opens, it slides up from the bottom of the screen.                                             |
 | 18   | On a phone with touch, a swipe to the right on the calendar opens the previous month, and a swipe to the left opens the next month. In the current month, a swipe to the left does not change the month.                                                                 |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).

@@ -25,6 +25,7 @@ import {
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { writeStorage } from '../utils/storage';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
 
 interface WelcomeModalProps {
@@ -35,6 +36,11 @@ interface WelcomeModalProps {
 
 export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }) => {
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLElement>(
+    () => handleDismiss(),
+    true
+  );
   const { loadDemoData } = useCycle();
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
@@ -64,7 +70,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
       panelClassName="modal-container welcome-modal-container"
     >
       {/* Modal Header */}
-      <div className="modal-header welcome-modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header welcome-modal-header" {...dragHandlers}>
         <div className="welcome-header-left">
           <div className="welcome-header-icon">
             <BookOpen size={22} className="welcome-book-icon" />
@@ -111,6 +118,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
 
       {/* Modal Body / Slides: it scrolls, so the keyboard can focus it */}
       <section
+        ref={bodyRef}
         className="welcome-modal-body"
         aria-labelledby="welcome-slide-title"
         // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable needs a focusable scrolling body

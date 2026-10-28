@@ -110,17 +110,25 @@
     flex-wrap: wrap;
   }
 
-  /* Responsive Mobile Bottom-Sheet */
   /* The grab handle of a bottom sheet (useSheetDrag.ts). It shows on a phone only. */
   .sheet-handle {
     display: none;
   }
 
+  /* Responsive Mobile Bottom-Sheet */
   @media (max-width: 640px) {
+    /* The backdrop fades while the user drags the sheet down (useSheetDrag.ts) */
     .modal-overlay {
       padding: 0;
       align-items: flex-end;
       justify-content: center;
+      background-color: color-mix(
+        in srgb,
+        var(--bg-overlay) calc(100% * (1 - var(--sheet-drag))),
+        transparent
+      );
+      backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
+      -webkit-backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
     }
 
     .modal-container {
@@ -135,8 +143,14 @@
       animation: slideUp 0.25s cubic-bezier(0.16, 1, 0.3, 1);
     }
 
+    /* The header is part of the drag area, below the grab handle */
     .modal-header {
       padding: 1rem 1.25rem;
+      touch-action: none;
+    }
+
+    .sheet-handle + .modal-header {
+      padding-top: 0.25rem;
     }
 
     .modal-body {

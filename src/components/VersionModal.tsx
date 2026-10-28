@@ -41,6 +41,7 @@ import {
   getStorageStats,
 } from '../domain/versionTracker';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 import { AppBadgeSetting } from './AppBadgeSetting';
 import { formatMessage } from '../i18n';
 import { Copyright, LegalDisclaimers } from './LegalNotice';
@@ -53,6 +54,8 @@ interface VersionModalProps {
 
 export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShortcuts }) => {
   const { t, language } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
   const [activeTab, setActiveTab] = useState<'notes' | 'system'>('notes');
   const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
     '1.1.0': true,
@@ -90,7 +93,8 @@ export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShort
       panelClassName="modal-container version-modal-container"
     >
       {/* Modal Header */}
-      <div className="modal-header version-modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header version-modal-header" {...dragHandlers}>
         <div className="version-header-left">
           <div className="version-header-icon">
             <Sparkles size={20} className="version-sparkle-icon" />
@@ -148,7 +152,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShort
       </div>
 
       {/* Modal Body */}
-      <div className="modal-body version-modal-body">
+      <div className="modal-body version-modal-body" ref={bodyRef}>
         {activeTab === 'notes' ? (
           <div className="version-notes-tab">
             {/* Featured Release Card */}

@@ -4,6 +4,7 @@ import { useLanguage } from '../context/LanguageContext';
 import { SHORTCUT_IDS, SHORTCUT_LABELS } from '../domain/keyboardShortcuts';
 import { setShortcutsEnabled, useShortcutsEnabled } from '../hooks/useKeyboardShortcuts';
 import { Modal } from './Modal';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 
 interface KeyboardShortcutsModalProps {
   onClose: () => void;
@@ -12,6 +13,8 @@ interface KeyboardShortcutsModalProps {
 /** The list of the keyboard shortcuts, with the switch that turns them on or off. */
 export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ onClose }) => {
   const { t } = useLanguage();
+  // On a phone, a drag down closes the dialog as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
   const enabled = useShortcutsEnabled();
 
   return (
@@ -21,7 +24,8 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
       className="modal-overlay"
       panelClassName="modal-container shortcuts-container"
     >
-      <div className="modal-header">
+      <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+      <div className="modal-header" {...dragHandlers}>
         <h2 id="shortcuts-title">{t.shortcuts.title}</h2>
         <button
           type="button"
@@ -34,7 +38,7 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
         </button>
       </div>
 
-      <div className="modal-body shortcuts-body">
+      <div className="modal-body shortcuts-body" ref={bodyRef}>
         <label className="shortcuts-toggle">
           <input
             type="checkbox"

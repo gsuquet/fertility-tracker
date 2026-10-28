@@ -130,6 +130,47 @@ test.describe('Bottom sheets with touch', () => {
   });
 });
 
+test.describe('Dialog sheets with touch', () => {
+  test('closes the export dialog with a swipe down, and a swipe up on its header does not scroll the page', async ({
+    page,
+  }) => {
+    await openWithDemo(page);
+    const swipe = finger(page, await page.context().newCDPSession(page));
+    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
+    await page
+      .getByRole('dialog', { name: en.menu.mobileMenuLabel })
+      .getByRole('button', { name: new RegExp(en.actions.exportPdf) })
+      .click();
+    const dialog = page.getByRole('dialog', { name: en.exportModal.title });
+    await expect(dialog).toBeVisible();
+    await settledBox(dialog.locator('.modal-container'));
+    const header = await dialog.locator('.modal-header').boundingBox();
+    if (!header) throw new Error('The header has no box');
+
+    await swipe(120, header.y + header.height / 2, 0, -300);
+    await page.waitForTimeout(300);
+    expect(await scrollY(page)).toBe(0);
+    await expect(dialog).toBeVisible();
+
+    await swipe(120, header.y + header.height / 2, 0, 500);
+    await expect(dialog).toBeHidden();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    // A swipe down from the top of the body closes it too
+    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
+    await page
+      .getByRole('dialog', { name: en.menu.mobileMenuLabel })
+      .getByRole('button', { name: new RegExp(en.actions.exportPdf) })
+      .click();
+    await expect(dialog).toBeVisible();
+    await settledBox(dialog.locator('.modal-container'));
+    const body = await dialog.locator('.modal-body').boundingBox();
+    if (!body) throw new Error('The body has no box');
+    await swipe(195, body.y + 40, 0, 500);
+    await expect(dialog).toBeHidden();
+  });
+});
+
 test.describe('Swipe between months', () => {
   test('opens the previous and the next month, and never a month after the current one', async ({
     page,
