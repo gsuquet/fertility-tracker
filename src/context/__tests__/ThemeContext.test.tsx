@@ -1,6 +1,6 @@
 import { render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
-import { ThemeProvider, useTheme } from '../ThemeContext';
+import { THEME_COLORS, ThemeProvider, useTheme } from '../ThemeContext';
 
 const TestComponent = () => {
   const { theme, toggleTheme } = useTheme();
@@ -13,6 +13,30 @@ const TestComponent = () => {
     </div>
   );
 };
+
+describe('browser theme color', () => {
+  beforeEach(() => {
+    localStorage.clear();
+    document.head.innerHTML =
+      '<meta name="theme-color" content="#f8f6f1" media="(prefers-color-scheme: light)" />' +
+      '<meta name="theme-color" content="#13171d" media="(prefers-color-scheme: dark)" />';
+  });
+
+  it('follows the theme of the app, also when it differs from the system', () => {
+    render(
+      <ThemeProvider>
+        <TestComponent />
+      </ThemeProvider>
+    );
+    const contents = () =>
+      [...document.querySelectorAll('meta[name="theme-color"]')].map(m =>
+        m.getAttribute('content')
+      );
+    expect(contents()).toEqual([THEME_COLORS.light, THEME_COLORS.light]);
+    fireEvent.click(screen.getByText('Toggle Theme'));
+    expect(contents()).toEqual([THEME_COLORS.dark, THEME_COLORS.dark]);
+  });
+});
 
 describe('ThemeContext Provider', () => {
   beforeEach(() => {

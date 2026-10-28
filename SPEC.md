@@ -452,13 +452,13 @@ On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics**
 
 **Module:** [src/components/CycleAnalyticsView.tsx](src/components/CycleAnalyticsView.tsx)
 
-| Section                          | Content                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------- |
-| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from section 3.6, as bars.          |
-| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.       |
-| Creighton Mucus Score Trend      | One bar for each day, with its mucus score (section 3.6).                 |
-| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count. |
-| Creighton Mucus Score guide      | A short explanation of the score.                                         |
+| Section                          | Content                                                                                                                                                        |
+| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from section 3.6, as bars.                                                                                               |
+| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.                                                                                            |
+| Creighton Mucus Score Trend      | One bar for each day, with its mucus score (section 3.6). Dry bars are dark green, fertile bars (score 6 or more) use the accent and the Peak Day bar is pink. |
+| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count.                                                                                      |
+| Creighton Mucus Score guide      | A short explanation of the score.                                                                                                                              |
 - Before the Peak Day, the page shows "in progress" after the follicular value.
 - Luteal phase health is "Normal" from 9 to 17 days. Above 0 and below 9 days, or above 17 days, it is "Short/Extended". The value of all cycles is an average and can have decimals. At 0 days, it is "Pending Peak Day".
 - The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on a narrow screen. It is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).
@@ -759,7 +759,7 @@ The layer order is:
 - The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
 #### Brand
 
-The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS chart. The stamps are the only strong colors on the screen. The brand hue (navy, about 213°) is far from the red and green hues of the stamps.
+The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS chart. The stamps are the only strong colors on the screen. The brand hue (navy, about 215°) is far from the red and green hues of the stamps.
 
 | Token                                | Light                | Dark      | Use                                                    |
 | ------------------------------------ | -------------------- | --------- | ------------------------------------------------------ |
@@ -769,13 +769,13 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 | `--bg-primary`                       | `#f8f6f1` (paper)    | `#13171d` | Page                                                   |
 | `--accent-primary`                   | `#1f3a5f`            | `#a9c1e0` | Accent text, icons and borders                         |
 | `--accent-solid`                     | `#1f3a5f`            | `#34659e` | Fills behind white text                                |
-- The logo is a sprout on an ink tile. [BrandMark.tsx](src/components/icons/BrandMark.tsx) draws it in the header. [public/icons/logo.svg](public/icons/logo.svg) is the same drawing for the favicon. The PNG icons come from this drawing.
-- [BabyIcon.tsx](src/components/icons/BabyIcon.tsx) is the only drawing of the baby of the white and light green stamps: a round head with a curl and a swaddled body. The stamps, the chart legend and the print legend use it.
+- The logo is a sprout on an ink tile. [BrandMark.tsx](src/components/icons/BrandMark.tsx) draws it in the header. The `fill` attributes have the light colors. The classes in `header.css` give the colors of each theme. [public/icons/logo.svg](public/icons/logo.svg) is the same drawing for the favicon. The task `mise run icons` draws the PNG icons from this file.
+- [BabyIcon.tsx](src/components/icons/BabyIcon.tsx) is the only drawing of the baby of the white and light green stamps: a round head with a curl and a swaddled body. The stamps, the chart legend and the print legend use it. The CSS sets its size: 18 pixels in a stamp, 12 pixels in the chart legend and 10 pixels in the print legend.
 
 #### Fonts
 
 - Running text and controls use the font of the operating system (`--font-family`: `system-ui`, SF Pro, Segoe UI or Roboto).
-- The wordmark and the `h1`, `h2` and `h3` headings use Plus Jakarta Sans (`--font-display`).
+- The wordmark and the `h1`, `h2` and `h3` headings use Plus Jakarta Sans (`--font-display`). Print keeps its own font, also for headings.
 - `fonts.css` declares only the `latin` and `latin-ext` woff2 files of Plus Jakarta Sans, with weights from 200 to 800 and `font-display: swap`.
 - The font `url()` values are package paths. Vite copies the files to `assets/` with a hash, and the service worker keeps them.
 - No font or stylesheet comes from another host, such as Google Fonts.
@@ -885,6 +885,9 @@ npm run typecheck
 # Check the docs: STE rules, Diátaxis structure and links
 mise run docs
 
+# Draw the PNG app icons again from public/icons/logo.svg
+mise run icons
+
 # Run the Playwright end-to-end and accessibility tests
 mise run e2e
 
@@ -974,7 +977,7 @@ Other rules:
 - The registration also needs a secure context (`https:` or `localhost`) and a browser with service workers. A failure has no effect. `index.html` has no inline script.
 - [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
 - The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
-- The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme.
+- The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
 
 ### 9.2 Security headers

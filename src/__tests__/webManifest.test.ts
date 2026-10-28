@@ -1,17 +1,21 @@
 import { readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
+import { THEME_COLORS } from '../context/ThemeContext';
 
 const rootDir = join(__dirname, '..', '..');
 const publicDir = join(rootDir, 'public');
 const indexHtml = readFileSync(join(rootDir, 'index.html'), 'utf8');
 const tokensCss = readFileSync(join(rootDir, 'src', 'styles', 'tokens', 'tokens.css'), 'utf8');
 
-/** Reads one custom property of the light theme in tokens.css. */
-const lightToken = (name: string) => {
-  const root = tokensCss.slice(tokensCss.indexOf(':root {'), tokensCss.indexOf('}'));
-  return new RegExp(`${name}:\\s*(#[0-9a-f]{6});`, 'i').exec(root)?.[1];
+/** Reads one custom property of a theme block in tokens.css. */
+const tokenOf = (opener: string, name: string) => {
+  const start = tokensCss.indexOf(opener);
+  const block = tokensCss.slice(start, tokensCss.indexOf('}', start));
+  return new RegExp(`${name}:\\s*(#[0-9a-f]{6});`, 'i').exec(block)?.[1];
 };
+const lightToken = (name: string) => tokenOf(':root {', name);
+const darkToken = (name: string) => tokenOf("[data-theme='dark'] {", name);
 
 interface ManifestIcon {
   src: string;
@@ -74,11 +78,15 @@ describe('brand icons in index.html', () => {
   });
 
   it('sets the browser theme color of each color scheme from the page background', () => {
+    expect(THEME_COLORS).toEqual({
+      light: lightToken('--bg-primary'),
+      dark: darkToken('--bg-primary'),
+    });
     expect(indexHtml).toContain(
-      `<meta name="theme-color" content="${lightToken('--bg-primary')}" media="(prefers-color-scheme: light)" />`
+      `<meta name="theme-color" content="${THEME_COLORS.light}" media="(prefers-color-scheme: light)" />`
     );
     expect(indexHtml).toContain(
-      '<meta name="theme-color" content="#13171d" media="(prefers-color-scheme: dark)" />'
+      `<meta name="theme-color" content="${THEME_COLORS.dark}" media="(prefers-color-scheme: dark)" />`
     );
   });
 });

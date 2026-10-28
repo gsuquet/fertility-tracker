@@ -195,7 +195,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
           </div>
           <div className="print-legend-item">
             <span className="print-badge-sample stamp-white_baby">
-              <BabyIcon size={10} />
+              <BabyIcon />
             </span>
             <span>{t.chartStrip.legendFertile}</span>
           </div>

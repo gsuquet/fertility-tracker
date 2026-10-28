@@ -10,7 +10,7 @@
     /* Running text and controls use the font of the operating system */
     --font-family:
       system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    /* The wordmark, headings and large numbers use the brand font */
+    /* The wordmark and the headings use the brand font */
     --font-display:
       'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
       sans-serif;

@@ -15,18 +15,12 @@ const tsxFiles = (dir: string): string[] =>
   });
 
 describe('BabyIcon', () => {
-  it('draws a decorative baby with a round head at the given size', () => {
-    const { container } = render(<BabyIcon size={12} />);
+  it('draws a decorative baby with a round head and leaves its size to the CSS', () => {
+    const { container } = render(<BabyIcon />);
     const svg = container.querySelector('svg.baby-svg');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
-    expect(svg).toHaveAttribute('width', '12');
-    expect(svg).toHaveAttribute('height', '12');
+    expect(svg).not.toHaveAttribute('width');
     expect(svg?.querySelector('circle')).toBeInTheDocument();
-  });
-
-  it('lets the stamp CSS size the icon when no size is given', () => {
-    const { container } = render(<BabyIcon />);
-    expect(container.querySelector('svg.baby-svg')).not.toHaveAttribute('width');
   });
 
   it('is the only baby drawing in the components', () => {
@@ -45,6 +39,8 @@ describe('BrandMark', () => {
     const svg = container.querySelector('svg.brand-mark');
     expect(svg).toHaveAttribute('aria-hidden', 'true');
     expect(svg?.querySelector('rect')).toHaveClass('brand-mark-tile');
+    // Fallback colors of the same drawing as public/icons/logo.svg, for use outside the header
+    expect(svg?.querySelector('rect')).toHaveAttribute('fill', '#1f3a5f');
     expect(svg?.querySelectorAll('path')).toHaveLength(3);
   });
 });

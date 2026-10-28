@@ -218,11 +218,44 @@ describe('contrast-safe token usage', () => {
   it.each([
     ['.stamp-white_baby', '--stamp-white-border'],
     ['.stamp-light_green_baby_3', '--stamp-light-green-border'],
-  ])('draws the edge of %s with %s', (selector, token) => {
-    const badges = readCss('primitives/badges.css');
+    ['.legend-badge.stamp-white_baby', '--stamp-white-border', 'views/chart.css'],
+  ])('draws the edge of %s with %s', (selector, token, file = 'primitives/badges.css') => {
+    const badges = readCss(file);
     const escaped = selector.replace(/[.]/g, '\\.');
     const rule = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(badges);
     expect(rule?.[1]).toMatch(new RegExp(`border:\\s*[\\d.]+px solid var\\(${token}\\)`));
+  });
+
+  it('gives the dry and fertile trend bars the dry stamp green and the accent', () => {
+    const analytics = readCss('views/analytics.css');
+    expect(/\.bar-dry\s*\{([^}]*)\}/.exec(analytics)?.[1]).toMatch(
+      /background-color:\s*var\(--stamp-dark-green\);/
+    );
+    expect(/\.bar-fertile\s*\{([^}]*)\}/.exec(analytics)?.[1]).toMatch(
+      /background-color:\s*var\(--accent-solid\);/
+    );
+  });
+
+  it('colors the intercourse key of the chart legend like the I mark of a stamp', () => {
+    const chart = readCss('views/chart.css');
+    expect(/\.legend-badge\.intercourse-legend\s*\{([^}]*)\}/.exec(chart)?.[1]).toMatch(
+      /background-color:\s*var\(--brand-ink\);/
+    );
+  });
+
+  it('keeps the print font on printed headings', () => {
+    expect(readCss('views/print.css')).toMatch(
+      /h1,\s*h2,\s*h3\s*\{\s*font-family:\s*inherit !important;/
+    );
+  });
+
+  it('sizes the baby of the legends with CSS', () => {
+    expect(readCss('views/chart.css')).toMatch(
+      /\.legend-badge \.baby-svg\s*\{\s*width:\s*12px;\s*height:\s*12px;/
+    );
+    expect(readCss('views/print.css')).toMatch(
+      /\.print-badge-sample \.baby-svg\s*\{\s*width:\s*10px;\s*height:\s*10px;/
+    );
   });
 
   it('colors the welcome form mode badge with the info tokens', () => {

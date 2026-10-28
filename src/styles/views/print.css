@@ -25,6 +25,12 @@
       print-color-adjust: exact !important;
     }
 
+    h1,
+    h2,
+    h3 {
+      font-family: inherit !important;
+    }
+
     .app-header,
     .mobile-nav-bar,
     .drawer-overlay,
@@ -302,6 +308,11 @@
       font-size: 6pt;
       font-weight: bold;
       border: 1px solid rgba(0, 0, 0, 0.15);
+    }
+
+    .print-badge-sample .baby-svg {
+      width: 10px;
+      height: 10px;
     }
 
     .print-badge-sample.stamp-red {

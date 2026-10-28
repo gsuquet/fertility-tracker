@@ -17,13 +17,13 @@ export const ChartLegend: React.FC<{ t: TranslationSchema }> = ({ t }) => (
       </div>
       <div className="legend-item">
         <span className="legend-badge stamp-white_baby">
-          <BabyIcon size={12} />
+          <BabyIcon />
         </span>
         <span className="legend-label">{t.chartStrip.legendFertile}</span>
       </div>
       <div className="legend-item">
         <span className="legend-badge stamp-light_green_baby_1">
-          <BabyIcon size={10} />
+          <BabyIcon />
           <span className="num">1,2,3</span>
         </span>
         <span className="legend-label">{t.chartStrip.legendPostPeak}</span>
