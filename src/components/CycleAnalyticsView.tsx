@@ -12,8 +12,9 @@ import {
   ChevronDown,
   ChevronUp,
 } from 'lucide-react';
-import type { Observation } from '../types/crms';
 import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
+import { getMucusScore } from '../domain/mucusScore';
+import { formatMessage } from '../i18n';
 
 export const CycleAnalyticsView: React.FC = () => {
   const { observations, cycles, selectedCycleId } = useCycle();
@@ -25,13 +26,15 @@ export const CycleAnalyticsView: React.FC = () => {
   // No cycle exists without observations
   if (!activeCycle) {
     return (
-      <div className="analytics-empty-state">
+      <div
+        className="analytics-empty-state"
+        id="analytics-panel"
+        role="tabpanel"
+        aria-labelledby="tab-analytics"
+      >
         <Activity size={48} className="icon-muted" />
-        <h3>No Observations Logged</h3>
-        <p>
-          Log observations or click "Load Demo Cycle" in the practitioner export menu to view cycle
-          analytics.
-        </p>
+        <h3>{t.analytics.emptyTitle}</h3>
+        <p>{t.analytics.emptyText}</p>
       </div>
     );
   }
@@ -59,23 +62,6 @@ export const CycleAnalyticsView: React.FC = () => {
   const postPeakDays = targetObs.filter(o => o.stamp.startsWith('LIGHT_GREEN')).length;
   const intercourseCount = targetObs.filter(o => o.intercourse).length;
 
-  const getMucusScore = (obs: Observation): number => {
-    if (
-      obs.stretch === '10' ||
-      obs.stretch === '10DL' ||
-      obs.stretch === '10SL' ||
-      obs.stretch === '10WL' ||
-      obs.modifiers?.some(m => m === 'K' || m === 'L')
-    ) {
-      return 10;
-    }
-    if (obs.stretch === '8') return 8;
-    if (obs.stretch === '6') return 6;
-    if (obs.stretch === '4') return 4;
-    if (obs.stretch === '2' || obs.stretch === '2W') return 2;
-    return 0;
-  };
-
   // A cycle always holds at least one observation, so totalDays is never 0
   const percentOf = (days: number) => (days / totalDays) * 100;
 
@@ -92,7 +78,11 @@ export const CycleAnalyticsView: React.FC = () => {
     >
       {/* Interactive MCS Explanation Guide Card */}
       <div className="analytics-card mcs-guide-card full-width">
-        <button className="mcs-guide-header" onClick={() => setShowMcsGuide(!showMcsGuide)}>
+        <button
+          type="button"
+          className="mcs-guide-header"
+          onClick={() => setShowMcsGuide(!showMcsGuide)}
+        >
           <div className="mcs-guide-title">
             <HelpCircle size={20} className="icon-indigo" />
             <span>{t.analytics.mcsGuideTitle}</span>
@@ -105,22 +95,28 @@ export const CycleAnalyticsView: React.FC = () => {
             <p>{t.analytics.mcsGuideText}</p>
             <div className="mcs-scale-grid">
               <div className="scale-item">
-                <strong>0 pts:</strong> Dry (0)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 0 })}</strong>{' '}
+                {t.analytics.mcsDry}
               </div>
               <div className="scale-item">
-                <strong>2 pts:</strong> Damp / Wet (2, 2W)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 2 })}</strong>{' '}
+                {t.analytics.mcsDamp}
               </div>
               <div className="scale-item">
-                <strong>4 pts:</strong> Shiny (4)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 4 })}</strong>{' '}
+                {t.analytics.mcsShiny}
               </div>
               <div className="scale-item">
-                <strong>6 pts:</strong> ~0.5cm Stretch (6)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 6 })}</strong>{' '}
+                {t.analytics.mcsStretch6}
               </div>
               <div className="scale-item">
-                <strong>8 pts:</strong> 1-2cm Stretch (8)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 8 })}</strong>{' '}
+                {t.analytics.mcsStretch8}
               </div>
               <div className="scale-item">
-                <strong>10 pts:</strong> 2.5cm+ (10, K, L)
+                <strong>{formatMessage(t.analytics.mcsPoints, { points: 10 })}</strong>{' '}
+                {t.analytics.mcsStretch10}
               </div>
             </div>
           </div>
@@ -135,8 +131,10 @@ export const CycleAnalyticsView: React.FC = () => {
             <h3>
               {t.analytics.phasesTitle}{' '}
               {isAll
-                ? '(All Cycles Combined)'
-                : `(Cycle ${cycles.length - cycles.findIndex(c => c.id === activeCycle.id)})`}
+                ? t.analytics.allCyclesCombined
+                : formatMessage(t.analytics.cycleInTitle, {
+                    number: cycles.length - cycles.findIndex(c => c.id === activeCycle.id),
+                  })}
             </h3>
           </div>
           <div className="phase-metrics">
@@ -190,9 +188,9 @@ export const CycleAnalyticsView: React.FC = () => {
           </div>
           <div className="stamp-distribution">
             <div className="dist-item">
-              <div className="dist-badge stamp-red">Red</div>
+              <div className="dist-badge stamp-red">{t.analytics.stampRed}</div>
               <div className="dist-info">
-                <span>Menses Bleeding</span>
+                <span>{t.analytics.mensesDays}</span>
                 <strong>
                   {mensesDays} {t.stats.days} ({Math.round(percentOf(mensesDays))}%)
                 </strong>
@@ -200,9 +198,9 @@ export const CycleAnalyticsView: React.FC = () => {
             </div>
 
             <div className="dist-item">
-              <div className="dist-badge stamp-dark_green">Dark Green</div>
+              <div className="dist-badge stamp-dark_green">{t.analytics.stampDarkGreen}</div>
               <div className="dist-info">
-                <span>Infertile Dry Days</span>
+                <span>{t.analytics.dryDays}</span>
                 <strong>
                   {dryDays} {t.stats.days} ({Math.round(percentOf(dryDays))}%)
                 </strong>
@@ -210,9 +208,9 @@ export const CycleAnalyticsView: React.FC = () => {
             </div>
 
             <div className="dist-item">
-              <div className="dist-badge stamp-white_baby">White 👶</div>
+              <div className="dist-badge stamp-white_baby">{t.analytics.stampWhite}</div>
               <div className="dist-info">
-                <span>Fertile Mucus Days</span>
+                <span>{t.analytics.fertileDays}</span>
                 <strong>
                   {fertileMucusDays} {t.stats.days} ({Math.round(percentOf(fertileMucusDays))}%)
                 </strong>
@@ -220,9 +218,11 @@ export const CycleAnalyticsView: React.FC = () => {
             </div>
 
             <div className="dist-item">
-              <div className="dist-badge stamp-light_green_baby_1">Light Green 👶</div>
+              <div className="dist-badge stamp-light_green_baby_1">
+                {t.analytics.stampLightGreen}
+              </div>
               <div className="dist-info">
-                <span>Post-Peak Count (1-2-3)</span>
+                <span>{t.analytics.postPeakDays}</span>
                 <strong>
                   {postPeakDays} {t.stats.days}
                 </strong>
@@ -235,16 +235,25 @@ export const CycleAnalyticsView: React.FC = () => {
         <div className="analytics-card full-width">
           <div className="card-header">
             <Flame size={20} className="icon-rose" />
-            <h3>{t.analytics.trendTitle}</h3>
+            <h3 id="mucus-trend-title">{t.analytics.trendTitle}</h3>
           </div>
-          <div className="mucus-trend-wrapper">
+          {/* It scrolls on narrow screens, so the keyboard can focus it */}
+          <section
+            className="mucus-trend-wrapper"
+            aria-labelledby="mucus-trend-title"
+            // biome-ignore lint/a11y/noNoninteractiveTabindex: axe scrollable-region-focusable needs a focusable scrolling chart
+            tabIndex={0}
+          >
             {targetCycles.map(cycle => {
               const cycleNum = cycles.length - cycles.findIndex(c => c.id === cycle.id);
               return (
                 <div key={cycle.id} className="cycle-trend-group">
                   {isAll && (
                     <div className="cycle-trend-group-title">
-                      Cycle {cycleNum} (Started {cycle.startDate})
+                      {formatMessage(t.analytics.cycleStarted, {
+                        number: cycleNum,
+                        date: cycle.startDate,
+                      })}
                     </div>
                   )}
                   <div className="mucus-trend-chart">
@@ -255,14 +264,20 @@ export const CycleAnalyticsView: React.FC = () => {
                         <div
                           key={obs.id}
                           className="trend-bar-col"
-                          title={`CD ${obs.cycleDay}: ${obs.codeString || '0'} (Score: ${score})`}
+                          title={formatMessage(t.analytics.trendBarTitle, {
+                            day: obs.cycleDay,
+                            code: obs.codeString || '0',
+                            score,
+                          })}
                         >
                           <div className="trend-bar-value">{score > 0 ? score : ''}</div>
                           <div
                             className={`trend-bar ${obs.isPeakDay ? 'bar-peak' : score >= 6 ? 'bar-fertile' : 'bar-dry'}`}
                             style={{ height: `${heightPct}%` }}
                           />
-                          <div className="trend-bar-label">CD{obs.cycleDay}</div>
+                          <div className="trend-bar-label">
+                            {formatMessage(t.common.cycleDayCompact, { day: obs.cycleDay })}
+                          </div>
                         </div>
                       );
                     })}
@@ -270,7 +285,7 @@ export const CycleAnalyticsView: React.FC = () => {
                 </div>
               );
             })}
-          </div>
+          </section>
         </div>
 
         {/* Practitioner Clinical Overview */}
@@ -285,7 +300,12 @@ export const CycleAnalyticsView: React.FC = () => {
             </div>
             <div className="summary-item">
               <strong>{t.labels.peakDay}:</strong>{' '}
-              {peakObs ? `CD ${peakObs.cycleDay} (${peakObs.date})` : t.analytics.pendingPeak}
+              {peakObs
+                ? formatMessage(t.common.cycleDayDate, {
+                    day: peakObs.cycleDay,
+                    date: peakObs.date,
+                  })
+                : t.analytics.pendingPeak}
             </div>
             <div className="summary-item">
               <strong>{t.analytics.lutealHealth}:</strong>{' '}
@@ -296,7 +316,8 @@ export const CycleAnalyticsView: React.FC = () => {
                   : t.analytics.pendingPeak}
             </div>
             <div className="summary-item">
-              <strong>{t.stats.intercourseCount}:</strong> {intercourseCount} total
+              <strong>{t.stats.intercourseCount}:</strong>{' '}
+              {formatMessage(t.analytics.totalCount, { count: intercourseCount })}
             </div>
           </div>
         </div>

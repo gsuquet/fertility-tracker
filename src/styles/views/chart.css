@@ -332,7 +332,7 @@
   }
 
   .scroll-btn:hover {
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: white;
     border-color: var(--accent-primary);
   }
@@ -476,6 +476,13 @@
     outline-offset: 2px;
   }
 
+  /* Each cell is a native button: keep the text style of the chart */
+  button.chart-cell {
+    color: inherit;
+    text-align: inherit;
+    line-height: inherit;
+  }
+
   .chart-cell.peak-cell {
     border-color: #f59e0b !important;
     box-shadow:
@@ -496,7 +503,7 @@
     font-size: 0.55rem;
     font-weight: 800;
     text-transform: uppercase;
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     padding: 1px 4px;
     border-radius: 4px;
@@ -583,15 +590,10 @@
   .cell-symptom-tag {
     font-size: 0.58rem;
     font-weight: 800;
-    color: #d97706;
-    background-color: #fef3c7;
+    color: var(--color-warning-text);
+    background-color: var(--color-warning-surface);
     padding: 0 4px;
     border-radius: 3px;
-  }
-
-  [data-theme='dark'] .cell-symptom-tag {
-    color: #fbbf24;
-    background-color: rgba(245, 158, 11, 0.2);
   }
 
   .cell-notes-icon {
@@ -601,14 +603,12 @@
   }
 
   .empty-cell.paper-cell {
-    opacity: 0.65;
     border-style: dashed;
     border-color: var(--bg-surface-border-strong);
     background-image: none;
   }
 
   .empty-cell.paper-cell:hover {
-    opacity: 1;
     border-color: var(--accent-primary);
     background-color: var(--accent-light);
   }

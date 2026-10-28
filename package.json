@@ -1,6 +1,6 @@
 {
   "name": "fertility-tracker",
-  "version": "1.15.2",
+  "version": "1.18.5",
   "private": true,
   "description": "Offline-first Creighton Model (CrMS) fertility cycle charting app.",
   "type": "module",
@@ -41,7 +41,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",
-    "typecheck": "tsc --noEmit",
+    "test:e2e": "playwright test",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p e2e",
     "lint": "biome lint --error-on-warnings .",
     "format": "biome format --write .",
     "format:check": "biome format .",
@@ -55,7 +56,10 @@
     "react-dom": "19.3.1"
   },
   "devDependencies": {
+    "@axe-core/playwright": "4.14.0",
     "@biomejs/biome": "2.6.3",
+    "@fontsource-variable/plus-jakarta-sans": "5.3.0",
+    "@playwright/test": "1.64.1",
     "@testing-library/dom": "10.4.2",
     "@testing-library/jest-dom": "7.0.1",
     "@testing-library/react": "16.3.3",

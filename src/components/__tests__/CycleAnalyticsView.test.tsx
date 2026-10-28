@@ -9,7 +9,9 @@ const TestAnalyticsApp: React.FC = () => {
   const { loadDemoData } = useCycle();
   return (
     <div>
-      <button onClick={loadDemoData}>Load Demo Data</button>
+      <button type="button" onClick={loadDemoData}>
+        Load Demo Data
+      </button>
       <CycleAnalyticsView />
     </div>
   );
@@ -29,6 +31,18 @@ describe('CycleAnalyticsView Component', () => {
   it('renders empty state when no observations are present', () => {
     renderAnalyticsView();
     expect(screen.getByText('No Observations Logged')).toBeInTheDocument();
+    // The analytics tab controls this panel, so the panel id exists also when it is empty
+    const panel = screen.getByRole('tabpanel');
+    expect(panel).toHaveAttribute('id', 'analytics-panel');
+    expect(panel).toHaveAttribute('aria-labelledby', 'tab-analytics');
+  });
+
+  it('lets the keyboard focus and scroll the mucus trend chart', () => {
+    renderAnalyticsView();
+    fireEvent.click(screen.getByText('Load Demo Data'));
+    const trend = screen.getByRole('region', { name: 'Creighton Mucus Score Trend (0 to 10)' });
+    expect(trend).toHaveClass('mucus-trend-wrapper');
+    expect(trend).toHaveAttribute('tabindex', '0');
   });
 
   it('renders cycle phases, stamp distribution, and mucus trend chart when data loaded', () => {

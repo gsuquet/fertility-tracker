@@ -7,17 +7,8 @@ import type {
   FrequencyCode,
   SymptomCode,
 } from '../../types/crms';
-import {
-  Heart,
-  Flag,
-  Calendar as CalendarIcon,
-  Zap,
-  Sliders,
-  ChevronDown,
-  ChevronUp,
-  Save,
-  Trash2,
-} from 'lucide-react';
+import { ObservationCodeSelector } from '../observation/ObservationCodeSelector';
+import { Heart, Flag, Zap, Sliders, ChevronDown, ChevronUp, Save, Trash2 } from 'lucide-react';
 
 interface TodayObservationFormProps {
   entryMode: 'direct' | 'detailed';
@@ -91,28 +82,34 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
 
         {/* Entry Mode Toggle (Direct Code vs Detailed Form) */}
         <div className="entry-mode-toggle" role="radiogroup" aria-label={t.todayView.entryMode}>
-          <button
-            type="button"
-            role="radio"
+          <label
             className={`mode-toggle-btn ${entryMode === 'direct' ? 'active' : ''}`}
-            onClick={() => onSetEntryMode('direct')}
-            title="Direct Code Entry Only"
-            aria-checked={entryMode === 'direct'}
+            title={t.todayView.modeDirectTitle}
           >
+            <input
+              type="radio"
+              name="entry-mode"
+              className="sr-only"
+              checked={entryMode === 'direct'}
+              onChange={() => onSetEntryMode('direct')}
+            />
             <Zap size={14} />
             <span>{t.todayView.modeDirect}</span>
-          </button>
-          <button
-            type="button"
-            role="radio"
+          </label>
+          <label
             className={`mode-toggle-btn ${entryMode === 'detailed' ? 'active' : ''}`}
-            onClick={() => onSetEntryMode('detailed')}
-            title="Detailed Form Button Selectors"
-            aria-checked={entryMode === 'detailed'}
+            title={t.todayView.modeDetailedTitle}
           >
+            <input
+              type="radio"
+              name="entry-mode"
+              className="sr-only"
+              checked={entryMode === 'detailed'}
+              onChange={() => onSetEntryMode('detailed')}
+            />
             <Sliders size={14} />
             <span>{t.todayView.modeDetailed}</span>
-          </button>
+          </label>
         </div>
       </div>
 
@@ -160,122 +157,17 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
 
       {/* Detailed Form Selectors (Visible in 'detailed' mode or when toggled) */}
       {(entryMode === 'detailed' || showDetailedOverride) && (
-        <>
-          {/* Bleeding Selection */}
-          <div className="form-group">
-            <label>{t.labels.bleeding}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.bleeding}>
-              {(['H', 'M', 'L', 'VL', 'B'] as BleedingCode[]).map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${bleeding === code ? 'active bleeding' : ''}`}
-                  onClick={() => onBleedingSelect(bleeding === code ? undefined : code)}
-                  aria-pressed={bleeding === code}
-                >
-                  {t.codes.bleeding[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Start of New Cycle Toggle (Visible when Bleeding is active) */}
-          {bleeding && (
-            <div className="form-group">
-              <button
-                type="button"
-                className={`peak-toggle-btn ${isCycleStart === true ? 'active' : ''}`}
-                onClick={onToggleCycleStart}
-                aria-pressed={isCycleStart === true}
-                style={{
-                  borderColor: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
-                  backgroundColor: isCycleStart === true ? 'rgba(239, 68, 68, 0.15)' : undefined,
-                  color: isCycleStart === true ? 'var(--stamp-red, #ef4444)' : undefined,
-                }}
-              >
-                <CalendarIcon size={18} />
-                <span>
-                  {t.cycleStartModal.isCycleStartLabel}
-                  {isCycleStart !== undefined ? (isCycleStart ? ' (Yes)' : ' (No)') : ''}
-                </span>
-              </button>
-            </div>
-          )}
-
-          {/* Mucus Stretch Selection */}
-          <div className="form-group">
-            <label>{t.labels.stretch}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.stretch}>
-              {(
-                ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as MucusStretch[]
-              ).map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${stretch === code ? 'active stretch' : ''}`}
-                  onClick={() => onStretchSelect(stretch === code ? undefined : code)}
-                  aria-pressed={stretch === code}
-                >
-                  {t.codes.stretch[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Appearance Modifiers */}
-          <div className="form-group">
-            <label>{t.labels.modifiers}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.modifiers}>
-              {(['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as MucusModifier[]).map(mod => (
-                <button
-                  type="button"
-                  key={mod}
-                  className={`option-btn ${modifiers.includes(mod) ? 'active modifier' : ''}`}
-                  onClick={() => onToggleModifier(mod)}
-                  aria-pressed={modifiers.includes(mod)}
-                >
-                  {t.codes.modifiers[mod]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Frequency */}
-          <div className="form-group">
-            <label>{t.labels.frequency}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.frequency}>
-              {(['X1', 'X2', 'X3', 'AD'] as FrequencyCode[]).map(code => (
-                <button
-                  type="button"
-                  key={code}
-                  className={`option-btn ${frequency === code ? 'active frequency' : ''}`}
-                  onClick={() => onFrequencySelect(frequency === code ? undefined : code)}
-                  aria-pressed={frequency === code}
-                >
-                  {t.codes.frequency[code]}
-                </button>
-              ))}
-            </div>
-          </div>
-
-          {/* Contextual Symptoms */}
-          <div className="form-group">
-            <label>{t.labels.symptoms}</label>
-            <div className="button-grid" role="group" aria-label={t.labels.symptoms}>
-              {(['AP', 'RAP', 'LAP'] as SymptomCode[]).map(sym => (
-                <button
-                  type="button"
-                  key={sym}
-                  className={`option-btn ${symptoms.includes(sym) ? 'active symptom' : ''}`}
-                  onClick={() => onToggleSymptom(sym)}
-                  aria-pressed={symptoms.includes(sym)}
-                >
-                  {t.codes.symptoms[sym]}
-                </button>
-              ))}
-            </div>
-          </div>
-        </>
+        <ObservationCodeSelector
+          fields={{ bleeding, isCycleStart, stretch, modifiers, frequency, symptoms }}
+          actions={{
+            selectBleeding: onBleedingSelect,
+            toggleCycleStart: onToggleCycleStart,
+            selectStretch: onStretchSelect,
+            toggleModifier: onToggleModifier,
+            selectFrequency: onFrequencySelect,
+            toggleSymptom: onToggleSymptom,
+          }}
+        />
       )}
 
       {/* Peak Day Flag */}
@@ -298,7 +190,7 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           id="today-notes"
           className="form-input form-textarea"
           rows={3}
-          placeholder="Add relevant notes (e.g., stress, medication, travel)..."
+          placeholder={t.todayView.notesPlaceholder}
           value={notes}
           onChange={e => onNotesChange(e.target.value)}
         />
@@ -329,7 +221,13 @@ export const TodayObservationForm: React.FC<TodayObservationFormProps> = ({
           aria-disabled={!hasUnsavedChanges}
         >
           <Save size={18} />
-          <span>{hasUnsavedChanges ? t.actions.save : onDelete ? 'Saved' : t.actions.save}</span>
+          <span>
+            {hasUnsavedChanges
+              ? t.actions.save
+              : onDelete
+                ? t.todayView.savedLabel
+                : t.actions.save}
+          </span>
         </button>
       </div>
     </form>

@@ -76,3 +76,6 @@ export function useObservationForm() {
     }),
   };
 }
+
+/** The values and callbacks that `useObservationForm` returns. */
+export type ObservationForm = ReturnType<typeof useObservationForm>;

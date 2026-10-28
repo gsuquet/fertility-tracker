@@ -25,4 +25,53 @@
       padding: 1rem 0.75rem;
     }
   }
+
+  /* Holds the place of a lazy page while its chunk loads, so the footer does not jump */
+  .lazy-page-fallback {
+    min-height: 60vh;
+  }
+
+  /* Shown by ErrorBoundary when a part of the app fails to render or load */
+  .error-boundary {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-start;
+    gap: var(--space-sm);
+    margin: var(--space-md) 0;
+    padding: var(--space-lg);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  .error-boundary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
+  /* In a dialog, the panel gives the border and the background */
+  .error-boundary-dialog .error-boundary {
+    margin: 0;
+    border: none;
+  }
+
+  .storage-recovery-notice {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin-bottom: 1rem;
+    padding: 1rem 1.25rem;
+    border: 1px solid var(--color-warning);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+  }
+
+  .storage-recovery-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+  }
 }

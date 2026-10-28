@@ -1,0 +1,54 @@
+/* ==========================================================================
+   Undo Toast Primitive
+   Layer: primitives
+   ========================================================================== */
+
+@layer primitives {
+  .undo-toast {
+    position: fixed;
+    left: 50%;
+    bottom: var(--space-lg);
+    translate: -50% 0;
+    z-index: var(--z-toast);
+    width: max-content;
+    max-width: calc(100vw - 2 * var(--space-md));
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-sm) var(--space-md);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
+    font-size: 0.9rem;
+    font-weight: 600;
+    animation: fadeIn 0.2s ease-out;
+  }
+
+  .undo-toast-actions {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  /* Keep the toast above the bottom navigation bar */
+  @media (max-width: 640px) {
+    .undo-toast {
+      bottom: calc(62px + env(safe-area-inset-bottom, 0px) + var(--space-sm));
+    }
+
+    /* In the mobile menu, the toast goes to the top, so it does not cover the menu actions */
+    .mobile-menu-overlay .undo-toast {
+      top: var(--space-md);
+      bottom: auto;
+    }
+  }
+
+  @media print {
+    .undo-toast {
+      display: none;
+    }
+  }
+}

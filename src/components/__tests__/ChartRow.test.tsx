@@ -9,7 +9,9 @@ const TestChartApp: React.FC = () => {
   const { loadDemoData } = useCycle();
   return (
     <div>
-      <button onClick={loadDemoData}>Load Demo</button>
+      <button type="button" onClick={loadDemoData}>
+        Load Demo
+      </button>
       <ChartRow />
     </div>
   );
@@ -19,10 +21,10 @@ const TestChartAppWithControls: React.FC = () => {
   const { saveObservation } = useCycle();
   return (
     <div>
-      <button onClick={() => saveObservation({ date: '2026-07-25', bleeding: 'H' })}>
+      <button type="button" onClick={() => saveObservation({ date: '2026-07-25', bleeding: 'H' })}>
         Add July 25
       </button>
-      <button onClick={() => saveObservation({ date: '2026-07-20', bleeding: 'L' })}>
+      <button type="button" onClick={() => saveObservation({ date: '2026-07-20', bleeding: 'L' })}>
         Add July 20
       </button>
       <ChartRow />

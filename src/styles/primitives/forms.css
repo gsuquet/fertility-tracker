@@ -10,7 +10,21 @@
     gap: 0.5rem;
   }
 
-  .form-group label {
+  /* A button group is a fieldset: remove the browser border, and show its legend as a label */
+  fieldset.form-group {
+    border: 0;
+    margin: 0;
+    padding: 0;
+    min-width: 0;
+  }
+
+  .form-group legend {
+    padding: 0;
+    margin-bottom: 0.5rem;
+  }
+
+  .form-group label,
+  .form-group legend {
     font-size: 0.8rem;
     font-weight: 800;
     color: var(--text-secondary);
@@ -78,7 +92,7 @@
   }
 
   .option-btn.active {
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     border-color: var(--accent-primary);
     box-shadow: var(--shadow-sm);
@@ -108,17 +122,23 @@
   }
 
   .intercourse-toggle-btn.active {
-    background-color: #ec4899;
+    background-color: var(--color-intercourse);
     color: white;
-    border-color: #ec4899;
+    border-color: var(--color-intercourse);
     box-shadow: 0 4px 12px rgba(236, 72, 153, 0.3);
   }
 
   .peak-toggle-btn.active {
-    background-color: #8b5cf6;
+    background-color: var(--color-peak);
     color: white;
-    border-color: #8b5cf6;
+    border-color: var(--color-peak);
     box-shadow: 0 4px 12px rgba(139, 92, 246, 0.3);
+  }
+
+  .cycle-start-toggle-btn.active {
+    background-color: var(--color-cycle-start-surface);
+    color: var(--color-cycle-start-text);
+    border-color: var(--stamp-red);
   }
 
   .visually-hidden-checkbox {

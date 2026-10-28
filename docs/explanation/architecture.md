@@ -10,7 +10,7 @@ This design keeps health data on the device of the user. It also makes the hosti
 
 ## The domain layer
 
-The CrMS rules are in `src/domain/`. These functions are pure: they get data and return new data. They do not use React, the DOM or the network. The only exception is `versionTracker.ts`, which reads `localStorage`.
+The CrMS rules are in `src/domain/`. These functions are pure: they get data and return new data. They do not use React, the DOM or the network. The exceptions are `versionTracker.ts` and `appVersion.ts`, which read `localStorage`.
 
 There are three reasons for this separation:
 
@@ -58,11 +58,47 @@ The data context and the user interface context are separate. Thus, when the dra
 
 ## Shared form logic
 
-The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same.
+The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same. The component `ObservationCodeSelector` shows the code buttons of the two forms.
+
+## Lazy loading
+
+The first screen needs only a part of the code. Thus, the main JavaScript file contains only this part. The other parts load later with `React.lazy`:
+
+- The **Cycle Analytics** page loads when you open it.
+- Each dialog loads when you open it for the first time. The application shows a dialog only while it is open.
+- The release notes are in `versionTracker.ts`, and only the **About & Version Tracker** dialog imports this file. The header and the footer get the version from `appVersion.ts`, which is a small file.
+- The print view loads when the application starts. The **Print / Save as PDF** button starts the print only after the print view has loaded. The browser print command (Ctrl+P) does not wait.
+
+When the browser is idle after the first render, the application also loads the chunks of the page and the dialogs. Thus, the first screen is fast, and a dialog opens without a network later. This is important after a new deploy: the new service worker deletes the old files, and an old tab cannot get them again.
+
+If a chunk does not load, the part shows an error with a **Reload** button. Each dialog has its own error boundary, and a failed dialog shows the error in a dialog. When you close it, the next opening tries again. A failed print view shows an error toast and does not print.
+
+A smaller main file makes the first start faster, mainly on a slow phone. A unit test in `src/__tests__/mainChunk.test.ts` makes sure that the main file does not import the lazy parts.
+
+While a part loads, a screen reader announces "Loading". The screen does not show a spinner, because the load is fast and a spinner flashes.
+
+## Offline use
+
+The application works without a network after the first visit. A service worker keeps a copy of all the application files in the browser cache.
+
+The build makes the list of these files. The Vite plugin in `scripts/pwa/serviceWorkerPlugin.ts` bundles `src/sw/entry.ts` to `sw.js`. It adds the names of all the build files, also the pages that load later, such as **Cycle Analytics**. Thus, a page that you did not open online also opens offline.
+
+The cache name contains the version and a hash of the build files. Each new build makes a new cache, and the service worker deletes the old caches. The service worker uses two strategies:
+
+| Request                   | Strategy      | Reason                                                                     |
+| ------------------------- | ------------- | -------------------------------------------------------------------------- |
+| Files in `assets/`        | Cache first   | The file name contains a hash. A file with the same name never changes.    |
+| Pages and the other files | Network first | You get the newest version online. Offline, you get the copy in the cache. |
+
+`src/main.tsx` registers the service worker. There is no inline script in `index.html`. Thus, the Content Security Policy can block all inline scripts.
+
+If a part of the application cannot load, an error boundary shows a message and a **Reload** button. The rest of the application stays available.
 
 ## Styles
 
 The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../adr/0002-css-maintainability-design-system.md) for the reasons.
+
+The font Plus Jakarta Sans comes from the npm package `@fontsource-variable/plus-jakarta-sans`. The file `src/styles/base/fonts.css` declares only the `latin` and `latin-ext` files. One variable file gives all the weights. Vite copies the files to `assets/` with a hash in the name, so the service worker keeps them in the cache. The font does not come from Google Fonts, because each request to Google Fonts tells Google about the visit. The font has the SIL Open Font License 1.1.
 
 ## Related documents
 

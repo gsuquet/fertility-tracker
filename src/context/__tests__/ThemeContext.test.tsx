@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach, vi } from 'vitest';
 import { ThemeProvider, useTheme } from '../ThemeContext';
 
@@ -7,7 +7,9 @@ const TestComponent = () => {
   return (
     <div>
       <span data-testid="current-theme">{theme}</span>
-      <button onClick={toggleTheme}>Toggle Theme</button>
+      <button type="button" onClick={toggleTheme}>
+        Toggle Theme
+      </button>
     </div>
   );
 };
@@ -59,6 +61,13 @@ describe('ThemeContext Provider', () => {
 
     expect(screen.getByTestId('current-theme')).toHaveTextContent('dark');
     expect(document.documentElement.getAttribute('data-theme')).toBe('dark');
+  });
+
+  it('keeps the same context value when the provider re-renders with the same theme', () => {
+    const { result, rerender } = renderHook(() => useTheme(), { wrapper: ThemeProvider });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
   });
 
   it('throws error when useTheme is used outside ThemeProvider', () => {

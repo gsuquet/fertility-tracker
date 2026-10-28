@@ -12,12 +12,26 @@ export const readStorage = (key: string): string | null => {
   }
 };
 
-/** Stores a value. Does nothing when storage is unavailable. */
-export const writeStorage = (key: string, value: string): void => {
+/** Stores a value. Returns false when storage is unavailable or full. */
+export const writeStorage = (key: string, value: string): boolean => {
   try {
     localStorage.setItem(key, value);
+    return true;
   } catch {
-    // Storage unavailable: keep the value in memory only.
+    // Storage unavailable or full: keep the value in memory only.
+    return false;
+  }
+};
+
+/**
+ * Asks the browser not to evict the stored data (`navigator.storage.persist()`).
+ * Resolves to false when the API is missing, the browser refuses or the call fails.
+ */
+export const requestPersistentStorage = async (): Promise<boolean> => {
+  try {
+    return (await navigator.storage?.persist?.()) === true;
+  } catch {
+    return false;
   }
 };
 

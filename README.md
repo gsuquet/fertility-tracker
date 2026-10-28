@@ -18,7 +18,7 @@ Fertility Tracker is a web application to chart fertility signs with the Creight
 - Make a backup file and restore it.
 - Use the application in English or French, with a light or dark theme.
 
-Your data stays in your browser. The application has no account and no server database. Read [Privacy and data storage](docs/explanation/privacy-and-data-storage.md).
+Your data stays in your browser. The application has no account and no server database. It loads no file from a different site, also not the font. Read [Privacy and data storage](docs/explanation/privacy-and-data-storage.md).
 
 ## Start
 
@@ -56,6 +56,12 @@ All the documentation is in [docs/](docs/README.md). It has tutorials, how-to gu
 7. Open a pull request to `main`, with a title in the same format. The CI workflow must pass.
 
 Report a problem or ask for a feature in [GitHub Issues](https://github.com/gsuquet/fertility-tracker/issues).
+
+## License
+
+The code has the [MIT License](LICENSE).
+
+Third-party: Plus Jakarta Sans © 2020 The Plus Jakarta Sans Project Authors, licensed under the [SIL Open Font License 1.1](https://openfontlicense.org/open-font-license-official-text/). The application includes the font files from the npm package `@fontsource-variable/plus-jakarta-sans`.
 
 ## Trademarks
 

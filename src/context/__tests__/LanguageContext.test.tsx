@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, renderHook, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { LanguageProvider, useLanguage } from '../LanguageContext';
 
@@ -9,8 +9,12 @@ const TestComponent = () => {
       <span data-testid="current-lang">{language}</span>
       <span data-testid="app-title">{t.appTitle}</span>
       <span data-testid="today-tab">{t.tabs.today}</span>
-      <button onClick={() => setLanguage('fr')}>Switch to FR</button>
-      <button onClick={() => setLanguage('en')}>Switch to EN</button>
+      <button type="button" onClick={() => setLanguage('fr')}>
+        Switch to FR
+      </button>
+      <button type="button" onClick={() => setLanguage('en')}>
+        Switch to EN
+      </button>
     </div>
   );
 };
@@ -65,8 +69,28 @@ describe('LanguageContext Provider', () => {
     expect(screen.getByTestId('today-tab')).toHaveTextContent("Aujourd'hui");
   });
 
+  it('keeps the same context value when the provider re-renders with the same language', () => {
+    const { result, rerender } = renderHook(() => useLanguage(), { wrapper: LanguageProvider });
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
   it('throws error when useLanguage is used outside LanguageProvider', () => {
     const renderOutside = () => render(<TestComponent />);
     expect(renderOutside).toThrow('useLanguage must be used within LanguageProvider');
+  });
+
+  it('sets the lang attribute of the document to the app language', () => {
+    render(
+      <LanguageProvider>
+        <TestComponent />
+      </LanguageProvider>
+    );
+    expect(document.documentElement.lang).toBe('en');
+    fireEvent.click(screen.getByText('Switch to FR'));
+    expect(document.documentElement.lang).toBe('fr');
+    fireEvent.click(screen.getByText('Switch to EN'));
+    expect(document.documentElement.lang).toBe('en');
   });
 });

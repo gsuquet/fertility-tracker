@@ -1,6 +1,5 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
-import ReactDOM from 'react-dom';
+import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
@@ -22,7 +21,8 @@ import {
   X,
   Sparkles,
 } from 'lucide-react';
-import { getAppVersion } from '../domain/versionTracker';
+import { getAppVersion } from '../domain/appVersion';
+import { Modal } from './Modal';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -49,18 +49,6 @@ export const Header: React.FC<HeaderProps> = ({
     setActiveTab('today');
   };
 
-  // Close menu with Escape key
-  useEffect(() => {
-    if (!isMoreMenuOpen) return;
-    const handleKeyDown = (e: KeyboardEvent) => {
-      if (e.key === 'Escape') {
-        setIsMoreMenuOpen(false);
-      }
-    };
-    document.addEventListener('keydown', handleKeyDown);
-    return () => document.removeEventListener('keydown', handleKeyDown);
-  }, [isMoreMenuOpen]);
-
   const currentVersion = getAppVersion();
 
   return (
@@ -69,8 +57,8 @@ export const Header: React.FC<HeaderProps> = ({
         type="button"
         className="header-brand-btn"
         onClick={() => setActiveTab('today')}
-        title="Creighton FertilityCare System Home"
-        aria-label="Creighton FertilityCare System Home"
+        title={t.menu.homeLabel}
+        aria-label={t.menu.homeLabel}
       >
         <div className="brand-logo" aria-hidden="true">
           🌱
@@ -81,8 +69,9 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </button>
 
-      <nav className="header-tabs" role="tablist" aria-label="Main Navigation Views">
+      <div className="header-tabs" role="tablist" aria-label={t.menu.mainNavLabel}>
         <button
+          type="button"
           role="tab"
           aria-selected={activeTab === 'today'}
           aria-controls="today-panel"
@@ -94,6 +83,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t.tabs.today}</span>
         </button>
         <button
+          type="button"
           role="tab"
           aria-selected={activeTab === 'chart'}
           aria-controls="chart-panel"
@@ -105,6 +95,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t.tabs.chart}</span>
         </button>
         <button
+          type="button"
           role="tab"
           aria-selected={activeTab === 'calendar'}
           aria-controls="calendar-panel"
@@ -116,6 +107,7 @@ export const Header: React.FC<HeaderProps> = ({
           <span>{t.tabs.calendar}</span>
         </button>
         <button
+          type="button"
           role="tab"
           aria-selected={activeTab === 'analytics'}
           aria-controls="analytics-panel"
@@ -126,7 +118,7 @@ export const Header: React.FC<HeaderProps> = ({
           <BarChart2 size={18} />
           <span>{t.tabs.analytics}</span>
         </button>
-      </nav>
+      </div>
 
       <div className="header-controls">
         {/* Cycle Switcher Dropdown */}
@@ -134,6 +126,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop Direct New Entry */}
         <button
+          type="button"
           className="btn btn-primary new-entry-btn desktop-only-action"
           onClick={handleNewEntry}
           aria-label={t.actions.newEntry}
@@ -144,6 +137,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         {/* Desktop Direct Actions */}
         <button
+          type="button"
           className="icon-button desktop-only-action"
           onClick={onOpenExport}
           title={t.actions.exportPdf}
@@ -153,6 +147,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          type="button"
           className="icon-button desktop-only-action"
           onClick={onOpenWelcome}
           title={t.welcomeModal.title}
@@ -162,6 +157,7 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          type="button"
           className="icon-button desktop-only-action"
           onClick={onOpenVersion}
           title={t.versionTracker.title}
@@ -171,20 +167,22 @@ export const Header: React.FC<HeaderProps> = ({
         </button>
 
         <button
+          type="button"
           className="lang-toggle-btn desktop-only-action"
           onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-          title="Switch Language / Changer de langue"
-          aria-label="Switch Language"
+          title={t.menu.languageTitle}
+          aria-label={t.menu.languageLabel}
         >
           <Globe size={16} />
           <span>{language.toUpperCase()}</span>
         </button>
 
         <button
+          type="button"
           className="icon-button desktop-only-action"
           onClick={toggleTheme}
-          title="Toggle Dark/Light Mode"
-          aria-label="Toggle Dark/Light Mode"
+          title={t.menu.themeToggleLabel}
+          aria-label={t.menu.themeToggleLabel}
         >
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
@@ -194,122 +192,116 @@ export const Header: React.FC<HeaderProps> = ({
           type="button"
           className="icon-button mobile-more-btn"
           onClick={() => setIsMoreMenuOpen(true)}
-          title="More actions / Plus d'actions"
-          aria-label="More actions"
+          title={t.menu.moreActionsTitle}
+          aria-label={t.menu.moreActionsLabel}
           aria-expanded={isMoreMenuOpen}
         >
           <MoreVertical size={18} />
         </button>
       </div>
 
-      {/* Mobile Actions Bottom Sheet Modal via Portal */}
-      {isMoreMenuOpen
-        ? ReactDOM.createPortal(
-            <div
-              className="modal-overlay mobile-menu-overlay"
+      {/* Mobile Actions Bottom Sheet: the Modal primitive renders it in a portal */}
+      {isMoreMenuOpen && (
+        <Modal
+          label={t.menu.mobileMenuLabel}
+          onClose={() => setIsMoreMenuOpen(false)}
+          className="modal-overlay mobile-menu-overlay"
+          panelClassName="mobile-action-sheet"
+        >
+          <div className="mobile-action-sheet-header">
+            <div className="sheet-header-title">
+              <Sparkles size={16} className="sheet-icon" />
+              <span>{t.menu.title}</span>
+            </div>
+            <button
+              type="button"
+              className="icon-button sheet-close-btn"
               onClick={() => setIsMoreMenuOpen(false)}
-              role="dialog"
-              aria-modal="true"
-              aria-label="Mobile Navigation Menu"
+              aria-label={t.menu.closeMenu}
             >
-              <div className="mobile-action-sheet" onClick={e => e.stopPropagation()}>
-                <div className="mobile-action-sheet-header">
-                  <div className="sheet-header-title">
-                    <Sparkles size={16} className="sheet-icon" />
-                    <span>{t.menu.title}</span>
-                  </div>
-                  <button
-                    type="button"
-                    className="icon-button sheet-close-btn"
-                    onClick={() => setIsMoreMenuOpen(false)}
-                    aria-label="Close menu"
-                  >
-                    <X size={18} />
-                  </button>
-                </div>
+              <X size={18} />
+            </button>
+          </div>
 
-                <div className="mobile-action-sheet-body">
-                  {/* Export Option */}
-                  <button
-                    type="button"
-                    className="sheet-action-item"
-                    onClick={() => {
-                      setIsMoreMenuOpen(false);
-                      onOpenExport();
-                    }}
-                  >
-                    <div className="sheet-action-icon export-icon-bg">
-                      <Download size={18} />
-                    </div>
-                    <div className="sheet-action-content">
-                      <strong>{t.actions.exportPdf}</strong>
-                      <span>{t.menu.exportHint}</span>
-                    </div>
-                  </button>
-
-                  {/* Welcome & Guide Option */}
-                  <button
-                    type="button"
-                    className="sheet-action-item"
-                    onClick={() => {
-                      setIsMoreMenuOpen(false);
-                      onOpenWelcome();
-                    }}
-                  >
-                    <div className="sheet-action-icon guide-icon-bg">
-                      <BookOpen size={18} />
-                    </div>
-                    <div className="sheet-action-content">
-                      <strong>{t.welcomeModal.title}</strong>
-                      <span>{t.menu.guideHint}</span>
-                    </div>
-                  </button>
-
-                  {/* Version & About Option */}
-                  <button
-                    type="button"
-                    className="sheet-action-item"
-                    onClick={() => {
-                      setIsMoreMenuOpen(false);
-                      onOpenVersion();
-                    }}
-                  >
-                    <div className="sheet-action-icon info-icon-bg">
-                      <Info size={18} />
-                    </div>
-                    <div className="sheet-action-content">
-                      <div className="sheet-action-title-row">
-                        <strong>{t.versionTracker.title}</strong>
-                        <span className="sheet-version-badge">v{currentVersion}</span>
-                      </div>
-                      <span>{t.menu.versionHint}</span>
-                    </div>
-                  </button>
-
-                  <div className="sheet-divider" />
-
-                  {/* Language & Theme Controls Row */}
-                  <div className="sheet-quick-toggles">
-                    <button
-                      type="button"
-                      className="sheet-toggle-btn"
-                      onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-                    >
-                      <Globe size={16} />
-                      <span>{t.menu.languageToggle}</span>
-                    </button>
-
-                    <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
-                      {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                      <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
-                    </button>
-                  </div>
-                </div>
+          <div className="mobile-action-sheet-body">
+            {/* Export Option */}
+            <button
+              type="button"
+              className="sheet-action-item"
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                onOpenExport();
+              }}
+            >
+              <div className="sheet-action-icon export-icon-bg">
+                <Download size={18} />
               </div>
-            </div>,
-            document.body
-          )
-        : null}
+              <div className="sheet-action-content">
+                <strong>{t.actions.exportPdf}</strong>
+                <span>{t.menu.exportHint}</span>
+              </div>
+            </button>
+
+            {/* Welcome & Guide Option */}
+            <button
+              type="button"
+              className="sheet-action-item"
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                onOpenWelcome();
+              }}
+            >
+              <div className="sheet-action-icon guide-icon-bg">
+                <BookOpen size={18} />
+              </div>
+              <div className="sheet-action-content">
+                <strong>{t.welcomeModal.title}</strong>
+                <span>{t.menu.guideHint}</span>
+              </div>
+            </button>
+
+            {/* Version & About Option */}
+            <button
+              type="button"
+              className="sheet-action-item"
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                onOpenVersion();
+              }}
+            >
+              <div className="sheet-action-icon info-icon-bg">
+                <Info size={18} />
+              </div>
+              <div className="sheet-action-content">
+                <div className="sheet-action-title-row">
+                  <strong>{t.versionTracker.title}</strong>
+                  <span className="sheet-version-badge">v{currentVersion}</span>
+                </div>
+                <span>{t.menu.versionHint}</span>
+              </div>
+            </button>
+
+            <div className="sheet-divider" />
+
+            {/* Language & Theme Controls Row */}
+            <div className="sheet-quick-toggles">
+              <button
+                type="button"
+                className="sheet-toggle-btn"
+                onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
+              >
+                <Globe size={16} />
+                <span>{t.menu.languageToggle}</span>
+              </button>
+
+              <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
+                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
+                <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
+              </button>
+            </div>
+          </div>
+        </Modal>
+      )}
     </header>
   );
 };

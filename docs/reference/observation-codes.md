@@ -1,6 +1,6 @@
 # Observation codes
 
-This page lists the codes that the application accepts for one day of observation. The codes come from the Creighton Model FertilityCare System (CrMS). The source of the lists is `src/types/crms.ts`.
+This page lists the codes that the application accepts for one day of observation. The codes come from the Creighton Model FertilityCare System (CrMS). The source of the lists is `src/types/crms.ts`. The last section gives the names of the lists in the source.
 
 ## Code string
 
@@ -12,20 +12,27 @@ The application writes the code of a day in this sequence:
 | Mucus       | `10KL`  | The stretch code, then the appearance codes.                           |
 | Frequency   | `X3`    | Directly after the mucus code. If there is no mucus code, it is alone. |
 | Intercourse | `I`     | Optional. A space comes before it.                                     |
+| Symptoms    | `AP`    | Optional. Each symptom code is a token. A space comes before it.       |
 
-Examples: `M`, `0AD`, `10KLX3 I`, `L 6CX1`.
+Examples: `M`, `0AD`, `10KLX3 I AP`, `L 6CX1`.
 
-In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. It also accepts the symptom codes. The code string does not show the symptoms.
+In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. The parser gives the same fields back from each code string that the application writes.
+
+An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow and `-L` as the appearance code for lubricative.
+
+The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
+
+Data from versions before 1.17.2 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. A stored code `B` or `L` on a day without bleeding becomes `-B` or `-L`.
 
 ## Bleeding codes
 
-| Code | Meaning                 | In Direct Code Entry                                                                               |
-| ---- | ----------------------- | -------------------------------------------------------------------------------------------------- |
-| `H`  | Heavy flow              | Yes                                                                                                |
-| `M`  | Moderate flow           | Yes                                                                                                |
-| `L`  | Light flow              | Yes                                                                                                |
-| `VL` | Very light flow         | Yes                                                                                                |
-| `B`  | Brown or black bleeding | No. Use the **Detailed Form** buttons. In Direct Code Entry, `B` is the appearance code for brown. |
+| Code | Meaning                 | In Direct Code Entry                                                                    |
+| ---- | ----------------------- | --------------------------------------------------------------------------------------- |
+| `H`  | Heavy flow              | Yes                                                                                     |
+| `M`  | Moderate flow           | Yes                                                                                     |
+| `L`  | Light flow              | Yes                                                                                     |
+| `VL` | Very light flow         | Yes                                                                                     |
+| `B`  | Brown or black bleeding | Yes, only as the first token. In other positions, `B` is the appearance code for brown. |
 
 ## Stretch codes
 
@@ -74,6 +81,23 @@ A day has fertile mucus if its stretch code or one of its appearance codes is fe
 | `RAP` | Right abdominal pain |
 | `LAP` | Left abdominal pain  |
 | `I`   | Sexual intercourse   |
+
+## Code lists in the source
+
+Each list is an `as const` array in `src/types/crms.ts`. The code types come from these arrays. The domain functions and the forms use only these arrays.
+
+| Constant                  | Codes                                                       | Type            |
+| ------------------------- | ----------------------------------------------------------- | --------------- |
+| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    | `BleedingCode`  |
+| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         | `BleedingCode`  |
+| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` | `MucusStretch`  |
+| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      | `MucusStretch`  |
+| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    | `MucusModifier` |
+| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             | `MucusModifier` |
+| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      | `FrequencyCode` |
+| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          | `SymptomCode`   |
+
+`isCodeIn(list, value)` returns `true` if the value is in the list. The parser tries the stretch codes from the longest to the shortest. Thus, `10WL` matches before `10`.
 
 ## Related documents
 

@@ -10,7 +10,8 @@
 @import './tokens/spacing.css';
 @import './tokens/animations.css';
 
-/* 2. CSS Reset & Global Layout Baseline */
+/* 2. Self-hosted Font, CSS Reset & Global Layout Baseline */
+@import './base/fonts.css';
 @import './base/reset.css';
 @import './base/layout.css';
 
@@ -19,6 +20,7 @@
 @import './primitives/badges.css';
 @import './primitives/forms.css';
 @import './primitives/dialogs.css';
+@import './primitives/toast.css';
 
 /* 4. Domain Views & Features */
 @import './views/header.css';

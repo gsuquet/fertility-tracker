@@ -18,7 +18,7 @@ Use this procedure to make a PDF file or a paper copy of your chart. The file ha
 
 ## Result
 
-You have a landscape chart with one row of 35 days for each cycle. The rows go from the oldest cycle to the newest cycle. The file name has the cycle number and the date, for example `fertility-tracker-chart-cycle-2-2026-10-27.pdf`.
+You have a landscape chart with one row of 35 days for each cycle. The rows go from the oldest cycle to the newest cycle. The text of the chart is in the language of the application. The observation codes are the same in each language. The file name has the cycle number and the date, for example `fertility-tracker-chart-cycle-2-2026-10-27.pdf`.
 
 ## Related documents
 

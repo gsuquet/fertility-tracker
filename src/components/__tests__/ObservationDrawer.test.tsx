@@ -9,7 +9,9 @@ const TestWrapper: React.FC = () => {
   const { setIsDrawerOpen } = useCycle();
   return (
     <div>
-      <button onClick={() => setIsDrawerOpen(true)}>Open Drawer</button>
+      <button type="button" onClick={() => setIsDrawerOpen(true)}>
+        Open Drawer
+      </button>
       <ObservationDrawer />
     </div>
   );
@@ -34,7 +36,7 @@ describe('ObservationDrawer Component (Dual Logger)', () => {
     expect(directInput).toBeInTheDocument();
 
     fireEvent.change(directInput, { target: { value: '10kl x3 i ap' } });
-    expect(screen.getByText('10KLX3 I')).toBeInTheDocument();
+    expect(screen.getByText('10KLX3 I AP')).toBeInTheDocument();
   });
 
   it('updates live stamp preview when options are clicked', () => {

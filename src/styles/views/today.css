@@ -20,7 +20,7 @@
     top: 80px;
     right: 24px;
     z-index: var(--z-toast, 999);
-    background-color: var(--accent-success, #10b981);
+    background-color: var(--color-success-solid);
     color: #ffffff;
     padding: 0.75rem 1.25rem;
     border-radius: var(--radius-lg);
@@ -150,7 +150,7 @@
   }
 
   .date-nav-btn:hover {
-    background-color: var(--accent-primary);
+    background-color: var(--accent-solid);
     color: #ffffff;
     border-color: var(--accent-primary);
     transform: scale(1.05);
@@ -283,6 +283,16 @@
     background-color: var(--bg-surface);
     color: var(--accent-primary);
     box-shadow: var(--shadow-sm);
+  }
+
+  /* Each label holds a hidden native radio input: the label shows its keyboard focus */
+  label.mode-toggle-btn {
+    position: relative;
+  }
+
+  .mode-toggle-btn:has(input:focus-visible) {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
   }
 
   .direct-mode-expand-wrapper {

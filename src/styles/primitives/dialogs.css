@@ -4,6 +4,27 @@
    ========================================================================== */
 
 @layer primitives {
+  /*
+   * The native <dialog> of Modal.tsx. Remove the browser styles with zero specificity,
+   * so the overlay classes (.modal-overlay, .drawer-overlay) give the full-screen backdrop.
+   */
+  :where(dialog.modal-dialog) {
+    width: auto;
+    height: auto;
+    max-width: none;
+    max-height: none;
+    margin: 0;
+    padding: 0;
+    border: 0;
+    color: inherit;
+    background-color: transparent;
+  }
+
+  /* The overlay class paints the backdrop, so the browser backdrop stays transparent */
+  dialog.modal-dialog::backdrop {
+    background-color: transparent;
+  }
+
   .modal-overlay {
     position: fixed;
     inset: 0;
@@ -67,6 +88,25 @@
     gap: 0.75rem;
     background-color: var(--bg-surface);
     flex-shrink: 0;
+  }
+
+  /* Confirmation Dialog: opens over another dialog */
+  .confirm-overlay {
+    z-index: var(--z-popover);
+  }
+
+  .confirm-dialog {
+    max-width: 420px;
+  }
+
+  .confirm-dialog .modal-body {
+    color: var(--text-secondary);
+    font-size: 0.95rem;
+    line-height: 1.5;
+  }
+
+  .confirm-dialog .modal-footer {
+    flex-wrap: wrap;
   }
 
   /* Responsive Mobile Bottom-Sheet */

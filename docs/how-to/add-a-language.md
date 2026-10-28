@@ -24,7 +24,7 @@ The application has English (`en`) and French (`fr`). English is the reference. 
    };
    ```
 
-5. Translate each text in `de.ts`. Set `locale` to `'de-DE'`.
+5. Translate each text in `de.ts`. Set `locale` to `'de-DE'`. Keep each `{name}` placeholder. Do not translate the CrMS codes, for example `10KLX3`.
 6. In `src/i18n/index.ts`, import `de`. Add it to `translations` and to `supportedLanguages`.
 7. In `src/context/LanguageContext.tsx`, accept `'de'` as a saved language.
 8. In `src/components/Header.tsx`, the language button changes between `en` and `fr`. Change the two buttons so that they go to the next item of `supportedLanguages`.

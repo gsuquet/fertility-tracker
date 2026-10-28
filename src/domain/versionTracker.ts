@@ -1,5 +1,13 @@
+import { getAppVersion, getBuildDate } from './appVersion';
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
-import type { Observation } from '../types/crms';
+import {
+  LAST_SEEN_VERSION_KEY,
+  STORAGE_HAS_SEEN_WELCOME_KEY,
+  STORAGE_LANGUAGE_KEY,
+  STORAGE_OBSERVATIONS_KEY,
+  STORAGE_THEME_KEY,
+} from '../utils/storageKeys';
+import { parseObservationData } from './storageFormat';
 
 export interface VersionRelease {
   version: string;
@@ -31,34 +39,397 @@ export interface StorageStats {
   observationsCount: number;
 }
 
-export const LAST_SEEN_VERSION_KEY = 'fertility_tracker_last_seen_version';
-export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome';
-export const STORAGE_OBSERVATIONS_KEY = 'fertility_care_observations';
 export const CRMS_SPEC_VERSION = '1.1.0';
 
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.15.2',
+    version: '1.18.5',
     date: '2026-10-27',
-    title: 'Specification in Simplified Technical English',
-    titleFr: 'Spécification en Anglais Technique Simplifié',
-    tagline:
-      'The specification matches the application, and each commit follows one message format',
+    title: 'Faster Start',
+    titleFr: 'Démarrage plus rapide',
+    tagline: 'The app loads less code at start, and each dialog loads when you open it',
     taglineFr:
-      'La spécification correspond à l’application, et chaque commit suit un format de message unique',
+      'L’application charge moins de code au démarrage, et chaque fenêtre se charge à son ouverture',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'Rewrote the specification in ASD-STE100 Simplified Technical English',
-      'Corrected the specification to match the application: languages, statistics, export, backup and cycle rules',
-      'Added the specification to the automatic documentation check',
-      'Added a Conventional Commits check for commit messages and pull request titles',
+      'The main JavaScript file is about 15% smaller',
+      'The release notes load only when you open the About dialog',
+      'The export, About and welcome dialogs load when you open them for the first time',
+      'When the browser is idle after the start, the app loads the other parts, so they open later without a network',
+      'The export dialog opens in Single Cycle mode, and the other dialogs open on their first tab or step',
+      'The Print / Save as PDF button prints only after the print view has loaded',
+      'If a part does not load, a visible message gives a Reload button, and the other dialogs still open',
+      'A screen reader announces Loading while a page or a dialog loads',
+      'All the parts are still available offline',
     ],
     highlightsFr: [
-      'Spécification réécrite en anglais technique simplifié ASD-STE100',
-      'Spécification corrigée selon l’application : langues, statistiques, export, sauvegarde et règles de cycle',
-      'Ajout de la spécification à la vérification automatique de la documentation',
-      'Ajout d’une vérification Conventional Commits des messages de commit et des titres de pull request',
+      'Le fichier JavaScript principal est environ 15 % plus petit',
+      'Les notes de version se chargent seulement à l’ouverture de la fenêtre À propos',
+      'Les fenêtres d’export, À propos et de bienvenue se chargent à leur première ouverture',
+      'Quand le navigateur est inactif après le démarrage, l’application charge les autres parties, qui s’ouvrent ensuite sans réseau',
+      'La fenêtre d’export s’ouvre en mode Cycle unique, et les autres fenêtres sur leur premier onglet ou leur première étape',
+      'Le bouton Imprimer / Sauvegarder en PDF imprime seulement après le chargement de la vue d’impression',
+      'Si une partie ne se charge pas, un message visible propose de recharger, et les autres fenêtres s’ouvrent toujours',
+      'Un lecteur d’écran annonce Chargement pendant le chargement d’une page ou d’une fenêtre',
+      'Toutes les parties restent disponibles hors ligne',
+    ],
+  },
+  {
+    version: '1.18.4',
+    date: '2026-10-27',
+    title: 'More Browser Tests',
+    titleFr: 'Plus de tests dans le navigateur',
+    tagline: 'New browser tests check the Peak Day, damaged data, save errors and offline use',
+    taglineFr:
+      'De nouveaux tests dans le navigateur vérifient le Jour Sommet, les données endommagées, les erreurs d’enregistrement et l’usage hors ligne',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A browser test sets and removes a manual Peak Day and checks the chart',
+      'Browser tests check that the app keeps a copy of saved data that it cannot read',
+      'A browser test checks the warning when the browser cannot save your observations',
+      'A browser test reloads the app without a network after the first visit',
+      'A browser test uses the Undo button with the keyboard while the entry panel is open',
+    ],
+    highlightsFr: [
+      'Un test dans le navigateur définit puis retire un Jour Sommet manuel et vérifie le tableau',
+      'Des tests dans le navigateur vérifient que l’application garde une copie des données qu’elle ne peut pas lire',
+      'Un test dans le navigateur vérifie l’avertissement quand le navigateur ne peut pas enregistrer vos observations',
+      'Un test dans le navigateur recharge l’application sans réseau après la première visite',
+      'Un test dans le navigateur utilise le bouton « Annuler la modification » au clavier quand le panneau de saisie est ouvert',
+    ],
+  },
+  {
+    version: '1.18.3',
+    date: '2026-10-27',
+    title: 'Full French Translation',
+    titleFr: 'Traduction française complète',
+    tagline: 'The last English texts of the French interface are now translated',
+    taglineFr: 'Les derniers textes anglais de l’interface française sont maintenant traduits',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The chart cells, popover, phase bar and legend are translated',
+      'The calendar months and weekdays, the cycle picker and the footer are translated',
+      'The analytics empty state, stamp distribution and mucus score scale are translated',
+      'The printed practitioner report uses the language of the app, also for the export date and the day dates',
+      'Each stamp key label shows once, for example Peak Day (P)',
+      'Screen reader labels and button tooltips are translated, and the page language follows the app',
+      'CrMS codes such as 10KLX3, P and I stay the same in each language',
+    ],
+    highlightsFr: [
+      'Les cases du graphique, leur info-bulle, la barre des phases et la légende sont traduites',
+      'Les mois et les jours du calendrier, le sélecteur de cycle et le pied de page sont traduits',
+      'L’état vide des analyses, la répartition des timbres et l’échelle du score de glaire sont traduits',
+      'Le rapport imprimé pour le praticien utilise la langue de l’application, y compris pour la date d’export et les dates des jours',
+      'Chaque libellé de la légende des timbres apparaît une seule fois, par exemple Jour Sommet (P)',
+      'Les libellés des lecteurs d’écran et les info-bulles des boutons sont traduits, et la langue de la page suit l’application',
+      'Les codes CrMS comme 10KLX3, P et I restent les mêmes dans chaque langue',
+    ],
+  },
+  {
+    version: '1.18.2',
+    date: '2026-10-27',
+    title: 'Accessible Dialogs',
+    titleFr: 'Fenêtres accessibles',
+    tagline: 'All dialogs and panels now keep the keyboard focus inside them',
+    taglineFr: 'Toutes les fenêtres et tous les panneaux gardent maintenant le focus du clavier',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'All dialogs, the observation panel and the mobile menu use one native modal dialog',
+      'A dialog moves the focus into it when it opens, and back to its button when it closes',
+      'Tab and Shift+Tab stay in the open dialog, and Escape closes only the top dialog',
+      'The welcome guide slides and the mucus trend chart can scroll with the keyboard',
+      'The chart days are real buttons, and the entry mode uses real radio buttons',
+      'The Undo toast stays visible and usable while a dialog is open',
+    ],
+    highlightsFr: [
+      'Toutes les fenêtres, le panneau d’observation et le menu mobile utilisent une même fenêtre modale native',
+      'Une fenêtre prend le focus à l’ouverture et le rend à son bouton à la fermeture',
+      'Tab et Maj+Tab restent dans la fenêtre ouverte, et Échap ferme seulement la fenêtre du dessus',
+      'Les diapositives du guide et le graphique de tendance de la glaire défilent au clavier',
+      'Les jours du graphique sont de vrais boutons, et le mode de saisie utilise de vrais boutons radio',
+      'Le message Annuler reste visible et utilisable quand une fenêtre est ouverte',
+    ],
+  },
+  {
+    version: '1.18.1',
+    date: '2026-10-27',
+    title: 'Code Cleanup',
+    titleFr: 'Nettoyage du code',
+    tagline: 'Removes unused code and makes internal APIs clearer, with no change to your data',
+    taglineFr:
+      'Supprime du code inutilisé et clarifie les API internes, sans changement pour vos données',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Removes the unused cycle-level manual Peak Day date',
+      'Deleting an observation now matches its id only',
+      'Each browser storage key is defined in one place, in storageKeys.ts',
+      'The print view uses the local date of today when there are no cycles',
+      'Toasts close a fixed time after the last message, and their timers stop when the view closes',
+      'A second print within one second keeps the original page title',
+      'The language and theme settings no longer re-render the whole app without a change',
+    ],
+    highlightsFr: [
+      'Supprime la date de Jour Sommet manuel inutilisée au niveau du cycle',
+      'La suppression d’une observation utilise maintenant son identifiant uniquement',
+      'Chaque clé de stockage du navigateur est définie à un seul endroit, dans storageKeys.ts',
+      'La vue d’impression utilise la date locale du jour quand il n’y a pas de cycle',
+      'Les notifications se ferment un temps fixe après le dernier message, et leurs minuteurs s’arrêtent quand la vue se ferme',
+      'Une deuxième impression en moins d’une seconde garde le titre d’origine de la page',
+      'Les réglages de langue et de thème ne font plus re-rendre toute l’application sans changement',
+    ],
+  },
+  {
+    version: '1.18.0',
+    date: '2026-10-27',
+    title: 'Safer Data Storage',
+    titleFr: 'Stockage des données plus sûr',
+    tagline: 'The app now warns you when it cannot save and reminds you to back up',
+    taglineFr:
+      'L’application vous avertit maintenant quand elle ne peut pas enregistrer et vous rappelle de sauvegarder',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A warning stays at the top of the page when the browser does not save your observations',
+      'The app asks the browser to keep your data, so that it is not deleted when space is low',
+      'A reminder shows when your last backup is more than 30 days old. Later hides it for 7 days',
+      'The app can now read a versioned data format. It still saves in the old format, so older versions read your data and backups',
+      'Saved records that cannot be read are kept in a copy, and a message tells you how many',
+      'The code of each day is calculated again from its fields when the app loads your data',
+    ],
+    highlightsFr: [
+      'Un avertissement reste en haut de la page quand le navigateur n’enregistre pas vos observations',
+      'L’application demande au navigateur de garder vos données, pour qu’elles ne soient pas supprimées quand l’espace manque',
+      'Un rappel s’affiche quand votre dernière sauvegarde date de plus de 30 jours. Plus tard le masque pendant 7 jours',
+      'L’application sait maintenant lire un format de données versionné. Elle enregistre toujours dans l’ancien format, pour que les versions précédentes lisent vos données et sauvegardes',
+      'Les enregistrements illisibles sont gardés dans une copie, et un message indique leur nombre',
+      'Le code de chaque jour est recalculé à partir de ses champs quand l’application charge vos données',
+    ],
+  },
+  {
+    version: '1.17.3',
+    date: '2026-10-27',
+    title: 'Readable Text Contrast',
+    titleFr: 'Contraste de Texte Lisible',
+    tagline:
+      'The text of the views, dialogs and buttons meets the WCAG 2 AA contrast ratio in the light and dark themes',
+    taglineFr:
+      'Le texte des vues, des fenêtres et des boutons respecte le contraste WCAG 2 AA dans les thèmes clair et sombre',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Darkened the muted text, for example the footer, the subtitles and the cycle length pill',
+      'Made the accent text lighter in the dark theme, with darker fills behind white button text',
+      'Darkened the red of the delete and clear data buttons',
+      'Made the chart symptom tag text darker in the light theme',
+      'Removed the fade of empty chart days, which now show only a dashed border',
+      'Darkened the fills of the active intercourse and Peak buttons and of the saved message',
+      'Darkened the text of the active start of new cycle button in the light theme and lightened it in the dark theme',
+      'Darkened the form mode badge of the welcome guide and the version badge of the mobile menu',
+      'Added a test that calculates the contrast ratio of the color tokens',
+    ],
+    highlightsFr: [
+      'Texte secondaire assombri, par exemple le pied de page, les sous-titres et la durée du cycle',
+      'Texte d’accent plus clair dans le thème sombre, avec des fonds plus foncés sous le texte blanc des boutons',
+      'Rouge des boutons de suppression et d’effacement des données assombri',
+      'Texte des étiquettes de symptômes du tableau assombri dans le thème clair',
+      'Les jours vides du tableau ne sont plus estompés et ont seulement une bordure en tirets',
+      'Fonds des boutons actifs rapport et Sommet, et du message d’enregistrement, assombris',
+      'Texte du bouton actif de début de nouveau cycle assombri dans le thème clair et éclairci dans le thème sombre',
+      'Badge du mode formulaire du guide de bienvenue et badge de version du menu mobile assombris',
+      'Ajout d’un test qui calcule le contraste des jetons de couleur',
+    ],
+  },
+  {
+    version: '1.17.2',
+    date: '2026-10-27',
+    title: 'Symptom Codes in the Observation Code',
+    titleFr: 'Codes de Symptôme dans le Code d’Observation',
+    tagline: 'The observation code now shows the AP, RAP and LAP symptom codes',
+    taglineFr: 'Le code d’observation affiche maintenant les codes de symptôme AP, RAP et LAP',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The observation code keeps the symptom codes, for example 10KLX3 I AP',
+      'The history list, calendar and direct code field show the symptoms again',
+      'Saved data without symptoms in the code gets them back when it loads',
+      'Direct Code Entry reads B first as brown bleeding, and a lone L or B appearance code is written -L or -B',
+    ],
+    highlightsFr: [
+      'Le code d’observation garde les codes de symptôme, par exemple 10KLX3 I AP',
+      'L’historique, le calendrier et le champ de code direct affichent de nouveau les symptômes',
+      'Les données enregistrées sans symptômes dans le code les retrouvent au chargement',
+      'La saisie directe lit B en premier comme saignement brun, et un code d’aspect L ou B seul s’écrit -L ou -B',
+    ],
+  },
+  {
+    version: '1.17.1',
+    date: '2026-10-27',
+    title: 'End-to-End and Accessibility Tests',
+    titleFr: 'Tests de bout en bout et d’accessibilité',
+    tagline: 'A real browser now checks the main flows and the accessibility of each view',
+    taglineFr:
+      'Un vrai navigateur vérifie maintenant les parcours principaux et l’accessibilité de chaque vue',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Added Playwright tests that run the production build in Chromium',
+      'Tested the welcome guide, a saved observation after a reload and a backup and restore round trip',
+      'Tested the chart, calendar and analytics views with the demo data',
+      'Added axe checks (WCAG 2 A and AA) on each view and on the export dialog',
+      'Ran the end-to-end tests on each pull request',
+    ],
+    highlightsFr: [
+      'Ajout de tests Playwright qui exécutent la version de production dans Chromium',
+      'Tests du guide de bienvenue, d’une observation conservée après un rechargement et d’une sauvegarde puis restauration',
+      'Tests des vues graphique, calendrier et analyses avec les données de démonstration',
+      'Ajout de contrôles axe (WCAG 2 A et AA) sur chaque vue et sur la fenêtre d’export',
+      'Exécution des tests de bout en bout sur chaque pull request',
+    ],
+  },
+  {
+    version: '1.17.0',
+    date: '2026-10-27',
+    title: 'Confirm, Preview and Undo Data Changes',
+    titleFr: 'Confirmer, prévisualiser et annuler les changements de données',
+    tagline: 'Restoring a backup, loading the demo or clearing your chart can now be undone',
+    taglineFr:
+      'La restauration d’une sauvegarde, le chargement de la démo ou l’effacement du graphique peuvent maintenant être annulés',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app asks in its own dialog before a restore, the demo or a clear replaces your observations',
+      'An Undo button puts back your observations after a restore, the demo or a clear',
+      'The restore dialog shows the number of observations and the dates of the backup file',
+      'Merge adds a backup to your observations: a day of the file replaces the same day',
+      'An invalid backup file shows a translated error in the export dialog',
+      'The app asks before it deletes the copy of unreadable data',
+    ],
+    highlightsFr: [
+      'L’application demande confirmation dans sa propre fenêtre avant qu’une restauration, la démo ou un effacement remplace vos observations',
+      'Un bouton Annuler remet vos observations après une restauration, la démo ou un effacement',
+      'La fenêtre de restauration indique le nombre d’observations et les dates du fichier de sauvegarde',
+      'Fusionner ajoute une sauvegarde à vos observations : un jour du fichier remplace le même jour',
+      'Un fichier de sauvegarde invalide affiche une erreur traduite dans la fenêtre d’export',
+      'L’application demande confirmation avant de supprimer la copie des données illisibles',
+    ],
+  },
+  {
+    version: '1.16.3',
+    date: '2026-10-27',
+    title: 'Shared Code Buttons',
+    titleFr: 'Boutons de Codes Partagés',
+    tagline: 'The Today form and the observation drawer now share one set of code buttons',
+    taglineFr:
+      'Le formulaire du jour et le panneau d’observation partagent maintenant les mêmes boutons de codes',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The bleeding, stretch, appearance, frequency and symptom buttons are now one shared component',
+      'The Today form and the observation drawer look and work as before',
+    ],
+    highlightsFr: [
+      'Les boutons de saignement, d’étirement, d’aspect, de fréquence et de symptômes forment un seul composant partagé',
+      'Le formulaire du jour et le panneau d’observation s’affichent et fonctionnent comme avant',
+    ],
+  },
+  {
+    version: '1.16.2',
+    date: '2026-10-27',
+    title: 'Faster Paper Chart',
+    titleFr: 'Graphique Papier Plus Rapide',
+    tagline: 'Moving over a chart day no longer redraws the whole chart',
+    taglineFr: 'Survoler un jour du graphique ne redessine plus tout le graphique',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Hovering or focusing a chart day now redraws only that day',
+      'The focused day and the hovered day can now show their details at the same time',
+      'The days of the empty chart now open with Enter or Space',
+      'The paper chart code is split into small parts that are easier to maintain',
+    ],
+    highlightsFr: [
+      'Survoler ou sélectionner un jour du graphique ne redessine plus que ce jour',
+      'Le jour sélectionné et le jour survolé peuvent maintenant afficher leurs détails en même temps',
+      'Les jours du graphique vide s’ouvrent maintenant avec Entrée ou Espace',
+      'Le code du graphique papier est divisé en petites parties plus faciles à maintenir',
+    ],
+  },
+  {
+    version: '1.16.1',
+    date: '2026-10-27',
+    title: 'Self-Hosted Font',
+    titleFr: 'Police hébergée localement',
+    tagline: 'The app no longer contacts Google Fonts when you open it',
+    taglineFr: 'L’application ne contacte plus Google Fonts à l’ouverture',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The Plus Jakarta Sans font is now part of the app, so opening the app sends no request to Google',
+      'The font is cached with the other app files, so it also shows offline',
+      'Stricter security policy: styles and fonts load only from the app itself',
+    ],
+    highlightsFr: [
+      'La police Plus Jakarta Sans fait désormais partie de l’application : son ouverture n’envoie plus aucune requête à Google',
+      'La police est mise en cache avec les autres fichiers de l’application : elle s’affiche aussi hors ligne',
+      'Politique de sécurité renforcée : les styles et les polices ne se chargent que depuis l’application',
+    ],
+  },
+  {
+    version: '1.16.0',
+    date: '2026-10-27',
+    title: 'Reliable Offline Use & Installable App',
+    titleFr: 'Utilisation hors ligne fiable et application installable',
+    tagline: 'The app opens offline after the first visit, with every page, and can be installed',
+    taglineFr:
+      'L’application s’ouvre hors ligne après la première visite, avec toutes les pages, et peut être installée',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The service worker now caches every application file at the first visit, so the app no longer opens blank offline',
+      'Pages that you did not open online, such as Cycle Analytics, now also open offline',
+      'Each new version replaces the old cached files automatically',
+      'Added app icons, so you can install the app on your phone or computer',
+      'If a part of the app cannot load, a message with a Reload button replaces the blank screen',
+      'Stricter security policy: the page no longer permits inline scripts',
+    ],
+    highlightsFr: [
+      'Le service worker met désormais en cache tous les fichiers de l’application dès la première visite : l’application ne s’ouvre plus vide hors ligne',
+      'Les pages jamais ouvertes en ligne, comme l’Analyse des cycles, s’ouvrent aussi hors ligne',
+      'Chaque nouvelle version remplace automatiquement les anciens fichiers en cache',
+      'Ajout d’icônes : vous pouvez installer l’application sur votre téléphone ou votre ordinateur',
+      'Si une partie de l’application ne peut pas se charger, un message avec un bouton Recharger remplace l’écran vide',
+      'Politique de sécurité renforcée : la page n’autorise plus les scripts intégrés',
+    ],
+  },
+  {
+    version: '1.15.3',
+    date: '2026-10-27',
+    title: 'Shared CrMS Code Lists',
+    titleFr: 'Listes de Codes CrMS Partagées',
+    tagline: 'Each CrMS code list is now defined once and used everywhere',
+    taglineFr:
+      'Chaque liste de codes CrMS est maintenant définie une seule fois et utilisée partout',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Defined the bleeding, stretch, appearance, frequency and symptom codes in one place',
+      'The parser, the validator, the stamps and the forms now use the same code lists',
+      'Moved the mucus score into the domain rules, with tests',
+    ],
+    highlightsFr: [
+      'Codes de saignement, d’étirement, d’aspect, de fréquence et de symptômes définis à un seul endroit',
+      'L’analyseur, le validateur, les tampons et les formulaires utilisent les mêmes listes de codes',
+      'Score de glaire déplacé dans les règles du domaine, avec des tests',
+    ],
+  },
+  {
+    version: '1.15.2',
+    date: '2026-10-27',
+    title: 'Safer Data and Peak Day Corrections',
+    titleFr: 'Données plus sûres et corrections du Jour Sommet',
+    tagline: 'One Peak Day per cycle, and unreadable data is kept for recovery',
+    taglineFr: 'Un Jour Sommet par cycle, et les données illisibles sont gardées pour récupération',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'When you set a Peak Day on a different day, it replaces the Peak Day that you set before in the same cycle. The Peak Days of other cycles do not change',
+      'Saved data that cannot be read is now kept, and you can download it as a file',
+      'The export dialog now says that the JSON backup file is not encrypted',
+    ],
+    highlightsFr: [
+      'Quand vous définissez un Jour Sommet sur un autre jour, il remplace le Jour Sommet défini avant dans le même cycle. Les Jours Sommet des autres cycles ne changent pas',
+      'Les données enregistrées illisibles sont maintenant gardées et peuvent être téléchargées dans un fichier',
+      'La fenêtre d’export indique maintenant que le fichier de sauvegarde JSON n’est pas chiffré',
     ],
   },
   {
@@ -585,16 +956,6 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   },
 ];
 
-/** App version, injected from package.json by Vite (`define` in vite.config.ts). */
-export function getAppVersion(): string {
-  return __APP_VERSION__;
-}
-
-/** Build timestamp, injected by Vite (`define` in vite.config.ts). */
-export function getBuildDate(): string {
-  return __BUILD_DATE__;
-}
-
 export function getVersionInfo(): VersionInfo {
   return {
     version: getAppVersion(),
@@ -614,31 +975,6 @@ export function getLatestRelease(): VersionRelease {
   return VERSION_HISTORY[0];
 }
 
-export function checkAndRecordVersionSeen(): {
-  isNewVersion: boolean;
-  previousVersion: string | null;
-} {
-  try {
-    const currentVersion = getAppVersion();
-    const lastSeen = localStorage.getItem(LAST_SEEN_VERSION_KEY);
-    const isNewVersion = !lastSeen || lastSeen !== currentVersion;
-
-    if (isNewVersion) {
-      localStorage.setItem(LAST_SEEN_VERSION_KEY, currentVersion);
-    }
-
-    return {
-      isNewVersion,
-      previousVersion: lastSeen,
-    };
-  } catch {
-    return {
-      isNewVersion: false,
-      previousVersion: null,
-    };
-  }
-}
-
 export function getStorageStats(): StorageStats {
   let itemCount = 0;
   let totalBytes = 0;
@@ -651,8 +987,8 @@ export function getStorageStats(): StorageStats {
         STORAGE_OBSERVATIONS_KEY,
         LAST_SEEN_VERSION_KEY,
         STORAGE_HAS_SEEN_WELCOME_KEY,
-        'fertility_care_lang',
-        'fertility_care_theme',
+        STORAGE_LANGUAGE_KEY,
+        STORAGE_THEME_KEY,
       ];
       const keysSet = new Set<string>(knownKeys);
       try {
@@ -677,14 +1013,10 @@ export function getStorageStats(): StorageStats {
         }
       }
 
-      const storedObs = localStorage.getItem(STORAGE_OBSERVATIONS_KEY);
-      if (storedObs) {
-        const parsed = JSON.parse(storedObs);
-        if (Array.isArray(parsed)) {
-          observationsCount = parsed.length;
-          const cycles = groupObservationsIntoCycles(parsed as Observation[]);
-          cyclesCount = cycles.length;
-        }
+      const stored = parseObservationData(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) ?? '[]');
+      if (stored) {
+        observationsCount = stored.observations.length;
+        cyclesCount = groupObservationsIntoCycles(stored.observations).length;
       }
     }
   } catch {

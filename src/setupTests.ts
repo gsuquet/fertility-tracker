@@ -45,6 +45,15 @@ Object.defineProperty(window, 'matchMedia', {
   })),
 });
 
+// jsdom has no showModal() and close(): these versions only set and remove the open attribute,
+// so tests can find an open dialog by its role
+HTMLDialogElement.prototype.showModal = function showModal(this: HTMLDialogElement) {
+  this.setAttribute('open', '');
+};
+HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
+  this.removeAttribute('open');
+};
+
 // Start every test with empty storage so saved data never leaks between tests
 afterEach(() => {
   localStorage.clear();

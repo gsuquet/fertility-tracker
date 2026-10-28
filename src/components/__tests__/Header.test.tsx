@@ -4,7 +4,7 @@ import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
-import { getAppVersion } from '../../domain/versionTracker';
+import { getAppVersion } from '../../domain/appVersion';
 import type { ActiveTab } from '../../types/crms';
 
 const SelectionProbe = () => {
@@ -142,10 +142,22 @@ describe('Header', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
 
     openSheet();
-    fireEvent.keyDown(document, { key: 'Enter' });
+    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
-    fireEvent.keyDown(document, { key: 'Escape' });
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens the sheet as a native modal dialog and gives the focus back to More actions', () => {
+    renderHeader();
+    const more = screen.getByRole('button', { name: 'More actions' });
+    more.focus();
+    const sheet = openSheet();
+    expect(sheet.tagName).toBe('DIALOG');
+    expect(sheet).toHaveAttribute('aria-modal', 'true');
+    expect(within(sheet).getByRole('button', { name: 'Close menu' })).toHaveFocus();
+    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+    expect(more).toHaveFocus();
   });
 
   it('keeps the sheet open when the sheet body is clicked', () => {
