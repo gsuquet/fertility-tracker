@@ -44,6 +44,28 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.19.1',
+    date: '2026-10-28',
+    title: 'One Design System',
+    titleFr: 'Un seul système de design',
+    tagline: 'All the screens take their colors, text sizes and corners from the same tokens',
+    taglineFr:
+      'Tous les écrans prennent leurs couleurs, tailles de texte et coins des mêmes jetons',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Text sizes follow one scale of ten steps, from 9 to 28 pixels',
+      'Colors and corners come from the design tokens in both themes',
+      'The Peak Day button of the chart has more text contrast',
+      'The icons of the guide and dialogs and the intercourse text of the chart have more contrast',
+    ],
+    highlightsFr: [
+      'Les tailles de texte suivent une échelle de dix niveaux, de 9 à 28 pixels',
+      'Les couleurs et les coins viennent des jetons de design dans les deux thèmes',
+      'Le bouton Jour Sommet du tableau a plus de contraste de texte',
+      'Les icônes du guide et des fenêtres et le texte des rapports du tableau ont plus de contraste',
+    ],
+  },
+  {
     version: '1.19.0',
     date: '2026-10-28',
     title: 'Paper and Ink',

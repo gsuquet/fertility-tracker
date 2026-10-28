@@ -53,6 +53,17 @@
     --stamp-light-green: #4ade80;
     --stamp-light-green-text: #064e3b;
     --stamp-light-green-border: #15803d;
+    /* Light ends of the stamp gradients */
+    --stamp-red-light: #f43f5e;
+    --stamp-dark-green-light: #16a34a;
+    --stamp-light-green-light: #86efac;
+    --stamp-yellow: #eab308;
+    --stamp-yellow-light: #facc15;
+    --stamp-yellow-text: #1e293b;
+    --stamp-yellow-border: rgba(0, 0, 0, 0.15);
+    --stamp-white-text: #0f172a;
+    /* Thin light edge of a dark fill: stamps and dark buttons */
+    --border-on-fill: rgba(255, 255, 255, 0.2);
 
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;
@@ -61,16 +72,27 @@
     --color-success-solid: #047857;
     --color-success-text: #047857;
     --color-success-surface: rgba(16, 185, 129, 0.15);
+    --color-success-border: rgba(16, 185, 129, 0.3);
     --color-warning: #f59e0b;
     --color-warning-text: #a54b08;
     --color-warning-surface: #fef3c7;
+    --color-warning-border: #fde68a;
+    /* Peak Day ring around a chart cell */
+    --color-warning-ring: rgba(245, 158, 11, 0.4);
+    --color-danger-surface: rgba(244, 63, 94, 0.15);
     --color-info: #3b6ea5;
     --color-info-text: #1f4f86;
     --color-info-surface: rgba(59, 110, 165, 0.12);
+    --color-info-border: rgba(59, 110, 165, 0.3);
 
     /* Observation toggle fills behind white text */
     --color-intercourse: #db2777;
     --color-peak: #7c3aed;
+    /* The same hues as text on the page */
+    --color-intercourse-text: #be185d;
+    --color-peak-text: #6d28d9;
+    /* Peak Day bar of the mucus score trend */
+    --color-peak-bar: #ec4899;
 
     /* Active Start of New Cycle toggle */
     --color-cycle-start-text: #b91c1c;
@@ -84,7 +106,24 @@
     --shadow-lg: 0 12px 24px -4px rgba(26, 34, 48, 0.09), 0 4px 6px -2px rgba(26, 34, 48, 0.05);
     --shadow-xl: 0 20px 25px -5px rgba(0, 0, 0, 0.3);
     --shadow-glow: 0 0 16px rgba(31, 58, 95, 0.15);
+    --shadow-xs: 0 1px 2px rgba(0, 0, 0, 0.2);
+    --shadow-inset: inset 0 1px 2px rgba(0, 0, 0, 0.05);
+    /* drop-shadow() of the baby icon: one shadow, no spread and no inset, else the filter fails */
+    --shadow-icon: 0 1px 1px rgba(0, 0, 0, 0.1);
+    /* Bottom sheets and the phone navigation bar cast up */
+    --shadow-sheet: 0 -10px 30px rgba(0, 0, 0, 0.35);
+    --shadow-bar: 0 -4px 20px rgba(0, 0, 0, 0.08);
+    --shadow-success-glow: 0 0 8px rgba(16, 185, 129, 0.35);
+    --shadow-warning-glow: 0 0 6px rgba(245, 158, 11, 0.8);
+    --shadow-peak-glow: 0 2px 4px rgba(124, 58, 237, 0.4);
+    --shadow-peak-bar-glow: 0 0 8px rgba(236, 72, 153, 0.5);
+    --shadow-peak-toggle: 0 4px 12px rgba(124, 58, 237, 0.3);
+    --shadow-intercourse-toggle: 0 4px 12px rgba(219, 39, 119, 0.3);
 
+    /* Ruled lines of the paper chart cells */
+    --chart-grid-line: rgba(148, 163, 184, 0.08);
+
+    --radius-2xs: 4px;
     --radius-xs: 6px;
     --radius-sm: 10px;
     --radius-md: 14px;
@@ -129,10 +168,14 @@
     --color-warning: #fbbf24;
     --color-warning-text: #fbbf24;
     --color-warning-surface: rgba(245, 158, 11, 0.2);
+    --color-warning-border: rgba(245, 158, 11, 0.35);
     --color-info: #8fb3dd;
     --color-info-text: #8fb3dd;
     --color-info-surface: rgba(59, 110, 165, 0.2);
     --color-cycle-start-text: #fda4af;
+    --color-intercourse-text: #f472b6;
+    --color-peak-text: #a78bfa;
+    --color-info-border: rgba(143, 179, 221, 0.3);
 
     --shadow-sm: 0 1px 3px 0 rgba(0, 0, 0, 0.3);
     --shadow-md: 0 4px 12px 0 rgba(0, 0, 0, 0.35);

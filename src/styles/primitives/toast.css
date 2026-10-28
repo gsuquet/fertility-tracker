@@ -23,7 +23,7 @@
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-lg);
     box-shadow: var(--shadow-lg);
-    font-size: 0.9rem;
+    font-size: var(--font-size-md);
     font-weight: 600;
     animation: fadeIn 0.2s ease-out;
   }
