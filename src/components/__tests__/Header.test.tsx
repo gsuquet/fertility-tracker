@@ -1,4 +1,4 @@
-import { cleanup, screen, fireEvent, within } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
@@ -139,21 +139,19 @@ describe('Header', () => {
     expect(within(sheet).getByText('Language : English')).toBeInTheDocument();
   });
 
-  it('turns the vibrations off and on from the sheet when the browser can vibrate', () => {
+  it('has no vibration button when the browser cannot vibrate', () => {
     renderHeader();
     expect(within(openSheet()).queryByText(/Vibration/)).toBeNull();
-    fireEvent.keyDown(document.activeElement as Element, { key: 'Escape' });
-    cleanup();
+  });
 
+  it('turns the vibrations off and on from the sheet when the browser can vibrate', () => {
     Object.defineProperty(navigator, 'vibrate', { value: vi.fn(), configurable: true });
     try {
       renderHeader();
       const sheet = openSheet();
       const toggle = within(sheet).getByRole('button', { name: 'Vibration : On' });
-      expect(toggle).toHaveAttribute('aria-pressed', 'true');
       fireEvent.click(toggle);
-      expect(toggle).toHaveAttribute('aria-pressed', 'false');
-      expect(toggle).toHaveTextContent('Vibration : Off');
+      expect(toggle).toHaveAccessibleName('Vibration : Off');
       expect(localStorage.getItem(STORAGE_HAPTICS_OFF_KEY)).toBe('true');
       fireEvent.click(within(sheet).getByText('Language : English'));
       expect(toggle).toHaveTextContent('Vibration : Désactivée');

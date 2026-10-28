@@ -380,7 +380,6 @@ export const Header: React.FC<HeaderProps> = ({
                   type="button"
                   className="sheet-toggle-btn sheet-toggle-wide"
                   onClick={() => setHapticsEnabled(!hapticsOn)}
-                  aria-pressed={hapticsOn}
                 >
                   {hapticsOn ? <Vibrate size={16} /> : <VibrateOff size={16} />}
                   <span>{hapticsOn ? t.menu.hapticsOn : t.menu.hapticsOff}</span>

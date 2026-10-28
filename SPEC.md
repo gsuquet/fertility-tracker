@@ -39,6 +39,7 @@ This document is the full specification of the application. Change it before you
    - [5.14 Keyboard shortcuts](#514-keyboard-shortcuts)
    - [5.15 Page slide](#515-page-slide)
    - [5.16 App icon badge](#516-app-icon-badge)
+   - [5.17 Haptic feedback](#517-haptic-feedback)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)

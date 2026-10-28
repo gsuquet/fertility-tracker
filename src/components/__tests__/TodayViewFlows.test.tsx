@@ -121,6 +121,18 @@ describe('TodayView flows', () => {
     expect(saved()).toContain(`${TODAY}:H:${stored}`);
   });
 
+  it('vibrates once on a save after the cycle question, and not on Cancel', () => {
+    const vibrate = installVibrate();
+    renderToday([makeObservation({ date: '2026-09-14', stretch: '0' })]);
+    typeCode('H');
+    fireEvent.click(saveButton());
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }));
+    expect(vibrate).not.toHaveBeenCalled();
+    fireEvent.click(saveButton());
+    fireEvent.click(screen.getByRole('button', { name: /Yes, Start New Cycle/ }));
+    expect(vibrate.mock.calls).toEqual([[15]]);
+  });
+
   it('saves nothing when the cycle question is cancelled', () => {
     renderToday([makeObservation({ date: '2026-09-14', stretch: '0' })]);
     typeCode('H');

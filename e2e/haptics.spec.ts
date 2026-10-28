@@ -30,14 +30,14 @@ test.describe('Haptic feedback', () => {
     await page.getByRole('button', { name: en.actions.setPeak }).click();
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect.poll(() => vibrations(page)).toEqual([10, 15]);
+    await page.getByRole('button', { name: en.mobileTabs.log, exact: true }).click();
+    await expect.poll(() => vibrations(page)).toEqual([10, 15, 10]);
+    await page.keyboard.press('Escape');
 
     await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
     const menu = page.getByRole('dialog', { name: en.menu.mobileMenuLabel });
     await menu.getByRole('button', { name: en.menu.hapticsOn }).click();
-    await expect(menu.getByRole('button', { name: en.menu.hapticsOff })).toHaveAttribute(
-      'aria-pressed',
-      'false'
-    );
+    await expect(menu.getByRole('button', { name: en.menu.hapticsOff })).toBeVisible();
     await page.keyboard.press('Escape');
 
     // The choice stays after a reload
