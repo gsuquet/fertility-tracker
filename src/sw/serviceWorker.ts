@@ -51,7 +51,11 @@ const MATCH_OPTIONS: CacheQueryOptions = { ignoreVary: true };
 
 async function precacheAll(scope: ServiceWorkerScopeLike, config: ServiceWorkerConfig) {
   const cache = await scope.caches.open(config.cacheName);
-  await cache.addAll(config.precache.map(url => new URL(url, scope.location.href).href));
+  // The cached shell serves the app for the whole life of the worker, so it must not come from
+  // the HTTP cache of the browser: an old shell would load asset names that the server removed
+  await cache.addAll(
+    config.precache.map(url => new Request(new URL(url, scope.location.href), { cache: 'reload' }))
+  );
 }
 
 async function deleteOldCaches(scope: ServiceWorkerScopeLike, cacheName: string) {

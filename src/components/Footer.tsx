@@ -1,15 +1,17 @@
 import type React from 'react';
 import { useLanguage } from '../context/LanguageContext';
-import { Tag, BookOpen } from 'lucide-react';
+import { Tag, BookOpen, Smartphone } from 'lucide-react';
 import { getAppVersion } from '../domain/appVersion';
 import { Copyright, LegalDisclaimers } from './LegalNotice';
 
 interface FooterProps {
   onOpenVersion?: () => void;
   onOpenWelcome?: () => void;
+  /** Installs the app. The footer has this entry on each screen width, also without space in the header. */
+  onInstall?: (() => void) | undefined;
 }
 
-export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenWelcome }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenWelcome, onInstall }) => {
   const { t } = useLanguage();
   const appVersion = getAppVersion();
 
@@ -20,6 +22,12 @@ export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenWelcome }) 
         <div className="footer-copyright">
           <Copyright />
           <div className="footer-links">
+            {onInstall && (
+              <button type="button" className="footer-version-btn" onClick={onInstall}>
+                <Smartphone size={12} />
+                <span>{t.install.menuEntry}</span>
+              </button>
+            )}
             {onOpenWelcome && (
               <button
                 type="button"

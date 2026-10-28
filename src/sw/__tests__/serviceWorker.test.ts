@@ -15,8 +15,13 @@ const CACHE = `${CACHE_PREFIX}1.16.0-abcd1234`;
 class FakeCache {
   entries = new Map<string, Response>();
   constructor(private readonly network: (url: string) => Promise<Response>) {}
-  async addAll(urls: string[]) {
-    for (const url of urls) this.entries.set(url, await this.network(url));
+  /** The cache modes of the requests that `addAll` got. */
+  modes: RequestCache[] = [];
+  async addAll(requests: Request[]) {
+    for (const request of requests) {
+      this.modes.push(request.cache);
+      this.entries.set(request.url, await this.network(request.url));
+    }
   }
   async put(request: Request, response: Response) {
     this.entries.set(request.url, response);
@@ -94,6 +99,7 @@ describe('service worker', () => {
       `${ORIGIN}/`,
       `${ORIGIN}/assets/index-abc.js`,
     ]);
+    expect(cache?.modes).toEqual(['reload', 'reload']);
     expect(scope.skipWaiting).not.toHaveBeenCalled();
   });
 

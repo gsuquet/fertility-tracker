@@ -221,6 +221,7 @@ const MainApp: React.FC = () => {
         <Footer
           onOpenVersion={() => setIsVersionModalOpen(true)}
           onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+          onInstall={handleInstall}
         />
       </main>
 

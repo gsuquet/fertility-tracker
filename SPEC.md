@@ -359,7 +359,7 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (sprout), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
 | Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                        |
 | Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer           |
-| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button. Not in the installed application.                                                                                                | The copyright and the two buttons are on separate lines. Not in the installed application.                            |
+| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **Install app** (when the browser can install the application), **User Guide** button and version button. Not in the installed application.                                | The copyright and the two buttons are on separate lines. Not in the installed application.                            |
 - The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
@@ -658,7 +658,7 @@ The application offers installation one time, after it has some data. It never a
 | `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). The other browsers of iOS and the in-app browsers (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`, Facebook, Instagram, LINE) give `null`, because the guide gives the steps of Safari. | Opens the guide **Install on iPhone**.                                             |
 | `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                   | Nothing. No button shows.                                                          |
 - The application is installed when a display mode of [5.12](#512-installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
-- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it, and Chromium shows its own install button in the address bar.
+- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it. The footer has **Install app** on each screen width.
 - The application does not record if the user installed it.
 
 The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
@@ -1096,12 +1096,12 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 - The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
 - Thus, each build with a different output installs a new cache.
 
-| Event      | Action                                                                                                                     |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
-| `install`  | Adds each precache URL to the new cache. It does not call `skipWaiting()`: a new version waits ([5.13](#update)).          |
-| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`. |
-| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                          |
-| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                          |
+| Event      | Action                                                                                                                                                                                     |
+| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `install`  | Adds each precache URL to the new cache, with `cache: 'reload'`: the browser HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([5.13](#update)). |
+| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                 |
+| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                          |
+| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                          |
 - Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
