@@ -433,6 +433,10 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
   - A swipe that starts in an input, a text area, a select or an element that scrolls horizontally.
   - A swipe that starts less than 20 pixels from the left or right edge of the screen. The back and forward gestures of iOS use these edges.
   - A swipe that starts its move with an angle of 30 degrees or more from horizontal.
+  - A swipe in a dialog of the page, for example **New Cycle Start?**. React sends the events of a portal to the page, so the hook ignores a target outside the page.
+  - A swipe on a zoomed page. The page then has `touch-action: auto`, so that the finger can pan the zoomed page in all directions.
+- After a swipe, the hook blocks the next click for 100 milliseconds. Thus, a swipe that starts on a button does not also press it. A tap that moves a little is not a swipe, so its click stays.
+- A second swipe during the slide first applies the day change of the first swipe. Thus, two fast swipes move two days.
 - During the swipe, the main grid follows the finger by 40% of the move. After a swipe, the grid slides out in the swipe direction in 150 milliseconds. Then the day changes, and the grid slides in from the other side. Else the grid goes back.
 - With `prefers-reduced-motion: reduce`, the grid does not move. The day changes at the release.
 

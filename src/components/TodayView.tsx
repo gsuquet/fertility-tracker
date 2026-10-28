@@ -76,9 +76,11 @@ export const TodayView: React.FC = () => {
   const handleGoToToday = () => setSelectedDate(getTodayStr());
 
   // A swipe calls the same functions as the arrow buttons
-  const { handlers: swipeHandlers, contentRef: swipeContentRef } = useDaySwipe(direction =>
-    direction === 'next' ? handleNextDay() : handlePrevDay()
-  );
+  const {
+    handlers: swipeHandlers,
+    pageRef: swipePageRef,
+    contentRef: swipeContentRef,
+  } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
 
@@ -115,6 +117,7 @@ export const TodayView: React.FC = () => {
       id="today-panel"
       role="tabpanel"
       aria-labelledby="tab-today"
+      ref={swipePageRef}
       {...swipeHandlers}
     >
       {/* Toast Notification */}

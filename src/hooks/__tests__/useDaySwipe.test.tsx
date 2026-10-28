@@ -1,6 +1,7 @@
 import { act, fireEvent, render, screen } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import type { SwipeDirection } from '../../domain/swipe';
+import { createPortal } from 'react-dom';
 import { useDaySwipe } from '../useDaySwipe';
 
 /** A page like Today: a container with the handlers, and content that follows the finger. */
@@ -11,9 +12,9 @@ const Page = ({
   onSwipe: (d: SwipeDirection) => void;
   onClick?: () => void;
 }) => {
-  const { handlers, contentRef } = useDaySwipe(onSwipe);
+  const { handlers, pageRef, contentRef } = useDaySwipe(onSwipe);
   return (
-    <div data-testid="page" {...handlers}>
+    <div data-testid="page" ref={pageRef} {...handlers}>
       <div data-testid="content" ref={contentRef}>
         <button type="button" onClick={onClick}>
           code
@@ -22,6 +23,13 @@ const Page = ({
         <div data-testid="row" style={{ overflowX: 'auto' }}>
           <span data-testid="chip">chip</span>
         </div>
+        {/* A dialog of the page, rendered at the end of the body as Modal does */}
+        {createPortal(
+          <button type="button" data-testid="dialog-button" onClick={onClick}>
+            yes
+          </button>,
+          document.body
+        )}
       </div>
     </div>
   );
@@ -128,7 +136,7 @@ describe('useDaySwipe', () => {
     fireEvent.pointerMove(screen.getByTestId('page'), { pointerId: 1, clientX: 0, clientY: 300 });
     expect(content().style.transform).toBe('');
 
-    const button = screen.getByRole('button');
+    const button = screen.getByRole('button', { name: 'code' });
     fireEvent.pointerDown(button, {
       pointerId: 3,
       pointerType: 'touch',
@@ -138,19 +146,86 @@ describe('useDaySwipe', () => {
     fireEvent.pointerMove(button, { pointerId: 3, clientX: 203, clientY: 302 });
     fireEvent.pointerUp(button, { pointerId: 3, clientX: 203, clientY: 302 });
     fireEvent.click(button);
-    expect(onClick).toHaveBeenCalledOnce();
+    // A tap that drifts 14 pixels is not a swipe, so its click stays
+    swipe(-14, { target: 'content', id: 4 });
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledTimes(2);
     expect(onSwipe).not.toHaveBeenCalled();
   });
 
-  it('blocks the click that ends a swipe on a button, and not a later click', async () => {
+  it('blocks only the click that ends a swipe on a button', async () => {
     const onClick = vi.fn();
     render(<Page onSwipe={vi.fn()} onClick={onClick} />);
+    const button = screen.getByRole('button', { name: 'code' });
     swipe(-100, { target: 'content' });
-    fireEvent.click(screen.getByRole('button'));
+    fireEvent.click(button);
     expect(onClick).not.toHaveBeenCalled();
-    await wait(500);
-    fireEvent.click(screen.getByRole('button'));
+    // The next tap works at once
+    fireEvent.click(button);
     expect(onClick).toHaveBeenCalledOnce();
+    // A tap after the short time of the swipe click works too
+    swipe(-100, { target: 'content', id: 2 });
+    await wait(150);
+    fireEvent.click(button);
+    expect(onClick).toHaveBeenCalledTimes(2);
+  });
+
+  it('ignores the touches and clicks of a dialog that the page renders in a portal', async () => {
+    const onSwipe = vi.fn();
+    const onClick = vi.fn();
+    render(<Page onSwipe={onSwipe} onClick={onClick} />);
+    swipe(-100, { target: 'content' });
+    fireEvent.click(screen.getByTestId('dialog-button'));
+    expect(onClick).toHaveBeenCalledOnce();
+    await wait(500);
+    onSwipe.mockClear();
+    swipe(-100, { target: 'dialog-button', id: 2 });
+    await wait(500);
+    expect(onSwipe).not.toHaveBeenCalled();
+    expect(content().style.transform).toBe('');
+  });
+
+  it('opens two days after two fast swipes', async () => {
+    const onSwipe = vi.fn();
+    render(<Page onSwipe={onSwipe} />);
+    swipe(-40, { ms: 40 });
+    await wait(50);
+    swipe(-40, { ms: 40, id: 2 });
+    expect(onSwipe).toHaveBeenCalledOnce();
+    await wait(150);
+    expect(onSwipe.mock.calls).toEqual([['next'], ['next']]);
+  });
+
+  it('lets a zoomed page pan, and does not swipe there', async () => {
+    const listeners = new Map<string, () => void>();
+    const viewport = {
+      scale: 2,
+      addEventListener: vi.fn((type: string, listener: () => void) =>
+        listeners.set(type, listener)
+      ),
+      removeEventListener: vi.fn(),
+    };
+    Object.defineProperty(window, 'visualViewport', { value: viewport, configurable: true });
+    try {
+      const onSwipe = vi.fn();
+      const { unmount } = render(<Page onSwipe={onSwipe} />);
+      const page = screen.getByTestId('page');
+      expect(page.style.touchAction).toBe('auto');
+      swipe(-100);
+      await wait(500);
+      expect(onSwipe).not.toHaveBeenCalled();
+
+      viewport.scale = 1;
+      act(() => listeners.get('resize')?.());
+      expect(page.style.touchAction).toBe('');
+      swipe(-100, { id: 2 });
+      await wait(500);
+      expect(onSwipe).toHaveBeenCalledWith('next');
+      unmount();
+      expect(viewport.removeEventListener).toHaveBeenCalledWith('resize', expect.any(Function));
+    } finally {
+      Object.defineProperty(window, 'visualViewport', { value: undefined, configurable: true });
+    }
   });
 
   it('ignores a mouse, the screen edges, fields and rows that scroll horizontally', async () => {
