@@ -22,6 +22,10 @@ vi.mock('../components/WelcomeModal', async importOriginal => {
   loaded.add('WelcomeModal');
   return importOriginal();
 });
+vi.mock('../components/KeyboardShortcutsModal', async importOriginal => {
+  loaded.add('KeyboardShortcutsModal');
+  return importOriginal();
+});
 
 describe('App chunk preload', () => {
   it('imports the lazy pages and dialogs when the browser is idle, without opening them', async () => {
@@ -34,6 +38,7 @@ describe('App chunk preload', () => {
         expect([...loaded].sort()).toEqual([
           'CycleAnalyticsView',
           'ExportModal',
+          'KeyboardShortcutsModal',
           'VersionModal',
           'WelcomeModal',
         ]),

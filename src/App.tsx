@@ -58,6 +58,7 @@ const PRELOADED_CHUNKS = [
   loadExportModal,
   loadVersionModal,
   loadWelcomeModal,
+  loadKeyboardShortcutsModal,
 ];
 
 /**

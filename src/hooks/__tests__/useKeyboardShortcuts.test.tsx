@@ -56,23 +56,24 @@ describe('useShortcut', () => {
     expect(onKey).not.toHaveBeenCalled();
   });
 
-  it('calls the last handler and removes the listener when the last user unmounts', () => {
+  it('calls the last handler, gives the key back to the one before, and stops listening', () => {
     const first = vi.fn();
     const second = vi.fn();
     const one = render(<Shortcut id="today" onKey={first} />);
     const two = render(<Shortcut id="today" onKey={second} />);
     fireEvent.keyDown(document.body, { key: '1' });
     expect(second).toHaveBeenCalledOnce();
-    // The first one unmounts, so the second one stays
-    one.unmount();
-    fireEvent.keyDown(document.body, { key: '1' });
-    expect(second).toHaveBeenCalledTimes(2);
-    const remove = vi.spyOn(document, 'removeEventListener');
+    expect(first).not.toHaveBeenCalled();
+    // The last one unmounts, so the first one handles the key again
     two.unmount();
+    fireEvent.keyDown(document.body, { key: '1' });
+    expect(first).toHaveBeenCalledOnce();
+    const remove = vi.spyOn(document, 'removeEventListener');
+    one.unmount();
     expect(remove).toHaveBeenCalledWith('keydown', expect.any(Function));
     fireEvent.keyDown(document.body, { key: '1' });
-    expect(first).not.toHaveBeenCalled();
-    expect(second).toHaveBeenCalledTimes(2);
+    expect(first).toHaveBeenCalledOnce();
+    expect(second).toHaveBeenCalledOnce();
   });
 
   it('uses the newest handler of a component', () => {

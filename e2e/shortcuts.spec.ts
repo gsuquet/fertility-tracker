@@ -53,8 +53,12 @@ test.describe('Keyboard shortcuts', () => {
       'true'
     );
 
-    // The choice stays after a reload
+    // The choice stays after a reload: the tabs do not show the keys
     await page.reload();
+    await expect(page.getByRole('tab', { name: en.tabs.chart })).toHaveAttribute(
+      'title',
+      en.tabs.chart
+    );
     await page.keyboard.press('3');
     await expect(page.getByRole('tab', { name: en.tabs.today })).toHaveAttribute(
       'aria-selected',

@@ -47,19 +47,35 @@ const DIGITS: readonly ShortcutId[] = ['today', 'chart', 'calendar', 'analytics'
 
 type ShortcutKeyEvent = Pick<
   KeyboardEvent,
-  'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'isComposing'
+  'key' | 'code' | 'ctrlKey' | 'metaKey' | 'altKey' | 'shiftKey' | 'isComposing'
 >;
 
 /**
+ * The physical key of a character that the layout changes, or ''. AZERTY types `&` on the key 1
+ * without Shift, and a Cyrillic layout types `т` on the key N. A key that is not a character, for
+ * example an arrow of the number pad without Num Lock, keeps its own meaning.
+ */
+const physicalKey = (e: ShortcutKeyEvent, key: string) => {
+  if (key.length !== 1) return '';
+  const digit = /^Digit([1-4])$/.exec(e.code)?.[1];
+  // Shift+1 types `!` on a US keyboard: that is not the shortcut 1
+  if (digit) return e.shiftKey ? '' : digit;
+  const letter = /^Key([NT])$/.exec(e.code)?.[1];
+  // A letter of the Latin alphabet stays with its own key, as on a Dvorak keyboard
+  return letter && !/^[\x20-\x7e]$/.test(key) ? letter.toLowerCase() : '';
+};
+
+/**
  * The shortcut of a key event, or null. A key with Ctrl, Meta or Alt stays with the browser and
- * the system. The digits also use the physical key, because AZERTY types `&` without Shift.
+ * the system. Some keys also use the physical key, see `physicalKey`.
  */
 export const shortcutFor = (e: ShortcutKeyEvent): ShortcutId | null => {
   if (e.ctrlKey || e.metaKey || e.altKey || e.isComposing) return null;
-  const digit = /^[1-4]$/.test(e.key) ? e.key : /^(?:Digit|Numpad)([1-4])$/.exec(e.code)?.[1];
-  if (digit) return DIGITS[Number(digit) - 1] as ShortcutId;
   // A keydown of the autofill of a browser can have no key
-  switch (String(e.key).toLowerCase()) {
+  const key = String(e.key);
+  const typed = /^[1-4nNtT]$/.test(key) ? key : physicalKey(e, key) || key;
+  if (/^[1-4]$/.test(typed)) return DIGITS[Number(typed) - 1] as ShortcutId;
+  switch (typed.toLowerCase()) {
     case 'n':
       return 'newEntry';
     case 't':
@@ -81,7 +97,7 @@ const FIELDS =
 
 /** Widgets that use the arrow keys to move the focus or to change a value. */
 const ARROW_WIDGETS =
-  '[role="listbox"], [role="grid"], [role="menu"], [role="menubar"], [role="radiogroup"], [role="tablist"], [role="slider"], [role="tree"]';
+  '[role="listbox"], [role="grid"], [role="menu"], [role="menubar"], [role="radiogroup"], [role="slider"], [role="tree"]';
 
 /**
  * True when the key must stay with the page: a dialog is open, the focus is in a field, or an

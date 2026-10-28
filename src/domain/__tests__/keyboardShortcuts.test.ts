@@ -14,6 +14,7 @@ const key = (k: string, extra: Partial<KeyboardEvent> = {}) =>
     ctrlKey: false,
     metaKey: false,
     altKey: false,
+    shiftKey: false,
     isComposing: false,
     ...extra,
   });
@@ -36,6 +37,25 @@ describe('shortcutFor', () => {
     expect(key("'", { code: 'Digit4' })).toBe('analytics');
     expect(key('4', { code: 'Numpad4' })).toBe('analytics');
     expect(key('(', { code: 'Digit5' })).toBeNull();
+    // AZERTY with Shift types the digit itself
+    expect(key('1', { code: 'Digit1', shiftKey: true })).toBe('today');
+  });
+
+  it('does not use the physical key of Shift+digit, a key that is not a character or an IME', () => {
+    expect(key('!', { code: 'Digit1', shiftKey: true })).toBeNull();
+    expect(key('$', { code: 'Digit4', shiftKey: true })).toBeNull();
+    // The number pad without Num Lock gives arrows and page keys
+    expect(key('ArrowLeft', { code: 'Numpad4' })).toBe('prevDay');
+    expect(key('End', { code: 'Numpad1' })).toBeNull();
+    expect(key('Process', { code: 'Digit1' })).toBeNull();
+  });
+
+  it('uses the physical keys N and T on a layout without Latin letters only', () => {
+    expect(key('т', { code: 'KeyN' })).toBe('newEntry');
+    expect(key('е', { code: 'KeyT' })).toBe('goToToday');
+    // On Dvorak, the key N types b, which is not a shortcut
+    expect(key('b', { code: 'KeyN' })).toBeNull();
+    expect(key('ж', { code: 'KeyX' })).toBeNull();
   });
 
   it('maps the letters in both cases, the arrows and the question mark', () => {
@@ -109,11 +129,18 @@ describe('isShortcutBlocked', () => {
     expect(isShortcutBlocked('nextDay', field)).toBe(true);
   });
 
+  it('lets the arrows through on the page tabs, which do not use them', () => {
+    const tab = add('<div role="tablist"><button role="tab">Today</button></div>').querySelector(
+      'button'
+    ) as HTMLElement;
+    expect(isShortcutBlocked('prevDay', tab)).toBe(false);
+  });
+
   it('lets a key through in an element that is not editable', () => {
     expect(isShortcutBlocked('today', add('<div contenteditable="false"></div>'))).toBe(false);
   });
 
-  it.each(['listbox', 'grid', 'menu', 'radiogroup', 'tablist', 'slider'])(
+  it.each(['listbox', 'grid', 'menu', 'radiogroup', 'slider'])(
     'blocks only the arrows in a %s',
     role => {
       const item = add(`<div role="${role}"><button>item</button></div>`).querySelector(

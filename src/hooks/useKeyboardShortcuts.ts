@@ -30,13 +30,13 @@ export const setShortcutsEnabled = (enabled: boolean): void => {
 export const useShortcutsEnabled = (): boolean =>
   useSyncExternalStore(subscribeEnabled, getEnabled);
 
-// The handler of each shortcut. One document listener calls them.
-const handlers = new Map<ShortcutId, () => void>();
+// The handlers of each shortcut, oldest first. One document listener calls the newest one.
+const handlers = new Map<ShortcutId, (() => void)[]>();
 
 const onKeyDown = (e: KeyboardEvent) => {
   if (e.defaultPrevented || !getEnabled()) return;
   const id = shortcutFor(e);
-  const handler = id && handlers.get(id);
+  const handler = id && handlers.get(id)?.at(-1);
   if (!id || !handler || isShortcutBlocked(id, e.target)) return;
   e.preventDefault();
   handler();
@@ -44,17 +44,20 @@ const onKeyDown = (e: KeyboardEvent) => {
 
 /**
  * Calls `handler` when the user presses the key of the shortcut `id`, while the component is
- * mounted. Only one component at a time handles a shortcut.
+ * mounted. When two components use the same shortcut, the last one mounted handles it.
  */
 export function useShortcut(id: ShortcutId, handler: () => void): void {
   const handlerRef = useRef(handler);
   handlerRef.current = handler;
   useEffect(() => {
     const call = () => handlerRef.current();
-    handlers.set(id, call);
+    const stack = handlers.get(id) ?? [];
+    handlers.set(id, [...stack, call]);
     document.addEventListener('keydown', onKeyDown);
     return () => {
-      if (handlers.get(id) === call) handlers.delete(id);
+      const rest = (handlers.get(id) as (() => void)[]).filter(other => other !== call);
+      if (rest.length > 0) handlers.set(id, rest);
+      else handlers.delete(id);
       if (handlers.size === 0) document.removeEventListener('keydown', onKeyDown);
     };
   }, [id]);

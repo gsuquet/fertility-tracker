@@ -56,6 +56,15 @@ describe('App keyboard shortcuts', () => {
     expect(screen.getByText(dayTitle(0))).toBeInTheDocument();
   });
 
+  it('changes the day with the arrows after a click on a page tab', () => {
+    render(<App />);
+    const today = tab(en.tabs.today);
+    fireEvent.click(today);
+    today.focus();
+    press('ArrowLeft');
+    expect(screen.getByText(dayTitle(-1))).toBeInTheDocument();
+  });
+
   it('does not use the keys that the user types in a field', () => {
     render(<App />);
     const notes = screen.getByPlaceholderText(en.todayView.notesPlaceholder);
