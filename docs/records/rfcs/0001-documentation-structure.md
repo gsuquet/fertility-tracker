@@ -1,13 +1,13 @@
 # RFC 0001: Documentation structure, records and screen frames
 
 - **Start date:** 2026-10-28
-- **Status:** Proposed
+- **Status:** Accepted
 - **Author:** Gabriel
 - **Pull request:** [#100](https://github.com/gsuquet/fertility-tracker/pull/100)
 
 ## Summary
 
-This RFC divides `SPEC.md` into Diátaxis reference pages and keeps the spec-first rule. It puts the proposals and the decision records in `docs/records/`. It adds one reference page for each screen, with text frames of the layout. All the pages stay in ASD-STE100 Simplified Technical English.
+This RFC divides `SPEC.md` into Diátaxis reference pages and keeps the spec-first rule. It puts the proposals and the decision records in `docs/records/`. It adds one reference page for each screen. The text frames of the layout wait for a decision (unresolved question 1). All the pages stay in ASD-STE100 Simplified Technical English.
 
 ## Motivation
 
@@ -25,7 +25,7 @@ These are the problems of the current state:
 
 ### Change a behavior
 
-A contributor wants to change the export dialog. They open `docs/reference/screens/export-dialog.md`. They change the frame and the rules on that page first. Then they write a test that fails and change the code. The same pull request has the page, the test and the code.
+A contributor wants to change the export dialog. They open `docs/reference/screens/export-dialog.md`. They change the rules on that page first, and the frame when the project uses frames (unresolved question 1). Then they write a test that fails and change the code. The same pull request has the page, the test and the code.
 
 The rule "change the specification before the code" stays. The specification is now the set of reference pages, not one file.
 
@@ -146,7 +146,7 @@ The screen pages are for contributors. `reference/user-interface.md` stays as th
 
 All the pages in `reference/` are the specification. The pages of the other types are not. Thus, a page does not need a line that marks it as part of the specification.
 
-Each page in `reference/screens/` has the reference template and these sections:
+Each page in `reference/screens/` has the reference template and these sections. Sections 1 and 2 wait for the decision on frames (unresolved question 1).
 
 1. **Layout**: one frame for a phone screen and one frame for a wide screen.
 2. **Zones**: a table with one row for each number in the frames.
