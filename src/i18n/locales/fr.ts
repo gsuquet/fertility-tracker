@@ -548,6 +548,15 @@ export const fr: TranslationSchema = {
     copyright: '© {year} Fertility Tracker • Logiciel libre',
     userGuide: 'Guide d’utilisation',
   },
+  appBadge: {
+    title: 'Pastille sur l’icône',
+    label: 'Afficher un point sur l’icône de l’app quand aujourd’hui n’a pas d’observation',
+    hint: 'Fonctionne dans l’app installée. Le point change seulement quand l’app est ouverte. Si vous n’ouvrez pas l’app un jour, l’icône garde le dernier état.',
+    iosPermission:
+      'Sur iPhone et iPad, le système demande l’autorisation des notifications. L’app n’envoie jamais de notifications.',
+    denied:
+      'L’autorisation a été refusée. Pour utiliser la pastille, autorisez les notifications de cette app dans les réglages du système.',
+  },
   shortcuts: {
     title: 'Raccourcis clavier',
     menuHint: 'Touches pour les pages, les jours et une nouvelle observation',
