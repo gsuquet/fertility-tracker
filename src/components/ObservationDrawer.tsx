@@ -29,16 +29,27 @@ export const ObservationDrawer: React.FC = () => {
   const { intercourse, isCycleStart } = fields;
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
-  // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens
+  const findSaved = (day: string) => observations.find(o => o.date === day);
+
+  // The form shows the saved observation of its date, as the Today form does. Thus, a save with
+  // no change never replaces a saved day with an empty observation.
+  // biome-ignore lint/correctness/useExhaustiveDependencies: isDrawerOpen resets the form each time the drawer opens. A change to the observations does not reset a draft.
   useEffect(() => {
-    setDate(selectedObservation?.date ?? getTodayStr());
-    load(selectedObservation ?? undefined);
+    const day = selectedObservation?.date ?? getTodayStr();
+    setDate(day);
+    load(findSaved(day));
   }, [selectedObservation, isDrawerOpen, load]);
 
   if (!isDrawerOpen) return null;
 
-  // The calendar opens empty days with a blank id
-  const savedId = selectedObservation?.id || undefined;
+  const savedId = findSaved(date)?.id;
+
+  /** Loads the saved observation of the new date. Values of a saved day are not copied to another day. */
+  const changeDate = (day: string) => {
+    const next = findSaved(day);
+    if (next || savedId) load(next);
+    setDate(day);
+  };
 
   const closeDrawer = () => {
     setIsDrawerOpen(false);
@@ -114,7 +125,7 @@ export const ObservationDrawer: React.FC = () => {
             type="date"
             className="form-input"
             value={date}
-            onChange={e => setDate(e.target.value)}
+            onChange={e => changeDate(e.target.value)}
             required
           />
         </div>

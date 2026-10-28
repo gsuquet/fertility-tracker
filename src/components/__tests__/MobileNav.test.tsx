@@ -1,7 +1,12 @@
 import type { ComponentProps } from 'react';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { MobileNav } from '../MobileNav';
+import { ObservationDrawer } from '../ObservationDrawer';
+import { en } from '../../i18n';
+import { renderWithProviders } from '../../test/render';
+import { makeObservation } from '../../test/factories';
+import { getTodayStr } from '../../utils/dateUtils';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider, useCycleUi } from '../../context/CycleContext';
 
@@ -45,6 +50,28 @@ describe('MobileNav Component (Phone Navigation)', () => {
     renderMobileNav({ activeTab: 'today', setActiveTab: vi.fn() });
     fireEvent.click(screen.getByRole('button', { name: 'Log' }));
     expect(screen.getByTestId('drawer')).toHaveTextContent('open');
+  });
+
+  it.each([
+    ['opens the saved observation of today', true, en.drawer.editTitle, '10KL'],
+    ['opens an empty form when today has no observation', false, en.actions.newEntry, ''],
+  ])('%s from the add button', (_, logged, title, code) => {
+    const today = makeObservation({
+      date: getTodayStr(),
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      codeString: '10KL',
+    });
+    renderWithProviders(
+      <>
+        <MobileNav activeTab="today" setActiveTab={vi.fn()} />
+        <ObservationDrawer />
+      </>,
+      { observations: logged ? [today] : [] }
+    );
+    fireEvent.click(screen.getByRole('button', { name: en.mobileTabs.log }));
+    const drawer = screen.getByRole('dialog', { name: title });
+    expect(within(drawer).getByLabelText(en.labels.directInput)).toHaveValue(code);
   });
 
   it('switches to the chart and analytics tabs', () => {

@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.22.0
+- **Document version:** 1.22.1
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -473,6 +473,12 @@ On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics**
 **Module:** [src/components/ObservationDrawer.tsx](src/components/ObservationDrawer.tsx)
 
 - The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
+- The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
+  - When the date has an observation, the title is **Edit Observation**, the fields show the saved values and **Delete** shows.
+  - When the date has no observation, the title is **Log Observation** and the form is empty.
+  - Thus, a save with no change never replaces a saved day with an empty observation.
+- A change of the date input loads the observation of the new date. When the new date has no observation, the form becomes empty if it showed a saved observation. Else the form keeps the draft.
+- When the saved data changes while the drawer is open, for example with **Undo**, the title and **Delete** follow the saved data of the date. The fields keep the draft.
 - The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
 - On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
 
@@ -606,10 +612,10 @@ The installed application must behave like the other applications of the device.
 
 The manifest has two shortcuts. A long press (or a right click) on the application icon shows them on Android and in Chromium on a computer.
 
-| Shortcut  | URL                 | Result                                                                      |
-| --------- | ------------------- | --------------------------------------------------------------------------- |
-| Log today | `./?shortcut=log`   | The **Today** page, with the observation drawer open for a new observation. |
-| Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                             |
+| Shortcut  | URL                 | Result                                                                       |
+| --------- | ------------------- | ---------------------------------------------------------------------------- |
+| Log today | `./?shortcut=log`   | The **Today** page, with the observation drawer open on today (section 5.7). |
+| Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                              |
 - `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
@@ -976,18 +982,19 @@ The helpers are in `src/test/`:
 - A local run uses a server that runs already only when `PW_REUSE=1` is set. It can use an installed Chromium through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
 - Vitest does not run the files in `e2e/`, and the coverage report does not include them. `npm run typecheck` checks them with `e2e/tsconfig.json`.
 
-| Flow | Expected result                                                                                                                                                                                                                   |
-| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 1    | The first visit shows the welcome guide. `Escape` closes it.                                                                                                                                                                      |
-| 2    | An observation from the **Today** page stays after a reload.                                                                                                                                                                      |
-| 3    | Backup, reset (with **Delete all data** and the undo message), new observation, restore with preview and **Replace** bring back the backup.                                                                                       |
-| 4    | After **Load Demo Cycle**, the chart, calendar and analytics pages show the demo data.                                                                                                                                            |
-| 5    | A manual Peak Day moves the Peak Day and the count of three. Without it, the calculated Peak Day comes back, also after a reload.                                                                                                 |
-| 6    | Saved data that is not JSON shows the recovery message, and the recovery key keeps the text. **Delete the copy** removes both.                                                                                                    |
-| 7    | A saved list with one record that is not valid shows the other observations and the recovery message for 1 record.                                                                                                                |
-| 8    | When `localStorage.setItem` fails for the observations, the save warning shows. **Back up now** opens the export dialog.                                                                                                          |
-| 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                                                                                                 |
-| 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
+| Flow | Expected result                                                                                                                                                                                                                                                          |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | The first visit shows the welcome guide. `Escape` closes it.                                                                                                                                                                                                             |
+| 2    | An observation from the **Today** page stays after a reload.                                                                                                                                                                                                             |
+| 3    | Backup, reset (with **Delete all data** and the undo message), new observation, restore with preview and **Replace** bring back the backup.                                                                                                                              |
+| 4    | After **Load Demo Cycle**, the chart, calendar and analytics pages show the demo data.                                                                                                                                                                                   |
+| 5    | A manual Peak Day moves the Peak Day and the count of three. Without it, the calculated Peak Day comes back, also after a reload.                                                                                                                                        |
+| 6    | Saved data that is not JSON shows the recovery message, and the recovery key keeps the text. **Delete the copy** removes both.                                                                                                                                           |
+| 7    | A saved list with one record that is not valid shows the other observations and the recovery message for 1 record.                                                                                                                                                       |
+| 8    | When `localStorage.setItem` fails for the observations, the save warning shows. **Back up now** opens the export dialog.                                                                                                                                                 |
+| 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                                                                                                                                        |
+| 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, the title becomes **Log Observation**, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
+| 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 

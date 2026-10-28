@@ -20,7 +20,7 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 | Button                             | Phone location      | Action                                              |
 | ---------------------------------- | ------------------- | --------------------------------------------------- |
 | Cycle picker                       | Header              | Selects one cycle or **All Cycles**.                |
-| **Log Observation**                | **+** at the bottom | Opens the observation drawer.                       |
+| **Log Observation**                | **+** at the bottom | Opens the observation drawer on today.              |
 | **Practitioner PDF / PNG**         | Menu                | Opens the export and backup dialog.                 |
 | **Welcome to Fertility Tracker**   | Menu                | Opens the welcome guide.                            |
 | **About & Version Tracker**        | Menu                | Opens the release notes and the storage data.       |
@@ -121,7 +121,7 @@ You can install the application on a phone or a computer. The installed applicat
 | -------------------- | --------------------------------------------------------------------------------------- |
 | Footer               | Not shown. **About & Version Tracker** > **System Information** shows the legal notice. |
 | Pull down at the top | Does not reload the application.                                                        |
-| **Log today**        | Shortcut of the app icon. Opens the observation drawer for a new observation.           |
+| **Log today**        | Shortcut of the app icon. Opens the observation drawer on today.                        |
 | **Chart**            | Shortcut of the app icon. Opens the **Paper Chart Strip** page.                         |
 
 Touch and hold the app icon (or right-click it on a computer) to see the shortcuts. The shortcuts are available on Android and in Chrome or Edge on a computer.

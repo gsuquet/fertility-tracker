@@ -118,6 +118,40 @@ describe('ObservationDrawer flows', () => {
     expect(screen.getByTestId('selection')).toHaveTextContent('none');
   });
 
+  it('opens the saved observation of today when nothing is selected', () => {
+    const today = makeObservation({
+      id: 'today',
+      date: '2026-09-15',
+      stretch: '10',
+      modifiers: ['K', 'L'],
+      codeString: '10KL',
+      notes: 'today note',
+    });
+    renderDrawer(null, [today]);
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
+    expect(within(drawer()).getByLabelText(en.labels.notes)).toHaveValue('today note');
+    expect(within(drawer()).getByRole('button', { name: en.actions.delete })).toBeInTheDocument();
+    // A save with no change keeps the saved values
+    press(en.actions.save);
+    expect(saved()).toBe('2026-09-15:10KL:undefined');
+  });
+
+  it('loads the saved observation of a date that the user picks', () => {
+    const saved10 = makeObservation({ date: '2026-09-10', stretch: '0', codeString: '0' });
+    renderDrawer(null, [saved10]);
+    const dateInput = within(drawer()).getByLabelText(en.labels.date);
+    fireEvent.change(dateInput, { target: { value: '2026-09-10' } });
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('0');
+
+    // A date with no observation does not copy the values of the saved day
+    fireEvent.change(dateInput, { target: { value: '2026-09-11' } });
+    expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('');
+    expect(within(drawer()).queryByRole('button', { name: en.actions.delete })).toBeNull();
+  });
+
   it('treats a blank calendar day as a new entry on its date', () => {
     renderDrawer(makeObservation({ id: '', date: '2026-09-11' }));
     expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
