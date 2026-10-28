@@ -11,6 +11,7 @@ describe('launch shortcuts of the manifest', () => {
   afterEach(() => {
     visit('/');
     vi.restoreAllMocks();
+    Reflect.deleteProperty(window, 'launchQueue');
   });
 
   it.each([
@@ -59,7 +60,6 @@ describe('launch shortcuts of the manifest', () => {
     consumer?.({ targetURL: 'https://example.com/' });
     consumer?.({});
     expect(onShortcut.mock.calls).toEqual([['chart']]);
-    Reflect.deleteProperty(window, 'launchQueue');
   });
 
   it('does nothing in a browser without a launch queue', () => {

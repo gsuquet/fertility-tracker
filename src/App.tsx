@@ -69,7 +69,10 @@ import {
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
-  const { setSelectedObservation, setIsDrawerOpen } = useCycleUi();
+  const { setSelectedObservation, isDrawerOpen, setIsDrawerOpen } = useCycleUi();
+  // The launch queue keeps the first listener, so it reads the drawer state through a ref
+  const drawerOpenRef = useRef(isDrawerOpen);
+  drawerOpenRef.current = isDrawerOpen;
   // A shortcut of the app icon chooses the first page. Reading it does not change the address.
   const [launchShortcut] = useState(readLaunchShortcut);
   const [activeTab, setActiveTab] = useState<ActiveTab>(
@@ -98,9 +101,11 @@ const MainApp: React.FC = () => {
   );
 
   // Log today opens the drawer for a new observation, as the + button does. At the first visit,
-  // the welcome guide comes first, so the drawer does not open under it.
+  // the welcome guide comes first, so the drawer does not open under it. A drawer that is already
+  // open keeps its observation and its draft.
   useEffect(() => {
     const openShortcut = (shortcut: LaunchShortcut) => {
+      if (shortcut === 'log' && drawerOpenRef.current) return;
       setActiveTab(shortcut === 'chart' ? 'chart' : 'today');
       if (shortcut !== 'log' || !readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) return;
       setSelectedObservation(null);

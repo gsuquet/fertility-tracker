@@ -608,7 +608,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
-- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload.
+- When the window is already open, `listenForLaunchShortcuts()` gets the shortcut from `window.launchQueue` (Chromium only). The application changes the page or opens the drawer without a reload. When the drawer is already open, **Log today** keeps it and its draft.
 - The manifest cannot have a different language for each user. Thus, the shortcut names are in English.
 
 ## 6. State and data storage
