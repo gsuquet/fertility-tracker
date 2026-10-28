@@ -146,3 +146,34 @@ describe('footer of the installed application', () => {
     expect(footer).toMatch(query);
   });
 });
+
+describe('header in the title bar of an installed app on a computer', () => {
+  const header = readCss('views/header.css');
+  const overlayStart = header.indexOf('@media (display-mode: window-controls-overlay)');
+  const overlay = header.slice(overlayStart);
+
+  it('uses the free area of the title bar only when the overlay is on', () => {
+    expect(overlayStart).toBeGreaterThan(-1);
+    const rule = ruleBody(overlay, /\.app-header/);
+    expect(rule).toMatch(/height:\s*max\(68px,\s*env\(titlebar-area-height, 0px\)\);/);
+    expect(rule).toMatch(/padding-left:\s*calc\(env\(titlebar-area-x, 0px\)/);
+    expect(rule).toMatch(
+      /padding-right:\s*calc\(\s*100vw\s*-\s*env\(titlebar-area-x, 0px\)\s*-\s*env\(titlebar-area-width, 100vw\)/
+    );
+    // Outside the overlay, nothing uses the title bar values, so a phone and a tab do not change
+    expect(header.slice(0, overlayStart)).not.toMatch(/titlebar-area|app-region/);
+    // The overlay block is the last one, so it wins over the rules of a narrow window
+    expect(overlay.match(/@media/g)).toHaveLength(1);
+  });
+
+  it('moves the window with an empty part of the header, but not with a control', () => {
+    expect(ruleBody(overlay, /\.app-header/)).toMatch(
+      /-webkit-app-region:\s*drag;\s*app-region:\s*drag;/
+    );
+    const controls = ruleBody(
+      overlay,
+      /\.app-header button,\s*\.app-header a,\s*\.app-header input,\s*\.app-header select,\s*\.app-header \[role='tab'\],\s*\.app-header \[role='menu'\],\s*\.app-header \[role='listbox'\]/
+    );
+    expect(controls).toMatch(/-webkit-app-region:\s*no-drag;\s*app-region:\s*no-drag;/);
+  });
+});

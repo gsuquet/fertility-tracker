@@ -457,4 +457,35 @@
     border-color: var(--accent-primary);
     color: var(--accent-primary);
   }
+
+  /* The installed app on a computer, with the header in the title bar (Window Controls Overlay).
+     The title bar values give the free part of the title bar: the padding keeps the buttons
+     away from the window controls, on the right on Windows and on the left on macOS. The values
+     change when the window changes, and the rules end when the user turns the overlay off. */
+  @media (display-mode: window-controls-overlay) {
+    .app-header {
+      height: max(68px, env(titlebar-area-height, 0px));
+      padding-left: calc(env(titlebar-area-x, 0px) + 0.75rem);
+      padding-right: calc(
+        100vw -
+        env(titlebar-area-x, 0px) -
+        env(titlebar-area-width, 100vw) +
+        0.75rem
+      );
+      /* An empty part of the header moves the window, as a title bar does */
+      -webkit-app-region: drag;
+      app-region: drag;
+    }
+
+    .app-header button,
+    .app-header a,
+    .app-header input,
+    .app-header select,
+    .app-header [role='tab'],
+    .app-header [role='menu'],
+    .app-header [role='listbox'] {
+      -webkit-app-region: no-drag;
+      app-region: no-drag;
+    }
+  }
 }

@@ -82,15 +82,15 @@ The **Today** page and the observation drawer have the same fields.
 
 ## Export and backup dialog
 
-| Button                  | Action                                                                                    |
-| ----------------------- | ----------------------------------------------------------------------------------------- |
-| **Single Cycle**        | Prints one cycle.                                                                         |
-| **Multiple Cycles**     | Prints the selected cycles.                                                               |
-| **Print / Save as PDF** | Opens the print dialog of the browser.                                                    |
-| **Backup Data (JSON)**  | Downloads all observations in a JSON file.                                                |
-| **Restore Data (JSON)** | Replaces or merges the observations with a JSON file. Asks first if observations exist.   |
-| **Load Demo Cycle**     | Replaces all observations with two demo cycles. Asks first if observations exist.         |
-| **Clear Data / Reset**  | Deletes all observations after a confirmation. It is disabled when no observations exist. |
+| Button                  | Action                                                                                                           |
+| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| **Single Cycle**        | Prints one cycle.                                                                                                |
+| **Multiple Cycles**     | Prints the selected cycles.                                                                                      |
+| **Print / Save as PDF** | Opens the print dialog of the browser.                                                                           |
+| **Backup Data**         | Downloads all observations in a `.ftbackup` file. The file is plain JSON.                                        |
+| **Restore Data**        | Replaces or merges the observations with a `.ftbackup` or `.json` backup file. Asks first if observations exist. |
+| **Load Demo Cycle**     | Replaces all observations with two demo cycles. Asks first if observations exist.                                |
+| **Clear Data / Reset**  | Deletes all observations after a confirmation. It is disabled when no observations exist.                        |
 
 If the file is not a valid backup, the dialog shows an error. The observations do not change.
 
@@ -100,7 +100,7 @@ The confirmation dialog opens before an action replaces or deletes data. The foc
 
 | Dialog                               | Opens from                                        | Button that continues    |
 | ------------------------------------ | ------------------------------------------------- | ------------------------ |
-| **Restore this backup?**             | **Restore Data (JSON)**                           | **Merge** or **Replace** |
+| **Restore this backup?**             | **Restore Data**                                  | **Merge** or **Replace** |
 | **Replace your data with the demo?** | **Load Demo Cycle**                               | **Load the demo**        |
 | **Delete all chart data?**           | **Clear Data / Reset**                            | **Delete all data**      |
 | **Delete the unreadable data?**      | **Delete the copy** in the unreadable data notice | **Delete the copy**      |

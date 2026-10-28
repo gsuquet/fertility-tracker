@@ -26,6 +26,8 @@ interface ExportModalProps {
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
   /** Starts with the focus on Restore Data, for example from Restore a backup of the welcome guide. */
   startWithRestore?: boolean | undefined;
+  /** A backup file that the user opened with the app. The dialog restores it at once. */
+  launchedBackup?: { text: string } | null | undefined;
 }
 
 /** A data action that waits for the user to confirm it. */
@@ -38,6 +40,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   onClose,
   onPreparePrint,
   startWithRestore = false,
+  launchedBackup = null,
 }) => {
   const {
     observations,
@@ -132,16 +135,28 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onClose();
   };
 
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    e.target.value = '';
+  // The contents decide, not the extension: a .ftbackup file and an old .json file both work
+  const restoreText = (text: string) => {
     const imported = parseObservationData(text);
     setImportError(imported === null);
     if (imported) {
       runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported.observations) });
     }
+  };
+  const restoreTextRef = useRef(restoreText);
+  restoreTextRef.current = restoreText;
+
+  // A file opened with the app goes through the same preview and confirmation
+  useEffect(() => {
+    if (launchedBackup) restoreTextRef.current(launchedBackup.text);
+  }, [launchedBackup]);
+
+  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const text = await file.text();
+    e.target.value = '';
+    restoreText(text);
   };
 
   const confirmContent = (action: PendingAction) => {
@@ -348,7 +363,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
             <FileText size={16} />
             <span>{t.actions.importJson}</span>
           </button>
-          <input ref={fileInputRef} type="file" accept=".json" onChange={handleFileUpload} hidden />
+          {/* No accept filter: iOS greys out a file with an extension that it does not know */}
+          <input ref={fileInputRef} type="file" onChange={handleFileUpload} hidden />
 
           <button
             type="button"

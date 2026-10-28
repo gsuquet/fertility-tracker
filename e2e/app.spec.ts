@@ -54,7 +54,7 @@ test.describe('Fertility Tracker in a browser', () => {
     ).toBeVisible();
   });
 
-  test('restores the observations from a JSON backup', async ({ page }) => {
+  test('restores the observations from a .ftbackup file', async ({ page }) => {
     await openApp(page);
     await logObservation(page, '10KLX3 I');
     const before = await savedObservations(page);
@@ -63,8 +63,11 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
     const downloadEvent = page.waitForEvent('download');
     await exportDialog.getByRole('button', { name: en.actions.exportJson }).click();
-    const backupPath = await (await downloadEvent).path();
-    expect(await readFile(backupPath, 'utf-8')).toContain('10KLX3 I');
+    const download = await downloadEvent;
+    // The name keeps .ftbackup: no .json is added after it
+    expect(download.suggestedFilename()).toBe(`fertility-tracker-backup-${TODAY}.ftbackup`);
+    const backup = await readFile(await download.path(), 'utf-8');
+    expect(backup).toContain('10KLX3 I');
 
     // Clear the data, so that only the restore can bring the observation back.
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
@@ -86,7 +89,11 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.getByRole('button', { name: en.actions.exportPdf }).click();
     const fileChooser = page.waitForEvent('filechooser');
     await exportDialog.getByRole('button', { name: en.actions.importJson }).click();
-    await (await fileChooser).setFiles(backupPath);
+    await (await fileChooser).setFiles({
+      name: download.suggestedFilename(),
+      mimeType: 'application/octet-stream',
+      buffer: Buffer.from(backup),
+    });
     const preview = page.getByRole('dialog', { name: en.confirmDialog.importTitle });
     await expect(preview).toContainText(
       en.confirmDialog.importSummary
