@@ -366,6 +366,19 @@ describe('useSheetDrag in the body', () => {
     expect(prevented(body(), 250, { count: 2 })).toBe(false);
   });
 
+  it('does not move or close the sheet for a pinch that moves down from the top of the body', async () => {
+    const onClose = vi.fn();
+    render(<Sheet onClose={onClose} />);
+    touch('start', 100);
+    // The second finger lands on the header, and the fingers spread apart
+    expect(prevented(body(), 150, { count: 2 })).toBe(false);
+    expect(prevented(body(), 300, { count: 2 })).toBe(false);
+    expect(sheet().style.transform).toBe('');
+    touch('end', 300);
+    await wait(500);
+    expect(onClose).not.toHaveBeenCalled();
+  });
+
   it('keeps the scroll of a field or of an element that scrolls by itself in the body', () => {
     const scrollHeight = vi.mocked(
       Object.getOwnPropertyDescriptor(Element.prototype, 'scrollHeight')?.get as () => number

@@ -100,10 +100,10 @@ export interface SheetDragHandlers {
 /** True when the body has content to scroll. */
 const canScroll = (body: HTMLElement) => body.scrollHeight > body.clientHeight;
 
-/** Fields keep their own gestures, for example the scroll of a text area. */
-const OWN_GESTURE = 'input, textarea, select, [contenteditable="true"]';
+/** A text area keeps its own gestures, for example its scroll and the selection of text. */
+const OWN_GESTURE = 'textarea, [contenteditable="true"]';
 
-/** True when the touch starts in a field or in an element of the body that scrolls by itself. */
+/** True when the touch starts in a text area or in an element of the body that scrolls by itself. */
 const startsInOwnScroll = (target: Element, body: HTMLElement) => {
   for (let el: Element | null = target; el && el !== body; el = el.parentElement) {
     if (el.matches(OWN_GESTURE)) return true;
@@ -172,6 +172,11 @@ export function useSheetDrag<Body extends HTMLElement = HTMLFormElement>(
       if (owns) {
         e.preventDefault();
         moveDrag(gesture.drag as Drag, touch.clientY);
+        return;
+      }
+      // Two fingers are a pinch, also when the second one lands outside the body
+      if (e.touches.length > 1) {
+        start = null;
         return;
       }
       const dy = touch.clientY - start.y;
