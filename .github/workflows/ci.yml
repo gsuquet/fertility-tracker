@@ -35,13 +35,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      # A squash merge uses the pull request title as the commit message.
-      - name: Check pull request title (Conventional Commits)
-        if: github.event_name == 'pull_request'
-        env:
-          PR_TITLE: ${{ github.event.pull_request.title }}
-        run: printf '%s\n' "$PR_TITLE" | .mise/tasks/commit-msg
-
       - name: Verify registry signatures
         run: npm audit signatures
 

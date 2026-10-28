@@ -1,6 +1,6 @@
 # Documentation rules
 
-This page gives the rules for the pages in `docs/`, `README.md` and `AGENTS.md`. The docs check (`mise run docs`) finds a part of the errors automatically. The column **Checked** tells which rules it checks.
+This page gives the rules for the pages in `docs/`, `README.md`, `AGENTS.md` and `SPEC.md`. The docs check (`mise run docs`) finds a part of the errors automatically. The column **Checked** tells which rules it checks.
 
 ## Page types
 

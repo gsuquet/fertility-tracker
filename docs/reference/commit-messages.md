@@ -38,7 +38,7 @@ Optional footers, for example BREAKING CHANGE: description
 
 ## Messages that Git writes
 
-The check accepts these messages without a type:
+The commit message check accepts these messages without a type. The pull request title check does not accept them.
 
 | Start of the header              | Source               |
 | -------------------------------- | -------------------- |
@@ -48,22 +48,24 @@ The check accepts these messages without a type:
 
 ## Checks
 
-| Where         | What                                                                                           |
-| ------------- | ---------------------------------------------------------------------------------------------- |
-| Your computer | The `conventional-commit` hook checks each commit message. `mise run hooks` installs it.       |
-| CI            | The `ci` workflow checks the pull request title. A squash merge uses it as the commit message. |
-| Manual        | `mise run commit-msg FILE` checks a file. Without `FILE`, it reads the standard input.         |
+| Where         | What                                                                                                         |
+| ------------- | ------------------------------------------------------------------------------------------------------------ |
+| Your computer | The `conventional-commit` hook checks each commit message. `mise run hooks` installs it.                     |
+| CI            | The `pr-title` workflow checks the pull request title with `--strict`. It runs again when the title changes. |
+| Manual        | `mise run commit-msg FILE` checks a file. Without `FILE`, it reads the standard input.                       |
+| Strict mode   | `--strict` also rejects the messages that Git writes. A squash merge uses the title as the commit message.   |
 
 ## Examples
 
-| Header                                     | Result                  |
-| ------------------------------------------ | ----------------------- |
-| `feat(calendar): show the week numbers`    | Correct                 |
-| `fix: keep the red stamp on B days`        | Correct                 |
-| `docs(spec)!: remove the Spanish language` | Correct                 |
-| `Add the week numbers`                     | Incorrect: no type      |
-| `feature: show the week numbers`           | Incorrect: unknown type |
-| `fix:keep the red stamp`                   | Incorrect: no space     |
+| Header                                       | Result                   |
+| -------------------------------------------- | ------------------------ |
+| `feat(calendar): show the week numbers`      | Correct                  |
+| `fix: keep the red stamp on B days`          | Correct                  |
+| `docs(spec)!: remove the Spanish language`   | Correct                  |
+| `Add the week numbers`                       | Incorrect: no type       |
+| `feature: show the week numbers`             | Incorrect: unknown type  |
+| `fix:keep the red stamp`                     | Incorrect: no space      |
+| `fix: keep the stamp`, then a body on line 2 | Incorrect: no blank line |
 
 ## Related documents
 

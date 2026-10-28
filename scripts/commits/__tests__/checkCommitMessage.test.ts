@@ -75,6 +75,23 @@ describe('checkCommitMessage', () => {
     expect(checkCommitMessage('fix:correct')).toHaveLength(1);
   });
 
+  it('rejects the messages that Git writes in strict mode', () => {
+    expect(checkCommitMessage('Merge branch main', true)).toHaveLength(1);
+    expect(checkCommitMessage('fixup! feat: add a page', true)).toHaveLength(1);
+    expect(checkCommitMessage('feat: add a page', true)).toEqual([]);
+  });
+
+  it('reads the header of a full message and accepts a body after a blank line', () => {
+    expect(checkCommitMessage('# comment\nfeat: add a page\n\nThe body.\n')).toEqual([]);
+    expect(checkCommitMessage('feat: add a page\n# comment\n\nThe body.\n')).toEqual([]);
+  });
+
+  it('rejects a body without a blank line after the header', () => {
+    expect(checkCommitMessage('feat: add a page\nThe body.\n')).toEqual([
+      'Put a blank line between the header and the body.',
+    ]);
+  });
+
   it('rejects a header longer than 100 characters', () => {
     expect(checkCommitMessage(`fix: ${'a'.repeat(96)}`)).toEqual([
       'The header has 101 characters. The maximum is 100.',
@@ -101,6 +118,15 @@ describe('main', () => {
     writeFileSync(file, 'feat: add a page\n');
     expect(main([file], '')).toBe(0);
     expect(log).not.toHaveBeenCalled();
+  });
+
+  it('uses strict mode with --strict, with a file or the standard input', () => {
+    const file = join(dir, 'COMMIT_EDITMSG');
+    writeFileSync(file, 'Merge branch main\n');
+    expect(main([file], '')).toBe(0);
+    expect(main(['--strict', file], '')).toBe(1);
+    expect(main(['--strict'], 'Merge branch main')).toBe(1);
+    expect(main(['--strict'], 'ci: check the title')).toBe(0);
   });
 
   it('reads the standard input when there is no file and returns 1 for an incorrect message', () => {

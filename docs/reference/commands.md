@@ -64,12 +64,11 @@ The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It 
 
 1. Installs the pinned tools with mise.
 2. Installs the dependencies with `npm ci`.
-3. Checks that the pull request title follows [Conventional Commits](commit-messages.md).
-4. Verifies the registry signatures of the dependencies.
-5. Scans the pull request commits for secrets.
-6. Runs the pre-commit hooks on all files.
-7. Runs the tests with coverage.
-8. Builds the application.
+3. Verifies the registry signatures of the dependencies.
+4. Scans the pull request commits for secrets.
+5. Runs the pre-commit hooks on all files.
+6. Runs the tests with coverage.
+7. Builds the application.
 
 The job `e2e` runs at the same time, on pull requests only.
 
@@ -78,6 +77,8 @@ The job `e2e` runs at the same time, on pull requests only.
 3. Installs Chromium with `npx playwright install --with-deps chromium`.
 4. Runs `npm run test:e2e`.
 5. Keeps the Playwright report for 7 days if a test fails.
+
+The workflow `.github/workflows/pr-title.yml` checks that the pull request title follows [Conventional Commits](commit-messages.md). It runs when a pull request opens, changes or gets new commits.
 
 ## Related documents
 
