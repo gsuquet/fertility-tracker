@@ -1,6 +1,6 @@
 {
   "name": "fertility-tracker",
-  "version": "1.28.0",
+  "version": "1.29.0",
   "private": true,
   "description": "Offline-first Creighton Model (CrMS) fertility cycle charting app.",
   "type": "module",

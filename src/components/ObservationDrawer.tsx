@@ -11,6 +11,7 @@ import { StampBadge } from './StampBadge';
 import { ObservationCodeSelector } from './observation/ObservationCodeSelector';
 import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
+import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
 
 export const ObservationDrawer: React.FC = () => {
@@ -89,6 +90,7 @@ export const ObservationDrawer: React.FC = () => {
 
   const executeSave = (cycleStart: boolean | undefined) => {
     saveObservation(form.toInput(date, savedId, cycleStart));
+    haptic('success');
     closeDrawer();
     setShowCycleStartModal(false);
   };

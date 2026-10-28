@@ -16,3 +16,4 @@ export const STORAGE_HAS_SEEN_WELCOME_KEY = 'fertility_tracker_has_seen_welcome'
 export const STORAGE_INSTALL_BANNER_CLOSED_KEY = 'fertility_tracker_install_banner_closed';
 export const STORAGE_SHORTCUTS_OFF_KEY = 'fertility_tracker_shortcuts_off';
 export const STORAGE_BADGE_ON_KEY = 'fertility_tracker_badge_on';
+export const STORAGE_HAPTICS_OFF_KEY = 'fertility_tracker_haptics_off';

@@ -6,6 +6,7 @@ import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
 import { getAppVersion } from '../../domain/appVersion';
 import type { ActiveTab } from '../../types/crms';
+import { STORAGE_HAPTICS_OFF_KEY } from '../../utils/storageKeys';
 
 const SelectionProbe = () => {
   const { selectedObservation } = useCycleUi();
@@ -136,6 +137,29 @@ describe('Header', () => {
     expect(within(sheet).getByText('Thème : Sombre')).toBeInTheDocument();
     fireEvent.click(within(sheet).getByText('Langue : Français'));
     expect(within(sheet).getByText('Language : English')).toBeInTheDocument();
+  });
+
+  it('has no vibration button when the browser cannot vibrate', () => {
+    renderHeader();
+    expect(within(openSheet()).queryByText(/Vibration/)).toBeNull();
+  });
+
+  it('turns the vibrations off and on from the sheet when the browser can vibrate', () => {
+    Object.defineProperty(navigator, 'vibrate', { value: vi.fn(), configurable: true });
+    try {
+      renderHeader();
+      const sheet = openSheet();
+      const toggle = within(sheet).getByRole('button', { name: 'Vibration : On' });
+      fireEvent.click(toggle);
+      expect(toggle).toHaveAccessibleName('Vibration : Off');
+      expect(localStorage.getItem(STORAGE_HAPTICS_OFF_KEY)).toBe('true');
+      fireEvent.click(within(sheet).getByText('Language : English'));
+      expect(toggle).toHaveTextContent('Vibration : Désactivée');
+      fireEvent.click(toggle);
+      expect(toggle).toHaveTextContent('Vibration : Activée');
+    } finally {
+      Reflect.deleteProperty(navigator, 'vibrate');
+    }
   });
 
   it('closes the sheet with the close button, the overlay and Escape', () => {

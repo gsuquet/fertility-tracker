@@ -57,6 +57,8 @@ export const fr: TranslationSchema = {
     languageToggle: 'Langue : Français',
     themeDark: 'Thème : Sombre',
     themeLight: 'Thème : Clair',
+    hapticsOn: 'Vibration : Activée',
+    hapticsOff: 'Vibration : Désactivée',
     homeLabel: 'Accueil Creighton FertilityCare System',
     mainNavLabel: 'Vues de navigation principales',
     languageTitle: 'Changer de langue / Switch Language',

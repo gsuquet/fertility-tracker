@@ -36,7 +36,7 @@ fertility-tracker/
 │   ├── sw/                      # Service worker: precache and cache strategies
 │   ├── test/                    # Test helpers
 │   ├── types/                   # TypeScript types and code lists of the domain
-│   ├── utils/                   # Dates, export file names, safe storage
+│   ├── utils/                   # Dates, export file names, safe storage, vibrations
 │   ├── App.tsx                  # Application layout
 │   └── main.tsx                 # Entry point
 ├── AGENTS.md                    # Rules for AI coding agents

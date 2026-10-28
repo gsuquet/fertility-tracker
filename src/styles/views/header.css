@@ -448,6 +448,10 @@
     font-family: inherit;
   }
 
+  .sheet-toggle-btn.sheet-toggle-wide {
+    grid-column: 1 / -1;
+  }
+
   .sheet-toggle-btn:hover,
   .sheet-toggle-btn:active {
     border-color: var(--accent-primary);

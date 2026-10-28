@@ -52,6 +52,20 @@ describe('MobileNav Component (Phone Navigation)', () => {
     expect(screen.getByTestId('drawer')).toHaveTextContent('open');
   });
 
+  it('vibrates briefly on the add button, and not on the tabs', () => {
+    const vibrate = vi.fn(() => true);
+    Object.defineProperty(navigator, 'vibrate', { value: vibrate, configurable: true });
+    try {
+      renderMobileNav({ activeTab: 'today', setActiveTab: vi.fn() });
+      fireEvent.click(screen.getByText('Chart'));
+      expect(vibrate).not.toHaveBeenCalled();
+      fireEvent.click(screen.getByRole('button', { name: 'Log' }));
+      expect(vibrate).toHaveBeenCalledExactlyOnceWith(10);
+    } finally {
+      Reflect.deleteProperty(navigator, 'vibrate');
+    }
+  });
+
   it.each([
     ['opens the saved observation of today', true, en.drawer.editTitle, '10KL'],
     ['opens an empty form when today has no observation', false, en.actions.newEntry, ''],

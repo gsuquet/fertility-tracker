@@ -10,6 +10,7 @@ import type {
 } from '../types/crms';
 import { formatCodeString, parseCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
+import { haptic } from '../utils/haptics';
 import type { ObservationFields } from '../domain/observationForm';
 import { EMPTY_FIELDS, fieldsFromObservation } from '../domain/observationForm';
 
@@ -59,7 +60,10 @@ export function useObservationForm() {
     toggleSymptom: (sym: SymptomCode) => updateCode({ symptoms: toggle(fields.symptoms, sym) }),
     toggleIntercourse: () => updateCode({ intercourse: !fields.intercourse }),
     setNotes: (notes: string) => update({ notes }),
-    toggleManualPeak: () => update({ isManualPeak: !fields.isManualPeak }),
+    toggleManualPeak: () => {
+      haptic('light');
+      update({ isManualPeak: !fields.isManualPeak });
+    },
     toggleCycleStart: () => update({ isCycleStart: fields.isCycleStart !== true }),
     setCycleStart: (isCycleStart: boolean) => update({ isCycleStart }),
     /** Builds the payload to save, with the cycle start choice made for this save. */
