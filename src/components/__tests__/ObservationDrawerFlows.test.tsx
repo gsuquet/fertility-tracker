@@ -57,6 +57,13 @@ const saved = () => screen.getByTestId('saved').textContent;
 const press = (name: string | RegExp) =>
   fireEvent.click(within(drawer()).getByRole('button', { name }));
 
+/** A fake Vibration API. Each test removes it at the end. */
+const installVibrate = () => {
+  const vibrate = vi.fn(() => true);
+  Object.defineProperty(navigator, 'vibrate', { value: vibrate, configurable: true });
+  return vibrate;
+};
+
 describe('ObservationDrawer flows', () => {
   beforeEach(() => {
     vi.useFakeTimers({ toFake: ['Date'] });
@@ -65,6 +72,16 @@ describe('ObservationDrawer flows', () => {
 
   afterEach(() => {
     vi.useRealTimers();
+    Reflect.deleteProperty(navigator, 'vibrate');
+  });
+
+  it('vibrates briefly on the Peak Day button and on a save', () => {
+    const vibrate = installVibrate();
+    renderDrawer(null);
+    press(en.codes.stretch['10']);
+    press(en.actions.setPeak);
+    press(en.actions.save);
+    expect(vibrate.mock.calls).toEqual([[10], [15]]);
   });
 
   it('logs a new observation for today with every selector', () => {

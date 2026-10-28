@@ -2,6 +2,7 @@ import type React from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCycle } from '../context/CycleContext';
 import type { ActiveTab } from '../types/crms';
+import { haptic } from '../utils/haptics';
 import { Layout, Calendar as CalendarIcon, BarChart2, Plus, CalendarDays } from 'lucide-react';
 
 interface MobileNavProps {
@@ -14,6 +15,7 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
   const { setSelectedObservation, setIsDrawerOpen } = useCycle();
 
   const handleQuickAdd = () => {
+    haptic('light');
     setSelectedObservation(null);
     setIsDrawerOpen(true);
   };

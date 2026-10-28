@@ -56,6 +56,8 @@ export const en = {
     languageToggle: 'Language : English',
     themeDark: 'Theme : Dark',
     themeLight: 'Theme : Light',
+    hapticsOn: 'Vibration : On',
+    hapticsOff: 'Vibration : Off',
     homeLabel: 'Creighton FertilityCare System Home',
     mainNavLabel: 'Main Navigation Views',
     languageTitle: 'Switch Language / Changer de langue',
