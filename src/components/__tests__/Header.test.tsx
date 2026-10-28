@@ -42,7 +42,10 @@ describe('Header', () => {
   it('renders the brand and returns to Today from it', () => {
     const { setActiveTab } = renderHeader();
     expect(screen.getByText('Fertility Tracker')).toBeInTheDocument();
-    fireEvent.click(screen.getByRole('button', { name: 'Creighton FertilityCare System Home' }));
+    const home = screen.getByRole('button', { name: 'Creighton FertilityCare System Home' });
+    expect(home.querySelector('svg.brand-mark')).toBeInTheDocument();
+    expect(home).not.toHaveTextContent('🌱');
+    fireEvent.click(home);
     expect(setActiveTab).toHaveBeenCalledWith('today');
   });
 

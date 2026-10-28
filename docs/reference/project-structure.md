@@ -13,7 +13,7 @@ fertility-tracker/
 ├── docs/                        # Documentation (Diátaxis) and decision records
 ├── e2e/                         # Playwright end-to-end and accessibility tests
 ├── public/                      # Static files: manifest, icons, headers
-│   └── icons/                   # PWA icons (192, 512 and maskable 512)
+│   └── icons/                   # Logo SVG (favicon), PWA icons (192, 512, maskable 512), Apple touch icon
 ├── scripts/
 │   ├── commits/                 # Commit message checker and its tests
 │   ├── docs/                    # Docs checker and its tests
@@ -23,6 +23,7 @@ fertility-tracker/
 │   ├── components/              # React components
 │   │   ├── __tests__/           # Component tests
 │   │   ├── chart/               # Parts of the Chart page
+│   │   ├── icons/               # Logo (BrandMark) and baby of the stamps (BabyIcon)
 │   │   ├── observation/         # Parts of the two observation forms
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme

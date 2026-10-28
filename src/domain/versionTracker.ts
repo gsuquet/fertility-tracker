@@ -44,6 +44,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.19.0',
+    date: '2026-10-28',
+    title: 'Paper and Ink',
+    titleFr: 'Papier et encre',
+    tagline: 'A new look like a printed chart, with a new logo and clearer stamps',
+    taglineFr:
+      'Un nouveau style comme un tableau imprimé, avec un nouveau logo et des tampons plus nets',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'New colors: chart ink on warm paper, so the stamps are the only strong colors',
+      'New sprout logo in the header, the browser tab and the app icon',
+      'New baby drawing on the white and light green stamps',
+      'The edges of the white and light green stamps are easier to see',
+      'Text uses the font of your device, and titles keep the app font',
+    ],
+    highlightsFr: [
+      'Nouvelles couleurs : encre de tableau sur papier chaud, pour que les tampons soient les seules couleurs fortes',
+      'Nouveau logo en pousse dans l’en-tête, l’onglet du navigateur et l’icône de l’application',
+      'Nouveau dessin du bébé sur les tampons blancs et vert clair',
+      'Les bords des tampons blancs et vert clair sont plus visibles',
+      'Le texte utilise la police de votre appareil, et les titres gardent la police de l’application',
+    ],
+  },
+  {
     version: '1.18.6',
     date: '2026-10-28',
     title: 'Specification in Simplified Technical English',

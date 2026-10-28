@@ -1,0 +1,34 @@
+#!/usr/bin/env bash
+#MISE description="Draw the PNG app icons from public/icons/logo.svg with Playwright"
+set -euo pipefail
+
+node --input-type=module -e "
+import { readFileSync } from 'node:fs';
+import { chromium } from '@playwright/test';
+
+const dir = 'public/icons';
+const logo = readFileSync(dir + '/logo.svg', 'utf8');
+const tile = logo.match(/<rect [^>]*fill=\"(#[0-9a-f]{6})\"/i)[1];
+const sprout = logo.replace(/^.*?<rect [^>]*\/>/s, '').replace('</svg>', '');
+const square = scale =>
+  '<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 64 64\"><rect width=\"64\" height=\"64\" fill=\"' + tile + '\"/>' +
+  '<g transform=\"translate(32 32) scale(' + scale + ') translate(-32 -32)\">' + sprout + '</g></svg>';
+
+// any: the rounded tile with transparent corners. maskable: the sprout in the 80% safe zone. Apple: a full square.
+const icons = [
+  ['icon-192.png', logo, 192],
+  ['icon-512.png', logo, 512],
+  ['icon-maskable-512.png', square(0.62), 512],
+  ['apple-touch-icon.png', square(0.82), 180],
+];
+
+// CHROMIUM_PATH selects a Chromium other than the one of npx playwright install
+const browser = await chromium.launch({ executablePath: process.env.CHROMIUM_PATH });
+for (const [name, svg, size] of icons) {
+  const page = await browser.newPage({ viewport: { width: size, height: size } });
+  await page.setContent('<body style=\"margin:0\">' + svg.replace('<svg ', '<svg width=\"' + size + '\" height=\"' + size + '\" ') + '</body>');
+  await page.screenshot({ path: dir + '/' + name, omitBackground: true });
+  await page.close();
+}
+await browser.close();
+"

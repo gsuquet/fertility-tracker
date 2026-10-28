@@ -24,7 +24,19 @@ describe('self-hosted Plus Jakarta Sans font', () => {
       expect(face).toContain('font-display: swap;');
       expect(face).toMatch(/unicode-range:\s+U\+/);
     }
-    expect(readCss('tokens/tokens.css')).toContain("'Plus Jakarta Sans', system-ui");
+    expect(readCss('tokens/tokens.css')).toMatch(
+      /--font-display:\s*'Plus Jakarta Sans', system-ui/
+    );
+  });
+
+  it('sets running text in the system font and headings in the display font', () => {
+    expect(readCss('tokens/tokens.css')).toMatch(/--font-family:\s*system-ui,/);
+    expect(readCss('base/reset.css')).toMatch(
+      /h1,\s*h2,\s*h3\s*\{[^}]*font-family:\s*var\(--font-display\)/
+    );
+    expect(readCss('views/header.css')).toMatch(
+      /\.brand-title\s*\{[^}]*font-family:\s*var\(--font-display\)/
+    );
   });
 
   it('is imported by the master stylesheet and loads nothing from a remote host', () => {

@@ -9,6 +9,9 @@ interface ThemeContextType {
   toggleTheme: () => void;
 }
 
+/** Browser theme color of each theme: the --bg-primary token of tokens.css */
+export const THEME_COLORS: Record<Theme, string> = { light: '#f8f6f1', dark: '#13171d' };
+
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
@@ -23,6 +26,10 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
 
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme);
+    // index.html has one theme-color per system color scheme. The choice in the app wins over both.
+    for (const meta of document.querySelectorAll('meta[name="theme-color"]')) {
+      meta.setAttribute('content', THEME_COLORS[theme]);
+    }
     writeStorage(THEME_STORAGE_KEY, theme);
   }, [theme]);
 

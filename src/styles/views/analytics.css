@@ -52,8 +52,8 @@
   }
 
   .icon-indigo {
-    background: rgba(99, 102, 241, 0.15);
-    color: var(--color-info, #6366f1);
+    background: var(--accent-light);
+    color: var(--accent-primary);
   }
   .icon-rose {
     background: rgba(244, 63, 94, 0.15);
@@ -239,7 +239,7 @@
     background-color: var(--stamp-red);
   }
   .bar-follicular {
-    background-color: var(--color-info, #6366f1);
+    background-color: var(--color-info);
   }
   .bar-luteal {
     background-color: var(--color-success, #10b981);
@@ -337,10 +337,10 @@
   }
 
   .bar-dry {
-    background-color: var(--stamp-white-border, #94a3b8);
+    background-color: var(--stamp-dark-green);
   }
   .bar-fertile {
-    background-color: var(--accent-solid, #4f46e5);
+    background-color: var(--accent-solid);
   }
   .bar-peak {
     background-color: #ec4899;
