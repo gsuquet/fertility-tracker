@@ -66,7 +66,11 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Testing strategy](explanation/testing-strategy.md)
 - [Why the docs use STE and Diátaxis](explanation/documentation-approach.md)
 
-### Decision records
+## Records
 
+Records are not Diátaxis pages. An RFC proposes a large change before the work starts. A decision record gives one decision and its reasons.
+
+- [RFC template](records/rfcs/0000-template.md)
+- [RFC 0001: Documentation structure, records and screen frames](records/rfcs/0001-documentation-structure.md) (Proposed)
 - [ADR 0001: Automatic backup and synchronization with zero-knowledge privacy](adr/0001-automated-backup-and-sync-privacy.md)
 - [ADR 0002: CSS in cascade layers with a shared design system](adr/0002-css-maintainability-design-system.md)

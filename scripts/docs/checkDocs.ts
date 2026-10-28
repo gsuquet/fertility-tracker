@@ -25,6 +25,7 @@ const MAX_PARAGRAPH_SENTENCES = 6;
 
 const DIATAXIS_FOLDERS = ['tutorials', 'how-to', 'reference', 'explanation'];
 const PROCEDURE_FOLDERS = ['tutorials', 'how-to'];
+const RECORD_FOLDERS = ['adr', 'records/rfcs', 'records/adrs'];
 
 /** Words that STE does not approve, with the approved word to use. */
 const NOT_APPROVED: Record<string, string> = {
@@ -236,7 +237,9 @@ export function checkDiataxis(root: string): Finding[] {
   for (const file of listMarkdownFiles(root).filter(f => f.startsWith('docs/'))) {
     if (file === 'docs/README.md') continue;
     const report = (message: string) => findings.push({ file, line: 1, message });
-    const folder = String(relative('docs', file).split('/')[0]);
+    const parts = relative('docs', file).split('/');
+    const folder = String(parts[0]);
+    const recordFolder = parts[0] === 'records' ? parts.slice(0, 2).join('/') : folder;
 
     if (PROCEDURE_FOLDERS.includes(folder)) {
       const content = readFileSync(join(root, file), 'utf8');
@@ -244,9 +247,9 @@ export function checkDiataxis(root: string): Finding[] {
         report(`A ${folder === 'how-to' ? 'how-to guide' : 'tutorial'} must have numbered steps.`);
       }
     }
-    if (!DIATAXIS_FOLDERS.includes(folder) && folder !== 'adr') {
+    if (!DIATAXIS_FOLDERS.includes(folder) && !RECORD_FOLDERS.includes(recordFolder)) {
       report(
-        'Put the page in tutorials, how-to, reference or explanation. Put a decision record in adr.'
+        'Put the page in tutorials, how-to, reference or explanation. Put a record in adr, records/rfcs or records/adrs.'
       );
     }
     if (!indexed.has(file)) report('docs/README.md does not link to this page.');
