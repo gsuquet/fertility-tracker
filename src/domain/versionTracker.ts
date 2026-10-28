@@ -56,13 +56,13 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'Text sizes follow one scale of ten steps, from 9 to 28 pixels',
       'Colors and corners come from the design tokens in both themes',
       'The Peak Day button of the chart has more text contrast',
-      'Green, amber and blue icons in the guide and dialogs have more contrast',
+      'The icons of the guide and dialogs and the intercourse text of the chart have more contrast',
     ],
     highlightsFr: [
       'Les tailles de texte suivent une échelle de dix niveaux, de 9 à 28 pixels',
       'Les couleurs et les coins viennent des jetons de design dans les deux thèmes',
       'Le bouton Jour Sommet du tableau a plus de contraste de texte',
-      'Les icônes vertes, ambre et bleues du guide et des fenêtres ont plus de contraste',
+      'Les icônes du guide et des fenêtres et le texte des rapports du tableau ont plus de contraste',
     ],
   },
   {
