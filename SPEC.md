@@ -1,133 +1,147 @@
-# Fertility Tracker Specification
+# Fertility Tracker specification
 
-**Document Version:** 1.18.5  
-**Status:** Approved  
-**Last Updated:** October 27, 2026  
-**Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
+- **Document version:** 1.18.6
+- **Status:** Approved
+- **Last updated:** October 28, 2026
+- **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
----
+This document is the full specification of the application. Change it before you change the code. The [docs](docs/README.md) give the same rules for users and contributors.
 
-## Table of Contents
+## Table of contents
 
-1. [Executive Summary](#1-executive-summary)
-2. [System Architecture & Technology Stack](#2-system-architecture--technology-stack)
-3. [Domain Engine Specification (CrMS Rules)](#3-domain-engine-specification-crms-rules)
-   - [3.1 Biomarker Codes catalog](#31-biomarker-codes-catalog)
-   - [3.2 Code Parser Engine](#32-code-parser-engine)
-   - [3.3 Stamp Calculation Rules](#33-stamp-calculation-rules)
-   - [3.4 Peak Day & Post-Peak Detector](#34-peak-day--post-peak-detector)
-   - [3.5 Cycle Boundary Detector](#35-cycle-boundary-detector)
-   - [3.6 Version Tracker Engine](#36-version-tracker-engine)
-4. [Data Schemas & Type System](#4-data-schemas--type-system)
-5. [User Interface & Views](#5-user-interface--views)
-   - [5.1 Navigation & Global Controls](#51-navigation--global-controls)
-   - [5.2 Cycle Stats Header](#52-cycle-stats-header)
-   - [5.3 Today View (Dashboard)](#53-today-view-dashboard)
-   - [5.4 Paper Chart Row View](#54-paper-chart-row-view)
-   - [5.5 Monthly Calendar Grid View](#55-monthly-calendar-grid-view)
-   - [5.6 Cycle Analytics View](#56-cycle-analytics-view)
-   - [5.7 Observation Drawer](#57-observation-drawer)
-   - [5.8 Export & Printing System](#58-export--printing-system)
-   - [5.9 Version Tracker & System Info Modal](#59-version-tracker--system-info-modal)
-   - [5.10 Welcome Screen & Onboarding Guide Modal](#510-welcome-screen--onboarding-guide-modal)
-   - [5.11 Error Boundary](#511-error-boundary)
-6. [State Management & Data Persistence](#6-state-management--data-persistence)
-7. [Internationalization & Design System](#7-internationalization--design-system)
-8. [Testing & Quality Assurance](#8-testing--quality-assurance)
-9. [Deployment & CI/CD Pipeline](#9-deployment--cicd-pipeline)
-   - [9.1 Offline Support & Installable App](#91-offline-support--installable-app)
-   - [9.2 Security Headers](#92-security-headers)
-10. [Legal, Privacy & Medical Compliance](#10-legal-privacy--medical-compliance)
+1. [Summary](#1-summary)
+2. [Architecture and technology](#2-architecture-and-technology)
+   - [2.1 Versions](#21-versions)
+   - [2.2 Code splitting and lazy loading](#22-code-splitting-and-lazy-loading)
+3. [Domain rules](#3-domain-rules)
+   - [3.1 Codes](#31-codes)
+   - [3.2 Code parser](#32-code-parser)
+   - [3.3 Stamp of one day](#33-stamp-of-one-day)
+   - [3.4 Peak Day and count of three](#34-peak-day-and-count-of-three)
+   - [3.5 Cycles](#35-cycles)
+   - [3.6 Phases and mucus score](#36-phases-and-mucus-score)
+   - [3.7 Version tracker](#37-version-tracker)
+4. [Data types](#4-data-types)
+5. [User interface](#5-user-interface)
+   - [5.1 Navigation and dialogs](#51-navigation-and-dialogs)
+   - [5.2 Statistics bar](#52-statistics-bar)
+   - [5.3 Today page](#53-today-page)
+   - [5.4 Paper Chart Strip page](#54-paper-chart-strip-page)
+   - [5.5 Monthly Calendar page](#55-monthly-calendar-page)
+   - [5.6 Cycle Analytics page](#56-cycle-analytics-page)
+   - [5.7 Observation drawer](#57-observation-drawer)
+   - [5.8 Export, backup and print](#58-export-backup-and-print)
+   - [5.9 Version dialog](#59-version-dialog)
+   - [5.10 Welcome guide](#510-welcome-guide)
+   - [5.11 Error boundary](#511-error-boundary)
+6. [State and data storage](#6-state-and-data-storage)
+   - [6.1 Contexts](#61-contexts)
+   - [6.2 Storage keys](#62-storage-keys)
+   - [6.3 Storage format](#63-storage-format)
+   - [6.4 Data recovery](#64-data-recovery)
+   - [6.5 Save failure and persistent storage](#65-save-failure-and-persistent-storage)
+   - [6.6 Backup reminder](#66-backup-reminder)
+   - [6.7 Undo of replaced data](#67-undo-of-replaced-data)
+7. [Languages and design system](#7-languages-and-design-system)
+   - [7.1 Languages](#71-languages)
+   - [7.2 Design system and CSS layers](#72-design-system-and-css-layers)
+   - [7.3 Text contrast](#73-text-contrast)
+8. [Tests and quality](#8-tests-and-quality)
+9. [Deployment and CI](#9-deployment-and-ci)
+   - [9.1 Offline use and installation](#91-offline-use-and-installation)
+   - [9.2 Security headers](#92-security-headers)
+10. [Privacy, trademarks and medical limits](#10-privacy-trademarks-and-medical-limits)
 
----
+## 1. Summary
 
-## 1. Executive Summary
+Fertility Tracker is a web application to chart fertility signs with the Creighton Model FertilityCare™ System (CrMS). The user records bleeding and cervical mucus each day with the standard CrMS codes.
 
-**Fertility Tracker** is a privacy-first web application designed for tracking, charting, and analyzing
-female reproductive health using the standardized **Creighton Model FertilityCare™ System (CrMS)**.
+The application does not predict fertile days from a calendar. It uses only the daily observations. From these observations, it calculates the stamp of each day, the Peak Day, the count of three and the start of each cycle.
 
-Unlike conventional period tracking applications that rely on opaque statistical calendars or period
-prediction algorithms, Fertility Tracker implements standardized clinical CrMS charting logic. It parses
-natural biomarker observations—such as cervical mucus stretch, color, consistency, sensation, bleeding
-codes, and frequency—to dynamically determine stamp colors, calculate Peak Day ($P$), count post-peak fertile/infertile
-transitions ($P+1, P+2, P+3$), and delineate cycle boundaries.
+| Objective      | Requirement                                                                              |
+| -------------- | ---------------------------------------------------------------------------------------- |
+| Clinical rules | The application follows the standard CrMS codes and stamp rules.                         |
+| Paper chart    | The chart looks like the CrMS paper chart. A calendar and statistics are also available. |
+| Privacy        | All data stays in the browser. There is no server database, no account and no tracking.  |
+| Export         | The user can print a 35-day chart, save it as a PDF file, and back up the data as JSON.  |
 
-### Key Objectives
+## 2. Architecture and technology
 
-- **Clinical Accuracy:** Strict adherence to standardized Creighton Model biomarker classification and stamping rules.
-- **Visual Authenticity:** Paper-style visual chart rows mirroring standard physical Creighton paper charts, alongside interactive calendar grids and analytics.
-- **Privacy First:** 100% client-side data processing and local storage without third-party tracking, analytics, or external backend requirements.
-- **Exportability:** Native capability to export cycle charts to high-resolution PNG, printable PDF formats, and structured JSON data backups.
-
----
-
-## 2. System Architecture & Technology Stack
-
-The application is architected as a lightweight, high-performance Single Page Application (SPA) with zero backend runtime dependencies.
+The application is a single-page React application. It has no backend. Vite builds it into static files, and Cloudflare Pages serves them.
 
 ```mermaid
 graph TD
-    A[Browser Client / PWA] --> B[React 19 Core App]
-    B --> C[Theme Context]
-    B --> D[Language Context]
-    B --> E[Cycle Context State Manager]
-    E --> F[Domain Engine]
+    A[Browser or installed app] --> B[React application]
+    B --> C[ThemeContext]
+    B --> D[LanguageContext]
+    B --> E[CycleContext]
+    E --> F[Domain rules in src/domain]
     F --> F1[codeParser]
     F --> F2[stampCalculator]
     F --> F3[peakDetector]
     F --> F4[cycleBoundaryDetector]
-    E --> G[LocalStorage Persistence]
-    B --> H[UI Component Views]
-    H --> H1[Today View]
-    H --> H2[Paper Chart Row View]
-    H --> H3[Calendar Grid View]
-    H --> H4[Cycle Analytics View]
+    F --> F5[cyclePhases]
+    E --> G[localStorage]
+    B --> H[Pages]
+    H --> H1[Today]
+    H --> H2[Paper Chart Strip]
+    H --> H3[Monthly Calendar]
+    H --> H4[Cycle Analytics]
+    I[Service worker] --> A
 ```
 
-### Technology Stack Details
+### 2.1 Versions
 
-Every runtime, tool, dependency, pre-commit hook and CI action is pinned to an exact version. `.npmrc` sets `save-exact=true` and `engine-strict=true`; `package.json` declares `engines`, `devEngines` and `packageManager`; `.mise/config.toml` and `.mise/mise.lock` pin the toolchain with checksums.
+Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinned version.
 
-| Layer                  | Technology                                 | Specification / Version                                                                           |
-| :--------------------- | :----------------------------------------- | :------------------------------------------------------------------------------------------------ |
-| **Runtime**            | Node.js & npm                              | `node v26.12.1`, `npm v11.20.0` (bundled with Node; `.node-version` and mise `2026.10.19`)        |
-| **UI Library**         | React                                      | `v19.3.1`                                                                                         |
-| **Language**           | TypeScript                                 | `v7.0.2` (strict, ES2023 target, unchecked index access and exact optional property checks)       |
-| **Build Tool**         | Vite                                       | `v8.3.5`                                                                                          |
-| **Linter & Formatter** | Biome                                      | `@biomejs/biome v2.6.3` (TS, TSX, CSS, JSON, YAML, Markdown; warnings fail the build)             |
-| **Git Hooks**          | pre-commit                                 | `pre-commit v4.7.0`, `pre-commit-hooks v6.0.0`, `gitleaks v8.30.1`, local Biome and `tsc` hooks   |
-| **Icons**              | Lucide React                               | `v1.61.0`                                                                                         |
-| **Font**               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans v5.3.0` (self-hosted variable woff2, no third-party host) |
-| **Styling**            | Custom Vanilla CSS                         | CSS Custom Properties, Glassmorphism, CSS Grid/Flexbox                                            |
-| **Testing & Coverage** | Vitest, React Testing Library, V8 Coverage | `vitest v5.0.5`, `@vitest/coverage-v8 v5.0.5`, `@testing-library/react v16.3.3`, `jsdom v30.1.3`  |
-| **Deployment**         | Cloudflare Pages                           | `wrangler v4.153.0`, `compatibility_date 2026-10-23`                                              |
-| **Dependency Updates** | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                 |
+- `.npmrc` sets `save-exact=true` and `engine-strict=true`.
+- `package.json` declares `engines`, `devEngines` and `packageManager`.
+- `.mise/config.toml` and `.mise/mise.lock` pin the tools with checksums.
 
-### Code Splitting & Lazy Loading
+| Layer              | Technology                                 | Version                                                                                             |
+| ------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| Runtime            | Node.js and npm                            | `node 26.12.1`, `npm 11.20.0` (the npm of that Node.js release), `.node-version`, mise `2026.10.19` |
+| User interface     | React                                      | `19.3.1`                                                                                            |
+| Language           | TypeScript                                 | `7.0.2`, strict, ES2023 target, unchecked index access and exact optional properties                |
+| Build              | Vite                                       | `8.3.5`                                                                                             |
+| Lint and format    | Biome                                      | `@biomejs/biome 2.6.3` for TS, TSX, CSS, JSON, YAML and Markdown. A warning is a failure.           |
+| Git hooks          | pre-commit                                 | `pre-commit 4.7.0`, `pre-commit-hooks 6.0.0`, `gitleaks 8.30.1`, local hooks                        |
+| Icons              | Lucide React                               | `1.61.0`                                                                                            |
+| Font               | Plus Jakarta Sans (SIL OFL 1.1)            | `@fontsource-variable/plus-jakarta-sans 5.3.0`, self-hosted variable woff2                          |
+| Styles             | CSS                                        | Custom properties, cascade layers, grid and flexbox                                                 |
+| Unit tests         | Vitest, React Testing Library, V8 coverage | `vitest 5.0.5`, `@vitest/coverage-v8 5.0.5`, `@testing-library/react 16.3.3`, `jsdom 30.1.3`        |
+| End-to-end tests   | Playwright and axe                         | `@playwright/test` and `@axe-core/playwright`, pinned in `package.json`                             |
+| Deployment         | Cloudflare Pages                           | `wrangler 4.153.0`, `compatibility_date 2026-10-23`                                                 |
+| Dependency updates | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                   |
 
-The main chunk holds only the code of the first screen. The other parts load with `React.lazy` when the user needs them:
+### 2.2 Code splitting and lazy loading
 
-- **Lazy pages and dialogs:** `CycleAnalyticsView` (the Analytics tab), `ExportModal`, `VersionModal` and `WelcomeModal`. `App.tsx` renders each dialog only while it is open, so its chunk loads when the user opens it for the first time. Thus each opening starts a new dialog: the About dialog opens on the **Release Notes** tab, the welcome guide opens on step 1, and the export dialog opens in **Single Cycle** mode with the selection of the cycle picker.
-- **Release notes:** `VERSION_HISTORY` (in `versionTracker.ts`) is in the `VersionModal` chunk only. The main chunk gets the version and the last-seen check from `appVersion.ts`, which does not import the release notes. A unit test follows the static imports from `main.tsx` and fails if they reach `versionTracker.ts` or a lazy component.
-- **Print view:** `PrintExportView` is a lazy chunk that the app renders from the start, so **Ctrl+P** prints the same report as before. The **Print / Save as PDF** button calls `window.print()` only after the print view chunk has loaded and rendered the selected cycles. A click before that waits for the chunk. The browser print command (**Ctrl+P**) does not wait: before the chunk loads, it prints an empty page, as in 1.18.3.
-- **Print view failure:** When the print view chunk fails to load, the **Print / Save as PDF** button does not print and does not show the success toast. The toast shows the translated error `exportModal.printError` instead.
-- **Separate boundaries:** Each dialog and the print view has its own `React.Suspense`, so a dialog that loads does not hide the print view.
-- **Accessible fallbacks:** While a page or a dialog loads, a visually hidden `role="status"` element announces the translated text `common.loading`. Nothing visible appears for a dialog, so there is no flash. The page fallback keeps a minimum height, so the footer does not jump.
-- **Idle preload:** After the first render, when the browser is idle (`requestIdleCallback` with a 2-second `timeout`, so a page that is always busy also preloads, or `setTimeout` in a browser without it), the app imports the chunks of `CycleAnalyticsView`, `ExportModal`, `VersionModal` and `WelcomeModal`. The main chunk stays small, and a tab that is open during a new deploy does not need the old chunks from the network later. A failed preload has no effect: the part tries again when the user opens it.
-- **Dialog failure:** Each lazy dialog has its own `ErrorBoundary` (section 5.11), inside the condition that renders it. When its chunk fails to load, a visible dialog shows the translated error with **Reload** and **Close**. Close, `Escape` or a click on the backdrop closes the dialog and removes the boundary, so the next opening tries again, and a failure does not block the other dialogs.
-- **Offline:** The service worker precaches all the lazy chunks (section 9.1), so each lazy part also opens offline.
+The main chunk has only the code of the first screen. The other parts load with `React.lazy` when the user needs them.
 
----
+| Part                                                                | Rule                                                                                    |
+| ------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
+| `CycleAnalyticsView`, `ExportModal`, `VersionModal`, `WelcomeModal` | Lazy chunks. `App.tsx` renders a dialog only while it is open.                          |
+| `VERSION_HISTORY`                                                   | Only in the `VersionModal` chunk. The main chunk gets the version from `appVersion.ts`. |
+| `PrintExportView`                                                   | A lazy chunk that the application renders from the start.                               |
+- Each opening of a dialog starts a new dialog. The version dialog opens on **Release Notes**, and the welcome guide opens on step 1. The export dialog opens in **Single Cycle** mode with the cycle of the cycle picker.
+- A unit test follows the static imports from `main.tsx`. It fails if they reach `versionTracker.ts` or a lazy component.
+- **Print / Save as PDF** calls `window.print()` only after the print view chunk loads and renders the selected cycles. A click before that waits for the chunk.
+- The browser print command (**Ctrl+P**) does not wait. Before the print view chunk loads, it prints an empty page.
+- If the print view chunk does not load, **Print / Save as PDF** does not print and does not show the success message. It shows the error `exportModal.printError`.
+- Each dialog and the print view has its own `React.Suspense`. Thus, a dialog that loads does not hide the print view.
+- While a page or a dialog loads, a hidden `role="status"` element announces `common.loading`. A dialog shows nothing visible while it loads. The page fallback keeps a minimum height, so the footer does not move.
+- After the first render, when the browser is idle, the application imports the four lazy chunks. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
+- A failed preload has no effect. The part tries again when the user opens it.
+- Each lazy dialog has its own `ErrorBoundary` in dialog mode (section 5.11). A failure does not block the other dialogs, and the next opening tries again.
+- The service worker keeps all the lazy chunks (section 9.1). Thus, each lazy part also opens offline.
 
-## 3. Domain Engine Specification (CrMS Rules)
+## 3. Domain rules
 
-The Domain Engine is isolated in `src/domain/` with pure, deterministic logic independent of the React UI layer.
+The rules are pure functions in `src/domain/`. They do not use React.
 
-### 3.1 Biomarker Codes Catalog
+### 3.1 Codes
 
-The Creighton Model system uses standardized alphanumeric tokens to record daily observations.
-
-**Single source of truth:** [src/types/crms.ts](./src/types/crms.ts) exports each code list as an `as const` array, and the code types are derived from these arrays. The parser, the validator, the stamp calculator, the cycle boundary detector and the observation forms read the lists from this file. No other file repeats a code list.
+[src/types/crms.ts](src/types/crms.ts) is the single source of the code lists. It exports each list as an `as const` array, and each code type comes from its array. No other file repeats a code list.
 
 | Constant                  | Codes                                                       |
 | ------------------------- | ----------------------------------------------------------- |
@@ -140,137 +154,136 @@ The Creighton Model system uses standardized alphanumeric tokens to record daily
 | `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      |
 | `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          |
 
-#### Bleeding Codes
+| Group       | Code and meaning                                                                                                                                                                             |
+| ----------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Bleeding    | `H` heavy, `M` moderate, `L` light, `VL` very light, `B` brown or black                                                                                                                      |
+| Stretch     | `0` dry, `2` damp, `2W` wet, `4` shiny (without lubrication), `6` slightly stretchy, `8` moderately stretchy, `10` very stretchy, `10DL`, `10SL`, `10WL` damp, shiny or wet with lubrication |
+| Appearance  | `B` brown, `C` cloudy, `C/K` cloudy and clear, `G` gummy, `K` clear, `L` lubricative, `P` pasty, `Y` yellow                                                                                  |
+| Frequency   | `X1` one time, `X2` two times, `X3` three times, `AD` all day                                                                                                                                |
+| Symptoms    | `AP` abdominal pain, `RAP` right abdominal pain, `LAP` left abdominal pain                                                                                                                   |
+| Intercourse | `I`                                                                                                                                                                                          |
 
-- `H`: Heavy Bleeding (Menses)
-- `M`: Moderate Bleeding (Menses)
-- `L`: Light Bleeding (Menses)
-- `VL`: Very Light Bleeding / Spotting
-- `B`: Brown Bleeding / Discharge
+### 3.2 Code parser
 
-#### Mucus Stretch Codes
+**Module:** [src/domain/codeParser.ts](src/domain/codeParser.ts). **CrMS specification version:** `1.1.0`.
 
-- `0`: Dry / No Mucus
-- `2`: 1/4 inch stretch
-- `2W`: 1/4 inch stretch, Watery
-- `4`: 1/2 inch stretch
-- `6`: 3/4 inch stretch
-- `8`: 1 inch stretch
-- `10`: $\ge 1$ inch stretch (Stretchy)
-- `10DL`: Damp, Lubricative
-- `10SL`: Shiny, Lubricative
-- `10WL`: Wet, Lubricative
+`formatCodeString` writes the code in this sequence: `[bleeding] [stretch][appearance][frequency] [I] [symptoms]`.
 
-#### Mucus Modifier Codes
+- There is no space between the mucus code and the frequency. Examples: `10KLX3 I AP`, `H`, `2WX2`, `0AD`.
+- The symptoms come last, with a space between them. Thus, `parseCodeString(formatCodeString(obs))` keeps each field.
+- The chart cell and the print layout remove the symptoms from the code and show them in a separate symptom tag.
+- A mucus code with only the appearance `B` or `L` is the same text as a bleeding code. The parser writes it with a dash: `-B` or `-L`.
 
-- `B`: Brown
-- `C`: Cloudy
-- `C/K`: Cloudy/Clear
-- `G`: Gummy
-- `K`: Clear
-- `L`: Lubricative
-- `P`: Pasty / Peasty
-- `Y`: Yellow
+`parseCodeString` reads the text that the user types.
 
-#### Frequency Codes
+- It accepts lowercase letters, and text with or without a space before the frequency. For example, `10KLX3`, `10KL X3`, `0AD` and `0 AD` are correct.
+- It finds the longest stretch code first, for example `10WL` before `10`. The sequence comes from `STRETCH_CODES`, sorted by length.
+- It finds the appearance codes, the frequency, the symptoms and `I`. It ignores letters that are not codes.
+- A `B` token is brown bleeding only when it is the first token. In other positions, it is the brown appearance code.
+- A bare `L` token is light bleeding. The parser ignores the dash of `-B` and `-L`, so they are appearance codes.
+- For each set of fields, `parseCodeString(formatCodeString(obs))` gives the same fields.
 
-- `X1`: Observed 1 time during the day
-- `X2`: Observed 2 times during the day
-- `X3`: Observed 3 times during the day
-- `AD`: Observed all day
+`appendMissingSymptoms` repairs saved data. The data validator uses it when a saved `codeString` does not have all the `symptoms` of the observation. This occurs in data from before version 1.17.2.
 
-#### Symptom & Intercourse Codes
+- It adds each missing symptom code to the end of the saved code. It keeps the remaining text.
+- A saved code that is only `B` or `L` (any case), on an observation without bleeding, is an appearance code. The validator writes it again as `-B` or `-L`.
 
-- `AP`: Abdominal Pain / Ovulation pain
-- `RAP`: Right Abdominal Pain
-- `LAP`: Left Abdominal Pain
-- `I`: Intercourse occurred on this day
+### 3.3 Stamp of one day
 
----
+**Module:** [src/domain/stampCalculator.ts](src/domain/stampCalculator.ts)
 
-### 3.2 Code Parser Engine
-
-**Module:** [src/domain/codeParser.ts](./src/domain/codeParser.ts)  
-**CrMS Specification Version:** `1.1.0` (Streamlined CrMS token formatting without whitespace between mucus and frequency)
-
-The parser operates in two directions:
-
-1. **Formatting (`formatCodeString`):** Concatenates structured observation attributes into canonical Creighton order without whitespace between mucus stretch/modifiers and frequency:  
-   `[Bleeding] [Stretch][Modifiers][Frequency] [Intercourse] [Symptoms]`  
-   _Note:_ Symptom codes (`AP`, `RAP`, `LAP`) come last, separated by spaces, so that `parseCodeString(formatCodeString(obs))` keeps every field. The Paper Chart Row cell and the practitioner print layout remove them from the displayed code and show them in a dedicated symptom tag instead.  
-   _Example:_ `10KLX3 I AP` or `H` or `2WX2` or `0AD`.  
-   _Ambiguous tokens:_ A mucus token made only of modifiers that equals a bleeding code (`B` or `L` with no stretch and no frequency) is written with a leading dash (`-B`, `-L`). A bare `L` keeps its meaning of light bleeding, so stored codes and typed codes are read as before.
-2. **Stored data repair (`appendMissingSymptoms`):** When the data validator loads an observation whose stored `codeString` lacks one of its `symptoms` (data written before version 1.17.2), it appends each missing symptom code to the end of the stored `codeString`. The rest of the stored code is kept as is. A stored `codeString` that is exactly `B` or `L` (any case) on an observation without bleeding is a lone modifier, so the validator rebuilds it with `formatCodeString` (`-B`, `-L`).
-3. **Parsing (`parseCodeString`):** Softly parses freeform text input entered by users, supporting inputs with or without whitespace between mucus stretch/modifier and frequency (e.g. `10KLX3`, `10KL X3`, `0AD`, `0 AD`), splitting tokens by whitespace, recognizing valid stretch prefixes with the longest match first (e.g. `10WL` before `10`; the order is derived from `STRETCH_CODES` by length), extracting modifiers (e.g. `C/K`, `K`, `L`), identifying frequencies (`X1`, `X2`, `X3`, `AD`), symptoms (`AP`, `RAP`, `LAP`), and the `I` intercourse flag. A bare `B` token is brown bleeding only when it is the first token; in any other position it is the brown modifier. The parser ignores the dash of `-B` and `-L`, so they are read as modifiers. For every combination of fields, `parseCodeString(formatCodeString(obs))` returns the same fields.
-
----
-
-### 3.3 Stamp Calculation Rules
-
-**Module:** [src/domain/stampCalculator.ts](./src/domain/stampCalculator.ts)
-
-The `calculateStamp` function classifies each day's observation into one of the standardized CrMS stamp categories:
+`isPeakTypeMucus` is true for stretch `6`, `8`, `10`, `10DL`, `10SL` or `10WL`, or for appearance `K`, `L` or `C/K`. `calculateStamp` uses the first rule that applies:
 
 ```mermaid
 flowchart TD
-    Start[Day Observation] --> IsPeakType{Is Peak-Type Mucus?<br/>Stretch 6, 8, 10, 10DL/SL/WL<br/>OR Modifiers K, L, C/K}
-    IsPeakType -- Yes --> WhiteBaby[WHITE_BABY Stamp<br/>Fertile Mucus Day]
-    IsPeakType -- No --> IsBleeding{Is Menses Bleeding?<br/>H, M, L, VL OR B without stretch}
-    IsBleeding -- Yes --> RedStamp[RED Stamp<br/>Bleeding Day]
-    IsBleeding -- No --> GreenStamp[DARK_GREEN Stamp<br/>Infertile Dry Day]
+    Start[Observation of one day] --> Fertile{Peak-type mucus?}
+    Fertile -- Yes --> White[WHITE_BABY]
+    Fertile -- No --> Bleeding{Bleeding H, M, L or VL? Or B without stretch or with stretch 0?}
+    Bleeding -- Yes --> Red[RED]
+    Bleeding -- No --> Green[DARK_GREEN]
 ```
 
----
+### 3.4 Peak Day and count of three
 
-### 3.4 Peak Day & Post-Peak Detector
+**Module:** [src/domain/peakDetector.ts](src/domain/peakDetector.ts)
 
-**Module:** [src/domain/peakDetector.ts](./src/domain/peakDetector.ts)
+`processCycleObservations` sorts the days of one cycle by date. It sets `cycleDay`, `stamp` and `isPeakDay` on each day. The Peak Day is the first day of the cycle with `isManualPeak`. If no day has `isManualPeak`, it is the last day of the cycle with Peak-type mucus.
 
-1. **Peak Day ($P$) Determination:**
-   - **Automatic Mode:** Scans observations chronologically within a cycle and identifies the **last consecutive day** exhibiting Peak-type mucus characteristics (stretch $\ge 6$ or clear/lubricative qualities `K`, `L`, `C/K`).
-   - **Manual Override Mode:** Respects the user-set `isManualPeak` flag of an observation.
-   - **One Manual Peak per Cycle:** When `saveObservation` saves an observation with `isManualPeak` set, it clears `isManualPeak` on the other days of the cycle that contains the saved day (the cycle is found after the saved day is added). The manual Peak Days of other cycles stay.
-2. **Count of Three After Fertile Mucus ($+1, +2, +3$):**
-   - After each run of `WHITE_BABY` days, and after the Peak Day, the next three calendar days get light green baby stamps when they are dry (`DARK_GREEN`):
-     - $+1 \rightarrow$ `LIGHT_GREEN_BABY_1`
-     - $+2 \rightarrow$ `LIGHT_GREEN_BABY_2`
-     - $+3 \rightarrow$ `LIGHT_GREEN_BABY_3`
-   - The rule applies to every patch of fertile mucus, before and after the Peak Day.
-   - The count uses calendar days, so a day without an observation still counts.
-   - A new `WHITE_BABY` day restarts the count. A `RED` day stays red.
-   - A `WHITE_BABY` day after a manual Peak Day stays white.
+A cycle has a maximum of one manual Peak Day. When `saveObservation` saves a day with `isManualPeak`, it clears `isManualPeak` on the other days of the same cycle. It finds that cycle after it adds the saved day. The manual Peak Days of other cycles do not change.
 
----
+The count of three follows each run of fertile days. The Peak Day is also a fertile day for this rule.
 
-### 3.5 Cycle Boundary Detector
+| Calendar days after the last fertile day | Stamp of a dry day   |
+| ---------------------------------------- | -------------------- |
+| 1                                        | `LIGHT_GREEN_BABY_1` |
+| 2                                        | `LIGHT_GREEN_BABY_2` |
+| 3                                        | `LIGHT_GREEN_BABY_3` |
+| 4 or more                                | `DARK_GREEN`         |
+- The count applies before and after the Peak Day.
+- The count uses calendar days. A day without an observation is part of the count.
+- A new `WHITE_BABY` day starts the count again.
+- Only a `DARK_GREEN` day changes. A `RED` day stays red.
+- A `WHITE_BABY` day after a manual Peak Day stays white.
 
-**Module:** [src/domain/cycleBoundaryDetector.ts](./src/domain/cycleBoundaryDetector.ts)
+### 3.5 Cycles
 
-- Automatically groups a raw timeline of observations into distinct menstrual cycles.
-- A **new cycle boundary** is determined based on user explicit confirmation or default menses rules:
-  - If `isCycleStart === true` on an observation, it explicitly starts a new cycle boundary regardless of bleeding code.
-  - If `isCycleStart === false` on an observation, it is explicitly excluded from starting a new cycle (e.g. breakthrough bleeding or intermenstrual spotting).
-  - If `isCycleStart` is `undefined`, a new cycle boundary is triggered when menses bleeding (`H`, `M`, `L`, `VL`) occurs after non-bleeding or dry days.
-- When logging or saving the first bleeding day (`H`, `M`, `L`, `VL`, `B`) of a series (preceded by a non-bleeding day), the system prompts the user: _"Is this bleeding day the start of a new cycle?"_.
-- Output cycles are returned ordered newest-to-oldest, with recalculated relative `cycleDay` indices (Day 1, 2, 3...) calculated relative to each cycle's start date.
+**Module:** [src/domain/cycleBoundaryDetector.ts](src/domain/cycleBoundaryDetector.ts)
 
----
+`groupObservationsIntoCycles` puts the days into cycles. The first observation starts the first cycle. For each subsequent day, the first rule that matches applies:
 
-### 3.6 Version Tracker Engine
+| Condition                                                               | Result                                                                   |
+| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
+| `isCycleStart === true`                                                 | The day starts a new cycle.                                              |
+| `isCycleStart === false`                                                | The day stays in the current cycle, for example spotting between cycles. |
+| Bleeding `H`, `M`, `L` or `VL` after a day without bleeding or with `B` | The day starts a new cycle.                                              |
+| Other days                                                              | The day stays in the current cycle.                                      |
+- The function gives the cycles from the newest to the oldest. The `id` of a cycle is `cycle_` and its start date.
+- Each cycle goes through `processCycleObservations`. Thus, `cycleDay` counts from the start date of its cycle.
+- `getCycleEndDate` gives the date of the last observation of a cycle.
 
-**Modules:** [src/domain/versionTracker.ts](./src/domain/versionTracker.ts), [src/domain/appVersion.ts](./src/domain/appVersion.ts)
+The form asks "Is this bleeding day the start of a new cycle?" when `needsCycleStartChoice` in [observationForm.ts](src/domain/observationForm.ts) is true. That occurs in this condition:
 
-- **Version & Release History Management:** Maintains structured release entries (`VERSION_HISTORY`) detailing version tags, release dates, titles, taglines, and feature highlights (e.g. `v1.1.0` release notes).
-- **Runtime Metadata:** `appVersion.ts` retrieves the application version and the build date from Vite build-time constants (`__APP_VERSION__`, `__BUILD_DATE__`) that come from `package.json`.
-- **Version Update Tracking:** `appVersion.ts` evaluates user's last-seen version stored in `localStorage` (`fertility_tracker_last_seen_version`) via `checkAndRecordVersionSeen()`.
-- **Chunk Boundary:** `appVersion.ts` does not import `versionTracker.ts`, so the release notes stay out of the main chunk (see [Code Splitting & Lazy Loading](#code-splitting--lazy-loading)).
-- **Storage Footprint Diagnostics:** Calculates live browser storage usage statistics via `getStorageStats()`, reading the stored observations in `fertility_care_observations` with `parseObservationData()` (either storage format, see section 6) and running cycle boundary detection to measure exact cycles and observations count.
+- The day has a bleeding code: `H`, `M`, `L`, `VL` or `B`.
+- The previous observation has no bleeding, or there is no previous observation.
+- The user did not answer for this day before (`isCycleStart` is not set).
 
----
+### 3.6 Phases and mucus score
 
-## 4. Data Schemas & Type System
+**Modules:** [src/domain/cyclePhases.ts](src/domain/cyclePhases.ts), [src/domain/mucusScore.ts](src/domain/mucusScore.ts)
 
-**Module:** [src/types/crms.ts](./src/types/crms.ts)
+| Value      | One cycle (`getCyclePhases`)                                       | All cycles (`averagePhases`)                  |
+| ---------- | ------------------------------------------------------------------ | --------------------------------------------- |
+| Length     | Cycle day of the last observation                                  | Average of all cycles                         |
+| Menses     | Number of `RED` days                                               | Average of all cycles                         |
+| Follicular | Cycle day 1 to the Peak Day. Before the Peak Day: all days so far. | Average of the cycles with a Peak Day, if any |
+| Luteal     | Days after the Peak Day. Before the Peak Day: 0.                   | Average of the cycles with a Peak Day, if any |
+
+`getMucusScore` gives the mucus score of one day:
+
+| Observation                                                      | Score |
+| ---------------------------------------------------------------- | ----- |
+| Stretch `10`, `10DL`, `10SL` or `10WL`, or appearance `K` or `L` | 10    |
+| Stretch `8`                                                      | 8     |
+| Stretch `6`                                                      | 6     |
+| Stretch `4`                                                      | 4     |
+| Stretch `2` or `2W`                                              | 2     |
+| Other days                                                       | 0     |
+
+The appearance `C/K` alone gives a score of 0, although `isPeakTypeMucus` is true for `C/K`.
+
+### 3.7 Version tracker
+
+**Modules:** [src/domain/versionTracker.ts](src/domain/versionTracker.ts), [src/domain/appVersion.ts](src/domain/appVersion.ts)
+
+- `VERSION_HISTORY` has the release notes, newest first. Each release has a version, a date, a title, a tagline, highlights and the CrMS version, in English and French.
+- Vite puts the version from `package.json` and the build time into `__APP_VERSION__` and `__BUILD_DATE__`. `appVersion.ts` reads them.
+- `checkAndRecordVersionSeen()` in `appVersion.ts` compares the version with `fertility_tracker_last_seen_version` in `localStorage`. Then it saves the current version.
+- `appVersion.ts` does not import `versionTracker.ts`. Thus, the release notes stay out of the main chunk (section 2.2).
+- `getStorageStats()` counts the storage keys, the size, the observations and the cycles. It reads the observations with `parseObservationData()` (section 6.3).
+
+## 4. Data types
+
+**Module:** [src/types/crms.ts](src/types/crms.ts)
 
 ```typescript
 export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
@@ -288,517 +301,670 @@ export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
 export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
 export type SymptomCode = (typeof SYMPTOM_CODES)[number];
 
-// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (see 3.1)
+// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (section 3.1)
 
 export type StampType =
-  | 'RED' // Bleeding menses
-  | 'DARK_GREEN' // Infertile dry day
-  | 'WHITE_BABY' // Fertile mucus day
-  | 'LIGHT_GREEN_BABY_1' // Post-peak day 1
-  | 'LIGHT_GREEN_BABY_2' // Post-peak day 2
-  | 'LIGHT_GREEN_BABY_3'; // Post-peak day 3
+  | 'RED' // Bleeding
+  | 'DARK_GREEN' // Dry day
+  | 'WHITE_BABY' // Peak-type mucus
+  | 'LIGHT_GREEN_BABY_1' // Count of three, day 1
+  | 'LIGHT_GREEN_BABY_2' // Count of three, day 2
+  | 'LIGHT_GREEN_BABY_3' // Count of three, day 3
+  | 'YELLOW'; // Shown in the welcome guide only
 
 export interface Observation {
   id: string;
   date: string; // YYYY-MM-DD
-  cycleDay: number; // 1, 2, 3...
-  bleeding?: BleedingCode;
-  stretch?: MucusStretch;
-  modifiers?: MucusModifier[];
-  frequency?: FrequencyCode;
-  symptoms?: SymptomCode[];
-  intercourse?: boolean; // 'I' marker
-  notes?: string;
-  isManualPeak?: boolean; // Manual Peak override flag
-  isCycleStart?: boolean; // Explicitly designated cycle start boundary
+  cycleDay: number;
+  bleeding?: BleedingCode | undefined;
+  stretch?: MucusStretch | undefined;
+  modifiers?: MucusModifier[] | undefined;
+  frequency?: FrequencyCode | undefined;
+  symptoms?: SymptomCode[] | undefined;
+  intercourse?: boolean | undefined;
+  notes?: string | undefined;
+  isManualPeak?: boolean | undefined;
+  isCycleStart?: boolean | undefined;
   stamp: StampType;
-  codeString: string; // Formatted code string e.g. "10KLX3 I"
-  isPeakDay?: boolean; // Designated Peak Day ('P')
+  codeString: string; // For example "10KLX3 I"
+  isPeakDay?: boolean | undefined;
 }
+
+export type ObservationInput = { [K in keyof Observation]?: Observation[K] | undefined };
 
 export interface Cycle {
   id: string;
   startDate: string; // YYYY-MM-DD
   observations: Observation[];
-  notes?: string;
+  notes?: string | undefined;
 }
 
-export type Language = 'en' | 'fr' | 'es';
+export type Language = 'en' | 'fr';
 export type Theme = 'dark' | 'light';
 export type ActiveTab = 'today' | 'chart' | 'calendar' | 'analytics';
 ```
 
----
-
-## 5. User Interface & Views
+## 5. User interface
+
+The application has four pages, a header, a statistics bar, an observation drawer and dialogs. A phone screen is 640 pixels wide or less.
+
+### 5.1 Navigation and dialogs
+
+| Part                                                         | Wide screen                                                                                                     | Phone screen                                                                                                |
+| ------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, export, guide, version, language (`en`, `fr`) and theme buttons, 42 pixels high. | Logo (`🌱`), cycle picker and a menu button (`⋮`), 38 pixels high. The other buttons are in a menu.         |
+| Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                   | Fixed at the bottom, with a **+** button for a new observation                                              |
+| Dialogs                                                      | Centered                                                                                                        | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer |
+| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **User Guide** button and version button                                                            | The copyright and the two buttons are on separate lines                                                     |
+- The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
+- The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
+- Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
+- The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) (`role="listbox"`) is not a modal dialog.
+- The cycle menu closes with its button, its close button, `Escape`, and a click outside the menu. Its backdrop dims the page on a phone only.
+
+[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog` and the phone menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
+
+| Function       | Rule                                                                                                                             |
+| -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Element        | A native `<dialog>` in a portal on `document.body`, opened with `showModal()`. The browser makes the page under it inert.        |
+| Name           | `aria-modal="true"`, and a name from `aria-labelledby` (the title) or `aria-label`.`aria-describedby` is optional.               |
+| First focus    | The element of `initialFocusRef`, else the first element that can get the focus.                                                 |
+| Focus trap     | `Tab` on the last element goes to the first. `Shift+Tab` on the first goes to the last.                                          |
+| Two dialogs    | The dialog on top keeps the focus. The dialog under it ignores the keys.                                                         |
+| `Escape`       | Calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document.                         |
+| `cancel` event | Calls `onClose`. It does not close the `<dialog>` itself, so React state always controls the dialog.                             |
+| Backdrop       | A click on the `<dialog>` outside the panel calls `onClose`. A click in the panel does not.                                      |
+| Focus return   | On close, it calls `close()`, then moves the focus back to the element that had it before.                                       |
+| Listeners      | `keydown` and `click` are native listeners on the `<dialog>`. Thus, they also get events from portals, such as the undo message. |
+| Scroll area    | A body that scrolls is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).                                  |
+
+`useTopDialog()` gives the open `<dialog>` on top, or `null`. `showModal()` makes all the page outside the dialog inert, also a `popover` element. Thus, while a dialog is open, `UndoToast` goes into the top dialog with a portal.
+
+- In a dialog, the undo message stays visible, and **Undo** and **Delete the copy** stay available. The focus trap includes them.
+- After **Undo** or **Delete the copy** in a dialog, the focus goes to the top dialog. When the dialog closes, the message goes back to the page.
+- In the phone menu, the undo message shows at the top of the screen. Thus, it does not cover the menu.
+
+### 5.2 Statistics bar
+
+**Module:** [src/components/CycleStatsHeader.tsx](src/components/CycleStatsHeader.tsx)
+
+The bar shows four cards for the selected cycle, or for all cycles:
+
+| Card                  | One cycle                                    | All cycles                                                         |
+| --------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
+| Cycle Length          | Number of observations                       | Average number of observations per cycle (`stats.averageDays`)     |
+| Estimated Peak Day    | Cycle day and date of the Peak Day, or `---` | The Peak Day of the newest cycle that has one, or `---`            |
+| Luteal Phase Count    | Days after the Peak Day                      | Average of the cycles with a Peak Day. Without a Peak Day: 0 days. |
+| Intercourse Frequency | Days with `I`                                | Days with `I` in all cycles                                        |
+
+On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics** page.
+
+### 5.3 Today page
+
+**Module:** [src/components/TodayView.tsx](src/components/TodayView.tsx)
+
+| Part                                                                                  | Content                                                                                                      |
+| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------ |
+| [TodayDateNav.tsx](src/components/today/TodayDateNav.tsx)                             | Previous and next day, date picker, date, and status: today, cycle day, recorded or not.                     |
+| [TodayObservationForm.tsx](src/components/today/TodayObservationForm.tsx)             | **Direct Code Only** or **Detailed Form** mode, the code buttons, intercourse, peak, notes, save and delete. |
+| [ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) | The code buttons. The drawer uses the same component (section 5.7).                                          |
+| [TodayFertilityGuidance.tsx](src/components/today/TodayFertilityGuidance.tsx)         | Stamp preview, code and a guidance text. A banner on a phone and a card on a wide screen.                    |
+| [TodayHistoryList.tsx](src/components/today/TodayHistoryList.tsx)                     | The last five days in three columns: date, stamp and code. A long code ends with an ellipsis.                |
+- The entry mode selector is a `role="radiogroup"` with two native radio inputs (`name="entry-mode"`). Each input is in a `<label>`, and the arrow keys move between them.
+- The application saves the last entry mode in `fertility_care_entry_mode`.
+- A save or a delete shows a message (`role="status"`). The message closes 3 seconds after the last save or delete. The page stops the timer when it unmounts.
+
+### 5.4 Paper Chart Strip page
+
+**Module:** [src/components/ChartRow.tsx](src/components/ChartRow.tsx)
+
+| Part                                                                  | Content                                                                                                    |
+| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
+| [ChartToolbar.tsx](src/components/chart/ChartToolbar.tsx)             | Title, grid mode, phase bar and legend buttons. An empty chart shows only the title and the legend button. |
+| [ChartLegend.tsx](src/components/chart/ChartLegend.tsx)               | The stamp legend.                                                                                          |
+| [ChartBlankGrid.tsx](src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each cell opens a new observation.                 |
+| [ChartCycleRow.tsx](src/components/chart/ChartCycleRow.tsx)           | One cycle: number, dates, length, Peak Day, scroll and jump buttons, phase bar and cells.                  |
+| [ChartPhaseTimeline.tsx](src/components/chart/ChartPhaseTimeline.tsx) | The phase bar above the cells of a cycle.                                                                  |
+| [ChartCell.tsx](src/components/chart/ChartCell.tsx)                   | A filled cell, an empty day cell or a blank grid cell. Each cell is a native `<button type="button">`.     |
+| [ChartCellPopover.tsx](src/components/chart/ChartCellPopover.tsx)     | Details of a filled cell: code, bleeding, stretch, appearance, intercourse and notes.                      |
+- Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows 35 cells. **Compact Strip** shows only the recorded days.
+- Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark.
+- Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
+- A click, `Enter` or `Space` on a cell opens the observation drawer. The user sets or removes the manual Peak Day there.
+- The details show when the mouse is on a filled cell or when the cell has the focus. Each cell has its own hover state, so a hover does not render other cells again.
+- Two details can show at the same time: one on the cell with the focus and one under the mouse.
+- Today has a 2-pixel accent border, a `TODAY` label (`.cell-today-pill`) and `aria-current="date"`. This applies to filled cells and empty cells. The date of today comes from `getTodayStr()`.
+
+### 5.5 Monthly Calendar page
+
+**Module:** [src/components/CalendarGrid.tsx](src/components/CalendarGrid.tsx)
+
+- The grid shows one month. Each day shows its stamp, its code and the intercourse mark.
+- A click on a day opens the observation drawer for that date.
+- Today (`.calendar-day.is-today`) has a 2-pixel accent border, an `--accent-soft` background, a round day number and `aria-current="date"`. The date of today comes from `getTodayStr()`.
+- Text uses the theme tokens `--text-primary` and `--text-secondary`. Thus, it is readable in the dark theme.
+- On a phone, a long code goes onto more lines and the day cell becomes taller. The code is never cut.
 
-The user interface comprises four primary view tabs, global navigation, header summary stats, an observation drawer, and an export modal.
+### 5.6 Cycle Analytics page
 
-### 5.1 Navigation & Global Controls
+**Module:** [src/components/CycleAnalyticsView.tsx](src/components/CycleAnalyticsView.tsx)
 
-- **Desktop & Mobile Header ([Header.tsx](./src/components/Header.tsx), [src/styles/views/header.css](./src/styles/views/header.css)):** Displays logo, primary view selector (`Today`, `Chart`, `Calendar`, `Analytics`), Export Button, Welcome Guide Button (`BookOpen` icon), Version/About Info Button, Dark/Light Theme toggle, and Language Switcher (`en`, `fr`, `es`).
-  - **Desktop View:** Directly exposes all individual control buttons in the top header control bar with standard 42px touch targets.
-  - **Mobile View ($\le 640\text{px}$):** Streamlines the top navigation bar to only three primary elements: Logo (`🌱`), Cycle Picker dropdown, and a single More Actions button (`⋮`), aligned with uniform 38px heights (`height: 38px; min-height: 38px;`). Secondary action buttons (Export, Welcome Guide, Version Info, Language toggle, and Theme toggle) are consolidated into a slide-up mobile Action Sheet (`aria-label="Mobile Navigation Menu"`) that the [modal dialog primitive](#51-navigation--global-controls) renders on `document.body` (preventing CSS `backdrop-filter` stacking context displacement), anchored at `bottom: 0`.
-- **Mobile Modal Bottom-Sheet Architecture ([dialogs.css](./src/styles/primitives/dialogs.css), [modals.css](./src/styles/views/modals.css)):** On mobile viewports ($\le 640\text{px}$), all modal dialogs (`ExportModal`, `WelcomeModal`, `VersionModal`, `CycleStartModal`) render as bottom sheets anchored to the bottom of the viewport with rounded top corners (`24px`), height clamped at `88dvh`, sticky header and action footer, and an independently scrolling modal body.
-- **Footer ([Footer.tsx](./src/components/Footer.tsx), [src/styles/views/footer.css](./src/styles/views/footer.css)):** Displays legal and medical disclaimers along with an interactive Help / Onboarding User Guide link and Version Badge button linking to the Version Tracker modal. On mobile devices ($\le 640\text{px}$), the copyright text and the action badge links (`User Guide` and `v1.9.2`) are structured on separate aligned rows to ensure neat one-line presentation of badges with clear bottom-navigation safe area clearance.
-- **Mobile Navigation ([MobileNav.tsx](./src/components/MobileNav.tsx)):** Bottom fixed navigation bar optimized for touch devices.
-- **Cycle Picker ([CyclePicker.tsx](./src/components/CyclePicker.tsx)):** The cycle menu (`role="listbox"`) is not a modal dialog. It closes with its toggle, its close button, `Escape`, and a click anywhere outside the menu and the toggle (a `document` click listener). The backdrop only dims the page on mobile.
-- **View Tabs:** The view selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its view. Each view has this panel in all its states, also when it is empty (for example the analytics empty state has `id="analytics-panel"`).
-- **Modal Dialog Primitive ([Modal.tsx](./src/components/Modal.tsx)):** All the modal dialogs and drawers use this one component: `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog` and the mobile Action Sheet in `Header`. No other component has a focus trap or an `Escape` handler for a dialog.
-  - It renders a native `<dialog>` element in a portal on `document.body` and opens it with `showModal()`. Thus the browser puts the dialog in the top layer and makes the page under it inert.
-  - The `<dialog>` has `aria-modal="true"` and an accessible name from `aria-labelledby` (the dialog title) or from `aria-label`. It can also have `aria-describedby`.
-  - **Initial focus:** When it opens, it moves the focus to the element of `initialFocusRef`, or else to the first focusable element in the dialog.
-  - **Focus trap:** `Tab` on the last focusable element moves the focus to the first, and `Shift+Tab` on the first moves it to the last. A dialog that opens over another dialog keeps the focus: the dialog under it ignores the keys.
-  - **Escape:** `Escape` calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document. The native `cancel` event (the browser fires it for `Escape` when the focus is not in the dialog) also calls `onClose`, and does not close the `<dialog>` by itself, so React state always controls whether the dialog is open.
-  - **Backdrop:** A click on the backdrop (the `<dialog>` element itself, outside the dialog panel) calls `onClose`. A click in the panel does not.
-  - **Focus return:** When it closes, it calls `close()` on the `<dialog>` (the page is inert until then), and then moves the focus back to the element that had the focus before it opened.
-  - **Native listeners:** The `keydown` (focus trap, `Escape`) and `click` (backdrop) handlers are native listeners on the `<dialog>`, not React props. Thus they also get the events of elements that another React tree renders in the dialog with a portal (the undo toast).
-  - **Top dialog and the undo toast:** `useTopDialog()` returns the open `<dialog>` on top, or `null`. `showModal()` makes all the page outside that dialog inert, also a `popover` element in the top layer (checked in Chromium). So while a dialog is open, `UndoToast` renders in the top dialog with a portal: it stays visible above the dialog panel, **Undo** and **Delete the copy** stay clickable, and the focus trap includes them. After **Undo** or **Delete the copy** in a dialog, the focus goes to the top dialog, because the toast goes away and the page under the dialog is inert. When the dialog closes, the toast goes back to the page. In the mobile menu (≤ 640px), the toast shows at the top of the screen, so it does not cover the menu actions.
-  - **Scrolling content:** A dialog body that scrolls (for example the welcome guide slides) is a `<section>` with `tabIndex={0}`, named by its heading with `aria-labelledby` (role `region`), so a keyboard user can scroll it.
+| Section                          | Content                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------- |
+| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from section 3.6, as bars.          |
+| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.       |
+| Creighton Mucus Score Trend      | One bar for each day, with its mucus score (section 3.6).                 |
+| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count. |
+| Creighton Mucus Score guide      | A short explanation of the score.                                         |
+- Before the Peak Day, the page shows "in progress" after the follicular value.
+- Luteal phase health is "Normal" from 9 to 17 days. From 1 to 8 days or above 17 days, it is "Short/Extended". At 0 days, it is "Pending Peak Day".
+- The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on a narrow screen. It is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).
+- Without observations, the page shows an empty state with `id="analytics-panel"`.
 
----
+### 5.7 Observation drawer
 
-### 5.2 Cycle Stats Header
+**Module:** [src/components/ObservationDrawer.tsx](src/components/ObservationDrawer.tsx)
 
-**Module:** [src/components/CycleStatsHeader.tsx](./src/components/CycleStatsHeader.tsx)
+- The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
+- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
+- On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
 
-Displays key statistics for the currently selected cycle or aggregated cycles:
+[ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
 
-- **Cycle Selector:** Dropdown to switch between active and historical cycles.
-- **Current Cycle Day:** Total days logged in the cycle.
-- **Peak Day Indicator:** Displays designated Peak Day (e.g. Day 14) or "Searching...".
-- **Post-Peak Luteal Length:** Total days count post-peak ($P+1$ through cycle end). The all-cycles view shows the average over the cycles that have a Peak Day.
-- **Mucific Score:** Calculated biomarker score summarizing mucus quantity and quality.
+- Bleeding.
+- The cycle start button, only when a bleeding code is selected.
+- Stretch, appearance, frequency and symptoms.
 
----
+It reads the values and functions of `useObservationForm`. The drawer and the Today form have the same markup, classes, ARIA attributes and labels. Each group is a `<fieldset>` with a `<legend>`, so it has the role `group` and a name.
 
-### 5.3 Today View (Dashboard)
+### 5.8 Export, backup and print
 
-**Module:** [src/components/TodayView.tsx](./src/components/TodayView.tsx)  
-**Decomposed Subcomponents:**
+**Modules:** [ExportModal.tsx](src/components/ExportModal.tsx), [PrintExportView.tsx](src/components/PrintExportView.tsx), [exportUtils.ts](src/utils/exportUtils.ts), [backupImport.ts](src/domain/backupImport.ts)
 
-- [TodayDateNav.tsx](./src/components/today/TodayDateNav.tsx): Compact date navigation bar with previous/next day stepping, native date picker trigger, formatted date display, and status badges (Today indicator, Cycle Day, Recorded/Pending status).
-- [TodayHistoryList.tsx](./src/components/today/TodayHistoryList.tsx): Recent 5-day observation timeline card with aligned 3-column layout (date label, stamp badge slot, and truncated code string).
-- [TodayObservationForm.tsx](./src/components/today/TodayObservationForm.tsx): Observation logging form supporting dual entry modes (Direct Code Entry and Detailed Selectors for bleeding, stretch, modifiers, frequency, symptoms, intercourse, notes, and cycle start). The entry mode toggle is a `role="radiogroup"` of two native radio inputs (`name="entry-mode"`), each inside a `<label>`; the arrow keys move between them.
-- [ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx): The code buttons (bleeding, cycle start toggle, stretch, modifiers, frequency, symptoms). The Today form and the Observation Drawer both use it (see [5.7](#57-observation-drawer)).
-- [TodayFertilityGuidance.tsx](./src/components/today/TodayFertilityGuidance.tsx): Real-time CrMS stamp preview badge, formatted code text, and clinical fertility guidance message (rendered in top mobile banner and desktop status card).
-
-- **Daily Status Card:** Hero summary card displaying active date, current cycle day, assigned stamp badge, formatted code string, and intercourse status.
-- **Saved and Deleted Notices:** A save or a delete shows a toast (`role="status"`). The toast closes 3 seconds after the last save or delete. The view cancels the timer when it unmounts.
-- **Recent 5-Day Observation History Card:** Aligned 3-column layout featuring a fixed-width date column, aligned `.recent-stamp-slot` for stamp badges, and single-line observation code string with ellipsis truncation.
-
----
-
-### 5.4 Paper Chart Row View
-
-**Module:** [src/components/ChartRow.tsx](./src/components/ChartRow.tsx)  
-**Decomposed Subcomponents:**
-
-- [ChartToolbar.tsx](./src/components/chart/ChartToolbar.tsx): Title, view mode toggle (35-day grid or compact strip), phase bar toggle and legend toggle. The empty chart shows only the title and the legend toggle.
-- [ChartLegend.tsx](./src/components/chart/ChartLegend.tsx): Stamp legend key.
-- [ChartBlankGrid.tsx](./src/components/chart/ChartBlankGrid.tsx): 35-day paper grid shown before the first observation, starting today. Each blank cell opens a draft observation with a click, `Enter` or `Space`.
-- [ChartCycleRow.tsx](./src/components/chart/ChartCycleRow.tsx): One cycle row: header (cycle number, date range, length, Peak Day), scroll and jump controls, phase timeline and the cell strip. The row keeps its own scroll element.
-- [ChartPhaseTimeline.tsx](./src/components/chart/ChartPhaseTimeline.tsx): Phase bar above the cells of a cycle.
-- [ChartCell.tsx](./src/components/chart/ChartCell.tsx): Filled observation cell, empty day cell and blank grid cell. Each cell is a native `<button type="button">`, so it opens with a click, `Enter` or `Space`.
-- [ChartCellPopover.tsx](./src/components/chart/ChartCellPopover.tsx): Detail popover of a filled cell (code, bleeding, stretch, modifiers, intercourse, notes).
-
-- **Cell Hover State:** Each filled cell keeps its own hover and focus state. The popover shows on mouse hover and on keyboard focus. A hover changes only the hovered cell and does not render the other cells or cycle rows again. Because the state is per cell, two popovers can show at the same time: one on the focused cell and one on the hovered cell.
-- Recreates the visual aesthetic of official Creighton paper chart strips.
-- Renders 35 days per row with color-coded stamp blocks:
-  - **Red:** Menses bleeding
-  - **Dark Green:** Dry infertile day
-  - **White with Baby Icon:** Fertile mucus day
-  - **Light Green with Baby & Number (1, 2, 3):** Post-peak count days
-- Displays day numbers, formatted code strings, intercourse (`I`) flags, and Peak (`P`) markers.
-- A click on a stamp cell opens the observation drawer for that day. The manual Peak Day is set or removed there with **Designate Peak Day (P)**.
-- **Current Day Highlighting:** Automatically detects today's date (`getTodayStr()` from `src/utils/dateUtils.ts`) across active cycle slots (both filled observation cells and empty slots), rendering a glowing 2px accent border (`var(--accent-primary)`), subtle ambient background glow, an uppercase `TODAY` pill header badge (`.cell-today-pill`), and `aria-current="date"` attribute.
-
----
-
-### 5.5 Monthly Calendar Grid View
-
-**Module:** [src/components/CalendarGrid.tsx](./src/components/CalendarGrid.tsx)
-
-- Monthly grid layout displaying observations on their actual calendar date.
-- Shows stamp badge color, day code snippet, and intercourse indicator on calendar tiles.
-- **Current Day Highlighting:** Automatically highlights the current date tile (`.calendar-day.is-today`) with a 2px accent border ring (`var(--accent-primary)`), soft theme-aware background tint (`var(--accent-soft)`), a circular date number badge (`.calendar-day-num`), and `aria-current="date"` attribute. The view gets the date of today from `getTodayStr()`.
-- Clicking any tile opens the Observation Drawer pre-populated for that date.
-- **Theme:** Tile text uses the theme tokens (`--text-primary`, `--text-secondary`), so it stays readable in dark mode.
-- **Mobile (≤ 640px):** A long observation code wraps onto more lines, and the tile grows to fit it. The code is never cut.
-
----
+| Action                 | Result                                                                                 |
+| ---------------------- | -------------------------------------------------------------------------------------- |
+| Print / Save as PDF    | Prints one cycle or the selected cycles with the browser print dialog.                 |
+| Download Backup (JSON) | Downloads `fertility-tracker-data-backup-YYYY-MM-DD.json` and records the backup date. |
+| Restore Data (JSON)    | Shows a preview, then replaces or merges the observations with the file.               |
+| Load Demo Cycle        | Replaces all observations with the demo data.                                          |
+| Clear Data / Reset     | Deletes all observations.                                                              |
 
-### 5.6 Cycle Analytics View
+`getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export.
 
-**Module:** [src/components/CycleAnalyticsView.tsx](./src/components/CycleAnalyticsView.tsx)
+#### Backup file
 
-- Historical charts and summary metrics across all logged cycles:
-  - **Cycle Length Variability:** Min, max, and average cycle duration.
-  - **Luteal Phase Health:** Post-peak phase duration monitoring (ideal: 9–16 days).
-  - **Phase Lengths** ([src/domain/cyclePhases.ts](./src/domain/cyclePhases.ts)):
-    - Follicular phase: cycle day 1 to the Peak Day. Before the Peak Day, it is the number of days logged so far, marked "in progress".
-    - Luteal phase: the days after the Peak Day. It is 0 before the Peak Day.
-    - The all-cycles view shows the average per cycle. Follicular and luteal averages use only the cycles that have a Peak Day, when one or more exist.
-  - **Mucus Cycle Score Trends:** Tracking mucus quality over time. The average uses `getMucusScore` ([src/domain/mucusScore.ts](./src/domain/mucusScore.ts)): 10 for stretch `10`, `10DL`, `10SL`, `10WL` or for modifier `K` or `L`; else 8, 6, 4 or 2 for stretch `8`, `6`, `4`, `2`/`2W`; else 0. The modifier `C/K` alone gives no score, although `isPeakTypeMucus` treats `C/K` as Peak-type mucus.
-  - **Fertility Window Distribution:** Breakdown of fertile vs. infertile days.
-- **Mucus Trend Scroll Region:** The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on narrow screens. It is a `<section>` with `tabIndex={0}`, named by the chart title with `aria-labelledby` (role `region`), so a keyboard user can scroll it.
-- **Mobile Stats Header Visibility:** Retains top `.stats-dashboard` header cards on mobile view while hiding them on Today, Graph, and Calendar views to maximize charting space.
-
----
-
-### 5.7 Observation Drawer
-
-**Module:** [src/components/ObservationDrawer.tsx](./src/components/ObservationDrawer.tsx)
-
-Interactive slide-over drawer for entering and editing observations with two sync'd input modes:
-
-1. **Interactive Form Builder:** Dropdown selectors for Bleeding, Stretch, Modifiers, Frequency, Symptoms, and Intercourse toggle.
-2. **Natural Language String Input:** Freeform text field with real-time parser validation.
-3. **Live Stamp & Code Preview:** Real-time preview of the resulting stamp color and code string prior to saving.
-4. **Mobile Footer:** On screens of 640px or less, the footer buttons shrink to fit, and the delete button shows only its icon.
-
-**Shared code buttons:** [src/components/observation/ObservationCodeSelector.tsx](./src/components/observation/ObservationCodeSelector.tsx) renders the button groups for Bleeding, the cycle start toggle (shown only when a bleeding code is selected), Stretch, Modifiers, Frequency and Symptoms, in this sequence. It reads the field values and callbacks of `useObservationForm`. The drawer and the Today form show the same markup, classes, ARIA attributes and labels for these buttons. Each button group is a `<fieldset>` whose `<legend>` names it (for example **Bleeding**), so the group has the role `group` and a name without `aria-label`.
-
----
-
-### 5.8 Export & Printing System
-
-**Modules:** [ExportModal.tsx](./src/components/ExportModal.tsx), [PrintExportView.tsx](./src/components/PrintExportView.tsx), [exportUtils.ts](./src/utils/exportUtils.ts)
-
-- **Standardized Export Filename Generator:** Utilizes `getExportFilename()` to enforce strictly lowercase, dash-separated filenames (`[a-z0-9-]`):
-  - **JSON Data Backup & Restore:** Downloads formatted JSON backup files named `fertility-tracker-data-backup-YYYY-MM-DD.json`. The file uses the same write format as the browser storage (`WRITE_SCHEMA_VERSION`, see section 6): in 1.18.0 a bare JSON array, so older app versions can restore it. **Restore Data (JSON)** accepts the bare array (format 0) and the envelope `{ "schemaVersion": 1, "observations": [...] }` (format 1). The file is plain JSON and is not encrypted. The export dialog says this in a translated description (`exportModal.jsonDescription`), next to the translated PDF description (`exportModal.pdfDescription`).
-  - **Print / PDF Export Filenames:** The export dialog names the selection (`cycle-N`, `selected-cycles` or `all-cycles`) and passes it to the app. The app sets the browser document title to that file name before `window.print()` and restores the title one second later. A second print within that second restores the original title, not the title of the first print. When the app unmounts, it cancels the pending title and toast timers (e.g. `fertility-tracker-chart-cycle-1-YYYY-MM-DD` or `fertility-tracker-chart-all-cycles-YYYY-MM-DD`).
-- **Confirmation Before Replacing Data:** [ConfirmDialog.tsx](./src/components/ConfirmDialog.tsx) is a small in-app confirmation dialog. It replaces `window.confirm()` and `window.alert()`: no code in `src/` calls them.
-  - It uses the [modal dialog primitive](#51-navigation--global-controls) over the export dialog, with `aria-labelledby` (its title) and `aria-describedby` (its message).
-  - When it opens, it moves the focus to the safe button (**Cancel**). `Escape`, **Cancel** and a click on the backdrop cancel it and do not close the export dialog. The primitive traps the focus and moves it back to the element that opened the dialog.
-  - All its text is translated (`confirmDialog.*`, `actions.cancel`).
-  - The clear-all message says that a copy stays on this device until the user deletes it with **Delete the copy** in the undo toast.
-  - **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist. When no observations exist, **Load Demo Cycle** and **Restore Data (JSON)** act at once, and **Clear Data / Reset** is disabled.
-  - **Import Preview & Merge:** Before a backup changes existing observations, the dialog shows the number of observations in the file and its date range (first and last date, `YYYY-MM-DD`), or that the file has no observations. It offers two actions:
-    - **Replace** (`importDataJson(text, 'replace')`): the file replaces all the current observations.
-    - **Merge** (`importDataJson(text, 'merge')`): a day of the file replaces the current day with the same date. The other current days stay. When a day of the file is a manual Peak Day, the merge clears the manual Peak Day of the current days in the same cycle, so each cycle keeps one manual Peak Day. `mergeObservations()` in [backupImport.ts](./src/domain/backupImport.ts) does the merge and `summarizeObservations()` gives the preview.
-  - **Restore Data (JSON)** is a button that opens a hidden file input, so the keyboard can reach it. A file that is not a valid backup shows the translated error `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
-- **PNG Image Export:** Renders paper chart view into high-resolution PNG image suitable for digital sharing.
-- **Print / PDF Export Layout:** Generates clean, printer-optimized 35-day landscape PDF layout hiding UI chrome and headers:
-  - Day of week display is omitted from chart cells to conserve horizontal and vertical space.
-  - Observation codes (`codeString`) have spaces removed and support 2-line word wrapping for long codes.
-  - Adds a dedicated horizontal line under the observation code at the bottom of each cell for free-form user notes (`obs.notes`).
-  - Automatically closes the Export Modal upon triggering print/export and displays a real-time success toast notification. The toast closes 3.5 seconds after the last print request.
-  - When there are no cycles, the print view shows one empty cycle that starts on the local date of today (`getTodayStr()`).
-  - **Print Language:** The printed report follows the language of the interface. Its title, subtitle, export date, cycle count, Peak Day badge and stamp key come from the dictionary (`printExport.*`, `chartStrip.*`), and the export date uses `t.locale`. CrMS observation codes (for example `10KLX3`, `P`, `I`) and the stamp colors stay the same in each language, so a practitioner reads the same codes on an English or a French report.
-  - The day date of each print cell uses `common.monthDay`: `MM-DD` in English (as before) and `DD/MM` in French.
-  - Each stamp key label is one dictionary text (`chartStrip.legendMenses`, `legendFertile`, `legendPostPeak`, `legendPeakDay`), so no label repeats: `Pre-Peak (Fertile Mucus)`, `Post-Peak Count (1, 2, 3)` and `Peak Day (P)` replace `Pre-Peak (Mucus) (Fertile Mucus)`, `Post-Peak Count (Count 1, 2, 3)` and `Peak Day (P) (Peak Day)`. The chart strip legend uses the same texts.
-
----
-
-### 5.9 Version Tracker & System Info Modal
-
-**Module:** [src/components/VersionModal.tsx](./src/components/VersionModal.tsx)
-
-- **Accessible Modal Dialog:** Triggered via the `Info` button in the header control bar or the version badge button (`v1.5.0`) in the footer.
-- **Tabbed Interface:**
-  1. **Release Notes Tab:** Featured card displaying the latest release (`v1.5.0`) with feature highlights, release date, and full changelog history. Past releases feature a clean accordion header (version badge & date only) with title displayed inside the expanded section body.
-  2. **System Information Tab:** Diagnostic card displaying App Version, CrMS Specification Version, Build Date, Runtime Environment, Local Storage item count, tracked cycles, logged observations, and total storage footprint in KB, alongside a GitHub open-source repository link with responsive mobile icon layout.
-- **Design System Integration:** Uses `var(--bg-surface)`, `var(--bg-primary)`, and `var(--bg-surface-border)` CSS surface tokens for solid background opacity and theme harmony in light and dark modes.
-
----
-
-### 5.10 Welcome Screen & Onboarding Guide Modal
-
-**Module:** [src/components/WelcomeModal.tsx](./src/components/WelcomeModal.tsx)
-
-- **First-Visit Auto-Popup:** Automatically opens when a user opens the app for the first time (`fertility_tracker_has_seen_welcome` is not present in `localStorage`).
-- **Interactive Multi-Step Stepper (4 Slides):**
-  1. **CrMS Overview & Privacy First:** Explains natural biomarker charting principles and 100% client-side local storage privacy.
-  2. **Biomarker & Stamp Legend:** Interactive visual matrix explaining Red (Bleeding), Dark Green (Dry), Green+Baby (Fertile Mucus), White+Baby (Peak/High Fertility), and Yellow stamps, as well as post-peak counting ($P+1, P+2, P+3$).
-  3. **Daily Charting Guide:** Walkthrough of the Today Dashboard, Observation Drawer, Direct Code Entry (`10KLX3 I AP`), and Detailed Selectors.
-  4. **Views Tour & Quick Start Launcher:** Introduces Paper Chart, Monthly Calendar, and Cycle Analytics, with interactive actions to **"Explore Demo Data"** (pre-loading sample observations) or **"Start Fresh"**.
-- **Accessible Design & Navigation:** Keyboard navigation through the [modal dialog primitive](#51-navigation--global-controls) (`Escape` close, focus trap, focus return), a slide body that the keyboard can focus and scroll, step indicator dots, "Previous", "Next", and "Skip" controls, fully translated in English and French.
-
-### 5.11 Error Boundary
-
-**Module:** [src/components/ErrorBoundary.tsx](./src/components/ErrorBoundary.tsx)
-
-- `App.tsx` wraps each `React.Suspense` (the four pages, the lazy dialogs and the print view) in an `ErrorBoundary`. The boundary around the pages has `key={activeTab}`, so a tab change removes the alert and loads the new page again.
-- When a child throws during render, or a lazy chunk fails to load (for example offline, before the service worker has cached it), the boundary replaces the failed part with an alert (`role="alert"`) instead of a blank screen. The rest of the layout (header, footer, navigation) stays visible.
-- The alert shows a translated title and message (`errorBoundary.title`, `errorBoundary.message`) and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
-- **Dialog mode:** An `ErrorBoundary` with an `onClose` prop shows the alert in the [modal dialog primitive](#51-navigation--global-controls), named by the alert title, with a **Close** button (`errorBoundary.close`) that calls `onClose`. `Escape` and the backdrop also call `onClose`. Each lazy dialog uses this mode, so the error shows where the dialog shows.
-- **Error callback:** An `ErrorBoundary` with an `onError` prop calls it once when a child fails. The print view boundary uses it to show `exportModal.printError` instead of printing.
-
----
-
-## 6. State Management & Data Persistence
-
-**Module:** [src/context/CycleContext.tsx](./src/context/CycleContext.tsx)
-
-- **Decoupled Context Architecture:**
-  - `CycleDataContext` / `useCycleData()`: Manages domain data entities, cycles, and CRUD mutations (`observations`, `cycles`, `selectedCycleId`, `saveObservation`, `deleteObservation`, etc.).
-  - `CycleUiContext` / `useCycleUi()`: Manages user interaction and drawer states (`selectedObservation`, `isDrawerOpen`, `setSelectedObservation`, `setIsDrawerOpen`).
-  - `useCycle()`: Unified hook combining data and UI contexts for complete backward compatibility.
-  - `deleteObservation(id)` deletes only the observation with that `id`. A date string does not match an observation.
-  - `LanguageProvider` and `ThemeProvider` memoize their context values, so a re-render of a parent with the same language or theme does not give consumers a new value.
-  - Prevents observation drawer open/close toggles from triggering unnecessary re-renders in heavy charting views (`ChartRow`, `CalendarGrid`).
-- **Storage Strategy:** Browser `localStorage` using primary data key `fertility_care_observations` for observations, `fertility_care_observations_undo` for the copy before the last replacing change, `fertility_care_last_backup` for the date of the last JSON backup, `fertility_care_backup_reminder_start` and `fertility_care_backup_snoozed_until` for the backup reminder, `fertility_care_lang` for active language, `fertility_care_theme` for theme preference, `fertility_tracker_last_seen_version` for version update tracking, and `fertility_tracker_has_seen_welcome` for onboarding completion state. The app also uses `fertility_care_observations_recovery` for unreadable data and `fertility_care_entry_mode` for the last entry mode of the Today view.
-  - [storageKeys.ts](./src/utils/storageKeys.ts) defines each key one time, and all modules import it from there: `STORAGE_OBSERVATIONS_KEY`, `STORAGE_RECOVERY_KEY`, `STORAGE_UNDO_KEY`, `STORAGE_LAST_BACKUP_KEY`, `STORAGE_BACKUP_REMINDER_START_KEY`, `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`, `STORAGE_LANGUAGE_KEY`, `STORAGE_THEME_KEY`, `STORAGE_ENTRY_MODE_KEY`, `LAST_SEEN_VERSION_KEY` and `STORAGE_HAS_SEEN_WELCOME_KEY`.
-- **Versioned Storage Format (two-step rollout):** [storageFormat.ts](./src/domain/storageFormat.ts) owns the stored format of the observations. Format 0 is a bare JSON array. Format 1 is the envelope `{ "schemaVersion": 1, "observations": [...] }` (`STORAGE_SCHEMA_VERSION = 1`, the newest format that the app reads).
-  - **Step 1 (this release):** the app reads both formats everywhere (`fertility_care_observations`, `fertility_care_observations_undo` and restored backups), but it still writes format 0. `serializeObservations(observations, indent?, version = WRITE_SCHEMA_VERSION)` writes a bare array while `WRITE_SCHEMA_VERSION = 0`. Thus version 1.17.x and older, for example after a rollback deploy, read all the data that 1.18.0 writes: the stored value, the undo copy and the backup file.
-  - **Step 2 (a later release):** when enough time has passed that no install runs a version older than 1.18.0, a release sets `WRITE_SCHEMA_VERSION` to 1. No other code changes are necessary.
-  - `parseObservationData(text)` reads either format and returns `{ observations, droppedCount }`, or `null` when the text cannot be read. Each valid record of a bare array is kept, with no loss.
-  - An envelope with a `schemaVersion` that is not an integer from 1 to `STORAGE_SCHEMA_VERSION` (for example, data from a newer app version), or without an `observations` array, cannot be read. The app then uses the unreadable data recovery below, so it never writes over newer data.
-  - Each record goes through `validateObservation()`. `droppedCount` is the number of records that it rejects (for example, no valid `date`). Two records with the same date keep the last one; this is not a dropped record.
-  - **Derived Fields on Load:** `parseObservationData()` calculates `codeString` again from the fields with `formatCodeString()`, so a stored code that disagrees with the fields is corrected. Free text in a stored or imported `codeString` that no field holds (for example `M custom`) is not kept: it becomes `M`. The provider then calculates `stamp`, `cycleDay` and the Peak Day again, as before.
-- **Dropped Records Recovery:** When the stored list is readable but `droppedCount` is more than 0, the app shows the valid observations and keeps the original text, as for unreadable data: it copies the text to `fertility_care_observations_recovery` when that key is empty, and otherwise does not write `fertility_care_observations` until the observations change. `useCycleData()` exposes `droppedCount`. On a later load, the app calculates `droppedCount` again from the copy in `fertility_care_observations_recovery` (0 when the copy is not readable), so the message stays correct after a reload. `StorageRecoveryNotice` then shows the translated messages `storageRecovery.messagePartial` (copy kept) or `storageRecovery.messagePartialNoCopy` (no copy), with the number of dropped records. For exactly one dropped record it uses the singular messages `messagePartialOne` and `messagePartialNoCopyOne`.
-- **Unreadable Data Recovery:** When `parseObservationData()` cannot read the value of `fertility_care_observations` (not valid JSON, not an array or a supported envelope), the app starts with no observations. Before it saves anything, it copies the original text to `fertility_care_observations_recovery`, but only when that key is empty: a pending copy is never replaced. `writeStorage` returns `false` when the browser refuses a write (for example, storage is full).
-  - When the copy is not written (the recovery key already holds a copy, or the write fails), the app does not write `fertility_care_observations` until the observations change (save, delete, import, demo data or clear). The original text stays in its key.
-  - `useCycleData()` exposes the original text as `recoveryData` (or `null`), `recoveryKept` (`true` when the recovery key holds that text) and `dismissRecovery()`. `dismissRecovery()` deletes the copy when `recoveryKept` is `true`; otherwise it only hides the notice.
-  - `clearAllData()` also deletes `fertility_care_observations_recovery` and sets `recoveryData` to `null`. The undo copy of the observations stays until **Undo** or **Delete the copy** in the undo toast.
-  - `StorageRecoveryNotice` shows a translated alert above the views while `recoveryData` is set. **Download unreadable data** saves the original text from memory as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`. When `recoveryKept` is `true`, the message says that a copy is kept and the second button is **Delete the copy**. That button opens the confirmation dialog (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`); only its confirm button calls `dismissRecovery()`. When it is `false`, the message says that no copy is kept and that the next change replaces the data, and the second button is **Close**.
-- **Save Failure Warning:** Each write of `fertility_care_observations` reports its result. `useCycleData()` exposes `saveFailed`: `true` after a write that the browser refused (for example, storage is full or blocked), `false` after the next write that succeeds. [StorageSaveWarning.tsx](./src/components/StorageSaveWarning.tsx) shows a persistent translated alert (`role="alert"`, `storageWarning.saveFailed`) above the views while `saveFailed` is `true`. It has no close button. Its **Back up now** button (`storageWarning.backUpNow`) opens the export dialog, so the user can download the observations that are only in memory.
-- **Persistent Storage Request:** When observations exist, the provider calls `requestPersistentStorage()` from [storage.ts](./src/utils/storage.ts) once. It calls `navigator.storage.persist()` so the browser does not evict the data, and resolves to `false` when the API is missing or fails. The app works the same when the browser refuses.
-- **Backup Reminder:** **Download Backup (JSON)** stores today's date (`YYYY-MM-DD`) in `fertility_care_last_backup` and in `lastBackupDate` of `useCycleData()` (`markBackedUp()`).
-  - When the first observation that is not demo data exists (the first real save or import, or the first load of 1.18.0 with real data), the provider stores today in `fertility_care_backup_reminder_start` (`backupReminderStart`). Before that, `backupReminderStart` is `null`. An existing value stays.
-  - `saveObservation()` gives a new real id (`obs_DATE_TIME`) to a saved day whose id starts with `demo_`, so an edited demo day counts as the user's own observation. Delete, the manual Peak Day and the import merge match the day by its new id or by its date.
-  - `isBackupDue({ lastBackupDate, reminderStart, snoozedUntil }, observations, today)` in [backupReminder.ts](./src/domain/backupReminder.ts) is `true` when all these conditions are true:
-    - At least one observation is not demo data (its `id` does not start with `demo_`).
-    - No snooze is active: `snoozedUntil` is missing, not a valid date, or not after `today`.
-    - `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup or, without a valid last backup date, since `reminderStart`. Without either date, it is `false`.
-  - [BackupReminder.tsx](./src/components/BackupReminder.tsx) shows a translated notice (`role="note"`, `backupReminder.*`) above the views while the backup is due. **Back up now** opens the export dialog. **Later** calls `snoozeBackupReminder()`: it stores today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until` (`backupSnoozedUntil`), so the notice stays hidden after a reload.
-- **Undo of Replaced Data:** Before `loadDemoData()`, `importDataJson()` (replace or merge) or `clearAllData()` changes the observations, the provider writes the current observations (in the write format, a bare array in 1.18.0) to `fertility_care_observations_undo`.
-  - While a copy exists, a second replacing change does not replace it: the copy keeps the oldest observations, so **Undo** after demo then clear puts back the data from before the demo. `undoChange` names the latest change.
-  - `saveObservation()` and `deleteObservation()` delete the copy (as `dismissUndo()` does) and the toast closes, so **Undo** can never drop a day that was saved after the change.
-  - `useCycleData()` exposes `undoPersisted`: `false` when `writeStorage` could not write the copy. The toast then adds the translated warning `undoToast.notSaved` (**Undo** works only until the page reloads).
-  - `useCycleData()` exposes `undoChange`: the last change that the copy can undo (`'demo'`, `'import'`, `'merge'`, `'clear'` or `'earlier'`), or `null` when there is no copy.
-  - `undoLastChange()` restores the copied observations, selects their newest cycle and deletes the copy. `dismissUndo()` deletes the copy and keeps the change.
-  - When the app starts and `fertility_care_observations_undo` holds readable data (either storage format), `undoChange` is `'earlier'`, so the copy stays visible after a reload.
-  - [UndoToast.tsx](./src/components/UndoToast.tsx) shows a translated toast (`role="status"`, `undoToast.*`) while `undoChange` is set. It tells what changed and has **Undo** and **Delete the copy** buttons. It does not close by itself.
-- **Automatic Reprocessing:** Any modification (addition, update including a manual Peak Day, deletion) automatically triggers reprocessing of cycle boundaries, peak day detection, and post-peak stamps across all cycles.
-- **Demo Data Generator:** Built-in sample dataset generator allowing new users to immediately test all views and features with realistic multi-cycle CrMS data.
-
----
-
-## 7. Internationalization & Design System
-
-### 7.1 Internationalization (i18n)
-
-**Modules & Directory Structure:** [src/context/LanguageContext.tsx](./src/context/LanguageContext.tsx), `src/i18n/`
-
-- **Modular Locales Directory:**
-  - `src/i18n/types.ts`: Strictly typed `TranslationSchema` matching the canonical structure.
-  - `src/i18n/locales/en.ts`: English canonical dictionary.
-  - `src/i18n/locales/fr.ts`: French localized dictionary implementing `TranslationSchema`.
-  - `src/i18n/index.ts`: Unified export providing `translations`, `TranslationSchema`, `supportedLanguages`.
-- Supported languages: **English (`en`)**, **French (`fr`)**.
-- Context-driven translation dictionary managing view labels, biomarker code explanations, drawer inputs, version tracker strings, and error messages.
-- TypeScript compiler strictly enforces key parity across all language modules (`TranslationSchema`).
-- Components read every user-facing string and the date locale (`t.locale`: `en-US` or `fr-FR`) from the dictionary. Components do not branch on `language === 'fr'` and do not keep fallback strings, because each key always exists.
-- `src/i18n/format.ts` exports `formatMessage(template, values)`. It replaces each `{name}` in a translated template with its value and keeps a placeholder that has no value. It reads only the own properties of `values` (`Object.hasOwn`), so `{toString}` stays as it is. Templates hold the full sentence (for example `Day {day}: {phase}`), so each language can put the values in its own word order.
-- **No hardcoded text:** every user-visible string of the components comes from the dictionary: JSX text, the `aria-label`, `aria-description`, `title`, `placeholder` and `alt` attributes, the chart cell labels and popover, the legends, the calendar month and weekday names, the cycle picker, the footer, the analytics empty state and the printed report. This includes the chart toolbar subtitle (`chartStrip.subtitle`, `chartStrip.subtitleBlank`), the cycle start toggle state (`cycleStartModal.isCycleStartYes` / `isCycleStartNo`) and the average values of the stats header (`stats.averageDays`, `{value} days (avg)`, so each language sets its own word order). The English text stays byte-identical to the text before the move, except the stamp key labels above.
-- `LanguageProvider` sets `document.documentElement.lang` to the app language (`en` or `fr`) on each change, so screen readers use the right voice.
-- **Untranslated domain text:** CrMS observation codes (`10KLX3 I AP`, `P`, `I`), stamp enum names in the chart cell labels and the version prefix `v` stay the same in each language. The cycle-day abbreviation is translated: `CD` in English, `JC` (_jour du cycle_) in French.
-- **Guard test:** `src/i18n/__tests__/noHardcodedText.test.ts` parses each `.tsx` file of `src/` (not the tests) with the parser of Vite. It fails when a JSX text, a string or template literal in a JSX expression, or a string in an `aria-label`, `aria-description`, `title`, `placeholder` or `alt` attribute has a letter. It also checks every string prop of an app component (a tag that starts with a capital letter), except the non-text props `className`, `id`, `key`, `stamp`, `size`, `variant`, `fill`, `aria-hidden`, `labelledBy`, `describedBy` and `panelClassName`. It reads through parentheses, TypeScript casts, arrays, conditions, `&&`/`||` and `+` concatenations. Text in its short allowlist of codes and symbols (`P`, `I`, `v`, `10KLX3 I AP`) passes.
-- Release notes in `VERSION_HISTORY` require both languages (`title`/`titleFr`, `tagline`/`taglineFr`, `highlights`/`highlightsFr`).
-
-### 7.2 Design System & Layered CSS Architecture
-
-**Modules & Directory Structure:** [src/context/ThemeContext.tsx](./src/context/ThemeContext.tsx), [src/styles/index.css](./src/styles/index.css), `src/styles/`
-**Architecture Decision:** [ADR 0002: CSS Maintainability & Layered Design System Architecture](docs/adr/0002-css-maintainability-design-system.md)
-
-- **Cascade Layer Order:** Native CSS `@layer` declaration enforcing strict override precedence without specificity conflicts:
-
-  ```css
-  @layer tokens, base, primitives, views, utilities;
-  ```
-- **Modular Directory Organization:**
-  - `src/styles/tokens/`:
-    - `tokens.css`: Color tokens, light/dark themes (`:root`, `[data-theme='dark']`, each with its `color-scheme`), radii (`--radius-xs` to `--radius-full`), shadows (`--shadow-sm` to `--shadow-glow`), stamp palette (`--stamp-red`, `--stamp-dark-green`, `--stamp-white`, `--stamp-light-green`), accent tokens (`--accent-primary`, `--accent-solid`, `--accent-solid-hover`, `--accent-light`), and semantic feedback tokens (`--color-danger`, `--color-success`, `--color-success-solid`, `--color-success-text`, `--color-success-surface`, `--color-warning`, `--color-warning-text`, `--color-warning-surface`, `--color-info`, `--color-info-text`, `--color-info-surface`, `--color-white`, `--color-black`), observation toggle colors (`--color-intercourse`, `--color-peak`, `--color-cycle-start-text`, `--color-cycle-start-surface`), `--accent-soft`, `--bg-overlay`, `--shadow-xl` and `--font-mono`.
-    - `spacing.css`: Standardized spacing scale (`--space-xs` (4px), `--space-sm` (8px), `--space-md` (16px), `--space-lg` (24px), `--space-xl` (32px), `--space-2xl` (48px)) and z-index layer stack (`--z-base` (1), `--z-sticky` (100), `--z-drawer` (500), `--z-modal` (1000), `--z-popover` (1100), `--z-toast` (1200)).
-    - `animations.css`: Keyframe definitions (`fadeIn`, `pulseGlow`, `drawerSlideIn`).
-  - `src/styles/base/`:
-    - `fonts.css`: `@font-face` rules for **Plus Jakarta Sans** (variable weight `200 800`, `font-display: swap`). Only the `latin` and `latin-ext` woff2 subsets of `@fontsource-variable/plus-jakarta-sans` are declared. The `url()` values are package paths, so Vite copies the files to `assets/` with a content hash and the service worker precaches them. No font or stylesheet loads from a third-party host such as Google Fonts.
-    - `reset.css`: Modern CSS box-sizing resets, zero-margin defaults, font smoothing.
-    - `layout.css`: App shell container (`.app-layout`, `.main-content`), mobile bottom bar offsets, global focus outlines.
-  - `src/styles/primitives/`:
-    - `buttons.css`: Reusable action button primitives (`.btn`, `.btn-primary`, `.btn-secondary`, `.btn-ghost`, `.btn-icon`, `.btn-danger`, `.btn-sm`, `.btn-lg`, `.toggle-btn`).
-    - `cards.css`: Reusable surface containers (`.card`, `.card-surface`, `.card-glass`, `.card-interactive`, `.card-header`, `.card-body`).
-    - `forms.css`: Form inputs, selects, textareas, custom checkboxes, and toggle switches.
-    - `badges.css`: Indicators, pills, and biomarker badges (`.badge`, `.badge-pill`, `.stamp-badge`).
-    - `dialogs.css`: Modal backdrops, dialog containers, the confirmation dialog (`.confirm-overlay`, `.confirm-dialog`), and slide-in drawer panels. The `.modal-dialog` rule removes the browser styles of the native `<dialog>` (margin, border, padding, size limits and `::backdrop`), so the overlay classes give the full-screen backdrop.
-    - `toast.css`: The undo toast (`.undo-toast`) that floats above the bottom navigation.
-  - `src/styles/views/`:
-    - `header.css`: Global header, navigation brand, language selector, and theme switcher.
-    - `cycle-picker.css`: Cycle dropdown selector and cycle summary metrics.
-    - `today.css`: Dedicated Today Dashboard view, date selector strip, quick log banner, and recent history cards.
-    - `chart.css`: Creighton paper chart strip (`.chart-table`, `.cell-day`, `.paper-cell`, `.is-today`, `.peak-marker`).
-    - `calendar.css`: Monthly calendar grid view, day cells, month navigation, and calendar legend.
-    - `analytics.css`: Cycle analytics metrics, Mucus Cycle Score (MCS) card, and biomarker distribution graphs.
-    - `drawer.css`: Full-featured observation logger drawer, direct code entry, and biomarker pickers.
-    - `modals.css`: View modals including `ExportModal`, `VersionModal`, `WelcomeModal`, and `CycleStartModal`.
-    - `footer.css`: App footer, legal disclaimers, and version badge.
-    - `print.css`: High-resolution export layouts and `@media print` rules.
-  - `src/styles/utilities/`:
-    - `utilities.css`: Layout helpers (`.flex-center`, `.gap-2`, `.items-center`), text helpers (`.text-truncate`, `.sr-only`).
-- **Text Contrast (WCAG 2 AA):** In both themes, each text token meets a contrast ratio of at least 4.5:1 on the surfaces that show it. `--text-primary`, `--text-secondary`, `--text-muted` and `--accent-primary` are text colors on `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`. `--accent-primary` is also a text color on `--accent-light`. `--accent-solid` and `--accent-solid-hover` are the fill colors behind white text, for example `.btn-primary`. A rule that puts white text on an accent fill uses `--accent-solid`, not `--accent-primary`. `--color-danger` and `--color-danger-hover` are the fills of `.btn-danger` behind white text. `--color-intercourse` and `--color-peak` are the fills of the active intercourse and Peak toggles, and `--color-success-solid` is the fill of the Today saved message (`.today-toast`), all behind white text. `--color-info-text` on `--color-info-surface` is the form mode badge of the welcome guide. `--color-success-text` on `--color-success-surface` is the version badge of the mobile menu. `--color-cycle-start-text` on `--color-cycle-start-surface` is the active Start of New Cycle toggle (`.cycle-start-toggle-btn.active`). `--color-warning-text` on `--color-warning-surface` is the symptom tag of the chart (`.cell-symptom-tag`). The footer copyright text and the empty days of the chart (`.empty-cell.paper-cell`, marked by a dashed border) have no opacity, so their text keeps the contrast of its token. Each custom property that a style or a component uses is defined in `src/styles/tokens/`. The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
-
----
-
-## 8. Testing & Quality Assurance
-
-The project uses **test-driven development (TDD)**. Write a failing test before each behavior change, then write the minimum code to make it pass. The tools are **Vitest**, **React Testing Library** and the **V8 coverage** engine. **Biome** and the strict **TypeScript** compiler do the static analysis.
-
-- `biome.json` keeps all the `a11y` rules of the recommended preset on. The project has no override that turns an accessibility rule off.
-- jsdom has no `HTMLDialogElement.showModal()` or `close()`. `src/setupTests.ts` adds two small versions that set and remove the `open` attribute, so the component tests can find an open `<dialog>` by its role.
-
-### Coverage Policy
-
-- Coverage must stay at **100%** for statements, branches, functions and lines. `vite.config.ts` sets `coverage.thresholds: { 100: true }`, so `npm run test:coverage` fails below 100%. CI runs this command on each pull request.
-- Coverage ignore comments are not permitted. Code that no test can reach is removed (for example, guards for values that the types do not permit, or fallbacks for translation keys that always exist).
-- The coverage report includes `src/**` and `scripts/**`. It excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
-
-### Test Layers
-
-| Layer       | Location                                  | Purpose                                                                                                   |
-| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Pure rules: code parser, stamps, Peak Day, cycle limits, validation, demo data, form values, mucus score. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access, storage key names.                                  |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm` (the form state that Today and the drawer share) and `useToast`.                     |
-| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                          |
-| Components  | `src/components/**/__tests__/`            | Rendered output and user actions, found by role and accessible name.                                      |
-| Application | `src/__tests__/`                          | Flows across components: first-visit guide, print, entry point, error boundary.                           |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker caching strategies and the service worker registration.                                    |
-| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot render, for example theme colors and mobile wrapping.                         |
-| Tools       | `scripts/**/__tests__/`                   | The documentation checker and the service worker build plugin.                                            |
-| End-to-end  | `e2e/`                                    | Playwright flows and axe accessibility checks in Chromium, against the production build.                  |
-
-### End-to-End Tests (`e2e/`)
-
-- **Playwright** drives a real Chromium against the production bundle: `vite build`, then `vite preview` on port `4173` (Playwright `webServer` in `playwright.config.ts`). The browser time zone is UTC and the clock is fixed to `2026-10-27T12:00:00Z`, so that the dates are stable. A local run reuses a running server only when `PW_REUSE=1` is set.
-- Vitest does not run the files in `e2e/`, and the coverage report does not include them. `e2e/tsconfig.json` type-checks them; `npm run typecheck` runs it.
-- The suite covers these flows:
-  1. The first visit shows the welcome guide, and the **Escape** key closes it.
-  2. An observation logged in the **Today** view is still there after a reload.
-  3. A JSON backup, a reset and a restore of that backup keep the observations. The reset goes through the confirm dialog (**Delete all data**) and shows the undo message. After a new observation, the restore shows the import preview, and **Replace** brings back the observations of the backup.
-  4. After **Load Demo Cycle**, the chart, calendar and analytics views show the demo data.
-  5. A manual Peak Day set in the drawer moves the Peak Day in the stats header and the post-peak stamps in the chart. When the user removes it, the detected Peak Day comes back, also after a reload.
-  6. Saved data that is not JSON shows the recovery notice, and `fertility_care_observations_recovery` keeps the original text. **Delete the copy** and its confirm dialog remove the notice and the copy.
-  7. A saved list with one record that is not valid shows the other observations and the recovery notice for 1 record. The recovery key keeps the original text.
-  8. When `localStorage.setItem` fails for the observations key, the save warning shows, and **Back up now** opens the export dialog.
-  9. After the first visit, the service worker controls the page. With the network off (`context.setOffline(true)`), a reload loads the application, and a new observation saves.
-  10. After **Load Demo Cycle**, the undo toast shows. When a chart cell opens the drawer, the toast is in the drawer dialog: the **Tab** key reaches **Undo**, and a click on **Undo** brings back the empty chart. The focus then goes to the dialog. After the drawer closes, the chart stays empty and the toast does not show.
-- **Accessibility:** `@axe-core/playwright` checks each view and the export dialog against the `wcag2a` and `wcag2aa` rule tags. The violations that exist today are an explicit list of rule id and target pairs for each screen in `e2e/accessibility.spec.ts` (all `color-contrast`, issue #49; see also #34 and #35). The test fails on a pair that is not in the list and on a listed pair that no longer occurs, so the list shrinks when a correction is merged.
-- Run the suite with `mise run e2e` (or `npm run test:e2e`). A local run can use an installed Chromium through the `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` environment variable.
-
-### Test Helpers (`src/test/`)
-
-- `makeObservation({ date, ...fields })`: a valid observation with defaults.
-- `renderWithProviders(ui, { language, observations, selectedCycleId })`: renders inside every provider with optional French, saved data and a selected cycle.
+- The file uses the write format of the browser storage (section 6.3). In this version, that is a bare JSON array, so older versions can restore it.
+- **Restore Data (JSON)** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
+- The file is plain JSON. It is not encrypted. The texts `exportModal.jsonDescription` and `exportModal.pdfDescription` tell this to the user.
+- **Restore Data (JSON)** is a button that opens a hidden file input. Thus, the keyboard can reach it.
+- A file that is not a valid backup shows `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
+
+#### Confirmation
+
+[ConfirmDialog.tsx](src/components/ConfirmDialog.tsx) is a small confirmation dialog. It replaces `window.confirm()` and `window.alert()`, which no code in `src/` uses.
+
+- It opens over the export dialog, with `aria-labelledby` (its title) and `aria-describedby` (its message). All its text is translated (`confirmDialog.*`, `actions.cancel`).
+- When it opens, the focus goes to **Cancel**. `Escape`, **Cancel** and a click on the backdrop cancel it. They do not close the export dialog.
+- **Load Demo Cycle**, **Restore Data (JSON)** and **Clear Data / Reset** open it when observations exist.
+- Without observations, **Load Demo Cycle** and **Restore Data (JSON)** act immediately, and **Clear Data / Reset** is disabled.
+- The message for **Clear Data / Reset** says that a copy stays on the device until the user selects **Delete the copy**.
+
+Before a backup changes existing observations, the dialog shows a preview from `summarizeObservations()`. The preview gives the number of observations in the file and the first and last date. If the file has no observations, the preview says so.
+
+| Action  | Result                                                                                                                  |
+| ------- | ----------------------------------------------------------------------------------------------------------------------- |
+| Replace | `importDataJson(text, 'replace')`: the file replaces all the current observations.                                      |
+| Merge   | `importDataJson(text, 'merge')`: each day of the file replaces the current day with the same date. The other days stay. |
+
+During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
+
+#### Print
+
+1. The dialog names the selection: `cycle-N`, `selected-cycles` or `all-cycles`.
+2. The application sets the document title to the file name, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD`.
+3. The application calls `window.print()`. The browser uses the title as the default PDF file name.
+4. The application restores the title one second later. A second print in that second restores the first title.
+5. The application closes the dialog and shows a message. The message closes 3.5 seconds after the last print.
+
+When the application unmounts, it stops the title and message timers.
+
+The print layout:
+
+- It is landscape, with 35 days in each row. It hides the user interface.
+- It does not show the day of the week. It removes the spaces from the codes and lets a long code go onto two lines.
+- It has a line under the code of each day for the notes.
+- Without cycles, it shows one empty cycle that starts today (`getTodayStr()`).
+- It uses the language of the interface: `printExport.*`, `chartStrip.*` and `t.locale` for the export date. The CrMS codes and the stamp colors are the same in each language.
+- The date of each cell uses `common.monthDay`: `MM-DD` in English and `DD/MM` in French.
+- Each legend label is one text: `chartStrip.legendMenses`, `legendFertile`, `legendPostPeak` and `legendPeakDay`. The chart legend uses the same texts.
+
+### 5.9 Version dialog
+
+**Module:** [src/components/VersionModal.tsx](src/components/VersionModal.tsx)
+
+- The info button in the header and the version button in the footer open the dialog.
+- The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.
+- The **System Information** tab shows the version, the CrMS version, the build date, the mode and the storage statistics. It also has the repository link.
+- The dialog uses the surface tokens `--bg-surface`, `--bg-primary` and `--bg-surface-border`.
+
+### 5.10 Welcome guide
+
+**Module:** [src/components/WelcomeModal.tsx](src/components/WelcomeModal.tsx)
+
+The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is not in `localStorage`. It has four slides:
+
+| Slide | Content                                                                                          |
+| ----- | ------------------------------------------------------------------------------------------------ |
+| 1     | The CrMS method and the privacy of the data.                                                     |
+| 2     | The stamps: red, green, green with a baby, white with a baby and yellow, and the count of three. |
+| 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
+| 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
+
+The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dialog component gives `Escape`, the focus trap and the focus return. The slide body can get the focus and scroll. The guide is in English and in French.
+
+### 5.11 Error boundary
+
+**Module:** [src/components/ErrorBoundary.tsx](src/components/ErrorBoundary.tsx)
+
+- `App.tsx` puts each `React.Suspense` in an `ErrorBoundary`: the pages, the lazy dialogs and the print view.
+- The boundary of the pages has `key={activeTab}`. Thus, a change of page removes the alert and loads the new page again.
+- When a child fails during render, or a lazy chunk does not load, the boundary shows an alert (`role="alert"`). The header, the footer and the navigation stay visible.
+- The alert shows `errorBoundary.title`, `errorBoundary.message` and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
+- With an `onClose` property, the boundary shows the alert in the dialog component, named by the alert title. It adds a **Close** button (`errorBoundary.close`).
+- In this dialog mode, **Close**, `Escape` and the backdrop call `onClose`. Each lazy dialog uses this mode.
+- With an `onError` property, the boundary calls it one time when a child fails. The print view uses it to show `exportModal.printError`.
+
+## 6. State and data storage
+
+**Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
+
+### 6.1 Contexts
+
+| Context or hook                      | Content                                                                                     |
+| ------------------------------------ | ------------------------------------------------------------------------------------------- |
+| `CycleDataContext`, `useCycleData()` | Observations, cycles, selected cycle, save, delete, import, demo, clear, recovery and undo. |
+| `CycleUiContext`, `useCycleUi()`     | The selected observation and the open drawer.                                               |
+| `useCycle()`                         | Both contexts together.                                                                     |
+- The two contexts are separate. Thus, the drawer does not make the chart and the calendar render again.
+- `deleteObservation(id)` deletes only the observation with that `id`. A date does not match an observation.
+- `LanguageProvider` and `ThemeProvider` memoize their values. Thus, a parent that renders again with the same values does not give new values.
+- After each change, the application calculates the cycles, the Peak Days and the stamps again for all days. This includes a change of the manual Peak Day.
+- `buildDemoObservations` makes 56 days that end today: two 28-day cycles with the Peak Day on cycle day 13.
+
+### 6.2 Storage keys
+
+[storageKeys.ts](src/utils/storageKeys.ts) defines each key one time. All modules import the keys from this file.
+
+| Constant                            | Key                                    | Content                                 |
+| ----------------------------------- | -------------------------------------- | --------------------------------------- |
+| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`          | All observations                        |
+| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery` | Copy of saved data that is not readable |
+| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`     | Copy before the last replacing change   |
+| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`           | Date of the last JSON backup            |
+| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start` | Start date of the backup reminder       |
+| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`  | End date of the reminder snooze         |
+| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                  | Language                                |
+| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                 | Theme                                   |
+| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`            | Last entry mode of the Today page       |
+| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`  | Last version that the user opened       |
+| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`   | The user closed the welcome guide       |
+
+### 6.3 Storage format
+
+[storageFormat.ts](src/domain/storageFormat.ts) controls the saved format of the observations.
+
+| Format | Content                                                    |
+| ------ | ---------------------------------------------------------- |
+| 0      | A bare JSON array                                          |
+| 1      | The object `{ "schemaVersion": 1, "observations": [...] }` |
+
+`STORAGE_SCHEMA_VERSION = 1` is the newest format that the application reads. The change to format 1 occurs in two steps:
+
+- **Step 1 (now):** The application reads both formats in the storage, the undo copy and backups. It still writes format 0, because `WRITE_SCHEMA_VERSION = 0`. Thus, versions 1.17.x and older can read all the data, for example after a rollback.
+- **Step 2 (later):** When no installation runs a version older than 1.18.0, a release sets `WRITE_SCHEMA_VERSION` to 1. No other code changes.
+
+`serializeObservations(observations, indent?, version = WRITE_SCHEMA_VERSION)` writes the data. `parseObservationData(text)` reads either format. It gives `{ observations, droppedCount }`, or `null` when it cannot read the text.
+
+- A bare array keeps each valid record.
+- An object without an `observations` array cannot be read. An object with a `schemaVersion` that is not an integer from 1 to `STORAGE_SCHEMA_VERSION` cannot be read.
+- For data that it cannot read, the application uses the recovery in section 6.4. Thus, it never writes over data from a newer version.
+- Each record goes through `validateObservation()`. `droppedCount` is the number of records that it rejects, for example a record without a valid `date`.
+- Two records with the same date keep the last one. This is not a dropped record.
+- `parseObservationData()` calculates `codeString` again with `formatCodeString()`. Text in a saved code that no field holds is removed. For example, `M custom` becomes `M`.
+- The provider then calculates `stamp`, `cycleDay` and the Peak Day again.
+
+### 6.4 Data recovery
+
+When `parseObservationData()` cannot read `fertility_care_observations`, the application starts with no observations. Before it saves, it copies the original text to `fertility_care_observations_recovery`. It does this only when that key is empty, so it never replaces a copy.
+
+- `writeStorage` gives `false` when the browser refuses a write, for example when the storage is full.
+- If the copy is not written, the application does not write `fertility_care_observations` until the observations change. The original text stays in its key.
+- `useCycleData()` gives `recoveryData` (the original text or `null`), `recoveryKept` and `dismissRecovery()`. `recoveryKept` is `true` when the recovery key has the text.
+- `dismissRecovery()` deletes the copy when `recoveryKept` is `true`. Otherwise, it only hides the message.
+- `clearAllData()` also deletes the recovery copy and sets `recoveryData` to `null`. The undo copy stays.
+
+When the saved list is readable but `droppedCount` is more than 0, the application shows the valid observations. It keeps the original text with the same rules. `useCycleData()` gives `droppedCount`.
+
+- On a subsequent load, the application calculates `droppedCount` again from the recovery copy. If the copy is not readable, `droppedCount` is 0.
+- `StorageRecoveryNotice` shows `storageRecovery.messagePartial` (copy kept) or `storageRecovery.messagePartialNoCopy` (no copy), with the number of dropped records.
+- For one dropped record, it uses `messagePartialOne` and `messagePartialNoCopyOne`.
+
+`StorageRecoveryNotice` shows an alert above the pages while `recoveryData` is set.
+
+- **Download unreadable data** saves the original text as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`.
+- When `recoveryKept` is `true`, the message says that a copy is kept. The second button is **Delete the copy**. It opens a confirmation (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`), and only its confirm button calls `dismissRecovery()`.
+- When `recoveryKept` is `false`, the message says that the next change replaces the data. The second button is **Close**.
+
+### 6.5 Save failure and persistent storage
+
+- Each write of `fertility_care_observations` gives its result. `saveFailed` in `useCycleData()` is `true` after a refused write and `false` after the next write that succeeds.
+- [StorageSaveWarning.tsx](src/components/StorageSaveWarning.tsx) shows an alert (`role="alert"`, `storageWarning.saveFailed`) above the pages while `saveFailed` is `true`. It has no close button.
+- The alert has a **Back up now** button. It opens the export dialog, so the user can download the observations that are only in memory.
+- When observations exist, the provider calls `requestPersistentStorage()` from [storage.ts](src/utils/storage.ts) one time. It calls `navigator.storage.persist()` to stop the browser from removing the data.
+- `requestPersistentStorage()` gives `false` when the API is not available or fails. The application works the same when the browser refuses.
+
+### 6.6 Backup reminder
+
+**Modules:** [backupReminder.ts](src/domain/backupReminder.ts), [BackupReminder.tsx](src/components/BackupReminder.tsx)
+
+- **Download Backup (JSON)** calls `markBackedUp()`. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
+- When the first observation that is not demo data exists, the provider saves today in `fertility_care_backup_reminder_start` (`backupReminderStart`). Before that, `backupReminderStart` is `null`. A value that exists does not change.
+- `saveObservation()` gives a new `id` (`obs_DATE_TIME`) to a day whose `id` starts with `demo_`. Thus, a changed demo day is an observation of the user.
+- Delete, the manual Peak Day and the merge find a day by its new `id` or by its date.
+
+`isBackupDue({ lastBackupDate, reminderStart, snoozedUntil }, observations, today)` is `true` when all these conditions are true:
+
+- At least one observation is not demo data. Its `id` does not start with `demo_`.
+- No snooze is active. `snoozedUntil` is missing, is not a valid date, or is not after `today`.
+- `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup. Without a valid backup date, the count starts at `reminderStart`. Without either date, the result is `false`.
+
+`BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** opens the export dialog. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`.
+
+### 6.7 Undo of replaced data
+
+Before `loadDemoData()`, `importDataJson()` or `clearAllData()` changes the observations, the provider writes them to `fertility_care_observations_undo`. It uses the write format of section 6.3.
+
+- While a copy exists, a second replacing change does not replace it. Thus, **Undo** after the demo and a reset brings back the data from before the demo.
+- `saveObservation()` and `deleteObservation()` delete the copy, as `dismissUndo()` does, and the message closes. Thus, **Undo** never removes a day that the user saved after the change.
+- `undoPersisted` is `false` when `writeStorage` cannot write the copy. The message then adds `undoToast.notSaved`: **Undo** works only until the page loads again.
+- `undoChange` is the last change that the copy can undo: `'demo'`, `'import'`, `'merge'`, `'clear'` or `'earlier'`. It is `null` without a copy.
+- `undoLastChange()` restores the copy, selects its newest cycle and deletes the copy. `dismissUndo()` deletes the copy and keeps the change.
+- At start, if the undo key has readable data, `undoChange` is `'earlier'`. Thus, the copy stays available after a reload.
+- [UndoToast.tsx](src/components/UndoToast.tsx) shows a message (`role="status"`, `undoToast.*`) while `undoChange` is set. It has **Undo** and **Delete the copy** buttons, and it does not close by itself.
+
+## 7. Languages and design system
+
+### 7.1 Languages
+
+**Modules:** [src/context/LanguageContext.tsx](src/context/LanguageContext.tsx), `src/i18n/`
+
+| File                     | Content                                                  |
+| ------------------------ | -------------------------------------------------------- |
+| `src/i18n/types.ts`      | The types `TranslationSchema` and `SupportedLanguage`    |
+| `src/i18n/locales/en.ts` | The English text                                         |
+| `src/i18n/locales/fr.ts` | The French text, with the type of the translation schema |
+| `src/i18n/index.ts`      | The objects `translations` and `supportedLanguages`      |
+| `src/i18n/format.ts`     | The function `formatMessage(template, values)`           |
+- The languages are English (`en`) and French (`fr`). The type check fails if a language file does not have all the keys.
+- Components get each text and the date locale (`t.locale`: `en-US` or `fr-FR`) from the dictionary. They do not test `language === 'fr'` and they have no fallback texts.
+- `LanguageProvider` sets `document.documentElement.lang` to the language at each change. Thus, screen readers use the correct voice.
+- `formatMessage` replaces each `{name}` with its value. It keeps a placeholder without a value, and it reads only the own properties of `values` (`Object.hasOwn`).
+- A template has the full sentence, for example `Day {day}: {phase}`. Thus, each language can put the values in its own word sequence.
+- Each release in `VERSION_HISTORY` has English and French text: `title` and `titleFr`, `tagline` and `taglineFr`, `highlights` and `highlightsFr`.
+
+All the text that the user sees comes from the dictionary. This includes:
+
+- JSX text and the `aria-label`, `aria-description`, `title`, `placeholder` and `alt` attributes.
+- The chart cell labels, the details, the legends, the calendar month and day names, the cycle picker and the footer.
+- The empty analytics page, the printed report, the chart subtitle (`chartStrip.subtitle`, `chartStrip.subtitleBlank`) and the cycle start state (`cycleStartModal.isCycleStartYes`, `isCycleStartNo`).
+- The average values of the statistics bar (`stats.averageDays`, `{value} days (avg)`).
+
+Some texts are the same in each language: the CrMS codes (`10KLX3 I AP`, `P`, `I`), the stamp names in cell labels and the prefix `v`. The cycle day abbreviation is `CD` in English and `JC` (_jour du cycle_) in French.
+
+`src/i18n/__tests__/noHardcodedText.test.ts` reads each `.tsx` file of `src/`, but not the tests, with the parser of Vite. It fails when one of these items has a letter:
+
+- A JSX text, or a string or template literal in a JSX expression.
+- A string in an `aria-label`, `aria-description`, `title`, `placeholder` or `alt` attribute.
+- A string property of an application component, that is a tag that starts with a capital letter.
+
+The test ignores these properties: `className`, `id`, `key`, `stamp`, `size`, `variant`, `fill`, `aria-hidden`, `labelledBy`, `describedBy` and `panelClassName`. It reads through parentheses, TypeScript casts, arrays, conditions, `&&`, `||` and `+`. The texts `P`, `I`, `v` and `10KLX3 I AP` are permitted.
+
+### 7.2 Design system and CSS layers
+
+**Modules:** [src/context/ThemeContext.tsx](src/context/ThemeContext.tsx), [src/styles/index.css](src/styles/index.css). **Decision:** [ADR 0002](docs/adr/0002-css-maintainability-design-system.md).
+
+The layer order is:
+
+```css
+@layer tokens, base, primitives, views, utilities;
+```
+
+| Folder        | Files                                                                                                                                                                                                 |
+| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `tokens/`     | `tokens.css`: colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
+| `base/`       | `fonts.css`: Plus Jakarta Sans. `reset.css`: box sizing, resets and font smoothing. `layout.css`: application frame, phone navigation space and focus outlines.                                       |
+| `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                            |
+| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                              |
+| `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                  |
+
+| Scale   | Values                                                                                                          |
+| ------- | --------------------------------------------------------------------------------------------------------------- |
+| Spacing | `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px |
+| Z-index | `--z-base` 1, `--z-sticky` 100, `--z-drawer` 500, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200        |
+- `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
+- The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
+- `fonts.css` declares only the `latin` and `latin-ext` woff2 files of Plus Jakarta Sans, with weights from 200 to 800 and `font-display: swap`.
+- The font `url()` values are package paths. Vite copies the files to `assets/` with a hash, and the service worker keeps them.
+- No font or stylesheet comes from another host, such as Google Fonts.
+- Each custom property that a style or a component uses has a definition in `src/styles/tokens/`.
+
+### 7.3 Text contrast
+
+Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes (WCAG 2 AA). The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
+
+| Text color                                                               | Surface or use                                                                                      |
+| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
+| `--text-primary`, `--text-secondary`, `--text-muted`, `--accent-primary` | `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`                                          |
+| `--accent-primary`                                                       | Also `--accent-light`                                                                               |
+| White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                             |
+| White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                         |
+| White                                                                    | `--color-intercourse` and `--color-peak` (active toggles), `--color-success-solid` (`.today-toast`) |
+| `--color-info-text`                                                      | `--color-info-surface`: the entry mode badge of the welcome guide                                   |
+| `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                      |
+| `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                        |
+| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag of the chart (`.cell-symptom-tag`)                       |
+- A rule with white text on an accent color uses `--accent-solid`, not `--accent-primary`.
+- The footer copyright and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.
+
+## 8. Tests and quality
+
+The project uses test-driven development (TDD). Write a test that fails before each change of behavior. Then write the minimum code that makes it pass. Biome and the strict TypeScript compiler do the static analysis.
+
+- `biome.json` keeps all the `a11y` rules of the recommended preset. No override disables an accessibility rule.
+- jsdom has no `HTMLDialogElement.showModal()` or `close()`. `src/setupTests.ts` adds two small versions that set and remove the `open` attribute.
+
+### 8.1 Coverage
+
+- Coverage is 100% for statements, branches, functions and lines. `vite.config.ts` sets `coverage.thresholds: { 100: true }`. Thus, `npm run test:coverage` fails below 100%, also in CI.
+- Coverage ignore comments are not permitted. Code that no test can reach is removed. Examples are guards for values that the types do not permit.
+- The report includes `src/**` and `scripts/**`. It excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
+
+### 8.2 Test layers
+
+| Layer       | Location                                  | Content                                                                                 |
+| ----------- | ----------------------------------------- | --------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score. |
+| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                  |
+| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm` and `useToast`.                                                    |
+| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                        |
+| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.               |
+| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.          |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                            |
+| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.            |
+| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.        |
+| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                   |
+
+The helpers are in `src/test/`:
+
+- `makeObservation({ date, ...fields })` makes a valid observation.
+- `renderWithProviders(ui, { language, observations, selectedCycleId })` renders in all providers.
 - `src/setupTests.ts` clears `localStorage` after each test.
 
-### Quality & Test Suite Execution
+### 8.3 End-to-end tests
+
+- Playwright uses Chromium on the production build: `vite build`, then `vite preview` on port `4173`. `playwright.config.ts` sets this in `webServer`.
+- The time zone is UTC and the clock is `2026-10-27T12:00:00Z`. Thus, the dates are stable.
+- A local run uses a server that runs already only when `PW_REUSE=1` is set. It can use an installed Chromium through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
+- Vitest does not run the files in `e2e/`, and the coverage report does not include them. `npm run typecheck` checks them with `e2e/tsconfig.json`.
+
+| Flow | Expected result                                                                                                                                     |
+| ---- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 1    | The first visit shows the welcome guide. `Escape` closes it.                                                                                        |
+| 2    | An observation from the **Today** page stays after a reload.                                                                                        |
+| 3    | Backup, reset (with **Delete all data** and the undo message), new observation, restore with preview and **Replace** bring back the backup.         |
+| 4    | After **Load Demo Cycle**, the chart, calendar and analytics pages show the demo data.                                                              |
+| 5    | A manual Peak Day moves the Peak Day and the count of three. Without it, the calculated Peak Day comes back, also after a reload.                   |
+| 6    | Saved data that is not JSON shows the recovery message, and the recovery key keeps the text. **Delete the copy** removes both.                      |
+| 7    | A saved list with one record that is not valid shows the other observations and the recovery message for 1 record.                                  |
+| 8    | When `localStorage.setItem` fails for the observations, the save warning shows. **Back up now** opens the export dialog.                            |
+| 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                   |
+| 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, and the focus goes to the dialog. |
+
+`@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
+
+The test fails on a pair that is not in the list. It also fails on a listed pair that does not occur. Thus, the list becomes shorter with each correction.
+
+### 8.4 Commands
 
 ```bash
-# Install the pinned toolchain and the git hooks
+# Install the pinned tools and the Git hooks
 mise install && mise run hooks
 
-# Execute full unit test suite (or watch mode with test:watch)
+# Run the tests one time (or in watch mode with npm run test:watch)
 npm run test
 
-# Execute the suite with coverage (fails below 100%)
-mise run coverage  # or: npm run test:coverage
+# Run the tests with coverage. Fails below 100%.
+mise run coverage
 
-# Biome lint + format check (warnings fail)
+# Biome lint and format check. A warning is a failure.
 npm run check
 
-# Auto-fix lint findings and format the codebase
+# Correct the lint and format findings
 npm run check:fix
 
-# TypeScript strict type check
+# Strict type check
 npm run typecheck
 
-# Check the docs (STE writing rules, Diátaxis structure, links)
+# Check the docs: STE rules, Diátaxis structure and links
 mise run docs
 
-# Run the Playwright end-to-end and accessibility suite
-mise run e2e  # or: npm run test:e2e
+# Run the Playwright end-to-end and accessibility tests
+mise run e2e
 
-# Run every CI gate locally (tasks live in .mise/tasks/)
+# Run all CI gates (the tasks are in .mise/tasks/)
 mise run validate
 ```
 
-### Documentation
+### 8.5 Documentation
 
-- The docs in `docs/` follow the [Diátaxis](https://diataxis.fr/) framework strictly. Each page is a tutorial, a how-to guide, a reference page or an explanation, in the folder of that type. Decision records are in `docs/adr/`. `docs/README.md` is the index.
-- `README.md`, `AGENTS.md` and `docs/` use a subset of ASD-STE100 Simplified Technical English: at most 20 words in a procedure step, 25 words in a descriptive sentence, 6 sentences in a paragraph, no contractions, and no word from the list of words that are not approved.
-- `scripts/docs/checkDocs.ts` checks these rules, the Diátaxis folders, the index entries, the steps in tutorials and how-to guides, and all relative links and heading anchors. `mise run docs` runs it. The `docs-check` pre-commit hook runs it in CI.
-- See [docs/reference/documentation-rules.md](docs/reference/documentation-rules.md).
+- The pages in `docs/` follow [Diátaxis](https://diataxis.fr/) strictly. Each page is a tutorial, a how-to guide, a reference page or an explanation, in the folder of that type.
+- Decision records are in `docs/adr/`. `docs/README.md` is the index.
+- `README.md`, `AGENTS.md`, `SPEC.md` and `docs/` use a subset of ASD-STE100 Simplified Technical English.
+- The limits are 20 words in a procedure step, 25 words in a descriptive sentence and 6 sentences in a paragraph. Contractions and the words that are not approved are not permitted.
+- `scripts/docs/checkDocs.ts` checks these rules, the Diátaxis folders, the index, the steps in guides, and the relative links and anchors.
+- `mise run docs` runs the check. The `docs-check` pre-commit hook runs it in CI.
 
-See [docs/explanation/testing-strategy.md](docs/explanation/testing-strategy.md), [docs/reference/test-rules.md](docs/reference/test-rules.md) and [docs/how-to/write-a-test-first.md](docs/how-to/write-a-test-first.md).
+Read [Documentation rules](docs/reference/documentation-rules.md), [Testing strategy](docs/explanation/testing-strategy.md), [Test rules and helpers](docs/reference/test-rules.md) and [Write a test first](docs/how-to/write-a-test-first.md).
 
----
+### 8.6 Commit messages
 
-## 9. Deployment & CI/CD Pipeline
+- Each commit message and each pull request title follows [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope)!: description`.
+- The types are `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style` and `test`. The scope and `!` are optional.
+- `scripts/commits/checkCommitMessage.ts` does the check. The `conventional-commit` hook runs it on each commit message. Install the hook with `mise run hooks`.
+- CI checks the pull request title, because a squash merge uses it as the commit message.
+- Read [Commit messages](docs/reference/commit-messages.md).
 
-- **Target Platform:** Cloudflare Pages (Static Web Site Deployment).
-- **Configuration:** [wrangler.json](./wrangler.json)
-  - `name`: `fertility-tracker`
-  - `pages_build_output_dir`: `dist`
-- **Build Command:**
+## 9. Deployment and CI
 
-  ```bash
-  npm run build  # executes tsc --noEmit && vite build
-  ```
+| Item             | Value                                                                                             |
+| ---------------- | ------------------------------------------------------------------------------------------------- |
+| Platform         | Cloudflare Pages, static site                                                                     |
+| Settings         | [wrangler.json](wrangler.json): `name` is `fertility-tracker`, `pages_build_output_dir` is `dist` |
+| Build command    | `npm run build`, that is `tsc --noEmit` then `vite build`                                         |
+| Deploy command   | `npm run deploy`, that is the build then `wrangler pages deploy dist`                             |
+| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                       |
 
-- **Deployment Command:**
+The `ci` workflow runs on each pull request to `main`. It does not run on a push to `main`. Each job installs the tools from `.mise/config.toml` with `jdx/mise-action`.
 
-  ```bash
-  npm run deploy # executes npm run build && wrangler pages deploy dist
-  ```
+The `validate` job does these steps:
 
-- **CI/CD Quality Gates:** The `ci` GitHub Actions workflow runs on every pull request that targets `main` (not on pushes to `main`). It installs the toolchain from `.mise/config.toml` with `jdx/mise-action`, then runs:
-  1. **Dependency Install & Provenance:** `npm ci` and `npm audit signatures`
-  2. **Pre-commit Hooks:** `pre-commit run --all-files` (file hygiene, gitleaks secret scan, Biome lint and format, `tsc --noEmit`)
-  3. **Unit Tests & Code Coverage:** `npm run test:coverage` (Vitest V8 Coverage)
-  4. **Production Build:** `vite build`
-- **End-to-End Job:** A second job, `e2e`, runs on pull requests only. It installs the same toolchain with mise, runs `npm ci`, installs Chromium with `npx playwright install --with-deps chromium`, then runs `npm run test:e2e`. It uploads the Playwright report when a test fails.
-- **Action Pinning:** Every action is pinned to a full commit SHA with the release tag in a comment.
+1. Installs the dependencies with `npm ci`.
+2. Checks that the pull request title follows Conventional Commits.
+3. Runs `npm audit signatures`.
+4. Scans the pull request commits for secrets with gitleaks.
+5. Runs `pre-commit run --all-files`: file hygiene, Biome, `tsc --noEmit` and the docs check.
+6. Runs `npm run test:coverage`.
+7. Runs `vite build`.
 
-### 9.1 Offline Support & Installable App
+The `e2e` job does these steps at the same time:
 
-**Modules:** [src/sw/serviceWorker.ts](./src/sw/serviceWorker.ts), [src/sw/entry.ts](./src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](./src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](./scripts/pwa/serviceWorkerPlugin.ts)
+1. Installs the dependencies with `npm ci`.
+2. Installs Chromium with `npx playwright install --with-deps chromium`.
+3. Runs `npm run test:e2e`.
+4. Keeps the Playwright report if a test fails.
 
-- **Build-time precache list:** The Vite plugin `serviceWorkerPlugin` (build only) bundles `src/sw/entry.ts` to `dist/sw.js`. It injects the precache list and the cache name into it:
-  - **Precache list:** `./` (the app shell; the server answers it with `index.html`) and every other file of the build output (all hashed files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons). `index.html` is not listed under its own name: `./` stores it. Source maps, `sw.js` and `_headers` are excluded.
-  - **Cache name:** `fertility-tracker-<app version>-<build hash>`. The build hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the precached files. Thus each build with a different output installs a new cache.
-- **Service worker events:**
-  - `install`: Adds every precache URL to the new cache, then calls `skipWaiting()`.
-  - `activate`: Deletes every cache whose name starts with `fertility-tracker-` and is not the current cache, then calls `clients.claim()`.
-  - `fetch`: Ignores requests that are not `GET` or not same-origin.
-    - Cache lookups use `ignoreVary: true`: the precache requests have no `Origin` header, but module scripts are CORS requests, so a server that sends `Vary: Origin` would otherwise make every lookup miss.
-    - **Hashed files (`/assets/`):** Cache first. On a cache miss, fetches the file and stores a successful response whose `Content-Type` is not `text/html`. After a deploy, the server answers an old file name with `index.html` (SPA fallback); this response is returned but never stored under the asset URL.
-    - **Navigations and other files:** Network first. Stores a successful response. When the network fails, returns the cached response; for a navigation without a cached response, returns the cached app shell (`./`). Without a cached response, returns a network error.
-- **Registration:** `src/main.tsx` calls `registerServiceWorker()` after the first render. It registers `./sw.js` only in a production build (`import.meta.env.PROD`), in a secure context (`https:` or `localhost`) and when the browser supports service workers. A registration failure is ignored. There is no inline script in `index.html`.
-- **Web App Manifest ([public/manifest.webmanifest](./public/manifest.webmanifest)):** PNG icons `icons/icon-192.png` (192×192, `any`), `icons/icon-512.png` (512×512, `any`) and `icons/icon-maskable-512.png` (512×512, `maskable`, glyph inside the 80% safe zone). `index.html` links `icons/icon-192.png` as the `apple-touch-icon`.
-- **Data:** The service worker caches only application files. It never reads or caches observations, which stay in `localStorage`.
+Each action is pinned to a full commit SHA, with the release tag in a comment.
 
-### 9.2 Security Headers
+### 9.1 Offline use and installation
 
-**Configuration:** [public/\_headers](./public/_headers)
+**Modules:** [src/sw/serviceWorker.ts](src/sw/serviceWorker.ts), [src/sw/entry.ts](src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](scripts/pwa/serviceWorkerPlugin.ts)
 
-- `Content-Security-Policy` uses `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not contain an inline script.
-- `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`: no third-party host. `index.html` loads no stylesheet, font or preconnect from another origin.
-- `sw.js` is served with `Cache-Control: no-cache, no-store, must-revalidate`, so the browser always checks for a new service worker. Files in `assets/` are immutable for one year.
+The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/entry.ts` to `dist/sw.js`, with the precache list and the cache name.
 
----
+- The precache list has `./`, that is the application shell. The server answers `./` with `index.html`, so the list does not have `index.html` under its own name.
+- The list also has each other file of the build (all files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons).
+- The list does not have source maps, `sw.js` or `_headers`.
+- The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
+- Thus, each build with a different output installs a new cache.
 
-## 10. Legal, Privacy & Medical Compliance
+| Event      | Action                                                                                                                     |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------- |
+| `install`  | Adds each precache URL to the new cache, then calls `skipWaiting()`.                                                       |
+| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`. |
+| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                          |
+- Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
+- Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
+- After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
+- Pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
+- For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
+
+Other rules:
+
+- `src/main.tsx` calls `registerServiceWorker()` after the first render. The function registers `./sw.js` only in a production build (`import.meta.env.PROD`).
+- The registration also needs a secure context (`https:` or `localhost`) and a browser with service workers. A failure has no effect. `index.html` has no inline script.
+- [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
+- The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/icon-192.png` as the `apple-touch-icon`.
+- The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
+
+### 9.2 Security headers
+
+**Settings:** [public/\_headers](public/_headers)
+
+- `Content-Security-Policy` has `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not have an inline script.
+- `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`. `index.html` loads no stylesheet, font or preconnect from another origin.
+- `sw.js` has `Cache-Control: no-cache, no-store, must-revalidate`. Thus, the browser always looks for a new service worker.
+- Files in `assets/` are immutable for one year.
+
+## 10. Privacy, trademarks and medical limits
 
 ### Privacy
 
-Fertility Tracker operates with a 100% client-side execution model. All biomarker observations and health data remain strictly within the user's browser local storage. No health data is ever transmitted to remote servers. The application loads all its files (scripts, styles and fonts) from its own origin, so no third party (for example Google Fonts) receives a request when a user opens it.
+All the work occurs in the browser. All observations stay in the `localStorage` of the browser, and the application sends no health data to a server. The application loads all its files from its own origin. Thus, no other company, such as Google Fonts, gets a request when a user opens it.
 
-### Trademark Notice
+### Trademarks
 
-`FertilityCare™` and `Creighton Model FertilityCare™ System (CrMS)` are registered trademarks owned by the **Saint Paul VI Institute for the Study of Human Reproduction**. Fertility Tracker is an independent open-source project and is not affiliated with or endorsed by the Saint Paul VI Institute, FCCA, or FCCI.
+FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source project. The Saint Paul VI Institute, FCCA and FCCI do not approve or sponsor it.
 
-### Medical Disclaimer
+### Medical limits
 
-Fertility Tracker is intended solely for personal tracking, record-keeping, and educational purposes. It does not provide medical advice, clinical diagnosis, or treatment. Users should consult a certified FertilityCare Practitioner or Medical Consultant for clinical interpretation.
+Fertility Tracker is for personal records and education only. It does not give medical advice, a diagnosis or a treatment. A certified FertilityCare Practitioner or Medical Consultant must read the chart for clinical decisions.
