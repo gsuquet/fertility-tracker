@@ -1,3 +1,4 @@
+import { useMemo, useState } from 'react';
 import { screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { ExportModal } from '../ExportModal';
@@ -32,6 +33,20 @@ const renderModal = (observations?: Observation[], selectedCycleId?: string) => 
     { ...(observations ? { observations } : {}), ...(selectedCycleId ? { selectedCycleId } : {}) }
   );
   return props;
+};
+
+/** The app gives a new object for each file that the user opens with it. */
+const Launcher = ({ onClose }: { onClose: () => void }) => {
+  const [text, setText] = useState('{}');
+  const launchedBackup = useMemo(() => ({ text }), [text]);
+  return (
+    <>
+      <ExportModal onClose={onClose} onPreparePrint={vi.fn()} launchedBackup={launchedBackup} />
+      <button type="button" onClick={() => setText(JSON.stringify(threeCycles.slice(0, 2)))}>
+        open another file
+      </button>
+    </>
+  );
 };
 
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }));
@@ -144,14 +159,24 @@ describe('ExportModal', () => {
     expect(screen.getByText(fr.exportModal.jsonDescription)).toBeInTheDocument();
   });
 
-  it('downloads the data as a JSON backup', () => {
-    const createObjectURL = vi.fn(() => 'blob:backup');
+  it('downloads the data as a .ftbackup file of plain JSON, with a neutral file type', async () => {
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:backup');
     const revokeObjectURL = vi.fn();
     Object.assign(URL, { createObjectURL, revokeObjectURL });
-    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
+    let link: HTMLAnchorElement | undefined;
+    const clickSpy = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      link = this;
+    });
     const props = renderModal(threeCycles);
     click(en.actions.exportJson);
     expect(clickSpy).toHaveBeenCalledOnce();
+    expect(link?.download).toBe(`fertility-tracker-backup-${getTodayStr()}.ftbackup`);
+    const blob = createObjectURL.mock.calls[0]?.[0] as Blob;
+    // With application/json, a browser can add .json after .ftbackup
+    expect(blob.type).toBe('application/octet-stream');
+    expect(JSON.parse(await blob.text())).toHaveLength(6);
     expect(revokeObjectURL).toHaveBeenCalledWith('blob:backup');
     expect(props.onClose).toHaveBeenCalledOnce();
     expect(localStorage.getItem('fertility_care_last_backup')).toBe(getTodayStr());
@@ -164,6 +189,31 @@ describe('ExportModal', () => {
 
   const confirmDialog = () => screen.getByRole('dialog', { name: /\?$/ });
   const withinConfirm = (name: string) => within(confirmDialog()).getByRole('button', { name });
+
+  it('accepts any file in the file picker, so iOS does not grey out a .ftbackup file', () => {
+    renderModal();
+    expect(document.querySelector('input[type="file"]')).not.toHaveAttribute('accept');
+  });
+
+  it('restores a .ftbackup file and an old .json file, and checks the contents of both', async () => {
+    const props = renderModal();
+    upload([new File(['not json'], 'notes.ftbackup')]);
+    expect(await screen.findByRole('alert')).toHaveTextContent(en.exportModal.importError);
+    upload([new File([JSON.stringify(threeCycles)], 'fertility-tracker-backup.ftbackup')]);
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(screen.getByTestId('count')).toHaveTextContent('6');
+  });
+
+  it('restores a backup file that the user opened with the app, after the same preview', async () => {
+    const onClose = vi.fn();
+    renderWithProviders(<Launcher onClose={onClose} />, { observations: threeCycles });
+    expect(await screen.findByRole('alert')).toHaveTextContent(en.exportModal.importError);
+    click('open another file');
+    const dialog = await screen.findByRole('dialog', { name: en.confirmDialog.importTitle });
+    expect(screen.queryByRole('alert')).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: en.confirmDialog.importReplace }));
+    expect(onClose).toHaveBeenCalledOnce();
+  });
 
   it('opens the hidden file input from the restore button', () => {
     renderModal();

@@ -37,7 +37,7 @@ To decrease these risks more, make a backup file regularly. Read [Back up and re
 
 ## The backup file
 
-The backup file is a JSON file that is not encrypted. Any person who has the file can read your observations. Keep it in a safe location. Do not send it through a service that you do not trust.
+The backup file ends with `.ftbackup`. It is a JSON file that is not encrypted. Any person who has the file can read your observations. Keep it in a safe location. Do not send it through a service that you do not trust.
 
 ## Synchronization in the future
 

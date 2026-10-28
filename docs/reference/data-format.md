@@ -47,6 +47,8 @@ The application cannot read a `schemaVersion` that is higher than `1`. It then k
 
 A backup file has the format that the application writes. In version 1.18.0, it is a JSON array of observations. The file is not encrypted. The application restores a backup file in version 0 or in version 1.
 
+In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is the same JSON. The application also restores an older file that ends with `.json`.
+
 ```json
 [
   {

@@ -51,6 +51,14 @@ const manifest = JSON.parse(readFileSync(join(publicDir, 'manifest.webmanifest')
   background_color: string;
   icons: ManifestIcon[];
   shortcuts: ManifestShortcut[];
+  display: string;
+  display_override: string[];
+  file_handlers: {
+    action: string;
+    accept: Record<string, string[]>;
+    icons: { src: string; sizes: string; type: string }[];
+    launch_type: string;
+  }[];
   screenshots: ManifestScreenshot[];
 };
 
@@ -103,6 +111,21 @@ describe('web app manifest', () => {
       ]);
     }
     expect(pngSize('icons/icon-96.png')).toBe('96x96');
+  });
+
+  it('puts the header in the title bar of a computer, with the standalone window as fallback', () => {
+    expect(manifest.display).toBe('standalone');
+    expect(manifest.display_override).toEqual(['window-controls-overlay', 'standalone']);
+  });
+
+  it('opens only .ftbackup files, never every .json file, in the restore flow', () => {
+    expect(manifest.file_handlers).toHaveLength(1);
+    const [handler] = manifest.file_handlers;
+    expect(handler?.action).toBe('./?restore=file');
+    expect(Object.values(handler?.accept ?? {}).flat()).toEqual(['.ftbackup']);
+    expect(handler?.launch_type).toBe('single-client');
+    for (const icon of handler?.icons ?? []) expect(pngSize(icon.src)).toBe(icon.sizes);
+    expect(handler?.icons).toHaveLength(1);
   });
 
   it('points each screenshot to a PNG file of the declared size', () => {

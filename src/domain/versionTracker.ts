@@ -44,7 +44,7 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.30.0',
+    version: '1.31.0',
     date: '2026-10-28',
     title: 'Swipe Every Dialog Closed',
     titleFr: 'Fermez chaque fenêtre en glissant',
@@ -58,6 +58,26 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlightsFr: [
       'Faites glisser vers le bas les fenêtres d’export, de version, du guide, d’installation, des raccourcis, de début de cycle et de confirmation pour les fermer',
       'Un glissement sur une fenêtre ne fait plus défiler la page derrière',
+    ],
+  },
+  {
+    version: '1.30.0',
+    date: '2026-10-28',
+    title: 'Desktop Title Bar and Backup Files',
+    titleFr: 'Barre de titre et fichiers de sauvegarde',
+    tagline: 'On a computer, the header sits in the title bar, and a backup file opens the app',
+    taglineFr:
+      'Sur un ordinateur, l’en-tête prend place dans la barre de titre, et un fichier de sauvegarde ouvre l’app',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'In Chrome and Edge on a computer, the installed app puts its header in the title bar',
+      'Backups now end with .ftbackup. The content is the same plain JSON, and old .json backups still restore',
+      'Double-click a .ftbackup file to restore it in the installed app, after the same preview and confirmation',
+    ],
+    highlightsFr: [
+      'Dans Chrome et Edge sur un ordinateur, l’app installée met son en-tête dans la barre de titre',
+      'Les sauvegardes se terminent maintenant par .ftbackup. Le contenu reste du JSON simple, et les anciennes sauvegardes .json se restaurent toujours',
+      'Double-cliquez sur un fichier .ftbackup pour le restaurer dans l’app installée, après le même aperçu et la même confirmation',
     ],
   },
   {

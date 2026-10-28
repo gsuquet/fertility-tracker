@@ -6,7 +6,7 @@ describe('exportUtils', () => {
   it('generates a lowercase dash-separated backup filename with date', () => {
     const filename = getExportFilename('backup');
     const today = getTodayStr();
-    expect(filename).toBe(`fertility-tracker-data-backup-${today}.json`);
+    expect(filename).toBe(`fertility-tracker-backup-${today}.ftbackup`);
     expect(filename).toEqual(filename.toLowerCase());
     expect(filename).not.toContain('_');
     expect(filename).not.toContain(' ');

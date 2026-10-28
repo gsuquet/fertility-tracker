@@ -457,4 +457,55 @@
     border-color: var(--accent-primary);
     color: var(--accent-primary);
   }
+
+  /* The installed app on a computer, with the header in the title bar (Window Controls Overlay).
+     The title bar values give the free part of the title bar: the padding keeps the buttons
+     away from the window controls, on the right on Windows and on the left on macOS. The values
+     change when the window changes, and the rules end when the user turns the overlay off. */
+  @media (display-mode: window-controls-overlay) {
+    .app-header {
+      height: max(68px, env(titlebar-area-height, 0px));
+      padding-left: calc(env(titlebar-area-x, 0px) + 0.75rem);
+      /* 100vw, not 100%: the window controls also cover the scrollbar */
+      padding-right: calc(
+        100vw -
+        env(titlebar-area-x, 0px) -
+        env(titlebar-area-width, 100vw) +
+        0.75rem
+      );
+      /* An empty part of the header moves the window, as a title bar does */
+      -webkit-app-region: drag;
+      app-region: drag;
+    }
+
+    /* The menus and dialogs are in a portal, out of the header: only these controls are in it */
+    .app-header button,
+    .app-header a,
+    .app-header input,
+    .app-header select,
+    .app-header [role='tab'] {
+      -webkit-app-region: no-drag;
+      app-region: no-drag;
+    }
+
+    /* A dialog in front of the header gets the clicks, not the window: the header stops moving it */
+    body:has(dialog[open]) .app-header {
+      -webkit-app-region: no-drag;
+      app-region: no-drag;
+    }
+
+    /* The dialogs and the drawer start below the title bar, so the window controls never cover
+       a close button */
+    .modal-overlay,
+    .drawer-overlay {
+      top: calc(env(titlebar-area-y, 0px) + env(titlebar-area-height, 0px));
+    }
+
+    /* A narrow window keeps the height of the phone header */
+    @media (max-width: 640px) {
+      .app-header {
+        height: max(54px, env(titlebar-area-height, 0px));
+      }
+    }
+  }
 }
