@@ -317,6 +317,29 @@ export const fr: TranslationSchema = {
       "Le navigateur n'a pas pu enregistrer vos observations. Vos modifications sont conservées seulement jusqu'à la fermeture ou au rechargement de la page. Sauvegardez vos données maintenant.",
     backUpNow: 'Sauvegarder maintenant',
   },
+  install: {
+    menuEntry: 'Installer l’application',
+    menuHint: 'Plein écran, hors ligne, et vos données mieux protégées',
+    headerButton: 'Installer',
+    headerLabel: 'Installer l’application',
+    bannerTitle: 'Installer Fertility Tracker',
+    bannerText: 'Plein écran, hors ligne, et vos données mieux protégées.',
+    bannerInstall: 'Installer',
+    bannerClose: 'Fermer le message d’installation',
+    guideTitle: 'Installer sur iPhone',
+    guideNote:
+      'L’application installée a son propre stockage, séparé de Safari. Sauvegardez vos données ici, puis restaurez-les dans l’application.',
+    guideStepBackup: 'Sauvegardez vos données.',
+    guideBackupButton: 'Sauvegarder mes données',
+    guideBackupDone: 'Le fichier de sauvegarde est téléchargé.',
+    guideStepShare: 'Touchez Partager dans la barre d’outils de Safari.',
+    guideStepAdd: 'Choisissez Sur l’écran d’accueil.',
+    guideStepRestore: 'Ouvrez l’application et choisissez Restaurer une sauvegarde.',
+  },
+  update: {
+    ready: 'Une nouvelle version est prête.',
+    reload: 'Recharger',
+  },
   backupReminder: {
     message:
       'Votre dernière sauvegarde date de plus de {days} jours. Téléchargez une sauvegarde pour garder une copie de vos observations.',
@@ -364,6 +387,7 @@ export const fr: TranslationSchema = {
     next: 'Suivant',
     getStarted: 'Démarrer à zéro',
     loadDemoData: 'Explorer le Cycle Démo',
+    restoreBackup: 'Restaurer une sauvegarde',
     dontShowAgain: 'Ne plus afficher automatiquement',
     slides: {
       slide1: {

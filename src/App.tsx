@@ -2,7 +2,8 @@ import React, { useState, useEffect, useRef } from 'react';
 import { parseTabHash, useHistoryTab } from './hooks/useHistoryLayer';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CycleProvider, useCycleUi } from './context/CycleContext';
+import { CycleProvider, useCycleData, useCycleUi } from './context/CycleContext';
+import { isInstalled, isIos, promptInstall, useInstallMode } from './pwa/installPrompt';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
@@ -21,11 +22,14 @@ import { StorageSaveWarning } from './components/StorageSaveWarning';
 import { BackupReminder } from './components/BackupReminder';
 import { UndoToast } from './components/UndoToast';
 import { LoadingStatus } from './components/LoadingStatus';
+import { InstallBanner } from './components/InstallBanner';
+import { UpdatePrompt } from './components/UpdatePrompt';
 
 const loadCycleAnalyticsView = () => import('./components/CycleAnalyticsView');
 const loadExportModal = () => import('./components/ExportModal');
 const loadVersionModal = () => import('./components/VersionModal');
 const loadWelcomeModal = () => import('./components/WelcomeModal');
+const loadInstallGuideModal = () => import('./components/InstallGuideModal');
 
 const CycleAnalyticsView = React.lazy(() =>
   loadCycleAnalyticsView().then(m => ({ default: m.CycleAnalyticsView }))
@@ -36,6 +40,9 @@ const PrintExportView = React.lazy(() =>
 );
 const VersionModal = React.lazy(() => loadVersionModal().then(m => ({ default: m.VersionModal })));
 const WelcomeModal = React.lazy(() => loadWelcomeModal().then(m => ({ default: m.WelcomeModal })));
+const InstallGuideModal = React.lazy(() =>
+  loadInstallGuideModal().then(m => ({ default: m.InstallGuideModal }))
+);
 
 /**
  * The lazy chunks that the app imports when the browser is idle after the first render.
@@ -82,6 +89,9 @@ const MainApp: React.FC = () => {
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
+  const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
+  const { observations } = useCycleData();
+  const installMode = useInstallMode();
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -149,6 +159,21 @@ const MainApp: React.FC = () => {
   const closeExportModal = () => setIsExportModalOpen(false);
   const closeVersionModal = () => setIsVersionModalOpen(false);
   const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
+  const closeInstallGuide = () => setIsInstallGuideOpen(false);
+
+  // Chromium shows its own prompt. iOS has none, so the guide gives the steps.
+  const handleInstall =
+    installMode === 'prompt'
+      ? () => void promptInstall()
+      : installMode === 'ios'
+        ? () => setIsInstallGuideOpen(true)
+        : undefined;
+
+  // The installed app of iOS does not share the storage of Safari: offer the restore of a backup
+  const handleRestore =
+    observations.length === 0 && isIos() && isInstalled()
+      ? () => setIsExportModalOpen(true)
+      : undefined;
 
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
@@ -164,6 +189,7 @@ const MainApp: React.FC = () => {
         onOpenExport={() => setIsExportModalOpen(true)}
         onOpenVersion={() => setIsVersionModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+        onInstall={handleInstall}
       />
 
       <main
@@ -213,7 +239,15 @@ const MainApp: React.FC = () => {
       {isWelcomeModalOpen && (
         <ErrorBoundary onClose={closeWelcomeModal}>
           <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <WelcomeModal onClose={closeWelcomeModal} />
+            <WelcomeModal onClose={closeWelcomeModal} onRestore={handleRestore} />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {isInstallGuideOpen && (
+        <ErrorBoundary onClose={closeInstallGuide}>
+          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+            <InstallGuideModal onClose={closeInstallGuide} />
           </React.Suspense>
         </ErrorBoundary>
       )}
@@ -233,6 +267,10 @@ const MainApp: React.FC = () => {
       )}
 
       <UndoToast />
+
+      {/* The update message comes first: the banner hides while an update is ready */}
+      <UpdatePrompt />
+      {handleInstall && <InstallBanner onInstall={handleInstall} />}
 
       <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
     </div>

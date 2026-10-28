@@ -12,7 +12,7 @@ import {
   CheckSquare,
   Square,
 } from 'lucide-react';
-import { getExportFilename } from '../utils/exportUtils';
+import { downloadBackupFile } from '../utils/exportUtils';
 import { parseObservationData } from '../domain/storageFormat';
 import { summarizeObservations } from '../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../domain/backupImport';
@@ -100,14 +100,7 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
   };
 
   const handleDownloadJson = () => {
-    const jsonStr = exportDataJson();
-    const blob = new Blob([jsonStr], { type: 'application/json' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = getExportFilename('backup');
-    a.click();
-    URL.revokeObjectURL(url);
+    downloadBackupFile(exportDataJson());
     markBackedUp();
     onClose();
   };

@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import type { ExtendableEventLike, FetchEventLike, ServiceWorkerScopeLike } from '../serviceWorker';
-import { CACHE_PREFIX, handleFetch, installServiceWorker } from '../serviceWorker';
+import type {
+  ExtendableEventLike,
+  FetchEventLike,
+  MessageEventLike,
+  ServiceWorkerScopeLike,
+} from '../serviceWorker';
+import { CACHE_PREFIX, SKIP_WAITING, handleFetch, installServiceWorker } from '../serviceWorker';
 
 const ORIGIN = 'https://app.example';
 const SW_URL = `${ORIGIN}/sw.js`;
@@ -80,7 +85,7 @@ const dispatch = async (listener: Listener | undefined, event: object = {}) => {
 };
 
 describe('service worker', () => {
-  it('precaches every build file on install and activates at once', async () => {
+  it('precaches every build file on install and waits, so a new version does not take over', async () => {
     const { scope, caches, listeners } = makeScope(online);
     installServiceWorker(scope, { cacheName: CACHE, precache: ['./', 'assets/index-abc.js'] });
     await dispatch(listeners.get('install'));
@@ -89,6 +94,17 @@ describe('service worker', () => {
       `${ORIGIN}/`,
       `${ORIGIN}/assets/index-abc.js`,
     ]);
+    expect(scope.skipWaiting).not.toHaveBeenCalled();
+  });
+
+  it('activates a waiting worker only for the SKIP_WAITING message of the page', () => {
+    const { scope, listeners } = makeScope(online);
+    installServiceWorker(scope, { cacheName: CACHE, precache: [] });
+    const message = listeners.get('message') as unknown as (event: MessageEventLike) => void;
+    message({ data: 'OTHER' });
+    message({ data: { type: SKIP_WAITING } });
+    expect(scope.skipWaiting).not.toHaveBeenCalled();
+    message({ data: SKIP_WAITING });
     expect(scope.skipWaiting).toHaveBeenCalledOnce();
   });
 

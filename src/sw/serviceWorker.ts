@@ -16,6 +16,13 @@ export interface ExtendableEventLike {
   waitUntil(promise: Promise<unknown>): void;
 }
 
+export interface MessageEventLike {
+  data: unknown;
+}
+
+/** The message of the page that activates a waiting worker (the user chose Reload). */
+export const SKIP_WAITING = 'SKIP_WAITING';
+
 export interface FetchEventLike {
   request: Request;
   respondWith(response: Promise<Response>): void;
@@ -33,6 +40,7 @@ export interface ServiceWorkerScopeLike {
     listener: (event: ExtendableEventLike) => void
   ): void;
   addEventListener(type: 'fetch', listener: (event: FetchEventLike) => void): void;
+  addEventListener(type: 'message', listener: (event: MessageEventLike) => void): void;
 }
 
 /**
@@ -44,7 +52,6 @@ const MATCH_OPTIONS: CacheQueryOptions = { ignoreVary: true };
 async function precacheAll(scope: ServiceWorkerScopeLike, config: ServiceWorkerConfig) {
   const cache = await scope.caches.open(config.cacheName);
   await cache.addAll(config.precache.map(url => new URL(url, scope.location.href).href));
-  await scope.skipWaiting();
 }
 
 async function deleteOldCaches(scope: ServiceWorkerScopeLike, cacheName: string) {
@@ -116,6 +123,11 @@ export function installServiceWorker(scope: ServiceWorkerScopeLike, config: Serv
   scope.addEventListener('activate', event =>
     event.waitUntil(deleteOldCaches(scope, config.cacheName))
   );
+  // A new version waits until the user chooses Reload. The first install has no worker to wait
+  // for, so it activates at once.
+  scope.addEventListener('message', event => {
+    if (event.data === SKIP_WAITING) void scope.skipWaiting();
+  });
   scope.addEventListener('fetch', event => {
     const response = handleFetch(scope, config.cacheName, event.request);
     if (response) event.respondWith(response);

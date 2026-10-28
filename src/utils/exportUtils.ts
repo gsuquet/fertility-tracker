@@ -29,3 +29,13 @@ export function getExportFilename(type: 'backup' | 'pdf', detail?: string): stri
 
   return `fertility-tracker-chart-export-${dateStr}`;
 }
+
+/** Downloads the JSON backup of the observations, with the backup file name of today. */
+export function downloadBackupFile(json: string): void {
+  const url = URL.createObjectURL(new Blob([json], { type: 'application/json' }));
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = getExportFilename('backup');
+  link.click();
+  URL.revokeObjectURL(url);
+}
