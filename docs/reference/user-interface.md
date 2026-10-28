@@ -136,14 +136,14 @@ The notice shows above the pages when the application cannot read the saved obse
 
 All the dialogs, the observation drawer, the mobile menu and the cycle menu use the same keyboard rules:
 
-| Key or action              | Result                                                                |
-| -------------------------- | --------------------------------------------------------------------- |
+| Key or action              | Result                                                                                        |
+| -------------------------- | --------------------------------------------------------------------------------------------- |
 | The dialog opens           | The focus goes to the first button of the dialog, or to the selected cycle in the cycle menu. |
-| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page.  |
-| `Escape`                   | Closes the top dialog only. A dialog under it stays open.             |
-| A click outside the dialog | Closes the dialog.                                                    |
-| **Back**                   | Closes the top dialog only.                                           |
-| The dialog closes          | The focus goes back to the button that opened the dialog.             |
+| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page.                          |
+| `Escape`                   | Closes the top dialog only. A dialog under it stays open.                                     |
+| A click outside the dialog | Closes the dialog.                                                                            |
+| **Back**                   | Closes the top dialog only.                                                                   |
+| The dialog closes          | The focus goes back to the button that opened the dialog.                                     |
 
 On a phone, you can also drag the observation drawer, the mobile menu and the cycle menu down to close them. Drag the handle, the header, or the list when it is at the top. A short drag puts the sheet back. A swipe on these sheets does not scroll the page behind them.
 
