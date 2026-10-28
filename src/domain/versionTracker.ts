@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.24.0',
+    date: '2026-10-28',
+    title: 'Swipe Through Days',
+    titleFr: 'Parcourir les jours',
+    tagline: 'On the Today page, swipe to go to the next or the previous day',
+    taglineFr: 'Sur la page Aujourd’hui, glissez pour aller au jour suivant ou précédent',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Swipe to the left for the next day, and to the right for the previous day',
+      'Scrolling up and down never changes the day',
+      'The arrow buttons stay for the keyboard and the computer',
+    ],
+    highlightsFr: [
+      'Glissez vers la gauche pour le jour suivant, et vers la droite pour le jour précédent',
+      'Faire défiler vers le haut ou le bas ne change jamais le jour',
+      'Les boutons fléchés restent pour le clavier et l’ordinateur',
+    ],
+  },
+  {
     version: '1.23.0',
     date: '2026-10-28',
     title: 'Swipe to Close',

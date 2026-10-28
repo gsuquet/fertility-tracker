@@ -13,6 +13,8 @@
     margin: 0 auto;
     position: relative;
     animation: fadeInToday 0.25s ease-out;
+    /* A horizontal swipe changes the day (useDaySwipe.ts). The browser keeps the vertical scroll. */
+    touch-action: pan-y pinch-zoom;
   }
 
   .today-toast {

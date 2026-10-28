@@ -51,23 +51,24 @@ fertility-tracker/
 
 ## Domain files
 
-| File                       | Content                                        |
-| -------------------------- | ---------------------------------------------- |
-| `codeParser.ts`            | Reads and writes code strings.                 |
-| `stampCalculator.ts`       | Fertile mucus test and the stamp of one day.   |
-| `peakDetector.ts`          | Peak Day, count of three and cycle days.       |
-| `cycleBoundaryDetector.ts` | Puts the days into cycles.                     |
-| `cyclePhases.ts`           | Phase lengths and averages.                    |
-| `mucusScore.ts`            | Mucus score of one day.                        |
-| `observationForm.ts`       | Form values and the cycle start question.      |
-| `dataValidator.ts`         | Validation of saved and restored data.         |
-| `backupImport.ts`          | Preview and merge of a restored backup file.   |
-| `storageFormat.ts`         | Versioned format of saved and backup data.     |
-| `backupReminder.ts`        | When to show the backup reminder.              |
-| `sheetDrag.ts`             | When a drag closes the bottom sheet.           |
-| `demoData.ts`              | Demo data: two 28-day cycles.                  |
-| `versionTracker.ts`        | Release notes, version and storage statistics. |
-| `appVersion.ts`            | Version, build date and last version seen.     |
+| File                       | Content                                         |
+| -------------------------- | ----------------------------------------------- |
+| `codeParser.ts`            | Reads and writes code strings.                  |
+| `stampCalculator.ts`       | Fertile mucus test and the stamp of one day.    |
+| `peakDetector.ts`          | Peak Day, count of three and cycle days.        |
+| `cycleBoundaryDetector.ts` | Puts the days into cycles.                      |
+| `cyclePhases.ts`           | Phase lengths and averages.                     |
+| `mucusScore.ts`            | Mucus score of one day.                         |
+| `observationForm.ts`       | Form values and the cycle start question.       |
+| `dataValidator.ts`         | Validation of saved and restored data.          |
+| `backupImport.ts`          | Preview and merge of a restored backup file.    |
+| `storageFormat.ts`         | Versioned format of saved and backup data.      |
+| `backupReminder.ts`        | When to show the backup reminder.               |
+| `swipe.ts`                 | When a swipe changes the day on the Today page. |
+| `sheetDrag.ts`             | When a drag closes the bottom sheet.            |
+| `demoData.ts`              | Demo data: two 28-day cycles.                   |
+| `versionTracker.ts`        | Release notes, version and storage statistics.  |
+| `appVersion.ts`            | Version, build date and last version seen.      |
 
 ## Components
 

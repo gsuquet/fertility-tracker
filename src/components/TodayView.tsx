@@ -3,6 +3,7 @@ import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import { useDaySwipe } from '../hooks/useDaySwipe';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { TodayDateNav } from './today/TodayDateNav';
@@ -74,6 +75,13 @@ export const TodayView: React.FC = () => {
   const handleNextDay = () => setSelectedDate(prev => addDays(prev, 1));
   const handleGoToToday = () => setSelectedDate(getTodayStr());
 
+  // A swipe calls the same functions as the arrow buttons
+  const {
+    handlers: swipeHandlers,
+    pageRef: swipePageRef,
+    contentRef: swipeContentRef,
+  } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
+
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
 
   const executeSave = (isCycleStart: boolean | undefined) => {
@@ -109,6 +117,8 @@ export const TodayView: React.FC = () => {
       id="today-panel"
       role="tabpanel"
       aria-labelledby="tab-today"
+      ref={swipePageRef}
+      {...swipeHandlers}
     >
       {/* Toast Notification */}
       {toastMessage && (
@@ -139,7 +149,7 @@ export const TodayView: React.FC = () => {
       />
 
       {/* Main Grid: 3-column Layout */}
-      <div className="today-main-grid">
+      <div className="today-main-grid" ref={swipeContentRef}>
         {/* Column 1: Recent 5-Day History Card */}
         <TodayHistoryList
           selectedDate={selectedDate}

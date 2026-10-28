@@ -1,5 +1,5 @@
 import { render, screen, fireEvent } from '@testing-library/react';
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import { TodayView } from '../TodayView';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { ThemeProvider } from '../../context/ThemeContext';
@@ -88,5 +88,39 @@ describe('TodayView Component (Dedicated Today Page)', () => {
     // Click Detailed Form mode
     fireEvent.click(detailedModeBtn);
     expect(screen.getByText('Bleeding (Flux)')).toBeInTheDocument();
+  });
+
+  it('opens the next day with a swipe to the left and the previous day with a swipe to the right', () => {
+    // Reduced motion, so that the day changes at the release
+    const media = vi.mocked(window.matchMedia).getMockImplementation();
+    vi.mocked(window.matchMedia).mockImplementation(
+      query => ({ matches: true, media: query }) as MediaQueryList
+    );
+    try {
+      renderTodayView();
+      const page = screen.getByRole('tabpanel');
+      const swipe = (dx: number) => {
+        fireEvent.pointerDown(page, {
+          pointerId: 1,
+          pointerType: 'touch',
+          clientX: 400,
+          clientY: 300,
+        });
+        fireEvent.pointerMove(page, { pointerId: 1, clientX: 400 + dx, clientY: 300 });
+        fireEvent.pointerUp(page, { pointerId: 1, clientX: 400 + dx, clientY: 300 });
+      };
+      const todayStr = getTodayStr();
+      swipe(-100);
+      expect(
+        screen.getByText(formatDateDisplay(addDays(todayStr, 1), 'en-US'))
+      ).toBeInTheDocument();
+      swipe(100);
+      swipe(100);
+      expect(
+        screen.getByText(formatDateDisplay(addDays(todayStr, -1), 'en-US'))
+      ).toBeInTheDocument();
+    } finally {
+      vi.mocked(window.matchMedia).mockImplementation(media as typeof window.matchMedia);
+    }
   });
 });
