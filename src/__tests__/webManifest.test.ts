@@ -118,7 +118,9 @@ describe('web app manifest', () => {
   });
 
   it('takes its colors from the light theme of the design tokens', () => {
-    expect(manifest.background_color).toBe(lightToken('--bg-primary'));
+    // The splash screen fills the screen with this color and puts the icon in the middle: with
+    // the color of the logo tile, the tile has no visible edge (issue #92)
+    expect(manifest.background_color).toBe(lightToken('--brand-tile'));
     expect(manifest.theme_color).toBe(lightToken('--brand-ink'));
   });
 });

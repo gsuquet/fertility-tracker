@@ -11,7 +11,7 @@
   "launch_handler": {
     "client_mode": ["focus-existing", "auto"]
   },
-  "background_color": "#f8f6f1",
+  "background_color": "#1f3a5f",
   "theme_color": "#1f3a5f",
   "categories": ["health", "medical", "lifestyle"],
   "icons": [

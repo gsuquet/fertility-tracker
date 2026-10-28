@@ -44,6 +44,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.27.1',
+    date: '2026-10-28',
+    title: 'Full-Screen Launch Screen',
+    titleFr: 'Écran de lancement plein écran',
+    tagline: 'The launch screen of the installed app is now navy from edge to edge',
+    taglineFr: 'L’écran de lancement de l’app installée est maintenant bleu nuit sur tout l’écran',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The launch screen uses the color of the logo, so the logo no longer shows as a square',
+      'An installed app can take a few days to show the new launch screen. To see it now, install the app again',
+    ],
+    highlightsFr: [
+      'L’écran de lancement prend la couleur du logo, qui ne s’affiche plus comme un carré',
+      'Une app installée peut mettre quelques jours pour afficher le nouvel écran. Pour le voir tout de suite, installez l’app à nouveau',
+    ],
+  },
+  {
     version: '1.27.0',
     date: '2026-10-28',
     title: 'App Icon Reminder',
