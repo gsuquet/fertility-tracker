@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.26.0',
+    date: '2026-10-28',
+    title: 'Smooth Page Changes',
+    titleFr: 'Changements de page fluides',
+    tagline: 'The pages slide into place when you change them',
+    taglineFr: 'Les pages glissent en place quand vous en changez',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A page on the right comes from the right, and a page on the left from the left',
+      'Back slides to the previous page, and the header and the bottom bar stay in place',
+      'With reduced motion in your system settings, the pages change at once',
+    ],
+    highlightsFr: [
+      'Une page à droite arrive par la droite, et une page à gauche par la gauche',
+      'Retour glisse vers la page précédente, et l’en-tête et la barre du bas restent en place',
+      'Avec la réduction des animations du système, les pages changent tout de suite',
+    ],
+  },
+  {
     version: '1.25.0',
     date: '2026-10-28',
     title: 'Keyboard Shortcuts',

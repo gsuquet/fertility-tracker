@@ -1,0 +1,87 @@
+/* ==========================================================================
+   Page change animation (View Transitions API, SPEC 5.15)
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  /* The page slides. The header and the bottom bar stay in place, above the page. A name makes a
+     stacking context, so the names are only there during a page change: else a toast of the page
+     could not go above the drawer. */
+  :root[data-page-transition] .page-view {
+    view-transition-name: page-view;
+  }
+
+  :root[data-page-transition] .app-header {
+    view-transition-name: app-header;
+  }
+
+  :root[data-page-transition] .mobile-nav-bar {
+    view-transition-name: mobile-nav;
+  }
+
+  /* All the parts end together, also the root, so the page takes clicks again after 180 ms */
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation-duration: 180ms;
+  }
+
+  /* The rest of the screen changes at once, without the default cross-fade */
+  ::view-transition-old(root),
+  ::view-transition-new(root) {
+    animation: none;
+  }
+
+  ::view-transition-group(app-header),
+  ::view-transition-group(mobile-nav) {
+    z-index: 1;
+  }
+
+  /* A page on the right comes from the right. A page on the left comes from the left. The script
+     does not start a transition with reduced motion, and this keeps the slide out of it too. */
+  @media (prefers-reduced-motion: no-preference) {
+    :root[data-page-transition='forward']::view-transition-old(page-view) {
+      animation: 180ms ease-out both pageOutToLeft;
+    }
+
+    :root[data-page-transition='forward']::view-transition-new(page-view) {
+      animation: 180ms ease-out both pageInFromRight;
+    }
+
+    :root[data-page-transition='back']::view-transition-old(page-view) {
+      animation: 180ms ease-out both pageOutToRight;
+    }
+
+    :root[data-page-transition='back']::view-transition-new(page-view) {
+      animation: 180ms ease-out both pageInFromLeft;
+    }
+  }
+
+  @keyframes pageOutToLeft {
+    to {
+      opacity: 0;
+      transform: translateX(-12%);
+    }
+  }
+
+  @keyframes pageInFromRight {
+    from {
+      opacity: 0;
+      transform: translateX(12%);
+    }
+  }
+
+  @keyframes pageOutToRight {
+    to {
+      opacity: 0;
+      transform: translateX(12%);
+    }
+  }
+
+  @keyframes pageInFromLeft {
+    from {
+      opacity: 0;
+      transform: translateX(-12%);
+    }
+  }
+}
