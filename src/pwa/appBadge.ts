@@ -1,4 +1,5 @@
 import { useEffect, useSyncExternalStore } from 'react';
+import { isUserObservation } from '../domain/backupReminder';
 import type { Observation } from '../types/crms';
 import { getTodayStr } from '../utils/dateUtils';
 import { readStorage, writeStorage } from '../utils/storage';
@@ -9,9 +10,17 @@ import { isInstalled, isIos } from './installPrompt';
 export const isBadgeSupported = (): boolean =>
   typeof navigator.setAppBadge === 'function' && typeof navigator.clearAppBadge === 'function';
 
-/** True when the icon must show the dot: today has no observation. */
+/** True when the icon must show the dot: today has no observation. Demo data does not count. */
 export const showsBadge = (observations: readonly Observation[], today: string): boolean =>
-  !observations.some(observation => observation.date === today);
+  !observations.some(observation => observation.date === today && isUserObservation(observation));
+
+/**
+ * True when the badge needs the permission for notifications: in the web apps of WebKit, on iOS,
+ * iPadOS and in the Dock of macOS. Chromium needs no permission.
+ */
+export const needsNotificationPermission = (): boolean =>
+  isIos() ||
+  (/AppleWebKit/.test(navigator.userAgent) && !/Chrome|Chromium|Edg/.test(navigator.userAgent));
 
 /**
  * Shows or removes the dot. Does nothing without the API or outside the installed app.
@@ -22,10 +31,6 @@ export const updateAppBadge = (show: boolean): void => {
   const call = show ? navigator.setAppBadge() : navigator.clearAppBadge();
   call.catch(() => {});
 };
-
-/** The milliseconds from `now` to the next local midnight. */
-export const msUntilMidnight = (now: Date): number =>
-  new Date(now.getFullYear(), now.getMonth(), now.getDate() + 1).getTime() - now.getTime();
 
 // The on/off choice. It is in memory too, for a browser that cannot save it.
 let memoryOn: boolean | null = null;
@@ -49,21 +54,36 @@ export const useBadgeEnabled = (): boolean => useSyncExternalStore(subscribe, ge
 /** Turns the badge off. */
 export const disableBadge = (): void => setEnabled(false);
 
+/** Asks for the permission for notifications. A failed request is a refusal. */
+const askPermission = async (): Promise<boolean> => {
+  try {
+    return (await Notification.requestPermission()) === 'granted';
+  } catch {
+    return false;
+  }
+};
+
 /**
- * Turns the badge on. On iOS and iPadOS, the badge needs the permission for notifications, so
- * this asks for it first. Gives `denied` and keeps the badge off when the user refuses.
+ * Turns the badge on. When the badge needs the permission for notifications, this asks for it
+ * first. Gives `denied` and keeps the badge off when the user refuses.
  */
 export const enableBadge = async (): Promise<'on' | 'denied'> => {
-  if (isIos() && typeof Notification !== 'undefined' && Notification.permission !== 'granted') {
-    if ((await Notification.requestPermission()) !== 'granted') return 'denied';
-  }
+  const ask =
+    needsNotificationPermission() &&
+    typeof Notification !== 'undefined' &&
+    Notification.permission !== 'granted';
+  if (ask && !(await askPermission())) return 'denied';
   setEnabled(true);
   return 'on';
 };
 
+/** How often the app looks for a new date, in milliseconds. */
+const DATE_CHECK_INTERVAL = 60_000;
+
 /**
  * Keeps the dot on the app icon up to date while the badge is on: at the start, after each change
- * of the observations, at midnight and when the app shows again. Removes the dot when it is off.
+ * of the observations, when the date changes and when the app shows again. Removes the dot when
+ * it is off.
  */
 export function useAppBadge(observations: readonly Observation[]): void {
   const enabled = useBadgeEnabled();
@@ -72,23 +92,23 @@ export function useAppBadge(observations: readonly Observation[]): void {
       updateAppBadge(false);
       return;
     }
-    const update = () => updateAppBadge(showsBadge(observations, getTodayStr()));
-    update();
-    let timer: ReturnType<typeof setTimeout>;
-    // One second after midnight, so the date of today is the new date
-    const schedule = () => {
-      timer = setTimeout(() => {
-        update();
-        schedule();
-      }, msUntilMidnight(new Date()) + 1000);
+    let day = getTodayStr();
+    const update = () => {
+      day = getTodayStr();
+      updateAppBadge(showsBadge(observations, day));
     };
-    schedule();
+    update();
+    // A check each minute, not a timer to midnight: a timer of the browser stops while the
+    // computer sleeps, and the time zone can change
+    const timer = setInterval(() => {
+      if (getTodayStr() !== day) update();
+    }, DATE_CHECK_INTERVAL);
     const onVisible = () => {
       if (document.visibilityState === 'visible') update();
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => {
-      clearTimeout(timer);
+      clearInterval(timer);
       document.removeEventListener('visibilitychange', onVisible);
     };
   }, [enabled, observations]);

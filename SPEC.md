@@ -798,16 +798,17 @@ The first install has no controller. Thus, it activates at once and the applicat
 
 **Modules:** [src/pwa/appBadge.ts](src/pwa/appBadge.ts), [src/components/AppBadgeSetting.tsx](src/components/AppBadgeSetting.tsx)
 
-- When the badge is on, the icon of the installed app shows a dot while today has no observation. The dot goes when an observation of today is saved.
+- When the badge is on, the icon of the installed app shows a dot while today has no observation. The dot goes when an observation of today is saved. Demo data does not count as an observation.
 - The dot is `navigator.setAppBadge()` with no number. It never shows a number or data of the cycle. `navigator.clearAppBadge()` removes it.
-- The badge is off by default. The checkbox **Show a dot on the app icon** in the **System Information** tab of the **About & Version Tracker** dialog turns it on or off. The application saves the choice in `fertility_tracker_badge_on`.
+- The badge is off by default. The checkbox **Show a dot on the app icon when today has no observation** turns it on or off. It is in the **System Information** tab of the **About & Version Tracker** dialog. The application saves the choice in `fertility_tracker_badge_on`.
 - The checkbox shows only when the browser has the Badging API. Its hint tells that the dot changes only while the app is open.
-- On iOS and iPadOS, the badge needs the permission for notifications. When the user turns the badge on, the application asks for the permission and tells why. The application never sends notifications.
+- In the web apps of WebKit (iOS, iPadOS and the Dock of macOS), the badge needs the permission for notifications. When the user turns the badge on there, the application asks for the permission. The hint tells why. The application never sends notifications.
+- While the system asks, the checkbox is disabled, so a second tap does not ask again. A request that fails is a refusal.
 - If the user refuses the permission, the badge stays off, and a message tells how to allow it in the settings of the system.
 - `useAppBadge(observations)` in `App` updates the badge in these cases:
   - When the app starts.
   - After each change of the observations, for example a save, a delete or a restore.
-  - At midnight while the app is open.
+  - When the date changes while the app is open. The application looks for a new date each minute, not with a timer to midnight. A timer stops while the computer sleeps, and the time zone can change.
   - When the app shows again (`visibilitychange`).
 - When the badge is off, the application removes the dot.
 - All the calls do nothing when the browser has no Badging API or the app is not installed. A refused call does nothing too.

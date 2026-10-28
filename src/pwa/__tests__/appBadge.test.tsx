@@ -7,7 +7,7 @@ import {
   disableBadge,
   enableBadge,
   isBadgeSupported,
-  msUntilMidnight,
+  needsNotificationPermission,
   showsBadge,
   updateAppBadge,
   useAppBadge,
@@ -15,6 +15,13 @@ import {
 } from '../appBadge';
 
 const IPHONE = 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)';
+const MAC_SAFARI =
+  'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_15_7) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/18.0 Safari/605.1.15';
+const CHROME =
+  'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/140.0 Safari/537.36';
+
+const setUserAgent = (userAgent: string) =>
+  vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(userAgent);
 
 /** A fake Badging API. */
 const installBadgeApi = (refuse = false) => {
@@ -75,13 +82,19 @@ describe('showsBadge', () => {
     expect(showsBadge([], today)).toBe(true);
     expect(showsBadge([makeObservation({ date: '2026-10-27' })], today)).toBe(true);
     expect(showsBadge([makeObservation({ date: today })], today)).toBe(false);
+    // The demo data is not an observation of the user
+    expect(showsBadge([makeObservation({ id: 'demo_1', date: today })], today)).toBe(true);
   });
 });
 
-describe('msUntilMidnight', () => {
-  it('counts the time to the next local midnight', () => {
-    expect(msUntilMidnight(new Date(2026, 9, 28, 23, 59, 0))).toBe(60_000);
-    expect(msUntilMidnight(new Date(2026, 9, 28, 0, 0, 0))).toBe(24 * 3600_000);
+describe('needsNotificationPermission', () => {
+  it('is true in WebKit (iOS and Safari of macOS) and false in Chromium', () => {
+    setUserAgent(IPHONE);
+    expect(needsNotificationPermission()).toBe(true);
+    setUserAgent(MAC_SAFARI);
+    expect(needsNotificationPermission()).toBe(true);
+    setUserAgent(CHROME);
+    expect(needsNotificationPermission()).toBe(false);
   });
 });
 
@@ -135,7 +148,7 @@ describe('enableBadge and disableBadge', () => {
   });
 
   it('asks for the permission for notifications on iOS, and stays off when refused', async () => {
-    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(IPHONE);
+    setUserAgent(IPHONE);
     const requestPermission = vi.fn(async () => 'denied' as NotificationPermission);
     vi.stubGlobal('Notification', { permission: 'default', requestPermission });
     expect(await enableBadge()).toBe('denied');
@@ -146,8 +159,18 @@ describe('enableBadge and disableBadge', () => {
     expect(await enableBadge()).toBe('on');
   });
 
+  it('asks on the Mac too, and a request that fails is a refusal', async () => {
+    setUserAgent(MAC_SAFARI);
+    const requestPermission = vi.fn(async () => {
+      throw new Error('not allowed');
+    });
+    vi.stubGlobal('Notification', { permission: 'default', requestPermission });
+    expect(await enableBadge()).toBe('denied');
+    expect(requestPermission).toHaveBeenCalledOnce();
+  });
+
   it('does not ask again on iOS when the permission is there, or when iOS has no Notification', async () => {
-    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue(IPHONE);
+    setUserAgent(IPHONE);
     const requestPermission = vi.fn();
     vi.stubGlobal('Notification', { permission: 'granted', requestPermission });
     expect(await enableBadge()).toBe('on');
@@ -156,7 +179,8 @@ describe('enableBadge and disableBadge', () => {
     expect(requestPermission).not.toHaveBeenCalled();
   });
 
-  it('does not ask for a permission outside iOS', async () => {
+  it('does not ask for a permission in Chromium', async () => {
+    setUserAgent(CHROME);
     const requestPermission = vi.fn();
     vi.stubGlobal('Notification', { permission: 'default', requestPermission });
     expect(await enableBadge()).toBe('on');
@@ -173,9 +197,9 @@ describe('useAppBadge', () => {
     expect(setAppBadge).not.toHaveBeenCalled();
   });
 
-  it('follows the observations of today, midnight and the return to the app', async () => {
-    vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout', 'Date'] });
-    vi.setSystemTime(new Date(2026, 9, 28, 23, 59, 0));
+  it('follows the observations of today, the new date and the return to the app', async () => {
+    vi.useFakeTimers({ toFake: ['setInterval', 'clearInterval', 'Date'] });
+    vi.setSystemTime(new Date(2026, 9, 28, 23, 58, 30));
     setInstalled(true);
     const { setAppBadge, clearAppBadge } = installBadgeApi();
     await enableBadge();
@@ -188,13 +212,16 @@ describe('useAppBadge', () => {
     // After a delete of the observation of today, the dot shows
     rerender({ list: [] });
     expect(setAppBadge).toHaveBeenCalledOnce();
-
-    // At midnight, the observation is of yesterday, so the dot shows
     rerender({ list: [today] });
     expect(clearAppBadge).toHaveBeenCalledTimes(2);
-    act(() => vi.advanceTimersByTime(61_000));
+
+    // The minutes of the same day change nothing
+    act(() => vi.advanceTimersByTime(60_000));
+    expect(setAppBadge).toHaveBeenCalledOnce();
+    // In the first minute of the next day, the observation is of yesterday, so the dot shows
+    act(() => vi.advanceTimersByTime(60_000));
     expect(setAppBadge).toHaveBeenCalledTimes(2);
-    // The next update is at the next midnight
+    // Each new date updates the badge one time
     act(() => vi.advanceTimersByTime(24 * 3600_000));
     expect(setAppBadge).toHaveBeenCalledTimes(3);
 
@@ -208,5 +235,15 @@ describe('useAppBadge', () => {
     setVisibility('visible');
     act(() => vi.advanceTimersByTime(48 * 3600_000));
     expect(setAppBadge).toHaveBeenCalledTimes(4);
+  });
+
+  it('removes the dot when the user turns the badge off', async () => {
+    setInstalled(true);
+    const { setAppBadge, clearAppBadge } = installBadgeApi();
+    await enableBadge();
+    renderHook(() => useAppBadge([]));
+    expect(setAppBadge).toHaveBeenCalledOnce();
+    act(() => disableBadge());
+    expect(clearAppBadge).toHaveBeenCalledOnce();
   });
 });

@@ -30,10 +30,13 @@ describe('AppBadgeSetting', () => {
 
   it('turns the badge on and off, and tells that it works only while the app is open', async () => {
     installBadgeApi();
+    // Chromium needs no permission, so the hint does not tell about it
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 Chrome/140.0');
     renderWithProviders(<AppBadgeSetting />);
     const toggle = screen.getByRole('checkbox', { name: en.appBadge.label });
     expect(toggle).not.toBeChecked();
     expect(toggle).toHaveAccessibleDescription(en.appBadge.hint);
+    expect(toggle).toBeEnabled();
     await act(async () => {
       fireEvent.click(toggle);
     });
@@ -47,9 +50,15 @@ describe('AppBadgeSetting', () => {
   it('tells why iOS asks for the permission, and what to do when it is refused', async () => {
     installBadgeApi();
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (iPhone)');
+    let answer: (permission: string) => void = () => {};
     vi.stubGlobal('Notification', {
       permission: 'default',
-      requestPermission: vi.fn(async () => 'denied'),
+      requestPermission: vi.fn(
+        () =>
+          new Promise<string>(resolve => {
+            answer = resolve;
+          })
+      ),
     });
     renderWithProviders(<AppBadgeSetting />, { language: 'fr' });
     const toggle = screen.getByRole('checkbox', { name: fr.appBadge.label });
@@ -57,6 +66,12 @@ describe('AppBadgeSetting', () => {
     await act(async () => {
       fireEvent.click(toggle);
     });
+    // While the system asks, a second tap does not ask again
+    expect(toggle).toBeDisabled();
+    await act(async () => {
+      answer('denied');
+    });
+    expect(toggle).toBeEnabled();
     expect(toggle).not.toBeChecked();
     expect(screen.getByRole('alert')).toHaveTextContent(fr.appBadge.denied);
   });

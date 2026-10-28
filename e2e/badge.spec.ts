@@ -25,8 +25,8 @@ const fakeInstalledApp = async (page: Page) => {
   });
 };
 
-const lastCall = (page: Page) =>
-  page.evaluate(() => (window as unknown as { badgeCalls: string[] }).badgeCalls.at(-1));
+const calls = (page: Page) =>
+  page.evaluate(() => (window as unknown as { badgeCalls: string[] }).badgeCalls);
 
 test.describe('App icon badge', () => {
   test.use({ viewport: { width: 1280, height: 800 } });
@@ -37,22 +37,23 @@ test.describe('App icon badge', () => {
     await fakeInstalledApp(page);
     await openApp(page);
     // Off by default: the app only removes a dot
-    await expect.poll(() => lastCall(page)).toBe('clear');
+    await expect.poll(() => calls(page)).toEqual(['clear']);
 
     await page.getByRole('banner').getByRole('button', { name: en.versionTracker.title }).click();
     const about = page.getByRole('dialog', { name: en.versionTracker.title });
     await about.getByRole('tab', { name: en.versionTracker.tabSystemInfo }).click();
     await about.getByRole('checkbox', { name: en.appBadge.label }).check();
-    await expect.poll(() => lastCall(page)).toBe('set');
+    await expect.poll(() => calls(page)).toEqual(['clear', 'set']);
     await page.keyboard.press('Escape');
 
     await page.getByRole('textbox', { name: en.labels.directInput }).fill('10KL');
     await page.getByRole('button', { name: en.actions.save }).click();
-    await expect.poll(() => lastCall(page)).toBe('clear');
+    await expect.poll(() => calls(page)).toEqual(['clear', 'set', 'clear']);
 
     // The choice stays after a reload: a delete of the observation of today shows the dot again
     await page.reload();
+    await expect.poll(() => calls(page)).toEqual(['clear']);
     await page.getByRole('button', { name: en.actions.delete }).click();
-    await expect.poll(() => lastCall(page)).toBe('set');
+    await expect.poll(() => calls(page)).toEqual(['clear', 'set']);
   });
 });

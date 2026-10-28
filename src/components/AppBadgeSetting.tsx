@@ -2,17 +2,24 @@ import type React from 'react';
 import { useState } from 'react';
 import { BellDot } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { disableBadge, enableBadge, isBadgeSupported, useBadgeEnabled } from '../pwa/appBadge';
-import { isIos } from '../pwa/installPrompt';
+import {
+  disableBadge,
+  enableBadge,
+  isBadgeSupported,
+  needsNotificationPermission,
+  useBadgeEnabled,
+} from '../pwa/appBadge';
 
 /**
  * The switch of the app icon badge (SPEC 5.16). It shows only when the browser has the Badging
- * API. On iOS, it tells why the system asks for the permission for notifications.
+ * API. On Apple systems, it tells why the system asks for the permission for notifications.
  */
 export const AppBadgeSetting: React.FC = () => {
   const { t } = useLanguage();
   const enabled = useBadgeEnabled();
   const [denied, setDenied] = useState(false);
+  // While the system asks for the permission, a second tap does not ask again
+  const [pending, setPending] = useState(false);
   if (!isBadgeSupported()) return null;
 
   const handleChange = async (on: boolean) => {
@@ -21,7 +28,9 @@ export const AppBadgeSetting: React.FC = () => {
       disableBadge();
       return;
     }
+    setPending(true);
     setDenied((await enableBadge()) === 'denied');
+    setPending(false);
   };
 
   return (
@@ -34,6 +43,7 @@ export const AppBadgeSetting: React.FC = () => {
         <input
           type="checkbox"
           checked={enabled}
+          disabled={pending}
           onChange={e => void handleChange(e.target.checked)}
           aria-describedby="badge-setting-hint"
         />
@@ -41,7 +51,7 @@ export const AppBadgeSetting: React.FC = () => {
       </label>
       <p id="badge-setting-hint" className="badge-setting-hint">
         {t.appBadge.hint}
-        {isIos() && ` ${t.appBadge.iosPermission}`}
+        {needsNotificationPermission() && ` ${t.appBadge.iosPermission}`}
       </p>
       {denied && (
         <p className="badge-setting-denied" role="alert">

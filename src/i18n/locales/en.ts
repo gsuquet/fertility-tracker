@@ -549,7 +549,7 @@ export const en = {
     label: 'Show a dot on the app icon when today has no observation',
     hint: 'Works in the installed app. The dot changes only while the app is open. If you do not open the app on a day, the icon keeps the last state.',
     iosPermission:
-      'On iPhone and iPad, the system asks for the permission for notifications. The app never sends notifications.',
+      'On iPhone, iPad and Mac, the system asks for the permission for notifications. The app never sends notifications.',
     denied:
       'The permission was refused. To use the badge, allow notifications for this app in the settings of the system.',
   },

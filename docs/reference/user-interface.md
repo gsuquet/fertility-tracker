@@ -33,7 +33,7 @@ In the installed app, the icon can show a dot while today has no observation. Th
 
 To turn it on, open **About & Version Tracker**, then **System Information**. Select **Show a dot on the app icon when today has no observation**. The checkbox shows only when the browser can show a badge.
 
-On iPhone and iPad, the system asks for the permission for notifications. The app never sends notifications. The dot changes only while the app is open.
+On iPhone, iPad and Mac, the system asks for the permission for notifications. The app never sends notifications. The dot changes only while the app is open.
 
 ## Change the page
 
