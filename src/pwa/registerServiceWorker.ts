@@ -7,12 +7,15 @@ import { useSyncExternalStore } from 'react';
  */
 export const SKIP_WAITING_MESSAGE = 'SKIP_WAITING';
 
-/** The worker of a new version that waits for the user, or null. */
-let waitingWorker: ServiceWorker | null = null;
+/** The worker of the new version that the user can apply, or null. */
+let newWorker: ServiceWorker | null = null;
+/** True after Reload, so that the page reloads when the new worker takes control. */
+let applying = false;
+let reloaded = false;
 const listeners = new Set<() => void>();
 
-const setWaitingWorker = (worker: ServiceWorker) => {
-  waitingWorker = worker;
+const setNewWorker = (worker: ServiceWorker | null) => {
+  newWorker = worker;
   for (const listener of listeners) listener();
 };
 
@@ -21,10 +24,18 @@ const subscribe = (listener: () => void) => {
   return () => listeners.delete(listener);
 };
 
-const isUpdateReady = () => waitingWorker !== null;
+const isUpdateReady = () => newWorker !== null;
 
 /** True when a new version is installed and waits for **Reload**. */
 export const useUpdateReady = (): boolean => useSyncExternalStore(subscribe, isUpdateReady);
+
+/** Keeps the new worker until a newer one replaces it (state `redundant`). */
+const offerWorker = (worker: ServiceWorker) => {
+  setNewWorker(worker);
+  worker.addEventListener('statechange', () => {
+    if (worker.state === 'redundant' && newWorker === worker) setNewWorker(null);
+  });
+};
 
 /**
  * A worker that waits while the page has a controller is a new version. Without a controller,
@@ -32,25 +43,33 @@ export const useUpdateReady = (): boolean => useSyncExternalStore(subscribe, isU
  */
 const watchForUpdate = (registration: ServiceWorkerRegistration) => {
   const hasController = () => navigator.serviceWorker.controller !== null;
-  if (registration.waiting && hasController()) setWaitingWorker(registration.waiting);
+  if (registration.waiting && hasController()) offerWorker(registration.waiting);
   registration.addEventListener('updatefound', () => {
     const worker = registration.installing;
     worker?.addEventListener('statechange', () => {
-      if (worker.state === 'installed' && hasController()) setWaitingWorker(worker);
+      if (worker.state === 'installed' && hasController()) offerWorker(worker);
     });
   });
-};
-
-/** Activates the waiting worker, then reloads the page one time when it takes control. */
-export function applyUpdate(): void {
-  if (!waitingWorker) return;
-  let reloaded = false;
+  // Only the Reload of this window reloads it. When another window applies the update, this
+  // window keeps its work and its message: its Reload then only reloads.
   navigator.serviceWorker.addEventListener('controllerchange', () => {
-    if (reloaded) return;
+    if (!applying || reloaded) return;
     reloaded = true;
     window.location.reload();
   });
-  waitingWorker.postMessage(SKIP_WAITING_MESSAGE);
+};
+
+/** Activates the new worker, then reloads the page one time when it takes control. */
+export function applyUpdate(): void {
+  if (!newWorker) return;
+  applying = true;
+  if (newWorker.state === 'installed') {
+    newWorker.postMessage(SKIP_WAITING_MESSAGE);
+  } else {
+    // Another window activated it already, so no controllerchange comes for this message
+    reloaded = true;
+    window.location.reload();
+  }
 }
 
 /**

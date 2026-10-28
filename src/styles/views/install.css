@@ -70,15 +70,17 @@
     margin-top: var(--space-2xs);
   }
 
+  /* Numbered steps: each item stays a list item, so it keeps its number */
   .install-guide-steps {
-    display: flex;
-    flex-direction: column;
-    gap: var(--space-md);
     margin: 0;
     padding-left: var(--space-lg);
   }
 
-  .install-guide-steps li {
+  .install-guide-steps li + li {
+    margin-top: var(--space-md);
+  }
+
+  .install-guide-backup {
     display: flex;
     flex-direction: column;
     align-items: flex-start;
@@ -90,11 +92,45 @@
     font-size: var(--font-size-sm);
   }
 
-  /* Above the page buttons on a phone */
+  /* Below 1440 pixels, the header has no space for one more button. Chromium then shows its own
+     install button in the address bar, and the install banner and the phone menu stay. */
+  @media (max-width: 1439px) {
+    .header-install-btn.desktop-only-action {
+      display: none;
+    }
+  }
+
+  /* The end of the page stays visible above the message */
+  body:has(.install-banner, .update-prompt) {
+    padding-bottom: var(--install-banner-space);
+  }
+
+  /* Above the page buttons on a phone. Install goes under the text, so the text keeps its width. */
   @media (max-width: 640px) {
     .install-banner,
     .update-prompt {
       bottom: calc(var(--mobile-nav-space) + var(--space-sm));
+    }
+
+    .install-banner {
+      display: grid;
+      grid-template-columns: auto 1fr auto;
+      align-items: start;
+    }
+
+    .install-banner-install {
+      grid-column: 2;
+      grid-row: 2;
+      justify-self: start;
+    }
+
+    .install-banner-close {
+      grid-column: 3;
+      grid-row: 1;
+    }
+
+    body:has(.install-banner, .update-prompt) {
+      padding-bottom: calc(var(--mobile-nav-space) + var(--install-banner-space));
     }
   }
 

@@ -181,20 +181,42 @@ describe('service worker', () => {
     expect(caches.stores.get(CACHE)?.entries.size).toBe(0);
   });
 
-  it('loads navigations from the network first and stores them', async () => {
+  it('opens the app with the shell of its own cache, so a new version waits for Reload', async () => {
     const { scope, caches } = makeScope(online);
     const cache = await caches.open(CACHE);
-    cache.entries.set(`${ORIGIN}/`, new Response('old'));
+    cache.entries.set(`${ORIGIN}/`, new Response('shell of this version'));
+    for (const path of ['/', '/?shortcut=log', '/index.html']) {
+      const response = await handleFetch(scope, CACHE, request(path, { navigate: true }));
+      expect(await response?.text()).toBe('shell of this version');
+    }
+    expect(scope.fetch).not.toHaveBeenCalled();
+  });
+
+  it('loads the app shell from the network when it is not cached, and stores it', async () => {
+    const { scope, caches } = makeScope(online);
     const response = await handleFetch(scope, CACHE, request('/', { navigate: true }));
     expect(await response?.text()).toBe(`network:${ORIGIN}/`);
-    expect(await (await cache.match(`${ORIGIN}/`))?.text()).toBe(`network:${ORIGIN}/`);
+    expect(caches.stores.get(CACHE)?.entries.has(`${ORIGIN}/`)).toBe(true);
+  });
+
+  it('loads the other navigations from the network first and stores them', async () => {
+    const { scope, caches } = makeScope(online);
+    const cache = await caches.open(CACHE);
+    cache.entries.set(`${ORIGIN}/`, new Response('shell'));
+    cache.entries.set(`${ORIGIN}/screenshots/phone.png`, new Response('old'));
+    const response = await handleFetch(
+      scope,
+      CACHE,
+      request('/screenshots/phone.png', { navigate: true })
+    );
+    expect(await response?.text()).toBe(`network:${ORIGIN}/screenshots/phone.png`);
   });
 
   it('serves the cached app shell for an offline navigation', async () => {
     const { scope, caches } = makeScope(offline);
     const cache = await caches.open(CACHE);
     cache.entries.set(`${ORIGIN}/`, new Response('shell'));
-    const response = await handleFetch(scope, CACHE, request('/?tab=chart', { navigate: true }));
+    const response = await handleFetch(scope, CACHE, request('/notes', { navigate: true }));
     expect(await response?.text()).toBe('shell');
   });
 

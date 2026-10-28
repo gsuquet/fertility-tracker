@@ -132,7 +132,7 @@ The main chunk has only the code of the first screen. The other parts load with 
 - If the print view chunk does not load, **Print / Save as PDF** does not print and does not show the success message. It shows the error `exportModal.printError`.
 - Each dialog and the print view has its own `React.Suspense`. Thus, a dialog that loads does not hide the print view.
 - While a page or a dialog loads, a hidden `role="status"` element announces `common.loading`. A dialog shows nothing visible while it loads. The page fallback keeps a minimum height, so the footer does not move.
-- After the first render, when the browser is idle, the application imports the four lazy chunks before `InstallGuideModal`. Only iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
+- After the first render, when the browser is idle, the application imports the four lazy chunks, except `InstallGuideModal`. Only Safari on iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
 - A failed preload has no effect. The part tries again when the user opens it.
 - Each lazy dialog has its own `ErrorBoundary` in dialog mode (section 5.11). A failure does not block the other dialogs, and the next opening tries again.
 - The service worker keeps all the lazy chunks (section 9.1). Thus, each lazy part also opens offline.
@@ -569,7 +569,7 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 | 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
 | 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
 
-In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog, which has **Restore Data (JSON)** ([5.13](#513-install-and-update)).
+In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog with the focus on **Restore Data (JSON)** ([5.13](#513-install-and-update)).
 
 The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dialog component gives `Escape`, the focus trap and the focus return. The slide body can get the focus and scroll. The guide is in English and in French.
 
@@ -652,13 +652,13 @@ The application offers installation one time, after it has some data. It never a
 
 `installPrompt.ts` finds how the browser installs the application:
 
-| Mode     | Condition                                                                                                                                                        | **Install** does                                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
-| `prompt` | The browser sent `beforeinstallprompt` (Chromium on Android, Windows, macOS, ChromeOS and Linux). The app prevents the default mini-infobar and keeps the event. | Calls `prompt()` of the event. The event is then used, so the mode becomes `null`. |
-| `ios`    | iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points).                                                                                         | Opens the guide **Install on iPhone**.                                             |
-| `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                             | Nothing. No button shows.                                                          |
+| Mode     | Condition                                                                                                                                                                                                                                                              | **Install** does                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| `prompt` | The browser sent `beforeinstallprompt` (Chromium on Android, Windows, macOS, ChromeOS and Linux). The app prevents the default mini-infobar and keeps the event.                                                                                                       | Calls `prompt()` of the event. The event is then used, so the mode becomes `null`. |
+| `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). The other browsers of iOS and the in-app browsers (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`, Facebook, Instagram, LINE) give `null`, because the guide gives the steps of Safari. | Opens the guide **Install on iPhone**.                                             |
+| `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                   | Nothing. No button shows.                                                          |
 - The application is installed when a display mode of [5.12](#512-installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
-- When the mode is not `null`, the phone menu has **Install app** at the top, and the wide-screen header has an **Install** button.
+- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it, and Chromium shows its own install button in the address bar.
 - The application does not record if the user installed it.
 
 The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
@@ -670,6 +670,8 @@ The install banner is a slim card above the page buttons, at the bottom of the s
 - No update is ready. The update message comes first.
 - The undo message does not show. It has the same place on the screen ([6.7](#67-undo-of-replaced-data)).
 
+On a phone, **Install** is under the text, so the text keeps its width. While the banner or the update message shows, the body gets a bottom padding of `--install-banner-space`. Thus, the end of the page can scroll above the message.
+
 The close button and **Install** set `fertility_tracker_install_banner_closed`. Then the banner never shows again. The menu entry and the header button stay.
 
 The guide **Install on iPhone** is a dialog of [Modal.tsx](src/components/Modal.tsx). At the top, a note says that the installed application has its own storage, separate from Safari. Then it has these steps, in this order:
@@ -679,21 +681,25 @@ The guide **Install on iPhone** is a dialog of [Modal.tsx](src/components/Modal.
 3. Choose **Add to Home Screen**.
 4. Open the application and choose **Restore a backup** ([5.10](#510-welcome-guide)).
 
+The steps are a numbered list (`<ol>`).
+
 #### Update
 
-The service worker of a new version waits ([9.1](#91-offline-use-and-installation)). `registerServiceWorker()` finds a waiting worker when the page already has a controller:
+The service worker of a new version waits ([9.1](#91-offline-use-and-installation)). The active worker gives the app shell from its own cache. Thus, the page always runs the version of the active worker, also after a normal reload. `registerServiceWorker()` finds a waiting worker when the page already has a controller:
 
 - after the registration, from `registration.waiting`
 - when an installing worker gets the state `installed`
 
 The first install has no controller. Thus, it activates at once and the application works offline from the first visit.
 
-| Step                         | Result                                                                                                                            |
-| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------- |
-| A worker waits               | `UpdatePrompt` shows **A new version is ready** with a **Reload** button (`role="status"`).                                       |
-| A dialog or the drawer opens | The message hides until the dialog closes. Thus, an update never interrupts an entry. It also hides while the undo message shows. |
-| **Reload**                   | The page sends `SKIP_WAITING` to the waiting worker. On `controllerchange`, the page reloads one time.                            |
-| No **Reload**                | The new version starts when all windows of the application are closed and opened again.                                           |
+| Step                            | Result                                                                                                                                                              |
+| ------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| A worker waits                  | `UpdatePrompt` shows **A new version is ready** with a **Reload** button (`role="status"`).                                                                         |
+| A dialog or the drawer opens    | The message hides until the dialog closes. Thus, an update never interrupts an entry. It also hides while the undo message shows.                                   |
+| **Reload**                      | The page sends `SKIP_WAITING` to the waiting worker. On `controllerchange`, the page reloads one time.                                                              |
+| Another window chose **Reload** | The new worker takes control of this window too, but this window does not reload: the user can finish an entry. Its message stays, and its **Reload** only reloads. |
+| A newer version installs        | The older waiting worker becomes `redundant`, and the message is for the newer worker.                                                                              |
+| No **Reload**                   | The new version starts when all windows of the application are closed and opened again.                                                                             |
 - After the reload, `checkAndRecordVersionSeen()` finds the new version, and the version dialog shows its release notes.
 
 ## 6. State and data storage
@@ -1099,7 +1105,8 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 - Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
-- Pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
+- A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([5.13](#update)).
+- Other pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
 - For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
 
 Other rules:
@@ -1116,6 +1123,7 @@ Other rules:
 - `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
 - The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
 - The manifest `background_color` is `--bg-primary` and `theme_color` is `--brand-ink`, from the light theme. `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
+- The page code does not import `src/sw/`. Else the build puts the worker code in a shared chunk, and `sw.js` cannot import it as a classic worker script. A unit test checks this rule. `registerServiceWorker.ts` has its own copy of the `SKIP_WAITING` message, and a test checks that the two are equal.
 - The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
 
 ### 9.2 Security headers

@@ -317,7 +317,6 @@ export const en = {
   install: {
     menuEntry: 'Install app',
     menuHint: 'Full screen, offline, and your data kept safer',
-    headerButton: 'Install',
     headerLabel: 'Install the app',
     bannerTitle: 'Install Fertility Tracker',
     bannerText: 'Full screen, offline, and your data kept safer.',

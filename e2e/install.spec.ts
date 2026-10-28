@@ -30,6 +30,9 @@ const loadDemo = async (page: Page) => {
 const banner = (page: Page) => page.getByRole('complementary', { name: en.install.bannerTitle });
 
 test.describe('Install offer', () => {
+  // The header has the install button on a screen of 1440 pixels or more
+  test.use({ viewport: { width: 1500, height: 900 } });
+
   test('shows no banner and no install button before the browser can install', async ({ page }) => {
     await openApp(page);
     await loadDemo(page);

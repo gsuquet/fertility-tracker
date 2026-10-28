@@ -30,6 +30,8 @@
     /* Phone page buttons: their height, and the space they take above the home indicator */
     --mobile-nav-height: 62px;
     --mobile-nav-space: calc(var(--mobile-nav-height) + env(safe-area-inset-bottom, 0px));
+    /* The height of the install banner or the update message on a phone, and a margin */
+    --install-banner-space: 11rem;
 
     /* Semantic Z-Index Scale */
     --z-base: 1;

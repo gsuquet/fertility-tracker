@@ -100,9 +100,27 @@ async function networkFirst(
 }
 
 /**
+ * The app shell comes from the cache of this worker, so the page always runs the version of the
+ * active worker. A new version thus waits until the user chooses Reload.
+ */
+async function shellFirst(
+  scope: ServiceWorkerScopeLike,
+  cacheName: string,
+  request: Request,
+  shellUrl: string
+) {
+  const cache = await scope.caches.open(cacheName);
+  return (
+    (await cache.match(shellUrl, MATCH_OPTIONS)) ??
+    networkFirst(scope, cacheName, request, shellUrl)
+  );
+}
+
+/**
  * Returns the response for a request, or undefined to let the browser handle it.
- * Hashed files in `assets/` are cache-first. Navigations and other files are network-first,
- * and an offline navigation falls back to the cached app shell (`./`).
+ * Hashed files in `assets/` are cache-first. A navigation to the app (`./` or `./index.html`)
+ * gets the cached app shell first. Other navigations and files are network-first, and an
+ * offline navigation falls back to the cached app shell.
  */
 export function handleFetch(
   scope: ServiceWorkerScopeLike,
@@ -112,7 +130,12 @@ export function handleFetch(
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== scope.location.origin) return undefined;
   if (request.mode === 'navigate') {
-    return networkFirst(scope, cacheName, request, new URL('./', scope.location.href).href);
+    const shell = new URL('./', scope.location.href);
+    const isShell =
+      url.pathname === shell.pathname || url.pathname === `${shell.pathname}index.html`;
+    return isShell
+      ? shellFirst(scope, cacheName, request, shell.href)
+      : networkFirst(scope, cacheName, request, shell.href);
   }
   if (url.pathname.includes('/assets/')) return cacheFirst(scope, cacheName, request);
   return networkFirst(scope, cacheName, request);

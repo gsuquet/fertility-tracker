@@ -128,13 +128,13 @@ Touch and hold the app icon (or right-click it on a computer) to see the shortcu
 
 ### Install the application
 
-When the browser can install the application, the header has an **Install** button and the phone menu has **Install app**. After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
+When the browser can install the application, the phone menu has **Install app**. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
 
-| Browser                                 | **Install** does                                                                                                 |
-| --------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| Chrome or Edge on Android or a computer | Shows the install dialog of the browser.                                                                         |
-| Safari on iPhone or iPad                | Opens **Install on iPhone**. Back up your data, add the application to the Home Screen, then restore the backup. |
-| Firefox, or Safari on a computer        | No **Install** button.                                                                                           |
+| Browser                                                     | **Install** does                                                                                                 |
+| ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| Chrome or Edge on Android or a computer                     | Shows the install dialog of the browser.                                                                         |
+| Safari on iPhone or iPad                                    | Opens **Install on iPhone**. Back up your data, add the application to the Home Screen, then restore the backup. |
+| Firefox, Safari on a computer, or another browser on iPhone | No install button.                                                                                               |
 
 On iPhone and iPad, the installed application does not share its data with Safari. The welcome guide of the installed application has **Restore a backup** when it has no data.
 

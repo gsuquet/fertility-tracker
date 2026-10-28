@@ -5,10 +5,10 @@ import { SKIP_WAITING } from '../../sw/serviceWorker';
 type Listener = () => void;
 
 /** A fake worker: `setState` changes its state and calls its `statechange` listeners. */
-const makeWorker = () => {
+const makeWorker = (state = 'installing') => {
   const listeners: Listener[] = [];
   const worker = {
-    state: 'installing',
+    state,
     postMessage: vi.fn(),
     addEventListener: (_type: string, listener: Listener) => listeners.push(listener),
     setState(state: string) {
@@ -161,23 +161,69 @@ describe('update of a new version', () => {
     const { applyUpdate, registerServiceWorker, SKIP_WAITING_MESSAGE } = await load();
     const reload = vi.fn();
     vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, reload });
-    const worker = makeWorker();
+    const worker = makeWorker('installed');
     register.mockResolvedValue(makeRegistration(worker));
     setServiceWorker({});
     await registerServiceWorker();
     applyUpdate();
     expect(worker.postMessage).toHaveBeenCalledWith(SKIP_WAITING);
     expect(SKIP_WAITING_MESSAGE).toBe(SKIP_WAITING);
+    expect(reload).not.toHaveBeenCalled();
     for (const listener of controllerListeners) listener();
     for (const listener of controllerListeners) listener();
     expect(reload).toHaveBeenCalledOnce();
     vi.restoreAllMocks();
   });
 
+  it('keeps the work of a window when another window applies the update', async () => {
+    const { applyUpdate, registerServiceWorker, useUpdateReady } = await load();
+    const reload = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, reload });
+    const worker = makeWorker('installed');
+    register.mockResolvedValue(makeRegistration(worker));
+    setServiceWorker({});
+    const { result } = renderHook(() => useUpdateReady());
+    await act(registerServiceWorker);
+    // Another window chose Reload: the new worker activates and takes control of this window too
+    act(() => worker.setState('activated'));
+    for (const listener of controllerListeners) listener();
+    expect(reload).not.toHaveBeenCalled();
+    expect(result.current).toBe(true);
+    // Reload in this window now only reloads, because no worker waits for the message
+    applyUpdate();
+    expect(worker.postMessage).not.toHaveBeenCalled();
+    expect(reload).toHaveBeenCalledOnce();
+    for (const listener of controllerListeners) listener();
+    expect(reload).toHaveBeenCalledOnce();
+    vi.restoreAllMocks();
+  });
+
+  it('forgets a waiting worker that a newer worker replaces', async () => {
+    const { registerServiceWorker, useUpdateReady } = await load();
+    const older = makeWorker('installed');
+    const registration = makeRegistration(older);
+    register.mockResolvedValue(registration);
+    setServiceWorker({});
+    const { result } = renderHook(() => useUpdateReady());
+    await act(registerServiceWorker);
+    const newer = makeWorker();
+    act(() => {
+      registration.find(newer);
+      newer.setState('installed');
+    });
+    act(() => older.setState('redundant'));
+    expect(result.current).toBe(true);
+    act(() => newer.setState('redundant'));
+    expect(result.current).toBe(false);
+  });
+
   it('does nothing on Reload when no worker waits', async () => {
     const { applyUpdate } = await load();
+    const reload = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, reload });
     setServiceWorker({});
     applyUpdate();
-    expect(controllerListeners).toHaveLength(0);
+    expect(reload).not.toHaveBeenCalled();
+    vi.restoreAllMocks();
   });
 });

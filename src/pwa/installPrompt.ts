@@ -27,6 +27,15 @@ export const isIos = (): boolean =>
   /iPad|iPhone|iPod/.test(navigator.userAgent) ||
   (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1);
 
+/**
+ * The other browsers of iOS and the in-app browsers (Chrome, Firefox, Edge, Opera, the Google
+ * app, Facebook, Instagram, LINE). The install guide gives the steps of Safari.
+ */
+const OTHER_IOS_BROWSERS = /CriOS|FxiOS|EdgiOS|OPiOS|GSA\/|FBAN|FBAV|Instagram|Line\//;
+
+/** True in Safari on iOS and iPadOS, where Share > Add to Home Screen installs the app. */
+export const isIosSafari = (): boolean => isIos() && !OTHER_IOS_BROWSERS.test(navigator.userAgent);
+
 /** The kept `beforeinstallprompt` event. It can show the prompt one time. */
 let deferredPrompt: BeforeInstallPromptEvent | null = null;
 let installedNow = false;
@@ -52,7 +61,7 @@ window.addEventListener('appinstalled', () => {
 export const getInstallMode = (): InstallMode => {
   if (installedNow || isInstalled()) return null;
   if (deferredPrompt) return 'prompt';
-  return isIos() ? 'ios' : null;
+  return isIosSafari() ? 'ios' : null;
 };
 
 const subscribe = (listener: () => void) => {

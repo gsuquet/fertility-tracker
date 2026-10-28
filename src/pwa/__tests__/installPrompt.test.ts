@@ -54,6 +54,24 @@ describe('install mode', () => {
     expect(getInstallMode()).toBeNull();
   });
 
+  it('is null in the other browsers of iOS, whose steps are not those of Safari', async () => {
+    const { getInstallMode, isIos } = await load();
+    for (const browser of [
+      'CriOS/130.0',
+      'FxiOS/131.0',
+      'EdgiOS/130.0',
+      'GSA/340.0',
+      'Instagram 350',
+    ]) {
+      setNavigator(
+        'userAgent',
+        `Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X) ${browser}`
+      );
+      expect(isIos()).toBe(true);
+      expect(getInstallMode()).toBeNull();
+    }
+  });
+
   it('is null in the installed app, also on iOS', async () => {
     const { getInstallMode, isInstalled } = await load();
     setNavigator('userAgent', 'Mozilla/5.0 (iPhone; CPU iPhone OS 18_0 like Mac OS X)');

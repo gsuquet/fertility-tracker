@@ -55,13 +55,13 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlights: [
       'An Install button in the header and the menu, when your browser can install the app',
       'A small install message, one time only, after you saved 3 observations',
-      'On iPhone and iPad, a guide moves your data to the installed app with a backup',
+      'On iPhone and iPad, a guide helps you move your data to the installed app with a backup',
       'A new version waits for you: tap Reload when you are ready, never during an entry',
     ],
     highlightsFr: [
       'Un bouton Installer dans l’en-tête et le menu, quand votre navigateur peut installer l’application',
       'Un petit message d’installation, une seule fois, après 3 observations enregistrées',
-      'Sur iPhone et iPad, un guide déplace vos données vers l’application installée avec une sauvegarde',
+      'Sur iPhone et iPad, un guide vous aide à déplacer vos données vers l’application installée avec une sauvegarde',
       'Une nouvelle version vous attend : touchez Recharger quand vous le souhaitez, jamais pendant une saisie',
     ],
   },

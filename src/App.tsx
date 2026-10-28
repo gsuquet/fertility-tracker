@@ -90,6 +90,8 @@ const MainApp: React.FC = () => {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
+  // Restore a backup of the welcome guide opens the export dialog on its restore button
+  const [exportStartsWithRestore, setExportStartsWithRestore] = useState(false);
   const { observations } = useCycleData();
   const installMode = useInstallMode();
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
@@ -156,7 +158,10 @@ const MainApp: React.FC = () => {
   }, [pendingPrintDetail, printView, showToast, t]);
 
   // The dialog and its error boundary close the same way
-  const closeExportModal = () => setIsExportModalOpen(false);
+  const closeExportModal = () => {
+    setIsExportModalOpen(false);
+    setExportStartsWithRestore(false);
+  };
   const closeVersionModal = () => setIsVersionModalOpen(false);
   const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
   const closeInstallGuide = () => setIsInstallGuideOpen(false);
@@ -172,7 +177,10 @@ const MainApp: React.FC = () => {
   // The installed app of iOS does not share the storage of Safari: offer the restore of a backup
   const handleRestore =
     observations.length === 0 && isIos() && isInstalled()
-      ? () => setIsExportModalOpen(true)
+      ? () => {
+          setExportStartsWithRestore(true);
+          setIsExportModalOpen(true);
+        }
       : undefined;
 
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
@@ -223,7 +231,11 @@ const MainApp: React.FC = () => {
       {isExportModalOpen && (
         <ErrorBoundary onClose={closeExportModal}>
           <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <ExportModal onClose={closeExportModal} onPreparePrint={handlePreparePrint} />
+            <ExportModal
+              onClose={closeExportModal}
+              onPreparePrint={handlePreparePrint}
+              startWithRestore={exportStartsWithRestore}
+            />
           </React.Suspense>
         </ErrorBoundary>
       )}

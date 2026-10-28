@@ -59,16 +59,18 @@ export const InstallGuideModal: React.FC<InstallGuideModalProps> = ({ onClose })
         </p>
         <ol className="install-guide-steps">
           <li>
-            <span>{t.install.guideStepBackup}</span>
-            <button type="button" className="btn btn-primary" onClick={handleBackup}>
-              <Download size={16} aria-hidden="true" />
-              <span>{t.install.guideBackupButton}</span>
-            </button>
-            {backedUp && (
-              <span className="install-guide-done" role="status">
-                {t.install.guideBackupDone}
-              </span>
-            )}
+            <div className="install-guide-backup">
+              <span>{t.install.guideStepBackup}</span>
+              <button type="button" className="btn btn-primary" onClick={handleBackup}>
+                <Download size={16} aria-hidden="true" />
+                <span>{t.install.guideBackupButton}</span>
+              </button>
+              {backedUp && (
+                <span className="install-guide-done" role="status">
+                  {t.install.guideBackupDone}
+                </span>
+              )}
+            </div>
           </li>
           <li>{t.install.guideStepShare}</li>
           <li>{t.install.guideStepAdd}</li>

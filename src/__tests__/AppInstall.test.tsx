@@ -97,10 +97,18 @@ describe('Welcome guide in the installed app on iOS', () => {
     render(<App />);
     const guide = await lastSlide();
     fireEvent.click(within(guide).getByRole('button', { name: en.welcomeModal.restoreBackup }));
-    expect(
-      await screen.findByRole('dialog', { name: en.exportModal.title }, { timeout: 5000 })
-    ).toBeInTheDocument();
+    const exportDialog = await screen.findByRole(
+      'dialog',
+      { name: en.exportModal.title },
+      { timeout: 5000 }
+    );
+    expect(within(exportDialog).getByRole('button', { name: en.actions.importJson })).toHaveFocus();
     expect(screen.queryByRole('dialog', { name: en.welcomeModal.title })).toBeNull();
+    // The next opening of the export dialog starts at the top again
+    fireEvent.click(within(exportDialog).getByRole('button', { name: en.exportModal.close }));
+    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    const again = await screen.findByRole('dialog', { name: en.exportModal.title });
+    expect(within(again).getByRole('button', { name: en.actions.importJson })).not.toHaveFocus();
     expect(localStorage.getItem(STORAGE_HAS_SEEN_WELCOME_KEY)).toBe('true');
   });
 
