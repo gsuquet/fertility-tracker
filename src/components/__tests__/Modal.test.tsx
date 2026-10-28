@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react';
 import { createPortal } from 'react-dom';
-import { render, screen, fireEvent } from '@testing-library/react';
+import { act, render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Modal, useTopDialog } from '../Modal';
 
@@ -220,6 +220,20 @@ describe('Modal', () => {
     fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(trigger).toHaveFocus();
+  });
+
+  it('closes only the top dialog on Back, then moves the focus back to its opener', async () => {
+    const onOuterClose = vi.fn();
+    render(<Opener onOuterClose={onOuterClose} />);
+    fireEvent.click(screen.getByRole('button', { name: 'Open' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Open inner' }));
+    // The dialogs add their history entries after the render
+    await act(async () => {});
+    act(() => window.history.back());
+    await waitFor(() => expect(screen.queryByRole('dialog', { name: 'Inner' })).toBeNull());
+    expect(screen.getByRole('dialog', { name: 'Outer' })).toBeInTheDocument();
+    expect(onOuterClose).not.toHaveBeenCalled();
+    expect(screen.getByRole('button', { name: 'Open inner' })).toHaveFocus();
   });
 
   it('tells which open dialog is on top', () => {

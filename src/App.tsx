@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
+import { parseTabHash, useHistoryTab } from './hooks/useHistoryLayer';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
 import { CycleProvider, useCycleUi } from './context/CycleContext';
-import type { ActiveTab } from './types/crms';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
@@ -75,8 +75,9 @@ const MainApp: React.FC = () => {
   drawerOpenRef.current = isDrawerOpen;
   // A shortcut of the app icon chooses the first page. Reading it does not change the address.
   const [launchShortcut] = useState(readLaunchShortcut);
-  const [activeTab, setActiveTab] = useState<ActiveTab>(
-    launchShortcut === 'chart' ? 'chart' : 'today'
+  // Else the hash of the address chooses it, so that a reload keeps the page
+  const [activeTab, setActiveTab] = useHistoryTab(
+    launchShortcut === 'chart' ? 'chart' : parseTabHash(window.location.hash)
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -114,7 +115,7 @@ const MainApp: React.FC = () => {
     clearLaunchShortcut();
     if (launchShortcut) openShortcut(launchShortcut);
     listenForLaunchShortcuts(openShortcut);
-  }, [launchShortcut, setSelectedObservation, setIsDrawerOpen]);
+  }, [launchShortcut, setSelectedObservation, setIsDrawerOpen, setActiveTab]);
 
   useEffect(() => {
     checkAndRecordVersionSeen();

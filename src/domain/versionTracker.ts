@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.21.0',
+    date: '2026-10-28',
+    title: 'Back Where You Were',
+    titleFr: 'Retour là où vous étiez',
+    tagline: 'The back button closes what is open, and a reload keeps your page',
+    taglineFr: 'Le bouton retour ferme ce qui est ouvert, et un rechargement garde votre page',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Back closes the open dialog, drawer or menu, and not the app',
+      'Back opens the previous page. On the first page, it leaves the app',
+      'The address shows the open page, so a reload or a link opens the same page',
+    ],
+    highlightsFr: [
+      'Le retour ferme la fenêtre, le panneau ou le menu ouvert, et non l’application',
+      'Le retour ouvre la page précédente. Sur la première page, il quitte l’application',
+      'L’adresse montre la page ouverte : un rechargement ou un lien ouvre la même page',
+    ],
+  },
+  {
     version: '1.20.0',
     date: '2026-10-28',
     title: 'Feels Like an App',

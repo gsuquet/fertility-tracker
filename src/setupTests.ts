@@ -55,6 +55,9 @@ HTMLDialogElement.prototype.close = function close(this: HTMLDialogElement) {
 };
 
 // Start every test with empty storage so saved data never leaks between tests
-afterEach(() => {
+afterEach(async () => {
   localStorage.clear();
+  // A dialog that closes when a test ends goes back in the history. The browser does it in a
+  // task, so wait for it here: else its popstate comes in a later test.
+  await new Promise(resolve => setTimeout(resolve, 0));
 });

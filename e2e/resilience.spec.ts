@@ -101,4 +101,15 @@ test.describe('Fertility Tracker with damaged or unavailable storage', () => {
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect(page.getByRole('status')).toHaveText(en.todayView.savedNotice);
   });
+
+  test('opens the page of the hash without a network', async ({ page, context }) => {
+    await openApp(page);
+    await page.waitForFunction(() => navigator.serviceWorker.controller !== null);
+
+    await context.setOffline(true);
+    // The browser does not send the hash, so the service worker gives the application shell
+    await page.goto('/#chart');
+    await page.reload();
+    await expect(page.getByRole('tabpanel', { name: en.tabs.chart })).toBeVisible();
+  });
 });

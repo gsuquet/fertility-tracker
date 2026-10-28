@@ -13,6 +13,8 @@ This page lists the pages, buttons and dialogs of the application. The names are
 
 On a screen of 640 pixels or less, the page buttons are at the bottom of the screen.
 
+The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`. After a reload, the same page opens. **Back** (the back button or the back gesture) opens the previous page. On the first page, **Back** leaves the application.
+
 ## Header buttons
 
 | Button                             | Phone location      | Action                                              |
@@ -102,13 +104,14 @@ The notice shows above the pages when the application cannot read the saved obse
 
 All the dialogs, the observation drawer and the mobile menu use the same keyboard rules:
 
-| Key or action              | Result                                                               |
-| -------------------------- | -------------------------------------------------------------------- |
-| The dialog opens           | The focus goes to the first button of the dialog.                    |
-| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page. |
-| `Escape`                   | Closes the top dialog only. A dialog under it stays open.            |
-| A click outside the dialog | Closes the dialog.                                                   |
-| The dialog closes          | The focus goes back to the button that opened the dialog.            |
+| Key or action              | Result                                                                |
+| -------------------------- | --------------------------------------------------------------------- |
+| The dialog opens           | The focus goes to the first button of the dialog.                     |
+| `Tab` and `Shift+Tab`      | The focus moves through the dialog only. It does not go to the page.  |
+| `Escape`                   | Closes the top dialog only. A dialog under it stays open.             |
+| A click outside the dialog | Closes the dialog.                                                    |
+| **Back**                   | Closes the top dialog only. The cycle menu also closes with **Back**. |
+| The dialog closes          | The focus goes back to the button that opened the dialog.             |
 
 ## Installed application
 

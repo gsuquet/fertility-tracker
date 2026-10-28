@@ -48,6 +48,8 @@ describe('App launched from a shortcut of the app icon', () => {
     );
     expect(screen.queryByRole('dialog')).toBeNull();
     expect(window.location.search).toBe('');
+    // The hash keeps the page after a reload
+    expect(window.location.hash).toBe('#chart');
   });
 
   it('shows only the welcome guide at the first visit, not the drawer as well', async () => {

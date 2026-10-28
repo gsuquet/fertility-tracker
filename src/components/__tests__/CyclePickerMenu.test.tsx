@@ -1,4 +1,4 @@
-import { screen, fireEvent, within } from '@testing-library/react';
+import { act, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, it, expect } from 'vitest';
 import { CyclePicker } from '../CyclePicker';
 import { renderWithProviders } from '../../test/render';
@@ -75,6 +75,15 @@ describe('CyclePicker menu', () => {
     expect(screen.getByRole('listbox')).toBeInTheDocument();
     fireEvent.keyDown(document, { key: 'Escape' });
     expect(screen.queryByRole('listbox')).toBeNull();
+  });
+
+  it('closes on Back', async () => {
+    renderWithProviders(<CyclePicker />, { observations: demo });
+    openMenu();
+    // The menu adds its history entry after the render
+    await act(async () => {});
+    act(() => window.history.back());
+    await waitFor(() => expect(screen.queryByRole('listbox')).toBeNull());
   });
 
   it('closes on a click outside the menu only', () => {
