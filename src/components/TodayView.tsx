@@ -4,6 +4,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
 import { useDaySwipe } from '../hooks/useDaySwipe';
+import { useShortcut } from '../hooks/useKeyboardShortcuts';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { TodayDateNav } from './today/TodayDateNav';
@@ -74,6 +75,11 @@ export const TodayView: React.FC = () => {
   const handlePrevDay = () => setSelectedDate(prev => addDays(prev, -1));
   const handleNextDay = () => setSelectedDate(prev => addDays(prev, 1));
   const handleGoToToday = () => setSelectedDate(getTodayStr());
+
+  // The arrow keys and T call the same functions as the buttons
+  useShortcut('prevDay', handlePrevDay);
+  useShortcut('nextDay', handleNextDay);
+  useShortcut('goToToday', handleGoToToday);
 
   // A swipe calls the same functions as the arrow buttons
   const {

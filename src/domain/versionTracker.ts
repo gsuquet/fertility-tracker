@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.25.0',
+    date: '2026-10-28',
+    title: 'Keyboard Shortcuts',
+    titleFr: 'Raccourcis clavier',
+    tagline: 'On a computer, use single keys to change pages and days',
+    taglineFr: 'Sur un ordinateur, changez de page et de jour avec une seule touche',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Press 1 to 4 to open a page, and N to log a new observation',
+      'On Today, the arrow keys change the day, and T goes back to today',
+      'Press ? to see all the shortcuts, and turn them off there if you want',
+    ],
+    highlightsFr: [
+      'Appuyez sur 1 à 4 pour ouvrir une page, et sur N pour saisir une observation',
+      'Sur Aujourd’hui, les flèches changent le jour, et T revient à aujourd’hui',
+      'Appuyez sur ? pour voir tous les raccourcis, et désactivez-les si vous le voulez',
+    ],
+  },
+  {
     version: '1.24.0',
     date: '2026-10-28',
     title: 'Swipe Through Days',

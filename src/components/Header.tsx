@@ -22,9 +22,11 @@ import {
   X,
   Sparkles,
   Smartphone,
+  Keyboard,
 } from 'lucide-react';
 import { getAppVersion } from '../domain/appVersion';
 import { Modal } from './Modal';
+import { useShortcutHint } from '../hooks/useKeyboardShortcuts';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -32,6 +34,7 @@ interface HeaderProps {
   onOpenExport: () => void;
   onOpenVersion: () => void;
   onOpenWelcome: () => void;
+  onOpenShortcuts: () => void;
   /** Installs the app. Not given when the app is installed or the browser cannot install it. */
   onInstall?: (() => void) | undefined;
 }
@@ -42,12 +45,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenExport,
   onOpenVersion,
   onOpenWelcome,
+  onOpenShortcuts,
   onInstall,
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { setSelectedObservation } = useCycle();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
+  const hint = useShortcutHint();
 
   const handleNewEntry = () => {
     setSelectedObservation(null);
@@ -83,6 +88,7 @@ export const Header: React.FC<HeaderProps> = ({
           id="tab-today"
           className={`tab-btn ${activeTab === 'today' ? 'active' : ''}`}
           onClick={() => setActiveTab('today')}
+          {...hint(t.tabs.today, 'today')}
         >
           <CalendarDays size={18} />
           <span>{t.tabs.today}</span>
@@ -95,6 +101,7 @@ export const Header: React.FC<HeaderProps> = ({
           id="tab-chart"
           className={`tab-btn ${activeTab === 'chart' ? 'active' : ''}`}
           onClick={() => setActiveTab('chart')}
+          {...hint(t.tabs.chart, 'chart')}
         >
           <Layout size={18} />
           <span>{t.tabs.chart}</span>
@@ -107,6 +114,7 @@ export const Header: React.FC<HeaderProps> = ({
           id="tab-calendar"
           className={`tab-btn ${activeTab === 'calendar' ? 'active' : ''}`}
           onClick={() => setActiveTab('calendar')}
+          {...hint(t.tabs.calendar, 'calendar')}
         >
           <CalendarIcon size={18} />
           <span>{t.tabs.calendar}</span>
@@ -119,6 +127,7 @@ export const Header: React.FC<HeaderProps> = ({
           id="tab-analytics"
           className={`tab-btn ${activeTab === 'analytics' ? 'active' : ''}`}
           onClick={() => setActiveTab('analytics')}
+          {...hint(t.tabs.analytics, 'analytics')}
         >
           <BarChart2 size={18} />
           <span>{t.tabs.analytics}</span>
@@ -135,6 +144,7 @@ export const Header: React.FC<HeaderProps> = ({
           className="btn btn-primary new-entry-btn desktop-only-action"
           onClick={handleNewEntry}
           aria-label={t.actions.newEntry}
+          {...hint(t.actions.newEntry, 'newEntry')}
         >
           <Plus size={18} />
           <span>{t.actions.newEntry}</span>
@@ -314,6 +324,24 @@ export const Header: React.FC<HeaderProps> = ({
                   <span className="sheet-version-badge">v{currentVersion}</span>
                 </div>
                 <span>{t.menu.versionHint}</span>
+              </div>
+            </button>
+
+            {/* A tablet with a keyboard uses the phone menu too */}
+            <button
+              type="button"
+              className="sheet-action-item"
+              onClick={() => {
+                setIsMoreMenuOpen(false);
+                onOpenShortcuts();
+              }}
+            >
+              <div className="sheet-action-icon guide-icon-bg">
+                <Keyboard size={18} />
+              </div>
+              <div className="sheet-action-content">
+                <strong>{t.shortcuts.title}</strong>
+                <span>{t.shortcuts.menuHint}</span>
               </div>
             </button>
 

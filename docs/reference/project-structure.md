@@ -51,55 +51,57 @@ fertility-tracker/
 
 ## Domain files
 
-| File                       | Content                                         |
-| -------------------------- | ----------------------------------------------- |
-| `codeParser.ts`            | Reads and writes code strings.                  |
-| `stampCalculator.ts`       | Fertile mucus test and the stamp of one day.    |
-| `peakDetector.ts`          | Peak Day, count of three and cycle days.        |
-| `cycleBoundaryDetector.ts` | Puts the days into cycles.                      |
-| `cyclePhases.ts`           | Phase lengths and averages.                     |
-| `mucusScore.ts`            | Mucus score of one day.                         |
-| `observationForm.ts`       | Form values and the cycle start question.       |
-| `dataValidator.ts`         | Validation of saved and restored data.          |
-| `backupImport.ts`          | Preview and merge of a restored backup file.    |
-| `storageFormat.ts`         | Versioned format of saved and backup data.      |
-| `backupReminder.ts`        | When to show the backup reminder.               |
-| `swipe.ts`                 | When a swipe changes the day on the Today page. |
-| `sheetDrag.ts`             | When a drag closes the bottom sheet.            |
-| `demoData.ts`              | Demo data: two 28-day cycles.                   |
-| `versionTracker.ts`        | Release notes, version and storage statistics.  |
-| `appVersion.ts`            | Version, build date and last version seen.      |
+| File                       | Content                                                    |
+| -------------------------- | ---------------------------------------------------------- |
+| `codeParser.ts`            | Reads and writes code strings.                             |
+| `stampCalculator.ts`       | Fertile mucus test and the stamp of one day.               |
+| `peakDetector.ts`          | Peak Day, count of three and cycle days.                   |
+| `cycleBoundaryDetector.ts` | Puts the days into cycles.                                 |
+| `cyclePhases.ts`           | Phase lengths and averages.                                |
+| `mucusScore.ts`            | Mucus score of one day.                                    |
+| `observationForm.ts`       | Form values and the cycle start question.                  |
+| `dataValidator.ts`         | Validation of saved and restored data.                     |
+| `backupImport.ts`          | Preview and merge of a restored backup file.               |
+| `storageFormat.ts`         | Versioned format of saved and backup data.                 |
+| `backupReminder.ts`        | When to show the backup reminder.                          |
+| `swipe.ts`                 | When a swipe changes the day on the Today page.            |
+| `sheetDrag.ts`             | When a drag closes the bottom sheet.                       |
+| `keyboardShortcuts.ts`     | The shortcut of a key, and when a key stays with the page. |
+| `demoData.ts`              | Demo data: two 28-day cycles.                              |
+| `versionTracker.ts`        | Release notes, version and storage statistics.             |
+| `appVersion.ts`            | Version, build date and last version seen.                 |
 
 ## Components
 
-| Component                                 | Content                                                        |
-| ----------------------------------------- | -------------------------------------------------------------- |
-| `Header.tsx`                              | Page buttons, cycle picker, header buttons and the phone menu. |
-| `MobileNav.tsx`                           | Page buttons at the bottom of a phone screen.                  |
-| `CycleStatsHeader.tsx`                    | Four statistics cards above the pages.                         |
-| `CyclePicker.tsx`                         | Selects one cycle or all cycles.                               |
-| `TodayView.tsx`                           | The **Today** page. Uses the files in `today/`.                |
-| `ChartRow.tsx`                            | The **Paper Chart Strip** page.                                |
-| `CalendarGrid.tsx`                        | The **Monthly Calendar** page.                                 |
-| `CycleAnalyticsView.tsx`                  | The **Cycle Analytics** page.                                  |
-| `ObservationDrawer.tsx`                   | The observation drawer.                                        |
-| `observation/ObservationCodeSelector.tsx` | The code buttons of the Today form and of the drawer.          |
-| `CycleStartModal.tsx`                     | The **New Cycle Start?** dialog.                               |
-| `StampBadge.tsx`                          | One stamp.                                                     |
-| `ExportModal.tsx`                         | The export and backup dialog.                                  |
-| `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.    |
-| `Modal.tsx`                               | The accessible modal dialog that all dialogs and drawers use.  |
-| `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.  |
-| `StorageRecoveryNotice.tsx`               | The alert for saved data that the application cannot read.     |
-| `StorageSaveWarning.tsx`                  | The alert when the browser does not save the observations.     |
-| `BackupReminder.tsx`                      | The reminder to make a backup.                                 |
-| `PrintExportView.tsx`                     | The 35-day chart for printing.                                 |
-| `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                        |
-| `WelcomeModal.tsx`                        | The welcome guide.                                             |
-| `Footer.tsx`                              | Legal text, guide link and version. Not in the installed app.  |
-| `LegalNotice.tsx`                         | The trademark text, the medical text and the copyright.        |
-| `ErrorBoundary.tsx`                       | Message and **Reload** button when a part cannot load.         |
-| `LoadingStatus.tsx`                       | The loading text for a screen reader while a lazy part loads.  |
+| Component                                 | Content                                                                  |
+| ----------------------------------------- | ------------------------------------------------------------------------ |
+| `Header.tsx`                              | Page buttons, cycle picker, header buttons and the phone menu.           |
+| `MobileNav.tsx`                           | Page buttons at the bottom of a phone screen.                            |
+| `CycleStatsHeader.tsx`                    | Four statistics cards above the pages.                                   |
+| `CyclePicker.tsx`                         | Selects one cycle or all cycles.                                         |
+| `TodayView.tsx`                           | The **Today** page. Uses the files in `today/`.                          |
+| `ChartRow.tsx`                            | The **Paper Chart Strip** page.                                          |
+| `CalendarGrid.tsx`                        | The **Monthly Calendar** page.                                           |
+| `CycleAnalyticsView.tsx`                  | The **Cycle Analytics** page.                                            |
+| `ObservationDrawer.tsx`                   | The observation drawer.                                                  |
+| `observation/ObservationCodeSelector.tsx` | The code buttons of the Today form and of the drawer.                    |
+| `CycleStartModal.tsx`                     | The **New Cycle Start?** dialog.                                         |
+| `StampBadge.tsx`                          | One stamp.                                                               |
+| `ExportModal.tsx`                         | The export and backup dialog.                                            |
+| `ConfirmDialog.tsx`                       | The confirmation dialog before data is replaced or deleted.              |
+| `Modal.tsx`                               | The accessible modal dialog that all dialogs and drawers use.            |
+| `UndoToast.tsx`                           | The toast that undoes the last replace or delete of the data.            |
+| `StorageRecoveryNotice.tsx`               | The alert for saved data that the application cannot read.               |
+| `StorageSaveWarning.tsx`                  | The alert when the browser does not save the observations.               |
+| `BackupReminder.tsx`                      | The reminder to make a backup.                                           |
+| `PrintExportView.tsx`                     | The 35-day chart for printing.                                           |
+| `VersionModal.tsx`                        | The **About & Version Tracker** dialog.                                  |
+| `WelcomeModal.tsx`                        | The welcome guide.                                                       |
+| `KeyboardShortcutsModal.tsx`              | The list of the keyboard shortcuts, with the switch that turns them off. |
+| `Footer.tsx`                              | Legal text, guide link and version. Not in the installed app.            |
+| `LegalNotice.tsx`                         | The trademark text, the medical text and the copyright.                  |
+| `ErrorBoundary.tsx`                       | Message and **Reload** button when a part cannot load.                   |
+| `LoadingStatus.tsx`                       | The loading text for a screen reader while a lazy part loads.            |
 
 ## Related documents
 

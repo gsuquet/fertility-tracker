@@ -31,6 +31,20 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 
 On the **Today** page, the arrow buttons open the previous day and the next day. On a touch screen, you can also swipe. Swipe to the left to open the next day. Swipe to the right to open the previous day. A swipe that starts in a field does not change the day.
 
+## Keyboard shortcuts
+
+On a computer, one key starts an action. A shortcut does nothing while a dialog is open or while the focus is in a field.
+
+| Key             | Action                                                     |
+| --------------- | ---------------------------------------------------------- |
+| `1` `2` `3` `4` | Opens **Today**, **Chart**, **Calendar** or **Analytics**. |
+| `N`             | Logs a new observation, as **Log Observation**.            |
+| `←` `→`         | Opens the previous day or the next day on **Today**.       |
+| `T`             | Opens the date of today on **Today**.                      |
+| `?`             | Opens the **Keyboard shortcuts** dialog.                   |
+
+To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. The footer, the phone menu and the **About & Version Tracker** dialog open it too.
+
 ## Observation form
 
 The **Today** page and the observation drawer have the same fields.

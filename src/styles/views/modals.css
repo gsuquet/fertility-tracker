@@ -783,6 +783,7 @@
   .version-modal-footer {
     display: flex;
     justify-content: flex-end;
+    gap: var(--space-sm);
     padding: 14px 24px;
     border-top: 1px solid var(--bg-surface-border);
     background-color: var(--bg-surface);
@@ -1231,5 +1232,56 @@
     .views-grid {
       grid-template-columns: 1fr !important;
     }
+  }
+
+  /* Keyboard shortcuts dialog */
+  .shortcuts-container {
+    max-width: 28rem;
+  }
+
+  .shortcuts-toggle {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .shortcuts-hint {
+    margin: var(--space-2xs) 0 var(--space-md);
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
+  .shortcuts-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: var(--font-size-md);
+  }
+
+  .shortcuts-table th {
+    text-align: left;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 600;
+    text-transform: uppercase;
+  }
+
+  .shortcuts-table th,
+  .shortcuts-table td {
+    padding: var(--space-xs) var(--space-sm);
+    border-bottom: 1px solid var(--bg-surface-border);
+  }
+
+  .shortcuts-table kbd {
+    display: inline-block;
+    min-width: 1.75rem;
+    padding: var(--space-2xs) var(--space-xs);
+    text-align: center;
+    font-family: inherit;
+    font-weight: 600;
+    background: var(--bg-primary);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-xs);
   }
 }

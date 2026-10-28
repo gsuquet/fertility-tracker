@@ -194,6 +194,7 @@ describe('French text of the components', () => {
         onOpenExport={() => {}}
         onOpenVersion={() => {}}
         onOpenWelcome={() => {}}
+        onOpenShortcuts={() => {}}
       />,
       inFrench()
     );

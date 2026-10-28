@@ -22,6 +22,7 @@ const renderHeader = (
     onOpenExport: vi.fn(),
     onOpenVersion: vi.fn(),
     onOpenWelcome: vi.fn(),
+    onOpenShortcuts: vi.fn(),
   };
   renderWithProviders(
     <>
@@ -112,6 +113,7 @@ describe('Header', () => {
       ['Print or export PDF / JSON charts', props.onOpenExport],
       ['Interactive guide & biomarker chart tutorial', props.onOpenWelcome],
       ['Release notes & system storage diagnostics', props.onOpenVersion],
+      ['Keys for the pages, the days and a new observation', props.onOpenShortcuts],
     ] as const) {
       fireEvent.click(within(openSheet()).getByText(label));
       expect(handler).toHaveBeenCalledOnce();
