@@ -86,6 +86,19 @@ describe('checkCommitMessage', () => {
     expect(checkCommitMessage('feat: add a page\n# comment\n\nThe body.\n')).toEqual([]);
   });
 
+  it('ignores the diff after the scissors line of git commit -v', () => {
+    const message = [
+      'feat: add a page',
+      '# Please enter the commit message for your changes.',
+      '# ------------------------ >8 ------------------------',
+      '# Do not modify or remove the line above.',
+      'diff --git a/x b/x',
+      '',
+    ].join('\n');
+    expect(checkCommitMessage(message)).toEqual([]);
+    expect(headerOf('# ------------------------ >8 ------------------------\nfeat: x\n')).toBe('');
+  });
+
   it('rejects a body without a blank line after the header', () => {
     expect(checkCommitMessage('feat: add a page\nThe body.\n')).toEqual([
       'Put a blank line between the header and the body.',

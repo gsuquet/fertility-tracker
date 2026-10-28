@@ -26,18 +26,25 @@ const HEADER = /^(?<type>[A-Za-z]+)(?:\([a-z0-9][a-z0-9._/-]*\))?!?: \S/;
 /** Messages that Git writes. They do not have to follow Conventional Commits. */
 const GIT_MESSAGES = /^(?:Merge |Revert "|(?:fixup|squash|amend)! )/;
 
+/** The line after which Git ignores the message, for example the diff of `git commit -v`. */
+const SCISSORS = /^# -+ >8 -+$/;
+
 /** Returns the first line that is not empty and not a Git comment. */
 export function headerOf(message: string): string {
-  const lines = message.split('\n').map(line => line.trimEnd());
+  const lines = messageLines(message);
   return lines.find(line => line !== '' && !line.startsWith('#')) ?? '';
+}
+
+/** Returns the lines of a message without the end spaces, and without the part after the scissors line. */
+function messageLines(message: string): string[] {
+  const lines = message.split('\n').map(line => line.trimEnd());
+  const scissors = lines.findIndex(line => SCISSORS.test(line));
+  return scissors === -1 ? lines : lines.slice(0, scissors);
 }
 
 /** Tells if the line after the header, when there is one, is empty. Git comment lines do not count. */
 function bodyIsSeparated(message: string, header: string): boolean {
-  const lines = message
-    .split('\n')
-    .map(line => line.trimEnd())
-    .filter(line => !line.startsWith('#'));
+  const lines = messageLines(message).filter(line => !line.startsWith('#'));
   const next = lines[lines.indexOf(header) + 1];
   return next === undefined || next === '';
 }
