@@ -38,8 +38,8 @@ describe('TodayView Component (Dedicated Today Page)', () => {
 
     expect(screen.getByText(todayTitleText)).toBeInTheDocument();
 
-    const prevBtn = screen.getByTitle('Previous Day');
-    const nextBtn = screen.getByTitle('Next Day');
+    const prevBtn = screen.getByRole('button', { name: 'Previous Day' });
+    const nextBtn = screen.getByRole('button', { name: 'Next Day' });
 
     // Click Prev Day -> moves to yesterday
     fireEvent.click(prevBtn);

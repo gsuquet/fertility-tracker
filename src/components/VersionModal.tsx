@@ -14,6 +14,7 @@ import {
   HardDrive,
   ChevronDown,
   ChevronUp,
+  Keyboard,
 } from 'lucide-react';
 
 const GithubIcon: React.FC<{ size?: number; className?: string }> = ({ size = 18, className }) => (
@@ -45,9 +46,11 @@ import { Copyright, LegalDisclaimers } from './LegalNotice';
 
 interface VersionModalProps {
   onClose: () => void;
+  /** Closes this dialog and opens the keyboard shortcuts. */
+  onOpenShortcuts?: () => void;
 }
 
-export const VersionModal: React.FC<VersionModalProps> = ({ onClose }) => {
+export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShortcuts }) => {
   const { t, language } = useLanguage();
   const [activeTab, setActiveTab] = useState<'notes' | 'system'>('notes');
   const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
@@ -314,6 +317,13 @@ export const VersionModal: React.FC<VersionModalProps> = ({ onClose }) => {
 
       {/* Modal Footer */}
       <div className="modal-footer version-modal-footer">
+        {/* The installed app has no footer, so its keyboard users find the shortcuts here */}
+        {onOpenShortcuts && (
+          <button type="button" className="btn btn-outline" onClick={onOpenShortcuts}>
+            <Keyboard size={16} aria-hidden="true" />
+            <span>{t.shortcuts.title}</span>
+          </button>
+        )}
         <button type="button" className="btn btn-secondary" onClick={onClose}>
           {t.versionTracker.close}
         </button>

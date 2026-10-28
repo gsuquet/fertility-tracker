@@ -7,6 +7,7 @@ import { isInstalled, isIos, promptInstall, useInstallMode } from './pwa/install
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
+import { useShortcut } from './hooks/useKeyboardShortcuts';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -30,6 +31,7 @@ const loadExportModal = () => import('./components/ExportModal');
 const loadVersionModal = () => import('./components/VersionModal');
 const loadWelcomeModal = () => import('./components/WelcomeModal');
 const loadInstallGuideModal = () => import('./components/InstallGuideModal');
+const loadKeyboardShortcutsModal = () => import('./components/KeyboardShortcutsModal');
 
 const CycleAnalyticsView = React.lazy(() =>
   loadCycleAnalyticsView().then(m => ({ default: m.CycleAnalyticsView }))
@@ -42,6 +44,9 @@ const VersionModal = React.lazy(() => loadVersionModal().then(m => ({ default: m
 const WelcomeModal = React.lazy(() => loadWelcomeModal().then(m => ({ default: m.WelcomeModal })));
 const InstallGuideModal = React.lazy(() =>
   loadInstallGuideModal().then(m => ({ default: m.InstallGuideModal }))
+);
+const KeyboardShortcutsModal = React.lazy(() =>
+  loadKeyboardShortcutsModal().then(m => ({ default: m.KeyboardShortcutsModal }))
 );
 
 /**
@@ -90,6 +95,7 @@ const MainApp: React.FC = () => {
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
+  const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
   // Restore a backup of the welcome guide opens the export dialog on its restore button
   const [exportStartsWithRestore, setExportStartsWithRestore] = useState(false);
   const { observations } = useCycleData();
@@ -165,6 +171,20 @@ const MainApp: React.FC = () => {
   const closeVersionModal = () => setIsVersionModalOpen(false);
   const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
   const closeInstallGuide = () => setIsInstallGuideOpen(false);
+  const closeShortcuts = () => setIsShortcutsOpen(false);
+  const openShortcuts = () => setIsShortcutsOpen(true);
+
+  // The keyboard shortcuts of all the pages. TodayView adds those of the days.
+  useShortcut('today', () => setActiveTab('today'));
+  useShortcut('chart', () => setActiveTab('chart'));
+  useShortcut('calendar', () => setActiveTab('calendar'));
+  useShortcut('analytics', () => setActiveTab('analytics'));
+  useShortcut('help', openShortcuts);
+  // As the Log Observation button of the header
+  useShortcut('newEntry', () => {
+    setSelectedObservation(null);
+    setActiveTab('today');
+  });
 
   // Chromium shows its own prompt. iOS has none, so the guide gives the steps.
   const handleInstall =
@@ -197,6 +217,7 @@ const MainApp: React.FC = () => {
         onOpenExport={() => setIsExportModalOpen(true)}
         onOpenVersion={() => setIsVersionModalOpen(true)}
         onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+        onOpenShortcuts={openShortcuts}
         onInstall={handleInstall}
       />
 
@@ -221,6 +242,7 @@ const MainApp: React.FC = () => {
         <Footer
           onOpenVersion={() => setIsVersionModalOpen(true)}
           onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+          onOpenShortcuts={openShortcuts}
           onInstall={handleInstall}
         />
       </main>
@@ -244,7 +266,13 @@ const MainApp: React.FC = () => {
       {isVersionModalOpen && (
         <ErrorBoundary onClose={closeVersionModal}>
           <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <VersionModal onClose={closeVersionModal} />
+            <VersionModal
+              onClose={closeVersionModal}
+              onOpenShortcuts={() => {
+                closeVersionModal();
+                openShortcuts();
+              }}
+            />
           </React.Suspense>
         </ErrorBoundary>
       )}
@@ -261,6 +289,14 @@ const MainApp: React.FC = () => {
         <ErrorBoundary onClose={closeInstallGuide}>
           <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
             <InstallGuideModal onClose={closeInstallGuide} />
+          </React.Suspense>
+        </ErrorBoundary>
+      )}
+
+      {isShortcutsOpen && (
+        <ErrorBoundary onClose={closeShortcuts}>
+          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+            <KeyboardShortcutsModal onClose={closeShortcuts} />
           </React.Suspense>
         </ErrorBoundary>
       )}

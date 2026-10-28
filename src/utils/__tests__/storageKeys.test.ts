@@ -16,6 +16,7 @@ describe('storageKeys', () => {
       LAST_SEEN_VERSION_KEY: 'fertility_tracker_last_seen_version',
       STORAGE_HAS_SEEN_WELCOME_KEY: 'fertility_tracker_has_seen_welcome',
       STORAGE_INSTALL_BANNER_CLOSED_KEY: 'fertility_tracker_install_banner_closed',
+      STORAGE_SHORTCUTS_OFF_KEY: 'fertility_tracker_shortcuts_off',
     });
   });
 });

@@ -51,4 +51,15 @@ describe('Footer Component', () => {
     fireEvent.click(guideBtn);
     expect(handleOpenWelcome).toHaveBeenCalledTimes(1);
   });
+
+  it('opens the keyboard shortcuts', () => {
+    const onOpenShortcuts = vi.fn();
+    render(
+      <LanguageProvider>
+        <Footer onOpenShortcuts={onOpenShortcuts} />
+      </LanguageProvider>
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }));
+    expect(onOpenShortcuts).toHaveBeenCalledOnce();
+  });
 });

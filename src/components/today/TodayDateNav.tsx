@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { useShortcutHint } from '../../hooks/useKeyboardShortcuts';
 import type { Observation } from '../../types/crms';
 import { formatMessage } from '../../i18n';
 import { formatDateDisplay } from '../../utils/dateUtils';
@@ -33,6 +34,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   onDateChange,
 }) => {
   const { t } = useLanguage();
+  const hint = useShortcutHint();
 
   // The wrapper is a label, so a click anywhere on it reaches the date input
   const handleOpenPicker = (inputEl: HTMLInputElement) => {
@@ -56,7 +58,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           type="button"
           className="icon-button date-nav-btn compact-nav-btn"
           onClick={onPrevDay}
-          title={t.todayView.prevDay}
+          {...hint(t.todayView.prevDay, 'prevDay')}
           aria-label={t.todayView.prevDay}
         >
           <ChevronLeft size={18} />
@@ -83,7 +85,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           type="button"
           className="icon-button date-nav-btn compact-nav-btn"
           onClick={onNextDay}
-          title={t.todayView.nextDay}
+          {...hint(t.todayView.nextDay, 'nextDay')}
           aria-label={t.todayView.nextDay}
         >
           <ChevronRight size={18} />
@@ -97,7 +99,12 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
             {t.todayView.todayLabel}
           </span>
         ) : (
-          <button type="button" className="btn btn-xs btn-outline" onClick={onGoToToday}>
+          <button
+            type="button"
+            className="btn btn-xs btn-outline"
+            onClick={onGoToToday}
+            {...hint(t.todayView.goToToday, 'goToToday')}
+          >
             <RotateCcw size={11} />
             {t.todayView.goToToday}
           </button>

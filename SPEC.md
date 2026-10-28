@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.24.0
+- **Document version:** 1.25.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -36,6 +36,7 @@ This document is the full specification of the application. Change it before you
    - [5.11 Error boundary](#511-error-boundary)
    - [5.12 Installed application and touch](#512-installed-application-and-touch)
    - [5.13 Install and update](#513-install-and-update)
+   - [5.14 Keyboard shortcuts](#514-keyboard-shortcuts)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -745,6 +746,31 @@ The first install has no controller. Thus, it activates at once and the applicat
 | No **Reload**                   | The new version starts when all windows of the application are closed and opened again.                                                                             |
 - After the reload, `checkAndRecordVersionSeen()` finds the new version, and the version dialog shows its release notes.
 
+### 5.14 Keyboard shortcuts
+
+**Modules:** [src/hooks/useKeyboardShortcuts.ts](src/hooks/useKeyboardShortcuts.ts), [src/domain/keyboardShortcuts.ts](src/domain/keyboardShortcuts.ts), [src/components/KeyboardShortcutsModal.tsx](src/components/KeyboardShortcutsModal.tsx)
+
+| Key             | Action                                                 | Where          |
+| --------------- | ------------------------------------------------------ | -------------- |
+| `1` `2` `3` `4` | Open **Today**, **Chart**, **Calendar**, **Analytics** | All pages      |
+| `N`             | New observation, as **Log Observation** in the header  | All pages      |
+| `←` `→`         | Previous day and next day                              | **Today** page |
+| `T`             | The date of today                                      | **Today** page |
+| `?`             | Open the **Keyboard shortcuts** dialog                 | All pages      |
+- One `keydown` listener on `document` handles all the shortcuts. `useShortcut(id, handler)` adds a handler while its component is mounted. `App` adds the pages, `N` and `?`. `TodayView` adds the arrows and `T`.
+- [keyboardShortcuts.ts](src/domain/keyboardShortcuts.ts) finds the shortcut of a key event:
+  - A key with `Ctrl`, `Meta` or `Alt`, or a key of an input method composition, is not a shortcut. Thus, the shortcuts of the browser and the system stay, and `Ctrl+P` prints the report.
+  - The digits use `event.key` or `event.code` (`Digit1` to `Digit4`, `Numpad1` to `Numpad4`). Thus, they also work on a French AZERTY keyboard without `Shift`.
+  - The letters ignore the case.
+- A shortcut does nothing in these cases:
+  - A dialog is open (`dialog[open]`), for example the drawer or the phone menu.
+  - The focus is in an input, a text area, a select or an editable element.
+  - The focus is in a list, a grid, a menu, a radio group, a tab list or a slider. These widgets can use the keys themselves.
+  - The page of the shortcut is not open. For example, `←` does nothing on the chart page.
+- The **Keyboard shortcuts** dialog lists each shortcut with its translated action. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
+- These open the dialog: `?`, and the **Keyboard shortcuts** button of the footer, of the phone menu and of the **About & Version Tracker** dialog. The installed app has no footer, so the **About** dialog has the button too. When the shortcuts are off, `?` does nothing, and the buttons stay.
+- These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -780,6 +806,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 | `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                             |
 | `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                             |
 | `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it |
+| `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off (5.14) |
 
 ### 6.3 Storage format
 
@@ -1034,6 +1061,7 @@ The helpers are in `src/test/`:
 | 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
 | 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
 | 13   | On a phone with touch, a swipe to the left on **Today** opens the next day, and a swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                   |
+| 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 
