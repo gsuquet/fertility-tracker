@@ -44,7 +44,7 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
-    version: '1.27.0',
+    version: '1.28.0',
     date: '2026-10-28',
     title: 'Swipe the Menus and the Calendar',
     titleFr: 'Glissez les menus et le calendrier',
@@ -62,6 +62,42 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'Faites glisser le menu et le menu des cycles vers le bas pour les fermer, comme la fiche d’observation',
       'Un glissement sur un menu ne fait plus défiler la page derrière, et le menu monte en glissant à l’ouverture',
       'Dans le calendrier, glissez vers la droite pour le mois précédent et vers la gauche pour le suivant',
+    ],
+  },
+  {
+    version: '1.27.1',
+    date: '2026-10-28',
+    title: 'Full-Screen Launch Screen',
+    titleFr: 'Écran de lancement plein écran',
+    tagline: 'The launch screen of the installed app is now navy from edge to edge',
+    taglineFr: 'L’écran de lancement de l’app installée est maintenant bleu nuit sur tout l’écran',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The launch screen uses the color of the logo, so the logo no longer shows as a square',
+      'An installed app can take a few days to show the new launch screen. To see it now, install the app again',
+    ],
+    highlightsFr: [
+      'L’écran de lancement prend la couleur du logo, qui ne s’affiche plus comme un carré',
+      'Une app installée peut mettre quelques jours pour afficher le nouvel écran. Pour le voir tout de suite, installez l’app à nouveau',
+    ],
+  },
+  {
+    version: '1.27.0',
+    date: '2026-10-28',
+    title: 'App Icon Reminder',
+    titleFr: 'Rappel sur l’icône',
+    tagline: 'A quiet dot on the app icon when today is not logged',
+    taglineFr: 'Un point discret sur l’icône quand aujourd’hui n’est pas saisi',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Turn it on in the About dialog, tab System Information. It is off by default',
+      'The dot shows while today has no observation, and goes when you save one',
+      'No notifications and no server: the dot changes only while the app is open',
+    ],
+    highlightsFr: [
+      'Activez-le dans À propos, onglet Informations système. Il est désactivé par défaut',
+      'Le point s’affiche tant qu’aujourd’hui n’a pas d’observation, et part à la saisie',
+      'Ni notification ni serveur : le point change seulement quand l’app est ouverte',
     ],
   },
   {

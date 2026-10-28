@@ -17,6 +17,7 @@ describe('storageKeys', () => {
       STORAGE_HAS_SEEN_WELCOME_KEY: 'fertility_tracker_has_seen_welcome',
       STORAGE_INSTALL_BANNER_CLOSED_KEY: 'fertility_tracker_install_banner_closed',
       STORAGE_SHORTCUTS_OFF_KEY: 'fertility_tracker_shortcuts_off',
+      STORAGE_BADGE_ON_KEY: 'fertility_tracker_badge_on',
     });
   });
 });

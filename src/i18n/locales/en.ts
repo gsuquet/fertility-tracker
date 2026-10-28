@@ -544,6 +544,15 @@ export const en = {
     copyright: '© {year} Fertility Tracker • Open Source Software',
     userGuide: 'User Guide',
   },
+  appBadge: {
+    title: 'App icon badge',
+    label: 'Show a dot on the app icon when today has no observation',
+    hint: 'Works in the installed app. The dot changes only while the app is open. If you do not open the app on a day, the icon keeps the last state.',
+    iosPermission:
+      'On iPhone, iPad and Mac, the system asks for the permission for notifications. The app never sends notifications.',
+    denied:
+      'The permission was refused. To use the badge, allow notifications for this app in the settings of the system.',
+  },
   shortcuts: {
     title: 'Keyboard shortcuts',
     menuHint: 'Keys for the pages, the days and a new observation',
