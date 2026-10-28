@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.25.0
+- **Document version:** 1.26.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -37,6 +37,7 @@ This document is the full specification of the application. Change it before you
    - [5.12 Installed application and touch](#512-installed-application-and-touch)
    - [5.13 Install and update](#513-install-and-update)
    - [5.14 Keyboard shortcuts](#514-keyboard-shortcuts)
+   - [5.15 Page slide](#515-page-slide)
 6. [State and data storage](#6-state-and-data-storage)
    - [6.1 Contexts](#61-contexts)
    - [6.2 Storage keys](#62-storage-keys)
@@ -774,6 +775,21 @@ The first install has no controller. Thus, it activates at once and the applicat
 - These open the dialog: `?`, and the **Keyboard shortcuts** button of the footer, of the phone menu and of the **About & Version Tracker** dialog. The installed app has no footer, so the **About** dialog has the button too. When the shortcuts are off, `?` does nothing, and the buttons stay.
 - These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
+### 5.15 Page slide
+
+**Modules:** [src/utils/viewTransition.ts](src/utils/viewTransition.ts), [src/hooks/useHistoryLayer.ts](src/hooks/useHistoryLayer.ts), [src/styles/views/page-transition.css](src/styles/views/page-transition.css)
+
+- A page change slides the page in 180 ms. The page order is **Today**, **Chart**, **Calendar**, **Analytics**. A page on the right comes from the right, and a page on the left comes from the left.
+- All page changes use `setActiveTab` of `useHistoryLayer`: the tabs, the bottom bar, the shortcuts, the hash and **Back**. Thus, **Back** slides back to the left page.
+- `runViewTransition(update, direction)` calls `document.startViewTransition`. The update renders in it with `flushSync`. The direction is `data-page-transition` on the root element until the transition ends.
+- The page area (`.page-view`) has a `view-transition-name`. The header and the bottom bar have their own names and stay in place, above the page. The rest of the screen changes at once.
+- In these cases, the page changes at once, as before this feature:
+  - The browser has no View Transitions API.
+  - The user prefers reduced motion (`prefers-reduced-motion: reduce`).
+  - The browser animates **Back** itself (`hasUAVisualTransition`), for example the swipe back of Safari.
+  - The **Analytics** page has not shown yet. Its lazy component shows the loading status first, and a slide to it would show the loading status.
+- An observation that opens from the chart or the calendar keeps the slide of the drawer (5.7). It has no shared-element transition.
+
 ## 6. State and data storage
 
 **Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
@@ -1065,6 +1081,7 @@ The helpers are in `src/test/`:
 | 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
 | 13   | On a phone with touch, a swipe to the left on **Today** opens the next day, and a swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                   |
 | 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
+| 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 

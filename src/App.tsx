@@ -7,6 +7,7 @@ import { isInstalled, isIos, promptInstall, useInstallMode } from './pwa/install
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
+import type { ActiveTab } from './types/crms';
 import { useShortcut } from './hooks/useKeyboardShortcuts';
 
 import { Header } from './components/Header';
@@ -70,6 +71,16 @@ const ChunkReady: React.FC<{ onReady: (state: 'ready') => void }> = ({ onReady }
   return null;
 };
 
+/**
+ * True after the analytics page has rendered one time. Before that, its lazy component shows the
+ * loading status first, so a slide to it would show the loading status.
+ */
+let analyticsShown = false;
+const markAnalyticsShown = () => {
+  analyticsShown = true;
+};
+const canAnimateTo = (tab: ActiveTab) => tab !== 'analytics' || analyticsShown;
+
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
@@ -90,7 +101,8 @@ const MainApp: React.FC = () => {
   const [launchShortcut] = useState(readLaunchShortcut);
   // Else the hash of the address chooses it, so that a reload keeps the page
   const [activeTab, setActiveTab] = useHistoryTab(
-    launchShortcut === 'chart' ? 'chart' : parseTabHash(window.location.hash)
+    launchShortcut === 'chart' ? 'chart' : parseTabHash(window.location.hash),
+    canAnimateTo
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
@@ -230,15 +242,23 @@ const MainApp: React.FC = () => {
         <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
         <CycleStatsHeader />
 
-        {/* The key resets the alert of a failed page when the tab changes */}
-        <ErrorBoundary key={activeTab}>
-          <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
-            {activeTab === 'today' && <TodayView />}
-            {activeTab === 'chart' && <ChartRow />}
-            {activeTab === 'calendar' && <CalendarGrid />}
-            {activeTab === 'analytics' && <CycleAnalyticsView />}
-          </React.Suspense>
-        </ErrorBoundary>
+        {/* The page slides on a page change, see SPEC 5.15 */}
+        <div className="page-view">
+          {/* The key resets the alert of a failed page when the tab changes */}
+          <ErrorBoundary key={activeTab}>
+            <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
+              {activeTab === 'today' && <TodayView />}
+              {activeTab === 'chart' && <ChartRow />}
+              {activeTab === 'calendar' && <CalendarGrid />}
+              {activeTab === 'analytics' && (
+                <>
+                  <CycleAnalyticsView />
+                  <ChunkReady onReady={markAnalyticsShown} />
+                </>
+              )}
+            </React.Suspense>
+          </ErrorBoundary>
+        </div>
 
         <Footer
           onOpenVersion={() => setIsVersionModalOpen(true)}

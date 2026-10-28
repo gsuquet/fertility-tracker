@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useSyncExternalStore } from 'react';
 import type { ActiveTab } from '../types/crms';
+import { runViewTransition } from '../utils/viewTransition';
 
 /**
  * Back (the back button or gesture of the device, or of the browser) closes the top layer, then
@@ -24,16 +25,28 @@ let mounted = false;
 let traversing = false;
 let scheduled = false;
 const tabListeners = new Set<() => void>();
+/** False for a page that cannot show at once, for example a lazy page that has not loaded. */
+const always = () => true;
+let canAnimateTo: (tab: ActiveTab) => boolean = always;
 
 const depthOf = (state: unknown): number => {
   const depth = (state as Record<string, unknown> | null)?.[DEPTH_KEY];
   return typeof depth === 'number' ? depth : 0;
 };
 
-const setActiveTab = (tab: ActiveTab) => {
+/**
+ * Opens a page. A page change of the mounted app slides in the direction of the page order. With
+ * `animate` false, for example when the browser animates Back itself, the page changes at once.
+ */
+const setActiveTab = (tab: ActiveTab, animate = true) => {
   if (tab === activeTab) return;
+  const direction = TABS.indexOf(tab) > TABS.indexOf(activeTab) ? 'forward' : 'back';
   activeTab = tab;
-  for (const listener of tabListeners) listener();
+  const notify = () => {
+    for (const listener of tabListeners) listener();
+  };
+  if (animate && mounted && canAnimateTo(tab)) runViewTransition(notify, direction);
+  else notify();
 };
 
 /** Makes the history entries match the page and the open layers. */
@@ -69,7 +82,9 @@ window.addEventListener('popstate', event => {
     scheduleSync();
     return;
   }
-  setActiveTab(parseTabHash(window.location.hash));
+  // A swipe Back of Safari already shows the previous page: no second animation
+  const { hasUAVisualTransition } = event as PopStateEvent & { hasUAVisualTransition?: boolean };
+  setActiveTab(parseTabHash(window.location.hash), !hasUAVisualTransition);
   // Back closes each layer above the new entry, the top one first. A layer that stays open
   // (for example, it asks for a confirmation) gets its entry again.
   for (const layer of layers.slice(depthOf(event.state)).reverse()) layer.close();
@@ -133,9 +148,14 @@ const changeTab = (tab: ActiveTab) => {
 
 /**
  * The open page, kept in the hash of the address. Use it one time, in the root of the app.
- * `initialTab` is the first page, for example from a launch shortcut.
+ * `initialTab` is the first page, for example from a launch shortcut. A page change slides only
+ * when `canAnimate` gives true for the new page.
  */
-export const useHistoryTab = (initialTab: ActiveTab): [ActiveTab, (tab: ActiveTab) => void] => {
+export const useHistoryTab = (
+  initialTab: ActiveTab,
+  canAnimate: (tab: ActiveTab) => boolean = always
+): [ActiveTab, (tab: ActiveTab) => void] => {
+  canAnimateTo = canAnimate;
   useState(() => start(initialTab));
   useEffect(() => {
     mounted = true;

@@ -1,7 +1,13 @@
 import { act, cleanup, render, renderHook, waitFor } from '@testing-library/react';
 import { StrictMode, useState } from 'react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
+import { runViewTransition } from '../../utils/viewTransition';
 import { parseTabHash, useHistoryLayer, useHistoryTab } from '../useHistoryLayer';
+
+// The page change runs at once, and the tests see the direction of its slide
+vi.mock('../../utils/viewTransition', () => ({
+  runViewTransition: vi.fn((update: () => void) => update()),
+}));
 
 const depth = () => (window.history.state as { ftLayerDepth?: number } | null)?.ftLayerDepth;
 
@@ -10,6 +16,11 @@ const flush = () => act(async () => {});
 
 /** Counts the entries that the app adds. */
 const pushes = () => vi.spyOn(window.history, 'pushState');
+
+// restoreAllMocks removes the implementation of the mock
+beforeEach(() => {
+  vi.mocked(runViewTransition).mockImplementation(update => update());
+});
 
 // Unmounting the layers of a test goes back in the history: wait until it ends
 afterEach(async () => {
@@ -297,5 +308,42 @@ describe('useHistoryTab', () => {
     window.dispatchEvent(new HashChangeEvent('hashchange'));
     await waitFor(() => expect(depth() ?? 0).toBe(0));
     expect(result.current[0]).toBe('chart');
+  });
+
+  describe('page slide', () => {
+    beforeEach(() => {
+      vi.mocked(runViewTransition).mockClear();
+    });
+
+    it('slides forward to a page on the right and back to a page on the left', () => {
+      const { result } = renderHook(() => useHistoryTab('chart'));
+      act(() => result.current[1]('analytics'));
+      act(() => result.current[1]('today'));
+      expect(vi.mocked(runViewTransition).mock.calls.map(call => call[1])).toEqual([
+        'forward',
+        'back',
+      ]);
+      expect(result.current[0]).toBe('today');
+    });
+
+    it('does not slide to a page that cannot show at once', () => {
+      const { result } = renderHook(() => useHistoryTab('today', tab => tab !== 'calendar'));
+      act(() => result.current[1]('calendar'));
+      expect(result.current[0]).toBe('calendar');
+      expect(runViewTransition).not.toHaveBeenCalled();
+    });
+
+    it('does not slide on a Back that the browser animates itself', async () => {
+      const { result } = renderHook(() => useHistoryTab('today'));
+      window.history.replaceState({ ftLayerDepth: 0 }, '', '#calendar');
+      const event = new PopStateEvent('popstate', { state: { ftLayerDepth: 0 } });
+      Object.defineProperty(event, 'hasUAVisualTransition', { value: true });
+      act(() => {
+        window.dispatchEvent(event);
+      });
+      expect(result.current[0]).toBe('calendar');
+      expect(runViewTransition).not.toHaveBeenCalled();
+      await flush();
+    });
   });
 });
