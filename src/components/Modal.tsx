@@ -55,6 +55,8 @@ interface ModalProps {
   className: string;
   /** Classes of the panel that holds the content, for example `modal-container`. */
   panelClassName: string;
+  /** Inline styles of the panel, for example the place of a menu under its button. */
+  panelStyle?: React.CSSProperties | undefined;
   children: React.ReactNode;
 }
 
@@ -71,6 +73,7 @@ export const Modal: React.FC<ModalProps> = ({
   initialFocusRef,
   className,
   panelClassName,
+  panelStyle,
   children,
 }) => {
   const dialogRef = useRef<HTMLDialogElement>(null);
@@ -114,6 +117,9 @@ export const Modal: React.FC<ModalProps> = ({
     dialog.addEventListener('click', handleClick);
     setOpenDialogs([...openDialogs, dialog]);
     (initialFocusRef?.current ?? focusableIn(dialog)[0] ?? dialog).focus();
+    // At the start of the slide up of a sheet, the focused element is under the screen. The
+    // browser scrolls the backdrop to show it, which cancels the slide, so undo that scroll.
+    dialog.scrollTop = 0;
     return () => {
       dialog.removeEventListener('keydown', handleKeyDown);
       dialog.removeEventListener('click', handleClick);
@@ -140,7 +146,9 @@ export const Modal: React.FC<ModalProps> = ({
         onClose();
       }}
     >
-      <div className={panelClassName}>{children}</div>
+      <div className={panelClassName} style={panelStyle}>
+        {children}
+      </div>
     </dialog>,
     document.body
   );

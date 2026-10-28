@@ -55,6 +55,8 @@ test.describe('Observation drawer', () => {
 
     const sheet = drawer.locator('.drawer-container');
     const top = async () => (await sheet.boundingBox())?.y;
+    // The sheet slides up when it opens: measure its place at the end of the slide
+    await sheet.evaluate(element => Promise.all(element.getAnimations().map(a => a.finished)));
     const openTop = await top();
     await drag(60);
     await expect(drawer).toBeVisible();

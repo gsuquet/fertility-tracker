@@ -8,11 +8,13 @@ import { useDaySwipe } from '../useDaySwipe';
 const Page = ({
   onSwipe,
   onClick,
+  canSwipe,
 }: {
   onSwipe: (d: SwipeDirection) => void;
   onClick?: () => void;
+  canSwipe?: (d: SwipeDirection) => boolean;
 }) => {
-  const { handlers, pageRef, contentRef } = useDaySwipe(onSwipe);
+  const { handlers, pageRef, contentRef } = useDaySwipe(onSwipe, canSwipe);
   return (
     <div data-testid="page" ref={pageRef} {...handlers}>
       <div data-testid="content" ref={contentRef}>
@@ -113,6 +115,21 @@ describe('useDaySwipe', () => {
     expect(content().style.transform).toBe('');
     await wait(500);
     expect(onSwipe).not.toHaveBeenCalled();
+  });
+
+  it('puts the content back and blocks the click for a direction that the page refuses', async () => {
+    const onSwipe = vi.fn();
+    const onClick = vi.fn();
+    render(<Page onSwipe={onSwipe} onClick={onClick} canSwipe={d => d === 'prev'} />);
+    swipe(-100);
+    expect(content().style.transform).toBe('');
+    fireEvent.click(screen.getByRole('button', { name: 'code' }));
+    expect(onClick).not.toHaveBeenCalled();
+    await wait(500);
+    expect(onSwipe).not.toHaveBeenCalled();
+    swipe(100);
+    await wait(150);
+    expect(onSwipe).toHaveBeenCalledWith('prev');
   });
 
   it('changes the day at once with no movement when the user prefers reduced motion', () => {

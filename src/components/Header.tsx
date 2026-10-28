@@ -27,6 +27,7 @@ import {
 import { getAppVersion } from '../domain/appVersion';
 import { Modal } from './Modal';
 import { useShortcutHint } from '../hooks/useKeyboardShortcuts';
+import { useSheetDrag } from '../hooks/useSheetDrag';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -53,6 +54,11 @@ export const Header: React.FC<HeaderProps> = ({
   const { setSelectedObservation } = useCycle();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const hint = useShortcutHint();
+  // On a phone, a drag down closes the menu as the close button does
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(
+    () => setIsMoreMenuOpen(false),
+    isMoreMenuOpen
+  );
 
   const handleNewEntry = () => {
     setSelectedObservation(null);
@@ -235,7 +241,8 @@ export const Header: React.FC<HeaderProps> = ({
           className="modal-overlay mobile-menu-overlay"
           panelClassName="mobile-action-sheet"
         >
-          <div className="mobile-action-sheet-header">
+          <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
+          <div className="mobile-action-sheet-header" {...dragHandlers}>
             <div className="sheet-header-title">
               <Sparkles size={16} className="sheet-icon" />
               <span>{t.menu.title}</span>
@@ -250,7 +257,7 @@ export const Header: React.FC<HeaderProps> = ({
             </button>
           </div>
 
-          <div className="mobile-action-sheet-body">
+          <div className="mobile-action-sheet-body" ref={bodyRef}>
             {onInstall && (
               <button
                 type="button"

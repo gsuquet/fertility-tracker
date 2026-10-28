@@ -26,11 +26,6 @@
     animation: slideIn 0.25s cubic-bezier(0.16, 1, 0.3, 1);
   }
 
-  /* The grab handle of the bottom sheet. It shows on a phone only. */
-  .sheet-handle {
-    display: none;
-  }
-
   .drawer-header {
     padding: 1.15rem 1.25rem;
     border-bottom: 1px solid var(--bg-surface-border);
@@ -101,28 +96,6 @@
       );
       backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
       -webkit-backdrop-filter: blur(calc(6px * (1 - var(--sheet-drag))));
-    }
-
-    .sheet-handle {
-      display: block;
-      flex-shrink: 0;
-      position: relative;
-      height: 1.25rem;
-      touch-action: none;
-      cursor: grab;
-    }
-
-    .sheet-handle::before {
-      content: '';
-      position: absolute;
-      top: 0.5rem;
-      left: 50%;
-      width: 2.25rem;
-      height: 0.25rem;
-      transform: translateX(-50%);
-      border-radius: var(--radius-full);
-      background-color: var(--text-muted);
-      opacity: 0.5;
     }
 
     .drawer-container {

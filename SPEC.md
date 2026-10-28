@@ -1,6 +1,6 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.26.0
+- **Document version:** 1.27.0
 - **Status:** Approved
 - **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
@@ -365,17 +365,18 @@ The application has four pages, a header, a statistics bar, an observation drawe
 - The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
-- The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) (`role="listbox"`) is not a modal dialog.
-- The cycle menu closes with its button, its close button, `Escape`, **Back** and a click outside the menu. Its backdrop dims the page on a phone only.
+- The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) uses the dialog component below (`aria-label="Filter Cycle View"`). Its list of cycles is a `role="listbox"` element. On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
+- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only. When it opens, the focus goes to the selected cycle.
+- On a phone, the phone menu and the cycle menu are bottom sheets, like the drawer. The user drags them down to close them (section 5.7).
 - The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([5.12](#back-button-and-address)).
 
-[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog` and the phone menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
+[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
 
 | Function       | Rule                                                                                                                             |
 | -------------- | -------------------------------------------------------------------------------------------------------------------------------- |
 | Element        | A native `<dialog>` in a portal on `document.body`, opened with `showModal()`. The browser makes the page under it inert.        |
 | Name           | `aria-modal="true"`, and a name from `aria-labelledby` (the title) or `aria-label`.`aria-describedby` is optional.               |
-| First focus    | The element of `initialFocusRef`, else the first element that can get the focus.                                                 |
+| First focus    | The element of `initialFocusRef`, else the first element that can get the focus. The `<dialog>` itself does not scroll to it.    |
 | Focus trap     | `Tab` on the last element goes to the first. `Shift+Tab` on the first goes to the last.                                          |
 | Two dialogs    | The dialog on top keeps the focus. The dialog under it ignores the keys.                                                         |
 | `Escape`       | Calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document.                         |
@@ -474,6 +475,15 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 - Text uses the theme tokens `--text-primary` and `--text-secondary`. Thus, it is readable in the dark theme.
 - On a phone, a long code goes onto more lines and the day cell becomes taller. The code is never cut.
 
+#### Swipe between months
+
+On a touch screen, a swipe on the calendar changes the month. It uses the hook of the **Today** page, [useDaySwipe.ts](src/hooks/useDaySwipe.ts), with the same rules (section 5.3), and these differences:
+
+- A swipe to the left opens the next month. A swipe to the right opens the previous month. The swipe calls the same functions as the arrow buttons.
+- In the current month, a swipe to the left does nothing, as the disabled next-month button. The grid goes back, and the click after the swipe is blocked.
+- The days grid follows the finger and slides. The header with the month name and the buttons stays in place.
+- The calendar has `touch-action: pan-y pinch-zoom`. Thus, a vertical drag scrolls the page and never changes the month.
+
 ### 5.6 Cycle Analytics page
 
 **Module:** [src/components/CycleAnalyticsView.tsx](src/components/CycleAnalyticsView.tsx)
@@ -506,11 +516,16 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 
 #### Drag down to close
 
-On a phone, the drawer is a bottom sheet. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag it down to close it. On a larger screen, nothing changes.
+On a phone, the drawer, the phone menu and the cycle menu are bottom sheets (section 5.1). The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes. The rules below apply to the three sheets. The body is the form of the drawer, the list of actions of the phone menu, and the list of cycles of the cycle menu.
 
 - A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
 - A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
-- A drag in the form body scrolls the form. It moves the sheet only when the form is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll.
+- A drag in the body scrolls the body. It moves the sheet only when the body is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll. A drag that starts on a button of the body also moves the sheet, and the button does not get a click.
+- A swipe on the sheet never scrolls the page under it:
+  - A body that has nothing to scroll stops the scroll of the browser for each move of one finger.
+  - A body that scrolls has `overscroll-behavior: contain`. At its end, the page does not scroll.
+  - A move of one finger outside the body, for example on the backdrop, stops the scroll of the browser.
+  - A pinch with two fingers stays available, so the user can zoom.
 - One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
 - A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
 - The backdrop becomes lighter in proportion to the drag.
@@ -677,7 +692,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 | **Back** with no layer open              | The previous page opens. On the first page, **Back** leaves the application, or goes to the previous site in a browser. The application never stops **Back**.           |
 | The user changes the hash                | The page of the hash opens (`hashchange`).                                                                                                                              |
 | Reload                                   | The page of the hash opens, with no layer open. An unknown or empty hash opens **Today**.                                                                               |
-- `useHistoryLayer(onClose, open)` adds the entry of a layer while `open` is true. `Modal` and `CyclePicker` use it.
+- `useHistoryLayer(onClose, open)` adds the entry of a layer while `open` is true. `Modal` uses it.
 - No other module adds history entries or goes back. `clearLaunchShortcut()` only removes the `shortcut` parameter and keeps the state.
 - `useHistoryTab(initialTab)` gives the page and the function that changes it. `App` uses it.
 - Each entry of the application has `state.ftLayerDepth`: the number of layers that were open. The application compares it to the open layers after each change, in a microtask.
@@ -1085,6 +1100,8 @@ The helpers are in `src/test/`:
 | 13   | On a phone with touch, a swipe to the left on **Today** opens the next day, and a swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                   |
 | 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
 | 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
+| 16   | On a phone with touch, a swipe down on the phone menu and on the cycle menu closes them. A swipe up on them does not scroll the page. When the phone menu opens, it slides up from the bottom of the screen.                                                             |
+| 17   | On a phone with touch, a swipe to the right on the calendar opens the previous month, and a swipe to the left opens the next month. In the current month, a swipe to the left does not change the month.                                                                 |
 
 `@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
 

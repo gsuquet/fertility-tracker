@@ -4,6 +4,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
 import { StampBadge } from './StampBadge';
+import { useDaySwipe } from '../hooks/useDaySwipe';
 import { getTodayStr } from '../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 
@@ -25,14 +26,28 @@ export const CalendarGrid: React.FC = () => {
 
   const monthNames = t.calendar.months;
 
+  // The functions read the month of the state, so two fast swipes move two months
   const handlePrevMonth = () => {
-    setCurrentMonth(new Date(year, month - 1, 1));
+    setCurrentMonth(prev => new Date(prev.getFullYear(), prev.getMonth() - 1, 1));
   };
 
-  // The next button is disabled from the current month onward
+  // The next button is disabled from the current month onward. A swipe never goes past it.
   const handleNextMonth = () => {
-    setCurrentMonth(new Date(year, month + 1, 1));
+    setCurrentMonth(prev => {
+      const next = new Date(prev.getFullYear(), prev.getMonth() + 1, 1);
+      return next > new Date() ? prev : next;
+    });
   };
+
+  // A swipe calls the same functions as the arrow buttons. In the current month, the grid goes back.
+  const {
+    handlers: swipeHandlers,
+    pageRef: swipePageRef,
+    contentRef: swipeContentRef,
+  } = useDaySwipe(
+    direction => (direction === 'next' ? handleNextMonth() : handlePrevMonth()),
+    direction => direction === 'prev' || !isCurrentOrFutureMonth
+  );
 
   const obsMap = new Map(observations.map(o => [o.date, o]));
 
@@ -54,6 +69,8 @@ export const CalendarGrid: React.FC = () => {
       id="calendar-panel"
       role="tabpanel"
       aria-labelledby="tab-calendar"
+      ref={swipePageRef}
+      {...swipeHandlers}
     >
       <div className="calendar-header">
         <button
@@ -84,7 +101,7 @@ export const CalendarGrid: React.FC = () => {
         </button>
       </div>
 
-      <div className="calendar-grid">
+      <div className="calendar-grid" ref={swipeContentRef}>
         {t.calendar.weekdays.map(d => (
           <div key={d.full} className="calendar-weekday-header">
             <span className="weekday-full">{d.full}</span>
