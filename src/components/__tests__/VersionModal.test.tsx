@@ -1,9 +1,10 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { VersionModal } from '../VersionModal';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { renderWithProviders } from '../../test/render';
 import { getLatestRelease, getVersionHistory } from '../../domain/versionTracker';
+import { en, formatMessage } from '../../i18n';
 
 describe('VersionModal Component', () => {
   it('renders modal content, version title and release notes', () => {
@@ -36,6 +37,22 @@ describe('VersionModal Component', () => {
     expect(screen.getByText(/App Version/i)).toBeInTheDocument();
     expect(screen.getByText(/CrMS Specification/i)).toBeInTheDocument();
     expect(screen.getAllByText(/Local Storage Footprint/i)[0]).toBeInTheDocument();
+  });
+
+  it('shows the legal notice of the footer in the System Information tab', () => {
+    renderWithProviders(<VersionModal onClose={vi.fn()} />);
+    expect(screen.queryByText(en.disclaimer.medical)).toBeNull();
+    fireEvent.click(screen.getByRole('tab', { name: /System Information/i }));
+    const notice = screen.getByRole('region', { name: en.footer.label });
+    expect(within(notice).getByText(en.footer.legalTitle)).toBeInTheDocument();
+    expect(within(notice).getByText(en.footer.medicalTitle)).toBeInTheDocument();
+    expect(within(notice).getByText(en.disclaimer.medical)).toBeInTheDocument();
+    expect(within(notice).getByText(/Saint Paul VI Institute/i)).toBeInTheDocument();
+    expect(
+      within(notice).getByText(
+        formatMessage(en.footer.copyright, { year: new Date().getFullYear() })
+      )
+    ).toBeInTheDocument();
   });
 
   it('calls onClose when close button or Escape key is pressed', () => {

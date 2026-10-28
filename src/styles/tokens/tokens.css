@@ -7,13 +7,12 @@
   :root {
     color-scheme: light;
     --font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-    /* Running text and controls use the font of the operating system */
+    /* All text uses the font of the operating system, as the other applications of the device do */
     --font-family:
-      system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', sans-serif;
-    /* The wordmark and the headings use the brand font */
-    --font-display:
-      'Plus Jakarta Sans', system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto,
+      system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
       sans-serif;
+    /* The wordmark and the headings: the type scale sets them apart, not a second font */
+    --font-display: var(--font-family);
 
     /* Brand: chart ink on paper. The logo tile and the leaves of the sprout */
     --brand-ink: #1f3a5f;

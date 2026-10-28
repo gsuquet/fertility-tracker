@@ -1,36 +1,27 @@
-import { readFileSync } from 'node:fs';
+import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { describe, expect, it } from 'vitest';
 
 const stylesDir = join(__dirname, '..');
+const rootDir = join(stylesDir, '..', '..');
 const readCss = (file: string) => readFileSync(join(stylesDir, file), 'utf8');
 
-const PACKAGE = '@fontsource-variable/plus-jakarta-sans';
-const fontFaces = () => readCss('base/fonts.css').match(/@font-face\s*\{[^}]*\}/g) ?? [];
-
-describe('self-hosted Plus Jakarta Sans font', () => {
-  it('declares the latin and latin-ext variable woff2 files of the npm package', () => {
-    const urls = fontFaces().map(face => face.match(/url\(['"]?([^'")]+)['"]?\)/)?.[1]);
-    expect(urls).toEqual([
-      `${PACKAGE}/files/plus-jakarta-sans-latin-ext-wght-normal.woff2`,
-      `${PACKAGE}/files/plus-jakarta-sans-latin-wght-normal.woff2`,
-    ]);
+const cssFiles = (dir: string): string[] =>
+  readdirSync(dir).flatMap(entry => {
+    const path = join(dir, entry);
+    if (statSync(path).isDirectory()) return entry === '__tests__' ? [] : cssFiles(path);
+    return path.endsWith('.css') ? [path] : [];
   });
 
-  it('uses the family name of the design tokens, the weight range and font-display swap', () => {
-    for (const face of fontFaces()) {
-      expect(face).toContain("font-family: 'Plus Jakarta Sans';");
-      expect(face).toContain('font-weight: 200 800;');
-      expect(face).toContain('font-display: swap;');
-      expect(face).toMatch(/unicode-range:\s+U\+/);
-    }
+describe('system font', () => {
+  it('sets all text in the font of the operating system', () => {
     expect(readCss('tokens/tokens.css')).toMatch(
-      /--font-display:\s*'Plus Jakarta Sans', system-ui/
+      /--font-family:\s*system-ui,\s*-apple-system,\s*BlinkMacSystemFont,\s*'Segoe UI',\s*Roboto,\s*'Helvetica Neue',\s*Arial,\s*sans-serif;/
     );
   });
 
-  it('sets running text in the system font and headings in the display font', () => {
-    expect(readCss('tokens/tokens.css')).toMatch(/--font-family:\s*system-ui,/);
+  it('gives the headings and the wordmark the same font as the text', () => {
+    expect(readCss('tokens/tokens.css')).toMatch(/--font-display:\s*var\(--font-family\);/);
     expect(readCss('base/reset.css')).toMatch(
       /h1,\s*h2,\s*h3\s*\{[^}]*font-family:\s*var\(--font-display\)/
     );
@@ -39,8 +30,16 @@ describe('self-hosted Plus Jakarta Sans font', () => {
     );
   });
 
-  it('is imported by the master stylesheet and loads nothing from a remote host', () => {
-    expect(readCss('index.css')).toContain("@import './base/fonts.css';");
-    expect(readCss('base/fonts.css')).not.toMatch(/https?:\/\//);
+  it('declares no font file, so the build has none and loads nothing from a remote host', () => {
+    for (const file of cssFiles(stylesDir)) {
+      expect(readFileSync(file, 'utf8')).not.toMatch(/@font-face|\.woff2?\b/);
+    }
+    expect(readCss('index.css')).not.toContain('fonts.css');
+    const pkg = JSON.parse(readFileSync(join(rootDir, 'package.json'), 'utf8')) as {
+      dependencies: Record<string, string>;
+      devDependencies: Record<string, string>;
+    };
+    const names = Object.keys({ ...pkg.dependencies, ...pkg.devDependencies });
+    expect(names.filter(name => name.startsWith('@fontsource'))).toEqual([]);
   });
 });

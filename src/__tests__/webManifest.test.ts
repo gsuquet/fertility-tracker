@@ -24,11 +24,34 @@ interface ManifestIcon {
   purpose: string;
 }
 
+interface ManifestShortcut {
+  name: string;
+  short_name: string;
+  url: string;
+  icons: Omit<ManifestIcon, 'purpose'>[];
+}
+
+interface ManifestScreenshot {
+  src: string;
+  sizes: string;
+  type: string;
+  form_factor: 'narrow' | 'wide';
+  label: string;
+}
+
 const manifest = JSON.parse(readFileSync(join(publicDir, 'manifest.webmanifest'), 'utf8')) as {
+  id: string;
+  scope: string;
   start_url: string;
+  lang: string;
+  dir: string;
+  categories: string[];
+  launch_handler: { client_mode: string[] };
   theme_color: string;
   background_color: string;
   icons: ManifestIcon[];
+  shortcuts: ManifestShortcut[];
+  screenshots: ManifestScreenshot[];
 };
 
 /** Reads the width and height from the IHDR chunk of a PNG file. */
@@ -58,6 +81,41 @@ describe('web app manifest', () => {
     }
   });
 
+  it('keeps a stable identity and scope, and one window on a second launch', () => {
+    expect(manifest.id).toBe('./');
+    expect(manifest.scope).toBe('./');
+    expect(manifest.lang).toBe('en');
+    expect(manifest.dir).toBe('ltr');
+    expect(manifest.categories).toEqual(['health', 'medical', 'lifestyle']);
+    expect(manifest.launch_handler).toEqual({ client_mode: ['navigate-existing', 'auto'] });
+  });
+
+  it('has the Log today and Chart shortcuts, each with a 96-pixel PNG icon', () => {
+    expect(manifest.shortcuts.map(shortcut => [shortcut.name, shortcut.url])).toEqual([
+      ['Log today', './?shortcut=log'],
+      ['Chart', './?shortcut=chart'],
+    ]);
+    for (const shortcut of manifest.shortcuts) {
+      expect(shortcut.short_name.length).toBeLessThanOrEqual(12);
+      expect(shortcut.icons).toEqual([
+        { src: 'icons/icon-96.png', sizes: '96x96', type: 'image/png' },
+      ]);
+    }
+    expect(pngSize('icons/icon-96.png')).toBe('96x96');
+  });
+
+  it('points each screenshot to a PNG file of the declared size', () => {
+    expect(manifest.screenshots.map(shot => [shot.src, shot.form_factor])).toEqual([
+      ['screenshots/phone.png', 'narrow'],
+      ['screenshots/desktop.png', 'wide'],
+    ]);
+    for (const shot of manifest.screenshots) {
+      expect(shot.type).toBe('image/png');
+      expect(shot.label.length).toBeGreaterThan(0);
+      expect(pngSize(shot.src)).toBe(shot.sizes);
+    }
+  });
+
   it('takes its colors from the light theme of the design tokens', () => {
     expect(manifest.background_color).toBe(lightToken('--bg-primary'));
     expect(manifest.theme_color).toBe(lightToken('--brand-ink'));
@@ -75,6 +133,15 @@ describe('brand icons in index.html', () => {
       '<link rel="apple-touch-icon" href="./icons/apple-touch-icon.png" />'
     );
     expect(pngSize('icons/apple-touch-icon.png')).toBe('180x180');
+  });
+
+  it('gives iOS the short name and the default status bar', () => {
+    expect(indexHtml).toContain(
+      '<meta name="apple-mobile-web-app-title" content="Fertility Tracker" />'
+    );
+    expect(indexHtml).toContain(
+      '<meta name="apple-mobile-web-app-status-bar-style" content="default" />'
+    );
   });
 
   it('sets the browser theme color of each color scheme from the page background', () => {

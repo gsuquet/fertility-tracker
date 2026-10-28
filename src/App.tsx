@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CycleProvider } from './context/CycleContext';
+import { CycleProvider, useCycleUi } from './context/CycleContext';
 import type { ActiveTab } from './types/crms';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
@@ -60,10 +60,16 @@ const ChunkReady: React.FC<{ onReady: (state: 'ready') => void }> = ({ onReady }
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
+import { clearLaunchShortcut, readLaunchShortcut } from './utils/launchShortcut';
 
 const MainApp: React.FC = () => {
   const { t } = useLanguage();
-  const [activeTab, setActiveTab] = useState<ActiveTab>('today');
+  const { setSelectedObservation, setIsDrawerOpen } = useCycleUi();
+  // A shortcut of the app icon chooses the first page. Reading it does not change the address.
+  const [launchShortcut] = useState(readLaunchShortcut);
+  const [activeTab, setActiveTab] = useState<ActiveTab>(
+    launchShortcut === 'chart' ? 'chart' : 'today'
+  );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
@@ -85,6 +91,14 @@ const MainApp: React.FC = () => {
       }),
     []
   );
+
+  // The Log today shortcut opens the drawer for a new observation, as the + button does
+  useEffect(() => {
+    clearLaunchShortcut();
+    if (launchShortcut !== 'log') return;
+    setSelectedObservation(null);
+    setIsDrawerOpen(true);
+  }, [launchShortcut, setSelectedObservation, setIsDrawerOpen]);
 
   useEffect(() => {
     checkAndRecordVersionSeen();

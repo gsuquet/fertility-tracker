@@ -8,6 +8,8 @@ import type { Plugin } from 'vite';
 export const SW_FILE_NAME = 'sw.js';
 const SW_ENTRY = 'src/sw/entry.ts';
 const EXCLUDED = new Set([SW_FILE_NAME, '_headers']);
+/** Only the install dialog of the browser uses the screenshots of the manifest. */
+const EXCLUDED_FOLDERS = ['screenshots/'];
 
 export interface PrecacheFile {
   /** Path relative to the output folder, with `/` separators. */
@@ -27,7 +29,12 @@ export interface Precache {
  */
 export function buildPrecache(files: readonly PrecacheFile[], version: string): Precache {
   const included = files
-    .filter(f => !EXCLUDED.has(f.url) && !f.url.endsWith('.map'))
+    .filter(
+      f =>
+        !EXCLUDED.has(f.url) &&
+        !f.url.endsWith('.map') &&
+        !EXCLUDED_FOLDERS.some(folder => f.url.startsWith(folder))
+    )
     .sort((a, b) => a.url.localeCompare(b.url));
   const hash = createHash('sha256');
   for (const file of included) {

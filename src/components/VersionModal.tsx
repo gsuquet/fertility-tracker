@@ -41,6 +41,7 @@ import {
 } from '../domain/versionTracker';
 import { Modal } from './Modal';
 import { formatMessage } from '../i18n';
+import { Copyright, LegalDisclaimers } from './LegalNotice';
 
 interface VersionModalProps {
   onClose: () => void;
@@ -301,6 +302,12 @@ export const VersionModal: React.FC<VersionModalProps> = ({ onClose }) => {
                 <ExternalLink size={13} className="repo-external-icon" />
               </a>
             </div>
+
+            {/* Legal notice: the installed application has no footer */}
+            <section className="version-legal-notice" aria-label={t.footer.label}>
+              <LegalDisclaimers />
+              <Copyright />
+            </section>
           </div>
         )}
       </div>

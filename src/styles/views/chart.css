@@ -818,7 +818,7 @@
 
     .cell-hover-popover {
       position: fixed;
-      bottom: calc(70px + env(safe-area-inset-bottom, 0px));
+      bottom: calc(var(--mobile-nav-space) + var(--space-sm));
       left: 50%;
       transform: translateX(-50%);
       width: 92vw;
