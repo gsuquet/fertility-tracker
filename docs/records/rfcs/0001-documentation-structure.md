@@ -134,6 +134,8 @@ After the split, a code comment refers to the path of the page, for example `doc
 
 Step 3 has many pull requests. The pull request that moves a section also replaces that section in `SPEC.md` with a link to the new page. Thus, `SPEC.md` never has a second copy of a rule.
 
+A pull request of step 3 changes the docs and the code comments only. It does not change the behavior of the application. Thus, it does not need a new version.
+
 ### Version of the specification
 
 The pages do not have a document version. The version of the application in `package.json` and the release notes in `src/domain/versionTracker.ts` are the history. The project removes step 6 of [Release a new version](../../how-to/release-a-new-version.md).
@@ -157,16 +159,16 @@ Each page in `reference/screens/` has the reference template and these sections:
 
 A frame is a text drawing in a `text` code block. It shows the position of each zone, not the colors or the exact sizes.
 
-| Rule                 | Value                                                                           |
-| -------------------- | ------------------------------------------------------------------------------- |
-| Characters           | Box-drawing characters: `┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼`                                 |
-| Symbols              | `▾ ⋮ ‹ › ·                                                                      | `. A symbol that is not in this list uses a name in angle brackets, for example `<+>`. |
-| Width of a phone     | 40 characters, for a phone screen of 390 pixels. One column is about 10 pixels. |
-| Width of a wide view | 100 characters                                                                  |
-| Zone label           | A number in square brackets, for example `[3]`. The zones table explains it.    |
-| Text in the frame    | The English text of the screen, from `src/i18n/locales/en.ts`                   |
-| Part with no text    | A name in angle brackets, for example `<logo>` or `<code buttons>`              |
-| Sizes                | In the zones table, in pixels or CSS units. Not in the frame.                   |
+| Rule                 | Value                                                                                                |
+| -------------------- | ---------------------------------------------------------------------------------------------------- |
+| Characters           | Box-drawing characters: `┌ ┐ └ ┘ ─ │ ├ ┤ ┬ ┴ ┼`                                                      |
+| Symbols              | `▾`, `⋮`, `‹`, `›`, `·` and `\|`. Any other symbol uses a name in angle brackets, for example `<+>`. |
+| Width of a phone     | 40 characters, for a phone screen of 390 pixels. One column is about 10 pixels.                      |
+| Width of a wide view | 100 characters                                                                                       |
+| Zone label           | A number in square brackets, for example `[3]`. The zones table explains it.                         |
+| Text in the frame    | The English text of the screen, from `src/i18n/locales/en.ts`                                        |
+| Part with no text    | A name in angle brackets, for example `<logo>` or `<code buttons>`                                   |
+| Sizes                | In the zones table, in pixels or CSS units. Not in the frame.                                        |
 
 A frame does not show line wrap. A frame shows the English text only. When a text can wrap or overflow, also in French, the zones table gives the behavior.
 
@@ -301,7 +303,8 @@ The design work starts without a place for proposals and without frames. The dec
 
 ## Unresolved questions
 
-1. What keeps the text in a frame equal to `src/i18n/locales/en.ts`? When a label changes, no check fails. One option is a docs check that finds each text of a frame in `en.ts`. The other option is to accept the difference and correct the frame when the screen changes.
+1. Does the project use frames? The maintainer did not decide this part of the RFC. Until the decision, a screen page has no **Layout** and no **Zones** sections, and step 4 does not start. The rules for frames in this RFC apply only after a decision to use them.
+2. What keeps the text in a frame equal to `src/i18n/locales/en.ts`? When a label changes, no check fails. One option is a docs check that finds each text of a frame in `en.ts`. The other option is to accept the difference and correct the frame when the screen changes.
 
 The discussion of this RFC answered these questions:
 
