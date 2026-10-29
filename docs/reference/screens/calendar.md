@@ -30,4 +30,5 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 ## Related documents
 
 - [Application behavior](../application-behavior.md)
+- [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)

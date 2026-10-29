@@ -36,4 +36,5 @@ This page gives the rules for the **Paper Chart Strip** page.
 ## Related documents
 
 - [Application behavior](../application-behavior.md)
+- [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)

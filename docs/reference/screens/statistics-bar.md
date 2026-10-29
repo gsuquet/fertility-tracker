@@ -15,6 +15,10 @@ The bar shows four cards for the selected cycle, or for all cycles:
 
 On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics** page.
 
+## Accessibility
+
+- The bar has no role, name or focus rule of its own. Each card is text.
+
 ## Implementation
 
 - [src/components/CycleStatsHeader.tsx](../../../src/components/CycleStatsHeader.tsx)

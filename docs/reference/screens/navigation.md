@@ -14,14 +14,16 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | Footer ([Footer.tsx](../../../src/components/Footer.tsx))             | Legal text, **Install app** (when the browser can install the application), **User Guide** button and version button. Not in the installed application.                                | The copyright and the buttons are on separate lines. Not in the installed application.                                |
 - On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it ([Observation drawer](../../../SPEC.md#57-observation-drawer)). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
 - The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([Back button and address](../application-behavior.md#back-button-and-address)).
-- The phone menu (`aria-label="Mobile Navigation Menu"`) uses the [dialog component](../dialog-component.md). It opens from the bottom of the screen.
-- The cycle menu of [CyclePicker.tsx](../../../src/components/CyclePicker.tsx) uses the [dialog component](../dialog-component.md) (`aria-label="Filter Cycle View"`). Its list of cycles is a `role="listbox"` element. On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
-- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only. When it opens, the focus goes to the selected cycle.
+- The phone menu uses the [dialog component](../dialog-component.md). It opens from the bottom of the screen.
+- The cycle menu of [CyclePicker.tsx](../../../src/components/CyclePicker.tsx) uses the [dialog component](../dialog-component.md). On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
+- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only.
 
 ## Accessibility
 
 - The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
+- The phone menu has `aria-label="Mobile Navigation Menu"`.
+- The cycle menu has `aria-label="Filter Cycle View"`. Its list of cycles is a `role="listbox"` element. When the menu opens, the focus goes to the selected cycle.
 
 ## Implementation
 

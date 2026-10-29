@@ -9,7 +9,7 @@ This page gives the rules of `Modal.tsx`, the dialog component that each dialog,
 | Function       | Rule                                                                                                                                                  |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Element        | A native `<dialog>` in a portal on `document.body`, opened with `showModal()`. The browser makes the page under it inert.                             |
-| Name           | `aria-modal="true"`, and a name from `aria-labelledby` (the title) or `aria-label`.`aria-describedby` is optional.                                    |
+| Name           | `aria-modal="true"`, and a name from `aria-labelledby` (the title) or `aria-label`. `aria-describedby` is optional.                                   |
 | First focus    | The element of `initialFocusRef`, else the first element that can get the focus. The `<dialog>` itself does not scroll to it.                         |
 | Focus trap     | `Tab` on the last element goes to the first. `Shift+Tab` on the first goes to the last.                                                               |
 | Two dialogs    | The dialog on top keeps the focus. The dialog under it ignores the keys.                                                                              |
@@ -20,6 +20,8 @@ This page gives the rules of `Modal.tsx`, the dialog component that each dialog,
 | Focus return   | On close, it calls `close()`, then moves the focus back to the element that had it before.                                                            |
 | Listeners      | `keydown` and `click` are native listeners on the `<dialog>`. Thus, they also get events from portals, such as the undo message.                      |
 | Scroll area    | A body that scrolls is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).                                                       |
+
+### Undo message in a dialog
 
 `useTopDialog()` gives the open `<dialog>` on top, or `null`. `showModal()` makes all the page outside the dialog inert, also a `popover` element. Thus, while a dialog is open, `UndoToast` goes into the top dialog with a portal.
 
