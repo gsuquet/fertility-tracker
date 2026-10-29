@@ -18,7 +18,7 @@ import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { formatMessage } from '../i18n';
-import { X, Save } from 'lucide-react';
+import { X } from 'lucide-react';
 import { addDays, getTodayStr } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
@@ -83,7 +83,8 @@ export const ObservationDrawer: React.FC = () => {
 
   // Ctrl+S or ⌘S saves, as on the Today page, while the sheet is the dialog on top
   const topDialog = useTopDialog();
-  const sheetOnTop = topDialog?.classList.contains('drawer-overlay') ?? false;
+  // The sheet is on top when the top dialog holds its form, not a menu or a question over it
+  const sheetOnTop = !!bodyRef.current && !!topDialog?.contains(bodyRef.current);
   useEffect(() => {
     if (!sheetOnTop) return;
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -220,8 +221,7 @@ export const ObservationDrawer: React.FC = () => {
               {t.actions.cancel}
             </button>
             <button type="submit" className="btn btn-primary">
-              <Save size={16} />
-              <span>{t.actions.save}</span>
+              {t.actions.save}
             </button>
           </div>
         </div>

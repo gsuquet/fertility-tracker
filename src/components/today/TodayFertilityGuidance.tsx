@@ -45,9 +45,10 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   };
 
   if (variant !== 'card') {
-    const where = variant === 'banner' ? 'mobile-only-stamp-banner' : 'sheet-status-banner';
+    // The banner of Today shows only on a phone. The banner of the sheet shows at each width.
+    const phoneOnly = variant === 'banner' ? 'mobile-only-stamp-banner' : '';
     return (
-      <div className={`today-top-status-banner ${where}`}>
+      <div className={`today-top-status-banner ${phoneOnly}`}>
         <div className="status-stamp-hero">
           <StampBadge
             stamp={stamp}

@@ -426,6 +426,11 @@ describe('ObservationDrawer flows', () => {
     });
     fireEvent.keyDown(window, { key: 's' });
     expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // The ⋮ menu over the sheet keeps the keys
+    press(en.observationForm.actionsLabel);
+    fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+    expect(saved()).toBe('');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     fireEvent.keyDown(window, { key: 'S', ctrlKey: true });
     expect(saved()).toBe('2026-09-15:0:undefined');
     expect(screen.queryByRole('dialog')).toBeNull();
