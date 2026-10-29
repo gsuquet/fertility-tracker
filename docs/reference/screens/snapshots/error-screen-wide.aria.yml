@@ -1,0 +1,6 @@
+- dialog "This part did not load":
+  - alert:
+    - heading "This part did not load" [level=2]
+    - paragraph: An error occurred or you are offline. Your observations are safe in this browser. Reload the page to try again.
+    - button "Reload"
+    - button "Close"

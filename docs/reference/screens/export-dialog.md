@@ -2,6 +2,17 @@
 
 This page gives the rules for the export dialog: print, backup, restore, demo data and reset.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                                | ARIA snapshot                                                          |
+| ------------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Phone, 390 by 844 pixels | [export-dialog-phone.png](images/export-dialog-phone.png) | [export-dialog-phone.aria.yml](snapshots/export-dialog-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [export-dialog-wide.png](images/export-dialog-wide.png)   | [export-dialog-wide.aria.yml](snapshots/export-dialog-wide.aria.yml)   |
+
+![The export dialog on a phone](images/export-dialog-phone.png)
+
 ## Behavior
 
 | Action              | Result                                                                                |

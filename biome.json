@@ -12,7 +12,8 @@
       "!**/coverage",
       "!**/node_modules",
       "!package-lock.json",
-      "!.mise/mise.lock"
+      "!.mise/mise.lock",
+      "!docs/reference/screens/snapshots"
     ]
   },
   "formatter": {

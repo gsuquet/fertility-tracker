@@ -1,0 +1,21 @@
+- dialog "Practitioner Export & Data Backup":
+  - heading "Practitioner Export & Data Backup" [level=2]
+  - button "Close export dialog"
+  - paragraph: Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.
+  - heading "PDF Export Scope" [level=3]
+  - button "Single Cycle"
+  - button "Multiple Cycles"
+  - text: "Select Cycle:"
+  - combobox "Select Cycle:":
+    - option /Cycle 2 \(\d+-\d+-\d+ • \d+ days\)/ [selected]
+    - option /Cycle 1 \(\d+-\d+-\d+ • \d+ days\)/
+  - text: /Exported in landscape mode \(\d+-day grid\) from oldest to newest\./
+  - button "Print / Save as PDF":
+    - strong: Print / Save as PDF
+    - text: /Creates a landscape PDF with a \d+-day grid\./
+  - button "Backup Data":
+    - strong: Backup Data
+    - text: "Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private."
+  - button "Restore Data"
+  - button "Load Demo Cycle"
+  - button "Clear Data / Reset"

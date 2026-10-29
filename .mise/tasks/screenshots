@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-#MISE description="Build the app and take the install screenshots of the manifest, with demo data"
+#MISE description="Build the app and take the install screenshots and the screen page screenshots, with demo data"
 set -euo pipefail
 
 PORT="${PW_PORT:-4174}"
@@ -53,3 +53,6 @@ for (const shot of shots) {
 }
 await browser.close();
 "
+
+# The screenshots of the screen pages (ADR 0006), from the same steps as the snapshot test
+SCREENSHOTS=1 PW_PORT="$PORT" PW_REUSE=1 npx --no-install playwright test e2e/screenLayout.spec.ts

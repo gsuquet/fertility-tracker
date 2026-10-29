@@ -2,6 +2,17 @@
 
 This page gives the rules for the **Cycle Analytics** page.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                        | ARIA snapshot                                                  |
+| ------------------------ | ------------------------------------------------- | -------------------------------------------------------------- |
+| Phone, 390 by 844 pixels | [analytics-phone.png](images/analytics-phone.png) | [analytics-phone.aria.yml](snapshots/analytics-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [analytics-wide.png](images/analytics-wide.png)   | [analytics-wide.aria.yml](snapshots/analytics-wide.aria.yml)   |
+
+![The Cycle Analytics page on a phone](images/analytics-phone.png)
+
 ## Behavior
 
 | Section                          | Content                                                                                                                                                                                     |

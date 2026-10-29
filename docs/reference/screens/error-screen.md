@@ -2,6 +2,17 @@
 
 This page gives the rules for the error screen that `ErrorBoundary` shows.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` stops the load of the chunk of the version dialog, then opens the dialog. Thus, the snapshots and the screenshots show the dialog mode. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                              | ARIA snapshot                                                        |
+| ------------------------ | ------------------------------------------------------- | -------------------------------------------------------------------- |
+| Phone, 390 by 844 pixels | [error-screen-phone.png](images/error-screen-phone.png) | [error-screen-phone.aria.yml](snapshots/error-screen-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [error-screen-wide.png](images/error-screen-wide.png)   | [error-screen-wide.aria.yml](snapshots/error-screen-wide.aria.yml)   |
+
+![The error screen on a phone](images/error-screen-phone.png)
+
 ## Behavior
 
 - `App.tsx` puts each `React.Suspense` in an `ErrorBoundary`: the pages, the lazy dialogs and the print view.

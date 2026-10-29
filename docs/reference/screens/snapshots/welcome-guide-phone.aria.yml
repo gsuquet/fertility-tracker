@@ -1,0 +1,20 @@
+- dialog "Welcome to Fertility Tracker":
+  - heading "Welcome to Fertility Tracker" [level=2]
+  - text: Creighton Model System (CrMS) Onboarding & Guide
+  - button "Close"
+  - tablist "Onboarding Steps":
+    - tab "1" [selected]
+    - tab "2"
+    - tab "3"
+    - tab "4"
+  - text: Step 1 of 4
+  - region "Clinical Charting, Privacy First":
+    - text: 1. Introduction
+    - heading "Clinical Charting, Privacy First" [level=3]
+    - paragraph: Fertility Tracker is designed around the Creighton Model System (CrMS)—a standardized, scientific method for charting natural biomarkers of fertility.
+    - heading /\d+% Client-Side Privacy/ [level=4]
+    - paragraph: Your reproductive health data stays exclusively in your browser storage. No accounts, no backend servers, and zero third-party tracking.
+    - heading "Natural Biomarker Observation" [level=4]
+    - paragraph: Unlike statistical period calculators that guess your cycle, CrMS relies on daily physical observations of mucus, bleeding, and sensation.
+  - button "Skip Tour"
+  - button "Next"
