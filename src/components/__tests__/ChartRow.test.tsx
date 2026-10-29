@@ -61,30 +61,29 @@ describe('ChartRow Component (Paper Chart Strip)', () => {
     expect(cycleBadges.length).toBeGreaterThan(0);
   });
 
-  it('toggles stamp legend key drawer when legend button is clicked', () => {
+  it('shows the stamp legend under the rows with the Legend button', () => {
     renderChartRow();
     fireEvent.click(screen.getByText('Load Demo'));
 
-    const legendBtn = screen.getByText('Legend Key');
     expect(screen.queryByText(/Creighton Model Chart Stamp Key/i)).not.toBeInTheDocument();
-
-    fireEvent.click(legendBtn);
+    fireEvent.click(screen.getByRole('button', { name: 'Legend' }));
     expect(screen.getByText(/Creighton Model Chart Stamp Key/i)).toBeInTheDocument();
 
-    fireEvent.click(screen.getByText('Hide Legend'));
+    fireEvent.click(screen.getByRole('button', { name: 'Hide legend' }));
     expect(screen.queryByText(/Creighton Model Chart Stamp Key/i)).not.toBeInTheDocument();
   });
 
-  it('switches between 35-Day Grid and Compact Strip view modes', () => {
+  it('switches between the 35-day and Strip views', () => {
     renderChartRow();
     fireEvent.click(screen.getByText('Load Demo'));
 
-    const fullGridBtn = screen.getByTitle('Full 35-Day Paper Grid');
-    const compactBtn = screen.getByTitle('Compact Strip');
+    const fullGridBtn = screen.getByRole('button', { name: '35-day' });
+    const stripBtn = screen.getByRole('button', { name: 'Strip' });
 
-    expect(fullGridBtn).toHaveClass('active');
-    fireEvent.click(compactBtn);
-    expect(compactBtn).toHaveClass('active');
+    expect(fullGridBtn).toHaveAttribute('aria-pressed', 'true');
+    fireEvent.click(stripBtn);
+    expect(stripBtn).toHaveAttribute('aria-pressed', 'true');
+    expect(fullGridBtn).toHaveAttribute('aria-pressed', 'false');
   });
 
   it('displays observations chronologically by date when added out of creation order', () => {
@@ -106,17 +105,14 @@ describe('ChartRow Component (Paper Chart Strip)', () => {
       fireEvent.click(screen.getByText('Add July 20'));
     });
 
-    // In 35-day paper grid: Cycle header displays "2026-07-20 → 2026-07-25"
-    expect(screen.getByText('2026-07-20 → 2026-07-25')).toBeInTheDocument();
+    // The cycle line gives the range from the first to the last day, and its length
+    expect(screen.getByText('Jul 20 – Jul 25')).toBeInTheDocument();
+    expect(screen.getByText('6 days')).toBeInTheDocument();
   });
 
-  it('highlights current day in chart slot with is-today class and Today pill badge', () => {
+  it('marks today on the blank grid with the is-today class only', () => {
     const { container } = renderChartRow();
-    const todayPill = container.querySelector('.cell-today-pill');
-    expect(todayPill).toBeInTheDocument();
-    expect(todayPill?.textContent).toBe('Today');
-
-    const todayCell = container.querySelector('.chart-cell.is-today');
-    expect(todayCell).toBeInTheDocument();
+    expect(container.querySelector('.cell-today-pill')).toBeNull();
+    expect(container.querySelectorAll('.chart-cell.is-today')).toHaveLength(1);
   });
 });

@@ -1,10 +1,8 @@
 import type React from 'react';
-import { useLayoutEffect, useRef } from 'react';
-import { ChevronLeft, ChevronRight, Target } from 'lucide-react';
 import type { Cycle, Observation } from '../../types/crms';
 import type { TranslationSchema } from '../../i18n';
 import { formatMessage } from '../../i18n';
-import { addDays } from '../../utils/dateUtils';
+import { addDays, formatDateDisplay } from '../../utils/dateUtils';
 import { getCycleEndDate } from '../../domain/cycleBoundaryDetector';
 import { ChartPhaseTimeline } from './ChartPhaseTimeline';
 import { ChartEmptyCell, ChartFilledCell } from './ChartCell';
@@ -13,195 +11,97 @@ import type { ChartViewMode } from './ChartToolbar';
 interface ChartCycleRowProps {
   cycle: Cycle;
   cycleNum: number;
+  /** The number of day slots of each row, so that the rows align by cycle day */
+  totalSlots: number;
   viewMode: ChartViewMode;
   showPhaseBar: boolean;
-  todayStr: string;
-  /** True for the newest cycle when today is in it: the row opens with today in view. */
-  isCurrent: boolean;
+  /** Today, for the cycle that holds it only */
+  todayStr: string | undefined;
+  /** The jump and scroll buttons, on the first row only */
+  controls?: React.ReactNode;
+  /** Moves the strips of the other rows with this one */
+  onStripScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   t: TranslationSchema;
   onOpenObservation: (obs: Observation) => void;
   onOpenDay: (date: string, dayNum: number) => void;
 }
 
-interface Slot {
-  dayNum: number;
-  obs: Observation | undefined;
-  dateStr: string;
-}
+/** The short date of the cycle line, for example "Sep 30" */
+const shortDate = (date: string, locale: string) =>
+  formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
 
-/** Slots of a row: every day up to a whole week (35 at least) in the grid, or only the observations */
-const buildSlots = (cycle: Cycle, viewMode: ChartViewMode) => {
-  if (viewMode === 'compact') {
-    const slots: Slot[] = cycle.observations.map(obs => ({
-      dayNum: obs.cycleDay,
-      obs,
-      dateStr: obs.date,
-    }));
-    return { slots, totalSlots: cycle.observations.length };
-  }
-  const obsMap = new Map<number, Observation>();
-  cycle.observations.forEach(o => obsMap.set(o.cycleDay, o));
-  const maxObsDay = Math.max(...cycle.observations.map(o => o.cycleDay), 0);
-  const totalSlots = Math.max(35, Math.ceil(maxObsDay / 7) * 7);
-  const slots: Slot[] = Array.from({ length: totalSlots }, (_, i) => {
-    const dayNum = i + 1;
-    const obs = obsMap.get(dayNum);
-    return { dayNum, obs, dateStr: obs?.date || addDays(cycle.startDate, dayNum - 1) };
-  });
-  return { slots, totalSlots };
-};
-
-/** One cycle of the paper chart: header, navigation, phase bar and cells */
+/** One cycle of the paper chart: the cycle line, the phase bar and one row of day cards */
 export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   cycle,
   cycleNum,
+  totalSlots,
   viewMode,
   showPhaseBar,
   todayStr,
-  isCurrent,
+  controls,
+  onStripScroll,
   t,
   onOpenObservation,
   onOpenDay,
 }) => {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
-  // The current cycle opens with today in the middle of the strip, or at its end when today has
-  // no cell. scrollLeft moves at once, with no smooth scroll, and moves only the strip, so the page
-  // does not move. A past cycle stays at day 1.
-  // biome-ignore lint/correctness/useExhaustiveDependencies: the strip scrolls again when the view mode changes its cells
-  useLayoutEffect(() => {
-    const strip = scrollRef.current;
-    if (!isCurrent || !strip) return;
-    const today = strip.querySelector('.is-today');
-    let left = strip.scrollWidth;
-    if (today) {
-      const cell = today.getBoundingClientRect();
-      const offset = cell.left - strip.getBoundingClientRect().left + strip.scrollLeft;
-      left = offset - (strip.clientWidth - cell.width) / 2;
-    }
-    strip.scrollLeft = left;
-  }, [isCurrent, viewMode]);
-  const daysCount = cycle.observations.length;
+  const byDay = new Map(cycle.observations.map(o => [o.cycleDay, o]));
+  // A cycle always has an observation: the first day
+  const lengthDays = (cycle.observations.at(-1) as Observation).cycleDay;
   const peakDayNum = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
-  const { slots, totalSlots } = buildSlots(cycle, viewMode);
-
-  // The controls render with their row, so the row element exists
-  const scrollRow = (direction: 'left' | 'right') => {
-    scrollRef.current?.scrollBy({ left: direction === 'left' ? -320 : 320, behavior: 'smooth' });
-  };
-  const jumpToPeak = () => {
-    scrollRef.current
-      ?.querySelector('.peak-cell')
-      ?.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
-  };
-  const jumpToStart = () => {
-    scrollRef.current?.scrollTo({ left: 0, behavior: 'smooth' });
-  };
-  const jumpToEnd = () => {
-    const el = scrollRef.current;
-    el?.scrollTo({ left: el.scrollWidth, behavior: 'smooth' });
-  };
+  const title = `${t.chartStrip.cycleBadge} ${cycleNum}`;
 
   return (
-    <div className="chart-row-container paper-theme">
-      <div className="chart-row-header flex-header">
-        <div className="cycle-header-left">
-          <span className="cycle-title-badge">
-            {t.chartStrip.cycleBadge} {cycleNum}
-          </span>
-          <span className="cycle-date-range">
-            {cycle.startDate} → {getCycleEndDate(cycle)}
-          </span>
-          <span className="cycle-length-pill">
-            {daysCount} {t.stats.days}
-          </span>
-
-          {peakDayNum && (
-            <span className="cycle-peak-pill" title={t.chartStrip.jumpToPeak}>
-              <Target size={12} />{' '}
-              {formatMessage(t.chartStrip.peakOnDay, {
-                peak: t.chartStrip.phasePeak,
-                day: peakDayNum,
-              })}
+    <section className={`chart-row-container view-${viewMode}`} aria-label={title}>
+      <div className="cycle-line">
+        <h3 className="cycle-line-title">{title}</h3>
+        <span className="cycle-line-dates">
+          {shortDate(cycle.startDate, t.locale)} – {shortDate(getCycleEndDate(cycle), t.locale)}
+        </span>
+        <span aria-hidden="true">·</span>
+        <span>{formatMessage(t.chartStrip.cycleDays, { count: lengthDays })}</span>
+        {peakDayNum && (
+          <>
+            <span aria-hidden="true">·</span>
+            <span className="cycle-line-peak">
+              {formatMessage(t.chartStrip.peakShort, { day: peakDayNum })}
             </span>
-          )}
-        </div>
-
-        <div className="cycle-header-actions">
-          <button
-            type="button"
-            className="nav-icon-btn"
-            onClick={jumpToStart}
-            title={t.chartStrip.jumpToStart}
-          >
-            {t.chartStrip.jumpToStart}
-          </button>
-
-          {peakDayNum && (
-            <button
-              type="button"
-              className="nav-icon-btn peak-btn"
-              onClick={jumpToPeak}
-              title={t.chartStrip.jumpToPeak}
-            >
-              <Target size={13} /> P
-            </button>
-          )}
-
-          <button
-            type="button"
-            className="nav-icon-btn"
-            onClick={jumpToEnd}
-            title={t.chartStrip.jumpToLatest}
-          >
-            {t.chartStrip.jumpToLatest}
-          </button>
-
-          <div className="scroll-arrows">
-            <button
-              type="button"
-              className="scroll-btn"
-              onClick={() => scrollRow('left')}
-              aria-label={t.chartStrip.scrollLeft}
-            >
-              <ChevronLeft size={16} />
-            </button>
-            <button
-              type="button"
-              className="scroll-btn"
-              onClick={() => scrollRow('right')}
-              aria-label={t.chartStrip.scrollRight}
-            >
-              <ChevronRight size={16} />
-            </button>
-          </div>
-        </div>
+          </>
+        )}
       </div>
+
+      {controls}
 
       {showPhaseBar && <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />}
 
-      <div className="chart-row-scroll" ref={scrollRef}>
-        <div className="chart-row-strip paper-grid-strip">
-          {slots.map(({ dayNum, obs, dateStr }) =>
-            obs ? (
+      <div className="chart-row-scroll" onScroll={onStripScroll}>
+        <div className="chart-row-strip">
+          {Array.from({ length: totalSlots }, (_, idx) => {
+            const dayNum = idx + 1;
+            const obs = byDay.get(dayNum);
+            const dateStr = obs?.date ?? addDays(cycle.startDate, idx);
+            const isToday = dateStr === todayStr;
+            return obs ? (
               <ChartFilledCell
                 key={dayNum}
                 obs={obs}
-                isToday={dateStr === todayStr}
+                isToday={isToday}
+                viewMode={viewMode}
                 onOpen={onOpenObservation}
               />
             ) : (
               <ChartEmptyCell
-                key={`empty_${dayNum}`}
+                key={dayNum}
                 dayNum={dayNum}
                 dateStr={dateStr}
-                isToday={dateStr === todayStr}
+                isToday={isToday}
+                viewMode={viewMode}
+                labelTemplate={t.chartStrip.emptyCellLabel}
                 onOpen={onOpenDay}
               />
-            )
-          )}
+            );
+          })}
         </div>
       </div>
-    </div>
+    </section>
   );
 };

@@ -3,6 +3,7 @@ import type { Page } from '@playwright/test';
 import { makeObservation } from '../src/test/factories';
 import { addDays } from '../src/utils/dateUtils';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
+import { en } from '../src/i18n/locales/en';
 import { TODAY, fixClock, skipWelcome } from './fixtures';
 
 /** A cycle of `days` days that ends today, with an observation on each day. */
@@ -75,7 +76,34 @@ test.describe('Chart on a phone', () => {
     // No poll: the strip is in place at the first read, with no smooth scroll
     const place = await todayPlace(page);
     expect(place?.visible).toBe(true);
-    // The snap of the cells moves the strip by less than one cell of 56 pixels
-    expect(place?.offCentre).toBeLessThan(56);
+    // The strip has no snap, so today stays within one card of 48 pixels of the middle
+    expect(place?.offCentre).toBeLessThan(48);
+  });
+
+  test('scrolls all the cycles together, so a cycle day stays in one column', async ({ page }) => {
+    // Two cycles: 30 days, then the current cycle of 20 days
+    const data = cycleUntilToday(50);
+    data[30] = makeObservation({ date: data[30]?.date as string, bleeding: 'H', codeString: 'H' });
+    await fixClock(page);
+    await skipWelcome(page);
+    await page.addInitScript(([key, value]) => window.localStorage.setItem(key, value), [
+      STORAGE_OBSERVATIONS_KEY,
+      JSON.stringify(data),
+    ] as const);
+    await page.goto('/#chart');
+    await page.getByRole('button', { name: en.cyclePicker.buttonLabel }).click();
+    await page.getByRole('option', { name: new RegExp(en.cyclePicker.allCycles) }).click();
+    const strips = page.locator('.chart-row-scroll');
+    await expect(strips).toHaveCount(2);
+
+    const lefts = () =>
+      strips.evaluateAll(all => all.map(strip => Math.round((strip as HTMLElement).scrollLeft)));
+    // The rows open on the column of today
+    await expect.poll(async () => (await lefts())[0]).toBeGreaterThan(0);
+    expect(new Set(await lefts()).size).toBe(1);
+    await strips.nth(1).evaluate(strip => {
+      strip.scrollLeft = 137;
+    });
+    await expect.poll(lefts).toEqual([137, 137]);
   });
 });

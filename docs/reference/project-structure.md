@@ -91,6 +91,7 @@ fertility-tracker/
 | `ExportModal.tsx`                            | The export and backup dialog.                                            |
 | `ConfirmDialog.tsx`                          | The confirmation dialog before data is replaced or deleted.              |
 | `Modal.tsx`                                  | The accessible modal dialog that all dialogs and drawers use.            |
+| `MenuButton.tsx`                             | A ⋮ button and its menu of items, check items and lines.                 |
 | `UndoToast.tsx`                              | The toast that undoes the last replace or delete of the data.            |
 | `StorageRecoveryNotice.tsx`                  | The alert for saved data that the application cannot read.               |
 | `StorageSaveWarning.tsx`                     | The alert when the browser does not save the observations.               |

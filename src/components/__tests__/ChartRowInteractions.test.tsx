@@ -109,7 +109,7 @@ describe('ChartRow interactions', () => {
     renderChart(rich);
     const today = screen.getByRole('button', { current: 'date' });
     expect(today).toHaveAccessibleName(/Code None, Today$/);
-    expect(within(today).getByText('---')).toBeInTheDocument();
+    expect(today.querySelector('.cell-code')?.textContent).toBe('');
     // Day 3 of the count of three keeps its stamp without a code
     expect(today.querySelector('.stamp-light_green_baby_3')).toBeInTheDocument();
     expect(today.querySelector('.stamp-empty')).toBeNull();
@@ -120,6 +120,34 @@ describe('ChartRow interactions', () => {
     expect(blankNotes.querySelector('.cell-notes-icon')).toBeNull();
     const fertile = screen.getByRole('button', { name: /Date 2026-09-12/ });
     expect(within(fertile).getByTitle('Symptoms: AP')).toBeInTheDocument();
+    // The stamp shows the I mark and the tag shows the symptom, so the code does not repeat them
+    expect(
+      [...fertile.querySelectorAll('.cell-code-token')].map(token => token.textContent)
+    ).toEqual(['10KL']);
+  });
+
+  it('puts each token of a code on its own line', () => {
+    renderChart([
+      makeObservation({ date: '2026-09-15', bleeding: 'L', stretch: '6', modifiers: ['C'] }),
+    ]);
+    const today = screen.getByRole('button', { current: 'date' });
+    expect([...today.querySelectorAll('.cell-code-token')].map(token => token.textContent)).toEqual(
+      ['L', '6C']
+    );
+  });
+
+  it('shows only the cycle day and the stamp in the Strip view', () => {
+    renderChart(rich);
+    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.viewStrip }));
+    const today = screen.getByRole('button', { current: 'date' });
+    expect(today.querySelector('.cell-day-num')?.textContent).toBe('6');
+    expect(today.querySelector('.stamp-badge')).toBeInTheDocument();
+    expect(today.querySelector('.cell-code')).toBeNull();
+    expect(today.querySelector('.cell-date')).toBeNull();
+    // The Strip view keeps the empty days, so the columns stay aligned by cycle day
+    expect(
+      screen.getByRole('button', { name: /^Day 5 \(2026-09-14\) - Empty/ })
+    ).toBeInTheDocument();
   });
 
   it('marks today on an empty day of a cycle', () => {
@@ -128,7 +156,8 @@ describe('ChartRow interactions', () => {
     expect(today).toHaveAccessibleName(
       'Day 6 (2026-09-15) - Empty, Today. Click to add observation.'
     );
-    expect(within(today).getByText('Today')).toBeInTheDocument();
+    expect(within(today).queryByText('Today')).toBeNull();
+    expect(within(today).getByText('09-15')).toBeInTheDocument();
   });
 
   it('shows the details of a cell on hover and focus', () => {
@@ -161,51 +190,48 @@ describe('ChartRow interactions', () => {
     for (const title of [
       `Day 1: ${en.chartStrip.phaseMenses}`,
       `Day 2: ${en.chartStrip.phaseMenses}`,
-      `Day 3: ${en.chartStrip.phasePeak} (P)`,
+      `Day 3: ${en.chartStrip.phasePeak}`,
       `Day 4: ${en.chartStrip.phasePostPeak}`,
       'Day 5',
     ]) {
       expect(screen.getByTitle(title)).toBeInTheDocument();
     }
-    fireEvent.click(screen.getByRole('button', { name: 'Phases' }));
+    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.optionsLabel }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.chartStrip.phaseBar }));
     expect(screen.queryByTitle('Day 5')).toBeNull();
   });
 
-  it('labels fertile and dry days on the timeline', () => {
+  it('gives the phases of Analytics to the days of the timeline', () => {
     renderChart(buildDemoObservations('2026-09-15'));
-    expect(screen.getByTitle('Day 12: Fertile Mucus')).toBeInTheDocument();
-    expect(screen.getByTitle('Day 20: Dry / Infertile')).toBeInTheDocument();
+    const [current] = screen.getAllByRole('region');
+    const title = (day: number) =>
+      (current as HTMLElement).querySelectorAll('.phase-segment')[day - 1]?.getAttribute('title');
+    expect(title(1)).toBe(`Day 1: ${en.chartStrip.phaseMenses}`);
+    expect(title(8)).toBe(`Day 8: ${en.chartStrip.phaseFollicular}`);
+    expect(title(20)).toBe(`Day 20: ${en.chartStrip.phaseLuteal}`);
   });
 
-  it('scrolls the row and jumps to its start, peak and end', () => {
-    const scrollBy = vi.fn();
-    const scrollTo = vi.fn();
-    const scrollIntoView = vi.fn();
-    Object.assign(HTMLElement.prototype, { scrollBy, scrollTo, scrollIntoView });
-    vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(2000);
-    renderChart(rich);
-    fireEvent.click(screen.getByRole('button', { name: 'Scroll left' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Scroll right' }));
-    expect(scrollBy.mock.calls).toEqual([
-      [{ left: -320, behavior: 'smooth' }],
-      [{ left: 320, behavior: 'smooth' }],
-    ]);
-    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToStart }));
-    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToLatest }));
-    expect(scrollTo.mock.calls).toEqual([
-      [{ left: 0, behavior: 'smooth' }],
-      [{ left: 2000, behavior: 'smooth' }],
-    ]);
-    fireEvent.click(screen.getByRole('button', { name: 'P' }));
-    expect(scrollIntoView).toHaveBeenCalledOnce();
+  it('shows the controls on the first cycle only', () => {
+    renderChart(buildDemoObservations('2026-09-15'));
+    expect(screen.getAllByRole('button', { name: en.chartStrip.jumpToStart })).toHaveLength(1);
+    expect(screen.getAllByRole('button', { name: en.chartStrip.scrollRight })).toHaveLength(1);
+  });
+
+  it('shows no Today and no P button when the rows have no such cell', () => {
+    // Today is cycle day 97, after the 35 days of the row
+    vi.setSystemTime(new Date(2026, 11, 15, 12));
+    renderChart([makeObservation({ date: '2026-09-10', bleeding: 'H' })]);
+    expect(screen.getByRole('button', { name: en.chartStrip.jumpToStart })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: en.chartStrip.jumpToToday })).toBeNull();
+    expect(screen.queryByRole('button', { name: en.chartStrip.jumpToPeak })).toBeNull();
   });
 
   it('shows only the selected cycle and switches the view mode', () => {
     const demo = buildDemoObservations('2026-09-15');
     renderChart(demo, 'cycle_2026-07-22');
     expect(screen.getAllByText(new RegExp(`^${en.chartStrip.cycleBadge} \\d$`))).toHaveLength(1);
-    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.compactGrid }));
-    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.fullGrid }));
+    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.viewStrip }));
+    fireEvent.click(screen.getByRole('button', { name: en.chartStrip.view35 }));
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.showLegend }));
     expect(screen.getByRole('button', { name: en.chartStrip.hideLegend })).toBeInTheDocument();
   });

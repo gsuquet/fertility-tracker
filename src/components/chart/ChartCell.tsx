@@ -8,19 +8,35 @@ import { formatDayOfWeek } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 import { ChartCellPopover } from './ChartCellPopover';
 import { showsEmptyStamp } from '../../domain/stampCalculator';
+import type { ChartViewMode } from './ChartToolbar';
 
-/** Removes the symptom codes, which the cell shows in its own tag */
-const cleanCode = (codeString: string) =>
+const SYMPTOM_TOKENS = new Set(['AP', 'RAP', 'LAP']);
+
+/**
+ * The code tokens that the card shows, one on each line. The stamp shows the `I` mark and the tag
+ * shows the symptoms, so the card does not repeat them.
+ */
+export const cardCodeTokens = (codeString: string) =>
   codeString
-    .replace(/\b(AP|RAP|LAP)\b/g, '')
-    .trim()
-    .replace(/\s+/g, ' ');
+    .split(/\s+/)
+    .filter(token => token !== '' && token !== 'I' && !SYMPTOM_TOKENS.has(token));
 
-const TodayPill: React.FC = () => {
+/** The cycle day, the weekday and the date at the top of a card */
+const CellHeader: React.FC<{ dayNum: number; dateStr: string; compact: boolean }> = ({
+  dayNum,
+  dateStr,
+  compact,
+}) => {
   const { t } = useLanguage();
   return (
-    <span className="cell-today-pill" title={t.todayView.todayLabel}>
-      {t.todayView.todayLabel}
+    <span className="cell-header">
+      <span className="cell-day-num">{dayNum}</span>
+      {!compact && (
+        <>
+          <span className="cell-day-name">{formatDayOfWeek(dateStr, t.locale)}</span>
+          <span className="cell-date">{dateStr.slice(5)}</span>
+        </>
+      )}
     </span>
   );
 };
@@ -28,22 +44,29 @@ const TodayPill: React.FC = () => {
 interface ChartFilledCellProps {
   obs: Observation;
   isToday: boolean;
+  viewMode: ChartViewMode;
   onOpen: (obs: Observation) => void;
 }
 
 /** A day with an observation. It keeps its own hover state, so a hover renders only this cell. */
-export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, onOpen }) => {
+export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({
+  obs,
+  isToday,
+  viewMode,
+  onOpen,
+}) => {
   const { t } = useLanguage();
   const [isHovered, setIsHovered] = useState(false);
-  const open = () => onOpen(obs);
-  const code = cleanCode(obs.codeString);
+  const compact = viewMode === 'compact';
+  const tokens = cardCodeTokens(obs.codeString);
+  const hasNotes = !!obs.notes && obs.notes.trim() !== '';
 
   return (
     <button
       type="button"
       className={`chart-cell filled-cell paper-cell ${obs.isPeakDay ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''}`}
       aria-current={isToday ? 'date' : undefined}
-      onClick={open}
+      onClick={() => onOpen(obs)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
       onFocus={() => setIsHovered(true)}
@@ -56,42 +79,48 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
         today: isToday ? t.chartStrip.todaySuffix : '',
       })}
     >
-      <div className="cell-header">
-        {isToday && <TodayPill />}
-        <span className="cell-day-num">{obs.cycleDay}</span>
-        <span className="cell-day-name">{formatDayOfWeek(obs.date, t.locale)}</span>
-        <span className="cell-date">{obs.date.slice(5)}</span>
-      </div>
+      <CellHeader dayNum={obs.cycleDay} dateStr={obs.date} compact={compact} />
 
-      <div className="cell-stamp-wrapper">
-        <StampBadge
-          stamp={obs.stamp}
-          isPeakDay={obs.isPeakDay}
-          intercourse={obs.intercourse}
-          size="sm"
-          isEmpty={showsEmptyStamp(obs)}
-        />
-      </div>
+      <StampBadge
+        stamp={obs.stamp}
+        isPeakDay={obs.isPeakDay}
+        intercourse={obs.intercourse}
+        size="sm"
+        isEmpty={showsEmptyStamp(obs)}
+      />
 
-      <div className="cell-code" title={code}>
-        {code || '---'}
-      </div>
-
-      <div className="cell-footer-indicators">
-        {obs.symptoms && obs.symptoms.length > 0 && (
-          <span
-            className="cell-symptom-tag"
-            title={formatMessage(t.chartStrip.symptomsTitle, { symptoms: obs.symptoms.join(', ') })}
-          >
-            {obs.symptoms.join(',')}
+      {!compact && (
+        <>
+          <span className="cell-code">
+            {tokens.map((token, index) => (
+              <span key={`${token}-${index}`} className="cell-code-token">
+                {token}
+              </span>
+            ))}
           </span>
-        )}
-        {obs.notes && obs.notes.trim() !== '' && (
-          <span className="cell-notes-icon" title={`${t.chartStrip.notesTooltip}: ${obs.notes}`}>
-            <MessageSquare size={10} />
+
+          <span className="cell-footer-indicators">
+            {obs.symptoms && obs.symptoms.length > 0 && (
+              <span
+                className="cell-symptom-tag"
+                title={formatMessage(t.chartStrip.symptomsTitle, {
+                  symptoms: obs.symptoms.join(', '),
+                })}
+              >
+                {obs.symptoms.join(',')}
+              </span>
+            )}
+            {hasNotes && (
+              <span
+                className="cell-notes-icon"
+                title={`${t.chartStrip.notesTooltip}: ${obs.notes}`}
+              >
+                <MessageSquare size={11} />
+              </span>
+            )}
           </span>
-        )}
-      </div>
+        </>
+      )}
 
       {isHovered && <ChartCellPopover obs={obs} />}
     </button>
@@ -102,81 +131,38 @@ interface ChartEmptyCellProps {
   dayNum: number;
   dateStr: string;
   isToday: boolean;
+  /** The 35-day view by default */
+  viewMode?: ChartViewMode;
+  /** The accessible name template: a day of a cycle, or a day of the blank grid */
+  labelTemplate: string;
   onOpen: (date: string, dayNum: number) => void;
 }
 
-/** A day without an observation inside a cycle row */
+/** A day with no observation, in a cycle row or in the blank grid */
 export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
   dayNum,
   dateStr,
   isToday,
+  viewMode = '35-day',
+  labelTemplate,
   onOpen,
 }) => {
   const { t } = useLanguage();
-  const open = () => onOpen(dateStr, dayNum);
+  const compact = viewMode === 'compact';
   return (
     <button
       type="button"
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
       aria-current={isToday ? 'date' : undefined}
-      onClick={open}
-      aria-label={formatMessage(t.chartStrip.emptyCellLabel, {
+      onClick={() => onOpen(dateStr, dayNum)}
+      aria-label={formatMessage(labelTemplate, {
         day: dayNum,
         date: dateStr,
         today: isToday ? t.chartStrip.todaySuffix : '',
       })}
     >
-      <div className="cell-header">
-        {isToday && <TodayPill />}
-        <span className="cell-day-num">{dayNum}</span>
-        <span className="cell-date">{dateStr.slice(5)}</span>
-      </div>
-
-      <div className="cell-placeholder">
-        <Plus size={14} className="add-icon" />
-      </div>
-    </button>
-  );
-};
-
-interface ChartBlankCellProps {
-  dayNum: number;
-  dateStr: string;
-  isToday: boolean;
-  addLabel: string;
-  onOpen: (date: string, dayNum: number) => void;
-}
-
-/** A day of the blank grid that shows before the first observation */
-export const ChartBlankCell: React.FC<ChartBlankCellProps> = ({
-  dayNum,
-  dateStr,
-  isToday,
-  addLabel,
-  onOpen,
-}) => {
-  const { t } = useLanguage();
-  const open = () => onOpen(dateStr, dayNum);
-  return (
-    <button
-      type="button"
-      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
-      onClick={open}
-      aria-label={formatMessage(t.chartStrip.blankCellLabel, {
-        day: dayNum,
-        date: dateStr,
-        today: isToday ? t.chartStrip.todaySuffix : '',
-      })}
-    >
-      <div className="cell-header">
-        {isToday && <TodayPill />}
-        <span className="cell-day-num">{dayNum}</span>
-        <span className="cell-date">{dateStr.slice(5)}</span>
-      </div>
-      <div className="cell-placeholder">
-        <Plus size={16} className="add-icon" />
-        <span className="add-label">{addLabel}</span>
-      </div>
+      <CellHeader dayNum={dayNum} dateStr={dateStr} compact={compact} />
+      <Plus size={16} className="add-icon" />
     </button>
   );
 };

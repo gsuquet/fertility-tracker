@@ -1,0 +1,85 @@
+/* ==========================================================================
+   Menu of a ⋮ button (MenuButton.tsx)
+   Layer: primitives
+   ========================================================================== */
+
+@layer primitives {
+  /* A secondary icon: 36 px (ADR 0011) */
+  .menu-btn {
+    width: var(--control-size-md);
+    height: var(--control-size-md);
+    flex-shrink: 0;
+  }
+
+  .menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: transparent;
+  }
+
+  .menu-panel {
+    position: fixed;
+    min-width: 240px;
+    padding: var(--space-xs);
+    margin: 0;
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    min-height: var(--control-size-lg);
+    padding: 0 var(--space-md);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .menu-item:hover:not(:disabled),
+  .menu-item:focus-visible {
+    background-color: var(--accent-soft);
+  }
+
+  .menu-item:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .menu-item svg {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .menu-hint {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .menu-check {
+    margin-left: auto;
+  }
+
+  .menu-item.danger,
+  .menu-item.danger svg {
+    color: var(--color-danger);
+  }
+
+  .menu-panel hr {
+    border: 0;
+    border-top: 1px solid var(--bg-surface-border);
+    margin: var(--space-xs);
+  }
+}

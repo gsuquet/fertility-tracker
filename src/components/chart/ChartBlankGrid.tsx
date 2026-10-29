@@ -1,8 +1,7 @@
 import type React from 'react';
-import { Sparkles } from 'lucide-react';
 import type { TranslationSchema } from '../../i18n';
 import { addDays, getTodayStr } from '../../utils/dateUtils';
-import { ChartBlankCell } from './ChartCell';
+import { ChartEmptyCell } from './ChartCell';
 
 interface ChartBlankGridProps {
   t: TranslationSchema;
@@ -13,30 +12,28 @@ interface ChartBlankGridProps {
 export const ChartBlankGrid: React.FC<ChartBlankGridProps> = ({ t, onOpenDay }) => {
   const todayStr = getTodayStr();
   return (
-    <div className="chart-row-container paper-theme">
-      <div className="chart-row-header flex-header">
-        <span className="cycle-title-badge">
+    <section className="chart-row-container" aria-label={`${t.chartStrip.cycleBadge} 1`}>
+      <div className="cycle-line">
+        <h3 className="cycle-line-title">
           {t.chartStrip.cycleBadge} 1 {t.chartStrip.blankDays}
-        </span>
-        <span className="cycle-helper-hint">
-          <Sparkles size={14} className="hint-icon" /> {t.chartStrip.blankHint}
-        </span>
+        </h3>
       </div>
+      <p className="cycle-helper-hint">{t.chartStrip.blankHint}</p>
 
       <div className="chart-row-scroll">
-        <div className="chart-row-strip paper-grid-strip">
-          {Array.from({ length: 35 }).map((_, idx) => (
-            <ChartBlankCell
-              key={idx}
+        <div className="chart-row-strip">
+          {Array.from({ length: 35 }, (_, idx) => (
+            <ChartEmptyCell
+              key={addDays(todayStr, idx)}
               dayNum={idx + 1}
               dateStr={addDays(todayStr, idx)}
               isToday={idx === 0}
-              addLabel={t.chartStrip.addDay}
+              labelTemplate={t.chartStrip.blankCellLabel}
               onOpen={onOpenDay}
             />
           ))}
         </div>
       </div>
-    </div>
+    </section>
   );
 };
