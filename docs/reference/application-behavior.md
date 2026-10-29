@@ -17,16 +17,16 @@ The installed application must behave like the other applications of the device.
 | Long press        | Buttons, tabs, the header and the page buttons have `user-select: none` and `-webkit-touch-callout: none`. The text of fields, notes, dialogs and release notes stays selectable.                                                                             |
 | Safe areas        | The header adds `env(safe-area-inset-top)` above its height (68 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. The toasts at the top add the top inset. |
 | Space for buttons | `--mobile-nav-height` (62 pixels) and `--mobile-nav-space` (that height and `env(safe-area-inset-bottom)`) are the only values for the page buttons. The body, the toasts and the chart popover use them.                                                     |
-| Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([Version dialog](../../SPEC.md#59-version-dialog)).                                                                                                   |
+| Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([Version dialog](screens/version-dialog.md)).                                                                                                         |
 
 ### Launch shortcuts
 
 The manifest has two shortcuts. A long press (or a right click) on the application icon shows them on Android and in Chromium on a computer.
 
-| Shortcut  | URL                 | Result                                                                                                                     |
-| --------- | ------------------- | -------------------------------------------------------------------------------------------------------------------------- |
-| Log today | `./?shortcut=log`   | The **Today** page, with the observation drawer open on today ([Observation drawer](../../SPEC.md#57-observation-drawer)). |
-| Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                                                                            |
+| Shortcut  | URL                 | Result                                                                                                               |
+| --------- | ------------------- | -------------------------------------------------------------------------------------------------------------------- |
+| Log today | `./?shortcut=log`   | The **Today** page, with the observation drawer open on today ([Observation drawer](screens/observation-drawer.md)). |
+| Chart     | `./?shortcut=chart` | The **Paper Chart Strip** page.                                                                                      |
 - `readLaunchShortcut()` reads the `shortcut` parameter one time, at the start. An unknown value has no effect.
 - Then it removes the parameter from the address with `history.replaceState`. Thus, a reload does not open the drawer again.
 - At the first visit, the welcome guide opens and **Log today** does not open the drawer under it.
@@ -93,10 +93,10 @@ The close button and **Install** set `fertility_tracker_install_banner_closed`. 
 
 The guide **Install on iPhone** is a dialog of [Modal.tsx](../../src/components/Modal.tsx). At the top, a note says that the installed application has its own storage, separate from Safari. Then it has these steps, in this order:
 
-1. Back up your data, with a **Back up my data** button. The button downloads the JSON backup, as the export dialog does ([Export, backup and print](../../SPEC.md#58-export-backup-and-print)).
+1. Back up your data, with a **Back up my data** button. The button downloads the JSON backup, as the export dialog does ([Export, backup and print](screens/export-dialog.md)).
 2. Tap **Share** in the toolbar of Safari.
 3. Choose **Add to Home Screen**.
-4. Open the application and choose **Restore a backup** ([Welcome guide](../../SPEC.md#510-welcome-guide)).
+4. Open the application and choose **Restore a backup** ([Welcome guide](screens/welcome-guide.md)).
 
 The steps are a numbered list (`<ol>`).
 
@@ -163,7 +163,7 @@ The first install has no controller. Thus, it activates at once and the applicat
   - The user prefers reduced motion (`prefers-reduced-motion: reduce`).
   - The browser animates **Back** itself (`hasUAVisualTransition`), for example the swipe back of Safari.
   - The **Analytics** page has not shown yet. Its lazy component shows the loading status first, and a slide to it would show the loading status.
-- An observation that opens from the chart or the calendar keeps the slide of the drawer ([Observation drawer](../../SPEC.md#57-observation-drawer)). It has no shared-element transition.
+- An observation that opens from the chart or the calendar keeps the slide of the drawer ([Observation drawer](screens/observation-drawer.md)). It has no shared-element transition.
 
 ## App icon badge
 

@@ -182,6 +182,17 @@ If a page or a dialog cannot load, the application shows the message **This part
 
 ## Related documents
 
-- [Navigation](screens/navigation.md), [Today page](screens/today.md), [Paper Chart Strip page](screens/chart.md), [Monthly Calendar page](screens/calendar.md) and [Cycle Analytics page](screens/analytics.md): the rules of each screen, for contributors
+- Screen pages for contributors, with the rules of each screen:
+  - [Navigation](screens/navigation.md)
+  - [Statistics bar](screens/statistics-bar.md)
+  - [Today page](screens/today.md)
+  - [Paper Chart Strip page](screens/chart.md)
+  - [Monthly Calendar page](screens/calendar.md)
+  - [Cycle Analytics page](screens/analytics.md)
+  - [Observation drawer](screens/observation-drawer.md)
+  - [Export dialog](screens/export-dialog.md)
+  - [Version dialog](screens/version-dialog.md)
+  - [Welcome guide](screens/welcome-guide.md)
+  - [Error screen](screens/error-screen.md)
 - [Application behavior](application-behavior.md)
 - [Record an observation](../how-to/record-an-observation.md)
