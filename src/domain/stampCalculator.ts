@@ -9,6 +9,7 @@ import type {
   FrequencyCode,
   MucusStretch,
   MucusModifier,
+  Observation,
   StampType,
 } from '../types/crms';
 
@@ -62,4 +63,12 @@ export function hasObservationCode(day: {
   frequency?: FrequencyCode | undefined;
 }): boolean {
   return Boolean(day.bleeding || day.stretch || day.frequency || day.modifiers?.length);
+}
+
+/**
+ * True when a saved day shows the empty stamp: no code, and the dry fallback stamp. A day of the
+ * count of three keeps its stamp, so its fertile mark stays visible.
+ */
+export function showsEmptyStamp(obs: Observation): boolean {
+  return !hasObservationCode(obs) && obs.stamp === 'DARK_GREEN';
 }

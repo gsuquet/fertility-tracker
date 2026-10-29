@@ -1,9 +1,9 @@
 import type React from 'react';
-import { hasObservationCode } from '../../domain/stampCalculator';
 import { useLanguage } from '../../context/LanguageContext';
 import type { Observation } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { addDays, formatDateDisplay } from '../../utils/dateUtils';
+import { showsEmptyStamp } from '../../domain/stampCalculator';
 
 interface TodayHistoryListProps {
   selectedDate: string;
@@ -55,7 +55,7 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
                     isPeakDay={obs.isPeakDay || obs.isManualPeak}
                     intercourse={obs.intercourse}
                     size="sm"
-                    isEmpty={!hasObservationCode(obs)}
+                    isEmpty={showsEmptyStamp(obs)}
                   />
                 ) : (
                   <StampBadge stamp="DARK_GREEN" size="sm" isEmpty />

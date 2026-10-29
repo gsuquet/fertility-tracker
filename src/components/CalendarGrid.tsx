@@ -1,5 +1,4 @@
 import type React from 'react';
-import { hasObservationCode } from '../domain/stampCalculator';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -8,6 +7,7 @@ import { StampBadge } from './StampBadge';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { getTodayStr } from '../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
+import { showsEmptyStamp } from '../domain/stampCalculator';
 
 export const CalendarGrid: React.FC = () => {
   const { observations, setSelectedObservation, setIsDrawerOpen } = useCycle();
@@ -161,7 +161,7 @@ export const CalendarGrid: React.FC = () => {
                       isPeakDay={obs.isPeakDay}
                       intercourse={obs.intercourse}
                       size="sm"
-                      isEmpty={!hasObservationCode(obs)}
+                      isEmpty={showsEmptyStamp(obs)}
                     />
                   </div>
                   <span className="calendar-code">{obs.codeString}</span>

@@ -110,7 +110,9 @@ describe('ChartRow interactions', () => {
     const today = screen.getByRole('button', { current: 'date' });
     expect(today).toHaveAccessibleName(/Code None, Today$/);
     expect(within(today).getByText('---')).toBeInTheDocument();
-    expect(today.querySelector('.stamp-empty')).toBeInTheDocument();
+    // Day 3 of the count of three keeps its stamp without a code
+    expect(today.querySelector('.stamp-light_green_baby_3')).toBeInTheDocument();
+    expect(today.querySelector('.stamp-empty')).toBeNull();
     expect(
       within(today).getByTitle(`${en.chartStrip.notesTooltip}: notes only`)
     ).toBeInTheDocument();

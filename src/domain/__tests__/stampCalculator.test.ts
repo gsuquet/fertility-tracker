@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { calculateStamp, hasObservationCode, isPeakTypeMucus } from '../stampCalculator';
+import {
+  calculateStamp,
+  hasObservationCode,
+  isPeakTypeMucus,
+  showsEmptyStamp,
+} from '../stampCalculator';
+import { makeObservation } from '../../test/factories';
 
 describe('isPeakTypeMucus', () => {
   it('returns false when there is no stretch and no modifier', () => {
@@ -50,5 +56,20 @@ describe('hasObservationCode', () => {
     [{ frequency: 'AD' }],
   ] as const)('is true for %o', fields => {
     expect(hasObservationCode(fields)).toBe(true);
+  });
+});
+
+describe('showsEmptyStamp', () => {
+  it('is true for a saved day with no code and the dry fallback stamp', () => {
+    expect(showsEmptyStamp(makeObservation({ date: '2026-09-15', intercourse: true }))).toBe(true);
+  });
+
+  it('keeps a day of the count of three with no code, so its fertile mark stays', () => {
+    const countDay = makeObservation({ date: '2026-09-15', stamp: 'LIGHT_GREEN_BABY_1' });
+    expect(showsEmptyStamp(countDay)).toBe(false);
+  });
+
+  it('is false for a day with a code', () => {
+    expect(showsEmptyStamp(makeObservation({ date: '2026-09-15', stretch: '0' }))).toBe(false);
   });
 });
