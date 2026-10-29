@@ -69,6 +69,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 
 - [Domain API](reference/domain-api.md)
 - [Version tracker](reference/version-tracker.md)
+- [Technology](reference/technology.md)
 - [Project structure](reference/project-structure.md)
 - [Languages](reference/languages.md)
 - [Design system](reference/design-system.md)
