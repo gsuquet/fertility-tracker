@@ -103,7 +103,3 @@ Records are not Diátaxis pages. An RFC proposes a large change before the work 
 - [ADR 0004: Specification in reference pages](records/adrs/0004-specification-in-reference-pages.md)
 - [ADR 0005: Accessibility level of the screens](records/adrs/0005-accessibility-level.md)
 - [ADR 0006: Screen layout in ARIA snapshots and screenshots](records/adrs/0006-screen-layout-snapshots-and-screenshots.md)
-- [ADR 0007: Phone-first shell and one Settings page](records/adrs/0007-phone-first-shell-and-settings.md)
-- [ADR 0008: Progressive observation form without pre-fill](records/adrs/0008-progressive-observation-form.md)
-- [ADR 0009: Chart density and 44 px desktop columns](records/adrs/0009-chart-density-and-desktop-columns.md)
-- [ADR 0010: One-line legal footer in the browser](records/adrs/0010-one-line-legal-footer.md)
