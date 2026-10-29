@@ -141,39 +141,40 @@ export const ProgressiveObservationForm: React.FC<ProgressiveObservationFormProp
     // A radio group has one tab stop: the selected chip, else the first chip
     const tabStop = chosen.length > 0 ? codes.indexOf(chosen[0] as string) : 0;
     return (
-      // biome-ignore lint/a11y/useAriaPropsSupportedByRole: group and radiogroup both take a label
       <div
         ref={chipsRef}
         id={`${idPrefix}-group-${group}`}
         className="obs-chips"
-        role={multi ? 'group' : 'radiogroup'}
-        aria-label={label}
         // A swipe that starts on a chip does not change the day
         data-own-gesture=""
       >
-        {codes.map((code, index) => {
-          const isOn = chosen.includes(code);
-          return (
-            <button
-              key={code}
-              type="button"
-              className="obs-chip"
-              aria-label={fullName(group, code)}
-              {...(multi
-                ? { 'aria-pressed': isOn }
-                : {
-                    role: 'radio',
-                    'aria-checked': isOn,
-                    tabIndex: index === tabStop ? 0 : -1,
-                    onKeyDown: handleRadioKey(group, index),
-                  })}
-              onClick={() => choose(group, code)}
-            >
-              <span className="obs-chip-code">{code}</span>
-              <small>{shortName(group, code)}</small>
-            </button>
-          );
-        })}
+        {/* Only the chips are in the radio group or the group */}
+        {/* biome-ignore lint/a11y/useAriaPropsSupportedByRole: group and radiogroup both take a label */}
+        <div className="obs-chip-grid" role={multi ? 'group' : 'radiogroup'} aria-label={label}>
+          {codes.map((code, index) => {
+            const isOn = chosen.includes(code);
+            return (
+              <button
+                key={code}
+                type="button"
+                className="obs-chip"
+                aria-label={fullName(group, code)}
+                {...(multi
+                  ? { 'aria-pressed': isOn }
+                  : {
+                      role: 'radio',
+                      'aria-checked': isOn,
+                      tabIndex: index === tabStop ? 0 : -1,
+                      onKeyDown: handleRadioKey(group, index),
+                    })}
+                onClick={() => choose(group, code)}
+              >
+                <span className="obs-chip-code">{code}</span>
+                <small>{shortName(group, code)}</small>
+              </button>
+            );
+          })}
+        </div>
         {chosen.length > 0 && (
           <span className="obs-chip-name">
             {chosen.map(code => fullName(group, code)).join(' · ')}
@@ -182,7 +183,7 @@ export const ProgressiveObservationForm: React.FC<ProgressiveObservationFormProp
         {group === 'bleeding' && fields.bleeding && (
           <button
             type="button"
-            className={`peak-toggle-btn cycle-start-toggle-btn ${fields.isCycleStart === true ? 'active' : ''}`}
+            className={`cycle-start-toggle-btn ${fields.isCycleStart === true ? 'active' : ''}`}
             onClick={form.toggleCycleStart}
             aria-pressed={fields.isCycleStart === true}
           >

@@ -78,7 +78,7 @@
     top: calc(100% + var(--space-xs));
     left: 0;
     right: 0;
-    z-index: 2;
+    z-index: var(--z-raised);
     padding: var(--space-sm);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-sm);
@@ -87,7 +87,7 @@
   }
 
   .obs-parse li {
-    padding: 2px var(--space-sm);
+    padding: var(--space-2xs) var(--space-sm);
     border-radius: var(--radius-full);
     background-color: var(--accent-light);
   }
@@ -165,13 +165,19 @@
 
   /* The chips of the open group: the code over a short name, 48 px high */
   .obs-chips {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
+    display: flex;
+    flex-direction: column;
     gap: var(--space-sm);
     padding: var(--space-xs) var(--space-md) var(--space-md);
     background-color: var(--accent-soft);
     border-bottom: 1px solid var(--bg-surface-border);
     animation: obs-chips-open 160ms ease-out;
+  }
+
+  .obs-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-sm);
   }
 
   .obs-chip {
@@ -181,7 +187,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
+    gap: var(--space-2xs);
     line-height: 1.15;
     border-radius: var(--radius-sm);
     border: 1px solid var(--bg-surface-border-strong);
@@ -220,13 +226,8 @@
   }
 
   .obs-chip-name {
-    grid-column: 1 / -1;
     font-size: var(--font-size-xs);
     color: var(--text-secondary);
-  }
-
-  .obs-chips .cycle-start-toggle-btn {
-    grid-column: 1 / -1;
   }
 
   /* The I and Peak Day switches */
@@ -287,7 +288,7 @@
   .obs-menu {
     position: fixed;
     min-width: 240px;
-    padding: 6px;
+    padding: var(--space-xs);
     margin: 0;
     background-color: var(--bg-surface-elevated);
     border: 1px solid var(--bg-surface-border);
@@ -346,13 +347,25 @@
   .obs-menu hr {
     border: 0;
     border-top: 1px solid var(--bg-surface-border);
-    margin: 6px var(--space-xs);
+    margin: var(--space-xs);
   }
 
   /* On a wide screen, the chips are in rows of four */
   @media (min-width: 1024px) {
-    .obs-chips {
+    .obs-chip-grid {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    /* 12 px or more on a desktop (ADR 0011) */
+    .obs-chip small {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  /* Done closes the keyboard of a touch screen. A mouse or a trackpad does not need it. */
+  @media (pointer: fine) {
+    .obs-done-btn {
+      display: none;
     }
   }
 

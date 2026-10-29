@@ -2,12 +2,18 @@ import type React from 'react';
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { copyableCode, hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import {
+  copyableCode,
+  formStatus,
+  hasFieldChanges,
+  needsCycleStartChoice,
+} from '../domain/observationForm';
+import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { CycleStartModal } from './CycleStartModal';
-import { Modal } from './Modal';
-import { StampBadge } from './StampBadge';
+import { Modal, useTopDialog } from './Modal';
+import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
@@ -16,11 +22,11 @@ import { X, Save } from 'lucide-react';
 import { addDays, getTodayStr } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
-import { hasObservationCode } from '../domain/stampCalculator';
 
 export const ObservationDrawer: React.FC = () => {
   const {
     observations,
+    cycles,
     selectedObservation,
     setSelectedObservation,
     isDrawerOpen,
@@ -33,7 +39,7 @@ export const ObservationDrawer: React.FC = () => {
   const [date, setDate] = useState(() => getTodayStr());
   const form = useObservationForm();
   const { fields, load } = form;
-  const { intercourse, isCycleStart } = fields;
+  const { isCycleStart } = fields;
   const directOnly = useDirectCodeOnly();
   const closeRef = useRef<HTMLButtonElement>(null);
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
@@ -51,7 +57,6 @@ export const ObservationDrawer: React.FC = () => {
   const findSaved = (day: string) => observations.find(o => o.date === day);
   const saved = isDrawerOpen ? findSaved(date) : undefined;
   const isDraft = hasFieldChanges(fields, loaded);
-  const isEmptyDay = !hasObservationCode(fields);
 
   // When the saved data changes while the drawer is open (for example with Undo), a form with no
   // change shows the new saved values. Thus, a save with no change never writes old values.
@@ -76,10 +81,28 @@ export const ObservationDrawer: React.FC = () => {
     isDrawerOpen
   );
 
+  // Ctrl+S or ⌘S saves, as on the Today page, while the sheet is the dialog on top
+  const topDialog = useTopDialog();
+  const sheetOnTop = topDialog?.classList.contains('drawer-overlay') ?? false;
+  useEffect(() => {
+    if (!sheetOnTop) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 's') return;
+      e.preventDefault();
+      (bodyRef.current as HTMLFormElement).requestSubmit();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [sheetOnTop, bodyRef]);
+
   if (!isDrawerOpen) return null;
 
   const savedId = saved?.id;
   const yesterdayObs = findSaved(addDays(date, -1));
+  const status = formStatus(fields, form.calculatedStamp, isDraft ? undefined : loaded);
+  // A day after today has no cycle day yet
+  const cycleDay =
+    saved?.cycleDay ?? (date <= getTodayStr() ? getCycleDayOn(cycles, date) : undefined);
 
   /**
    * Loads the saved observation of the new date. A form with no change follows the date, so the
@@ -128,7 +151,7 @@ export const ObservationDrawer: React.FC = () => {
       onClose={() => setIsDrawerOpen(false)}
       className="drawer-overlay"
       panelClassName="drawer-container"
-      // The focus starts on Close, as before the actions menu came before it
+      // The focus starts on Close, not on the actions menu before it
       initialFocusRef={closeRef}
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
@@ -136,7 +159,9 @@ export const ObservationDrawer: React.FC = () => {
         <div className="drawer-title-group">
           <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
           <p className="drawer-day-status">
-            {saved && <span>{formatMessage(t.common.dayNumber, { day: saved.cycleDay })} · </span>}
+            {cycleDay !== undefined && (
+              <span>{formatMessage(t.common.dayNumber, { day: cycleDay })} · </span>
+            )}
             <span>{saved ? t.todayView.loggedStatus : t.todayView.notLoggedStatus}</span>
           </p>
         </div>
@@ -159,24 +184,15 @@ export const ObservationDrawer: React.FC = () => {
       </div>
 
       <form ref={bodyRef} onSubmit={handleSave} className="drawer-body">
-        {/* Live Stamp & Code Preview */}
-        <div className="preview-card" aria-live="polite">
-          <div className="preview-stamp">
-            <StampBadge
-              stamp={form.calculatedStamp}
-              isPeakDay={fields.isManualPeak}
-              intercourse={intercourse}
-              size="lg"
-              isEmpty={isEmptyDay}
-            />
-          </div>
-          <div className="preview-details">
-            <span className="preview-label">{t.labels.stampPreview}</span>
-            <div className={isEmptyDay ? 'stamp-empty-text' : 'preview-code-display'}>
-              {isEmptyDay ? t.todayView.noObservation : form.currentCode}
-            </div>
-          </div>
-        </div>
+        <TodayFertilityGuidance
+          stamp={status.stamp}
+          currentCode={form.currentCode}
+          isEmpty={status.isEmpty}
+          isManualPeak={status.isPeak}
+          intercourse={fields.intercourse}
+          variant="sheet"
+          menu={null}
+        />
 
         {/* Date Picker */}
         <div className="form-group">

@@ -20,10 +20,11 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | [TodayDateNav.tsx](../../../src/components/today/TodayDateNav.tsx)                                   | Previous and next day (44 px), date picker and date. The day status: **Today** or **Jump to Today**, the cycle day, and **Saved** or **Not saved**. A phone shows the day status on a second line.                                                                                                                |
 | [ProgressiveObservationForm.tsx](../../../src/components/observation/ProgressiveObservationForm.tsx) | The progressive observation form ([Observation form](#observation-form)). The drawer uses the same component ([Observation drawer](observation-drawer.md)).                                                                                                                                                       |
 | [ObservationActionsMenu.tsx](../../../src/components/observation/ObservationActionsMenu.tsx)         | The ⋮ menu of the status card: **Copy yesterday**, **Direct Code Only** and **Delete observation**.                                                                                                                                                                                                               |
-| [TodayFertilityGuidance.tsx](../../../src/components/today/TodayFertilityGuidance.tsx)               | The status card: stamp, code, one guidance sentence and the ⋮ menu. A banner on a screen of 900 pixels or less, else a card. A day with no code shows the empty stamp and "No observation yet", and no guidance text.                                                                                             |
+| [TodayFertilityGuidance.tsx](../../../src/components/today/TodayFertilityGuidance.tsx)               | The status card: stamp, code, one guidance sentence and the ⋮ menu. A banner on a screen of 900 pixels or less, else a card. The drawer uses the banner at each width, without the menu. A day with no code shows the empty stamp and "No observation yet", and no guidance text.                                 |
 | [TodayHistoryList.tsx](../../../src/components/today/TodayHistoryList.tsx)                           | The selected date and the 4 days before it, in three columns: date, stamp and code. A day with no observation, or with no code and the `DARK_GREEN` stamp, shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)). A click selects that date. A long code ends with an ellipsis. |
 - The day status shows **Yesterday**, **N days ago**, **Tomorrow** or **In N days** for a day that is not today.
 - **Ctrl+S** or **⌘S** saves the form, also from a field. A dialog on top of the page keeps these keys.
+- On a computer (`pointer: fine`), **Done** does not show. It closes the keyboard of a touch screen.
 - The cycle day of the day status comes from the saved observation. A day with no observation gets the cycle day from the start date of the last cycle that starts on or before that day. A day before the first cycle or after today shows no cycle day.
 
 ### Observation form
@@ -37,7 +38,7 @@ The form of the **Today** page and of the observation drawer is the same compone
 5. The **Save Observation** button.
 
 - A tap on a row opens the chips of that group and closes the other open group. A second tap closes the row.
-- A chip is 48 px high and shows the code and a short name. Under the chips, the full name of the selected code shows.
+- A chip is 48 px high and shows the code and a short name. The short name is 11 px on a phone and 12 px from 1024 pixels. Under the chips, the full name of the selected code shows.
 - Three chips go on a line on a phone, and four on a screen of 1024 pixels or more. The form is 640 pixels wide or less.
 - In the **Bleeding** group, a bleeding code shows the cycle start choice under the chips.
 - A tap on a selected chip clears it.
@@ -90,7 +91,8 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 - **Appearance** and **Symptoms** are a `role="group"` of toggle buttons with `aria-pressed`.
 - The name of each chip is the full name of its code, for example "10 - Very stretchy (2.5cm+)".
 - The ⋮ button has `aria-haspopup="menu"`. The menu is a `role="menu"`, and the up and down arrow keys move between its items. Escape, Back and a click outside close it.
-- The status card has `aria-live="polite"`, so a screen reader reads the new stamp and guidance.
+- In the status card, the code and the guidance sentence have `aria-live="polite"`. Thus, a screen reader reads the new code and sentence. The ⋮ button is not in the live region.
+- A selected radio chip clears with a tap, **Space** or **Enter**, as a toggle does. Thus, a group can go back to no code.
 
 ## Implementation
 

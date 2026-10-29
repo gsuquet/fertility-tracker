@@ -19,6 +19,9 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 
 - The drawer has the date field and the same form as the **Today** page ([Observation form](today.md#observation-form)).
 - The header shows the title, the cycle day and **Saved** or **Not saved**, the ⋮ menu and the close button. The focus starts on the close button.
+- The cycle day comes from the saved observation. A day with no observation gets the cycle day of the **Today** page. A day after today shows no cycle day.
+- The status card is the banner of the **Today** page. A saved day with no change shows its saved stamp, with the Peak Day and the count of three. A change shows the stamp of the form.
+- **Ctrl+S** or **⌘S** saves while the drawer is the dialog on top.
 - The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
 
 | Condition                   | Result                                                                                                      |
@@ -28,8 +31,8 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 - Thus, a save with no change never replaces a saved day with an empty observation.
 - A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
 - The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete observation** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
-- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save. With no code, it shows the empty stamp and "No observation yet" ([Day with no code](today.md#day-with-no-code)).
-- The footer has **Cancel** and **Save Observation**.
+- The direct code and the buttons stay synchronized. The status card shows the stamp and the code before the save. With no code, it shows the empty stamp and "No observation yet" ([Day with no code](today.md#day-with-no-code)).
+- The footer has **Cancel** and **Save Observation**: two equal buttons of 48 px.
 - **Copy yesterday** copies the code of the day before the date of the drawer.
 
 ### Drag down to close

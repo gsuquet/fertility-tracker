@@ -7,13 +7,13 @@ The application finds the Peak Day automatically. The automatic Peak Day is the 
 ## Set a Peak Day
 
 1. Open the day in the **Today** page or in the observation drawer.
-2. Click **Designate Peak Day (P)**. The button changes to **Remove Peak Day (P)**.
+2. Turn on the **Designate Peak Day (P)** switch.
 3. Click **Save Observation**.
 
 ## Go back to the automatic Peak Day
 
 1. Open the day that has the Peak Day that you set.
-2. Click **Remove Peak Day (P)**.
+2. Turn off the **Designate Peak Day (P)** switch.
 3. Click **Save Observation**.
 
 ## Result

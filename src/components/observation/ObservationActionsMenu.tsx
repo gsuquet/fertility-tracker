@@ -39,8 +39,13 @@ export const ObservationActionsMenu: React.FC<ObservationActionsMenuProps> = ({
     action();
   };
 
-  /** The arrow keys move between the items, as in a native menu. */
+  /** The arrow keys move between the items, as in a native menu. Tab closes the menu. */
   const handleKeyDown = (e: React.KeyboardEvent) => {
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      close();
+      return;
+    }
     const step = { ArrowDown: 1, ArrowUp: -1 }[e.key];
     if (!step) return;
     e.preventDefault();

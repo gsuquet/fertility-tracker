@@ -79,7 +79,7 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 | `--accent-primary`                                                       | Also `--accent-light`                                                                                  |
 | White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                                |
 | White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                            |
-| White                                                                    | `--color-intercourse` and `--color-peak` (active toggles), `--color-success-solid` (`.today-toast`)    |
+| White                                                                    | `--color-intercourse` and `--color-peak`, `--color-success-solid` (`.today-toast`)                     |
 | `--color-info-text`                                                      | `--color-info-surface`: the badge of the welcome guide                                                 |
 | `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                         |
 | `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                           |

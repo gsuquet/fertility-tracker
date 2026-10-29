@@ -12,7 +12,8 @@ interface TodayFertilityGuidanceProps {
   isEmpty: boolean;
   isManualPeak: boolean;
   intercourse: boolean;
-  variant: 'banner' | 'card';
+  /** banner: the phone of the Today page. sheet: the observation sheet, at each width. */
+  variant: 'banner' | 'sheet' | 'card';
   /** The observation actions menu, at the right of the status. */
   menu: React.ReactNode;
 }
@@ -43,9 +44,10 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
     }
   };
 
-  if (variant === 'banner') {
+  if (variant !== 'card') {
+    const where = variant === 'banner' ? 'mobile-only-stamp-banner' : 'sheet-status-banner';
     return (
-      <div className="today-top-status-banner mobile-only-stamp-banner" aria-live="polite">
+      <div className={`today-top-status-banner ${where}`}>
         <div className="status-stamp-hero">
           <StampBadge
             stamp={stamp}
@@ -54,7 +56,8 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
             size="lg"
             isEmpty={isEmpty}
           />
-          <div className="status-hero-info">
+          {/* Only the code and the sentence are read again, not the menu */}
+          <div className="status-hero-info" aria-live="polite">
             <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
               {isEmpty ? t.todayView.noObservation : currentCode}
             </div>
@@ -74,7 +77,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
         {menu}
       </div>
 
-      <div className="status-stamp-wrapper">
+      <div className="status-stamp-wrapper" aria-live="polite">
         <StampBadge
           stamp={stamp}
           isPeakDay={isManualPeak}
@@ -88,7 +91,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       </div>
 
       {!isEmpty && (
-        <div className="status-guidance-box">
+        <div className="status-guidance-box" aria-live="polite">
           <Info size={16} className="guidance-icon" />
           <p>{getFertilityGuidance()}</p>
         </div>

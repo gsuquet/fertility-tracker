@@ -70,4 +70,10 @@ describe('ObservationActionsMenu', () => {
     fireEvent.keyDown(menu, { key: 'a' });
     expect(remove).toHaveFocus();
   });
+
+  it('closes on Tab, as a native menu does', () => {
+    renderMenu();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Tab' });
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
 });

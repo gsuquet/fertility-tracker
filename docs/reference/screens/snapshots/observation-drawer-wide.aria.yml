@@ -3,7 +3,7 @@
   - paragraph: /Day \d+ · Saved/
   - button "Observation actions"
   - button "Close entry panel"
-  - text: Stamp Preview 0AD Date
+  - text: 0AD Dry day. Infertile under the CrMS rules. Date
   - textbox "Date": /\d+-\d+-\d+/
   - text: Direct Code Entry
   - textbox "Direct Code Entry":

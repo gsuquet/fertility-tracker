@@ -3,8 +3,12 @@ import { useState, useEffect, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
-import { copyableCode, hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
-import { hasObservationCode, showsEmptyStamp } from '../domain/stampCalculator';
+import {
+  copyableCode,
+  formStatus,
+  hasFieldChanges,
+  needsCycleStartChoice,
+} from '../domain/observationForm';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { useShortcut } from '../hooks/useKeyboardShortcuts';
 import { useObservationForm } from '../hooks/useObservationForm';
@@ -88,16 +92,11 @@ export const TodayView: React.FC = () => {
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
   const yesterdayObs = observations.find(o => o.date === addDays(selectedDate, -1));
 
-  // A saved day with no change shows its saved stamp, with the Peak Day and the count of three.
-  // A change shows the stamp of the form.
-  const shownObs = hasUnsavedChanges ? undefined : currentObs;
-  const status = shownObs
-    ? { stamp: shownObs.stamp, isPeak: !!shownObs.isPeakDay, isEmpty: showsEmptyStamp(shownObs) }
-    : {
-        stamp: form.calculatedStamp,
-        isPeak: fields.isManualPeak,
-        isEmpty: !hasObservationCode(fields),
-      };
+  const status = formStatus(
+    fields,
+    form.calculatedStamp,
+    hasUnsavedChanges ? undefined : currentObs
+  );
 
   // Ctrl+S or ⌘S saves, also in a field. A dialog on top keeps the keys.
   useEffect(() => {

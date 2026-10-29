@@ -22,12 +22,11 @@ The **Today** page shows one date at a time. The date bar at the top shows the s
 You start four days before today.
 
 1. Click **Previous Day** four times.
-2. In **Entry Mode**, click **Direct Code Only**.
-3. In **Direct Code Entry**, type `M`.
-4. Click **Save Observation**. The **New Cycle Start?** dialog opens.
-5. Click **Yes, Start New Cycle**.
+2. In **Direct Code Entry**, type `M`.
+3. Click **Save Observation**. The **New Cycle Start?** dialog opens.
+4. Click **Yes, Start New Cycle**.
 
-The code `M` is moderate bleeding. The stamp preview shows a red stamp. This day is day 1 of your first cycle.
+The code `M` is moderate bleeding. The status card shows a red stamp. This day is day 1 of your first cycle.
 
 ## Record a day of fertile mucus
 
@@ -35,7 +34,7 @@ The code `M` is moderate bleeding. The stamp preview shows a red stamp. This day
 2. In **Direct Code Entry**, type `10KLAD`.
 3. Click **Save Observation**.
 
-The code `10KLAD` is very stretchy (`10`), clear (`K`) and lubricative (`L`) mucus that you saw all day (`AD`). The stamp preview shows a white stamp with a baby. This is a fertile day.
+The code `10KLAD` is very stretchy (`10`), clear (`K`) and lubricative (`L`) mucus that you saw all day (`AD`). The status card shows a white stamp with a baby. This is a fertile day.
 
 ## Record three dry days
 

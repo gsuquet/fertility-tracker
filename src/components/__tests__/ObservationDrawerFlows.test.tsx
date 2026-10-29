@@ -330,7 +330,7 @@ describe('ObservationDrawer flows', () => {
   it('closes from the close button, cancel, the overlay and Escape only', () => {
     renderDrawer(null);
     fireEvent.keyDown(drawer(), { key: 'Enter' });
-    fireEvent.click(within(drawer()).getByText(en.labels.stampPreview));
+    fireEvent.click(within(drawer()).getByText(en.todayView.noObservation));
     expect(drawer()).toBeInTheDocument();
 
     press('Close entry panel');
@@ -390,5 +390,44 @@ describe('ObservationDrawer flows', () => {
     press(en.observationForm.actionsLabel);
     fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect }));
     expect(within(drawer()).getByRole('button', { name: /^Bleeding/ })).toBeInTheDocument();
+  });
+
+  it('shows the cycle day of a day with no observation, and none after today', () => {
+    renderDrawer(makeObservation({ id: '', date: '2026-09-12' }), [
+      makeObservation({ date: '2026-09-10', bleeding: 'H' }),
+    ]);
+    expect(within(drawer()).getByText(/Day 3 ·/)).toBeInTheDocument();
+    expect(within(drawer()).getByText(en.todayView.notLoggedStatus)).toBeInTheDocument();
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.date), {
+      target: { value: '2026-09-20' },
+    });
+    expect(within(drawer()).queryByText(/Day \d+ ·/)).toBeNull();
+  });
+
+  it('shows the saved stamp of a day with no change, and the stamp of the form after a change', () => {
+    const days = [
+      makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-09-10', stretch: '10', modifiers: ['K'], isManualPeak: true }),
+      makeObservation({ id: 'd11', date: '2026-09-11', stretch: '0', codeString: '0' }),
+    ];
+    renderDrawer(days[2] as Observation, days);
+    // The day after the Peak Day is the first day of the count of three
+    expect(drawer().querySelector('.stamp-light_green_baby_1')).toBeInTheDocument();
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '2' },
+    });
+    expect(drawer().querySelector('.stamp-light_green_baby_1')).toBeNull();
+  });
+
+  it('saves with Ctrl+S while the sheet is on top', () => {
+    renderDrawer(null);
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '0' },
+    });
+    fireEvent.keyDown(window, { key: 's' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    fireEvent.keyDown(window, { key: 'S', ctrlKey: true });
+    expect(saved()).toBe('2026-09-15:0:undefined');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

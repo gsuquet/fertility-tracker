@@ -188,13 +188,6 @@ describe('ProgressiveObservationForm', () => {
     expect(screen.queryByRole('list', { name: en.observationForm.readAs })).toBeNull();
   });
 
-  it('works without a typing callback', () => {
-    renderWithProviders(<Harness />);
-    fireEvent.focus(codeField());
-    fireEvent.blur(codeField());
-    expect(codeField()).toBeInTheDocument();
-  });
-
   it('hides the group rows and keeps the parse in Direct Code Only', () => {
     renderWithProviders(<Harness directOnly />);
     expect(screen.queryByRole('button', { name: /^Bleeding/ })).toBeNull();

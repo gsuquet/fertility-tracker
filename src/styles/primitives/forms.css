@@ -10,21 +10,7 @@
     gap: 0.5rem;
   }
 
-  /* A button group is a fieldset: remove the browser border, and show its legend as a label */
-  fieldset.form-group {
-    border: 0;
-    margin: 0;
-    padding: 0;
-    min-width: 0;
-  }
-
-  .form-group legend {
-    padding: 0;
-    margin-bottom: 0.5rem;
-  }
-
-  .form-group label,
-  .form-group legend {
+  .form-group label {
     font-size: var(--font-size-sm);
     font-weight: 800;
     color: var(--text-secondary);
@@ -60,46 +46,8 @@
     font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
   }
 
-  .button-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(115px, 1fr));
-    gap: 8px;
-  }
-
-  .option-btn {
-    padding: 0.65rem 0.55rem;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-sm);
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    cursor: pointer;
-    text-align: left;
-    min-height: 44px; /* WCAG AA Touch Target */
-    display: flex;
-    align-items: center;
-    transition: all 0.15s ease;
-    user-select: none;
-  }
-
-  .option-btn:hover {
-    border-color: var(--accent-primary);
-  }
-
-  .option-btn:active {
-    transform: scale(0.96);
-  }
-
-  .option-btn.active {
-    background-color: var(--accent-solid);
-    color: var(--color-white);
-    border-color: var(--accent-primary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .intercourse-toggle-btn,
-  .peak-toggle-btn {
+  /* The cycle start choice of the Bleeding group */
+  .cycle-start-toggle-btn {
     display: flex;
     align-items: center;
     gap: 0.6rem;
@@ -116,23 +64,8 @@
     user-select: none;
   }
 
-  .intercourse-toggle-btn:active,
-  .peak-toggle-btn:active {
+  .cycle-start-toggle-btn:active {
     transform: scale(0.97);
-  }
-
-  .intercourse-toggle-btn.active {
-    background-color: var(--color-intercourse);
-    color: var(--color-white);
-    border-color: var(--color-intercourse);
-    box-shadow: var(--shadow-intercourse-toggle);
-  }
-
-  .peak-toggle-btn.active {
-    background-color: var(--color-peak);
-    color: var(--color-white);
-    border-color: var(--color-peak);
-    box-shadow: var(--shadow-peak-toggle);
   }
 
   .cycle-start-toggle-btn.active {

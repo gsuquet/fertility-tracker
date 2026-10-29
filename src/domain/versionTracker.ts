@@ -62,7 +62,7 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlightsFr: [
       'Le formulaire montre une ligne par groupe de codes. Un appui ouvre les boutons de ce groupe seulement',
       'Rapport et jour Sommet sont des interrupteurs, et les notes s’ouvrent dans leur ligne',
-      'Le menu ⋮ de la carte d’état contient Copier hier, Code Direct Seul et Supprimer l’observation',
+      'Le menu ⋮ de la carte d’état contient Copier la veille, Code Direct Seul et Supprimer l’observation',
       'La carte d’état montre une phrase courte, et la barre de date indique Hier ou Il y a 3 jours',
       'Sur un téléphone, Enregistrer reste en bas de l’écran. Ctrl+S ou ⌘S enregistre aussi',
     ],
