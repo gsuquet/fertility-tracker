@@ -328,7 +328,7 @@ export const fr: TranslationSchema = {
       "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
     importError:
       "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde de Fertility Tracker (.ftbackup ou .json).",
-    close: 'Fermer Partager le graphique',
+    close: 'Fermer le partage du graphique',
   },
   confirmDialog: {
     demoTitle: 'Remplacer vos données par la démo ?',
