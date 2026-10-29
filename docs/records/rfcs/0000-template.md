@@ -21,7 +21,7 @@ Tell how a user or a contributor sees the change. Use examples. Write this secti
 
 ## Reference-level explanation
 
-Give the full rules of the change. Give the new files, the new rules, the frames of new screens and the changes to the current reference pages. A contributor must be able to do the work from this section.
+Give the full rules of the change. Give the new files, the new rules, a static HTML mockup of new screens and the changes to the current reference pages. A contributor must be able to do the work from this section.
 
 ## Drawbacks
 
