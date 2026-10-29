@@ -35,21 +35,23 @@ Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinne
 - `package.json` declares `engines`, `devEngines` and `packageManager`.
 - `.mise/config.toml` and `.mise/mise.lock` pin the tools with checksums.
 
-| Layer              | Technology                                 | Version                                                                                             |
-| ------------------ | ------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| Runtime            | Node.js and npm                            | `node 26.12.1`, `npm 11.20.0` (the npm of that Node.js release), `.node-version`, mise `2026.10.19` |
-| User interface     | React                                      | `19.3.1`                                                                                            |
-| Language           | TypeScript                                 | `7.0.2`, strict, ES2023 target, unchecked index access and exact optional properties                |
-| Build              | Vite                                       | `8.3.5`                                                                                             |
-| Lint and format    | Biome                                      | `@biomejs/biome 2.6.3` for TS, TSX, CSS, JSON, YAML and Markdown. A warning is a failure.           |
-| Git hooks          | pre-commit                                 | `pre-commit 4.7.0`, `pre-commit-hooks 6.0.0`, `gitleaks 8.30.1`, local hooks                        |
-| Icons              | Lucide React                               | `1.61.0`                                                                                            |
-| Font               | Font of the operating system               | `system-ui` stack, no font file                                                                     |
-| Styles             | CSS                                        | Custom properties, cascade layers, grid and flexbox                                                 |
-| Unit tests         | Vitest, React Testing Library, V8 coverage | `vitest 5.0.5`, `@vitest/coverage-v8 5.0.5`, `@testing-library/react 16.3.3`, `jsdom 30.1.3`        |
-| End-to-end tests   | Playwright and axe                         | `@playwright/test` and `@axe-core/playwright`, pinned in `package.json`                             |
-| Deployment         | Cloudflare Pages                           | `wrangler 4.153.0`, `compatibility_date 2026-10-23`                                                 |
-| Dependency updates | Dependabot                                 | Weekly grouped updates for npm and GitHub Actions                                                   |
+The table gives the place of each version. It does not copy the numbers, because Dependabot changes them each week.
+
+| Layer              | Technology                                        | Version and settings                                                                         |
+| ------------------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
+| Runtime            | Node.js and npm                                   | `.node-version`, `engines` and `packageManager` in `package.json`, and `.mise/config.toml`   |
+| User interface     | React                                             | `package.json`                                                                               |
+| Language           | TypeScript                                        | `package.json`. Strict, ES2023 target, unchecked index access and exact optional properties. |
+| Build              | Vite                                              | `package.json`                                                                               |
+| Lint and format    | Biome                                             | `package.json`. It checks TS, TSX, CSS, JSON, YAML and Markdown. A warning is a failure.     |
+| Git hooks          | pre-commit and gitleaks                           | `.mise/config.toml` for the tools, and `.pre-commit-config.yaml` for the hooks               |
+| Icons              | Lucide React                                      | `package.json`                                                                               |
+| Font               | Font of the operating system                      | `system-ui` stack, no font file                                                              |
+| Styles             | CSS                                               | Custom properties, cascade layers, grid and flexbox                                          |
+| Unit tests         | Vitest, React Testing Library, V8 coverage, jsdom | `package.json`                                                                               |
+| End-to-end tests   | Playwright and axe                                | `package.json`                                                                               |
+| Deployment         | Cloudflare Pages                                  | `wrangler` in `package.json`, and `compatibility_date` in `wrangler.json`                    |
+| Dependency updates | Dependabot                                        | Weekly grouped updates for npm and GitHub Actions                                            |
 
 ## Code splitting and lazy loading
 
