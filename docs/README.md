@@ -47,11 +47,14 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Cycle and phase rules](reference/cycle-and-phase-rules.md)
 - [User interface](reference/user-interface.md)
 - [Data format](reference/data-format.md)
+- [Data storage](reference/data-storage.md)
 
 ### The code
 
 - [Domain API](reference/domain-api.md)
 - [Project structure](reference/project-structure.md)
+- [Languages](reference/languages.md)
+- [Design system](reference/design-system.md)
 - [Commands](reference/commands.md)
 - [Test rules and helpers](reference/test-rules.md)
 - [Documentation rules](reference/documentation-rules.md)
