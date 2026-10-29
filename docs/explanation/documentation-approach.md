@@ -30,7 +30,7 @@ The project uses a strict form of Diátaxis. Each page has exactly one type and 
 
 ## Why the records are not Diátaxis pages
 
-A record tells the story of one proposal or one decision at one date. It does not change after the merge, but the product changes. Thus, a record is not a tutorial, a how-to guide, a reference page or an explanation.
+A record tells the story of one proposal or one decision at one date. It does not change after the merge. Only an RFC can change, in an amendment that the maintainer decides in writing. But the product changes. Thus, a record is not a tutorial, a how-to guide, a reference page or an explanation.
 
 The records are in `docs/records/`. An RFC proposes a large change before the work starts. An ADR gives one decision and its reasons. The reference pages give the current rules, and they link to the records for the reasons.
 
