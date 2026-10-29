@@ -150,11 +150,16 @@ describe('with a docs folder', () => {
     ]);
   });
 
-  it('accepts pages in the four Diátaxis folders that the index lists', () => {
-    write('docs/README.md', '[a](how-to/a.md) [b](reference/b.md) [d](adr/0001-d.md)');
+  it('accepts pages in the Diátaxis and record folders that the index lists', () => {
+    write(
+      'docs/README.md',
+      '[a](how-to/a.md) [b](reference/b.md) [d](adr/0001-d.md) [r](records/rfcs/0001-r.md) [e](records/adrs/0003-e.md)'
+    );
     write('docs/how-to/a.md', '# A\n\n1. Do it.');
     write('docs/reference/b.md', '# B');
     write('docs/adr/0001-d.md', '# D');
+    write('docs/records/rfcs/0001-r.md', '# R');
+    write('docs/records/adrs/0003-e.md', '# E');
     expect(checkDiataxis(root)).toEqual([]);
   });
 
@@ -164,6 +169,7 @@ describe('with a docs folder', () => {
     write('docs/tutorials/t.md', '# T\n\n1. Step.');
     write('docs/tutorials/u.md', '# U\n\nNo steps.');
     write('docs/notes/n.md', '# N');
+    write('docs/records/notes/m.md', '# M');
     expect(checkDiataxis(root)).toEqual([
       {
         file: 'docs/how-to/a.md',
@@ -174,9 +180,20 @@ describe('with a docs folder', () => {
         file: 'docs/notes/n.md',
         line: 1,
         message:
-          'Put the page in tutorials, how-to, reference or explanation. Put a decision record in adr.',
+          'Put the page in tutorials, how-to, reference or explanation. Put a record in adr, records/rfcs or records/adrs.',
       },
       { file: 'docs/notes/n.md', line: 1, message: 'docs/README.md does not link to this page.' },
+      {
+        file: 'docs/records/notes/m.md',
+        line: 1,
+        message:
+          'Put the page in tutorials, how-to, reference or explanation. Put a record in adr, records/rfcs or records/adrs.',
+      },
+      {
+        file: 'docs/records/notes/m.md',
+        line: 1,
+        message: 'docs/README.md does not link to this page.',
+      },
       {
         file: 'docs/tutorials/t.md',
         line: 1,
