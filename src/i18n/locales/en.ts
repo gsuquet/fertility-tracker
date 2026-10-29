@@ -286,6 +286,11 @@ export const en = {
     jumpToToday: 'Jump to Today',
     peakShort: 'P Day {day}',
     cycleDays: '{count} days',
+    detailLabel: 'Selected day',
+    detailDay: '{date} · Cycle {cycle}, day {day}',
+    editDay: 'Edit',
+    openInToday: 'Open in Today',
+    showRow: 'Show all the days of cycle {number}',
   },
   exportModal: {
     title: 'Practitioner Export & Data Backup',

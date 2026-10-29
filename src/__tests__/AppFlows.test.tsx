@@ -1,7 +1,10 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { App } from '../App';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
+import { STORAGE_HAS_SEEN_WELCOME_KEY, STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
+import { DESKTOP_QUERY } from '../hooks/useMediaQuery';
+import { makeObservation } from '../test/factories';
+import { getTodayStr } from '../utils/dateUtils';
 import { en } from '../i18n';
 
 const footer = () => screen.getByRole('contentinfo');
@@ -26,6 +29,37 @@ describe('App flows', () => {
 
     render(<App />);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens the selected day of the desktop chart in Today', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem(
+      STORAGE_OBSERVATIONS_KEY,
+      JSON.stringify([makeObservation({ date: getTodayStr(), bleeding: 'H', codeString: 'H' })])
+    );
+    vi.mocked(window.matchMedia).mockImplementation(
+      query =>
+        ({
+          matches: query === DESKTOP_QUERY,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
+    );
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.chart }));
+    const detail = await screen.findByRole('region', { name: en.chartStrip.detailLabel });
+    fireEvent.click(within(detail).getByRole('button', { name: en.chartStrip.openInToday }));
+    expect(await screen.findByRole('tabpanel', { name: en.tabs.today })).toBeInTheDocument();
+    vi.mocked(window.matchMedia).mockImplementation(
+      query =>
+        ({
+          matches: false,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
+    );
   });
 
   it('opens the guide from the header', async () => {

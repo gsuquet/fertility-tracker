@@ -45,6 +45,8 @@ interface ChartFilledCellProps {
   obs: Observation;
   isToday: boolean;
   viewMode: ChartViewMode;
+  /** On a desktop, a click selects the day: true for the selected day. Undefined on a phone. */
+  selected?: boolean | undefined;
   onOpen: (obs: Observation) => void;
 }
 
@@ -53,6 +55,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({
   obs,
   isToday,
   viewMode,
+  selected,
   onOpen,
 }) => {
   const { t } = useLanguage();
@@ -64,8 +67,9 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({
   return (
     <button
       type="button"
-      className={`chart-cell filled-cell paper-cell ${obs.isPeakDay ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''}`}
+      className={`chart-cell filled-cell paper-cell ${obs.isPeakDay ? 'peak-cell' : ''} ${obs.stamp.toLowerCase()} ${isToday ? 'is-today' : ''} ${selected ? 'is-selected' : ''}`}
       aria-current={isToday ? 'date' : undefined}
+      aria-pressed={selected}
       onClick={() => onOpen(obs)}
       onMouseEnter={() => setIsHovered(true)}
       onMouseLeave={() => setIsHovered(false)}
@@ -133,6 +137,8 @@ interface ChartEmptyCellProps {
   isToday: boolean;
   /** The 35-day view by default */
   viewMode?: ChartViewMode;
+  /** On a desktop, a click selects the day: true for the selected day. Undefined on a phone. */
+  selected?: boolean | undefined;
   /** The accessible name template: a day of a cycle, or a day of the blank grid */
   labelTemplate: string;
   onOpen: (date: string, dayNum: number) => void;
@@ -144,6 +150,7 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
   dateStr,
   isToday,
   viewMode = '35-day',
+  selected,
   labelTemplate,
   onOpen,
 }) => {
@@ -152,8 +159,9 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
   return (
     <button
       type="button"
-      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''}`}
+      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''} ${selected ? 'is-selected' : ''}`}
       aria-current={isToday ? 'date' : undefined}
+      aria-pressed={selected}
       onClick={() => onOpen(dateStr, dayNum)}
       aria-label={formatMessage(labelTemplate, {
         day: dayNum,

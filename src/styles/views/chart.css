@@ -134,6 +134,23 @@
     color: var(--text-secondary);
   }
 
+  /* The cycle line, then the controls of the first card */
+  .cycle-head {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+
+  .cycle-line-toggle {
+    padding: 0;
+    border: 0;
+    background: none;
+    color: inherit;
+    font: inherit;
+    text-decoration: underline dotted;
+    cursor: pointer;
+  }
+
   /* One card for each cycle */
   .chart-row-container {
     display: flex;
@@ -221,11 +238,15 @@
   }
 
   /* The phase bar: one segment for each day, which does not scroll */
+  /* Phone: one bar over the width of the card. It stays in place while the strip scrolls. */
   .cycle-phase-bar {
+    position: sticky;
+    left: 0;
     display: flex;
     gap: 2px;
+    width: 100%;
     height: 6px;
-    flex: none;
+    margin-bottom: 6px;
   }
 
   .phase-segment {
@@ -252,6 +273,59 @@
 
   .phase-unknown {
     background-color: var(--bg-surface-border);
+  }
+
+  /* The day detail bar of the desktop chart */
+  .chart-day-detail {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: 12px var(--space-md);
+    background-color: var(--bg-surface);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-sm);
+  }
+
+  .chart-day-detail .stamp-badge-container {
+    width: auto;
+    height: auto;
+  }
+
+  .chart-day-detail .stamp-lg .stamp-badge {
+    width: 40px;
+    height: 40px;
+  }
+
+  .chart-day-detail-text {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .chart-day-detail-text p {
+    margin: 0;
+    font-size: var(--font-size-md);
+    color: var(--text-primary);
+  }
+
+  .chart-day-detail-code {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--font-size-lg);
+  }
+
+  .chart-day-detail-text .chart-day-detail-sentence {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+  }
+
+  .chart-day-detail-text .chart-day-detail-notes {
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
+    font-style: italic;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   /* The day cards. All the rows share one scroll position. */
@@ -428,10 +502,60 @@
     flex: 1;
   }
 
+  .chart-cell.paper-cell.is-selected {
+    border: 2px solid var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /*
+   * Desktop: 44 px columns with 2 px between them (RFC 0002). 28 days fit at 1440 px. The controls
+   * go at the end of the cycle line, and the phase bar has one segment above each column.
+   */
   @media (min-width: 1024px) {
     .chart-footer-actions .btn {
       flex: none;
       min-width: 160px;
+    }
+
+    .chart-row-container {
+      padding: 12px var(--space-md) var(--space-md);
+    }
+
+    .cycle-head {
+      flex-direction: row;
+      align-items: center;
+      justify-content: space-between;
+      min-height: var(--control-size-md);
+    }
+
+    .chart-row-strip {
+      gap: 2px;
+    }
+
+    .cycle-phase-bar {
+      position: static;
+      display: grid;
+      grid-auto-flow: column;
+      grid-auto-columns: 44px;
+      width: max-content;
+    }
+
+    .view-compact .cycle-phase-bar {
+      grid-auto-columns: 34px;
+    }
+
+    .chart-cell.paper-cell {
+      height: 118px;
+      gap: 4px;
+      padding: 6px 0 4px;
+      border-radius: var(--radius-2xs);
+    }
+
+    /* A past cycle of a chart with many cycles: the cycle day and the stamp in the same columns */
+    .is-collapsed .chart-cell.paper-cell,
+    .view-compact .chart-cell.paper-cell {
+      height: auto;
+      padding-bottom: 8px;
     }
   }
 

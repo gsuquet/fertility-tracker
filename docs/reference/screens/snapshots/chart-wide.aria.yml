@@ -58,7 +58,7 @@
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sat \d+-\d+ 0AD/
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sun \d+-\d+ 0AD/
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Mon \d+-\d+ 0AD/
-      - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD, Today/: /\d+ Tue \d+-\d+ 0AD/
+      - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD, Today/ [pressed]: /\d+ Tue \d+-\d+ 0AD/
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Wed \d+-\d+/
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Thu \d+-\d+/
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Fri \d+-\d+/
@@ -66,6 +66,13 @@
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Sun \d+-\d+/
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Mon \d+-\d+/
       - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Tue \d+-\d+/
+    - region "Selected day":
+      - paragraph:
+        - strong: /Tue, Oct \d+ · Cycle 2, day \d+/
+        - text: · 0AD
+      - paragraph: Dry day. Infertile under the CrMS rules. Saved.
+      - button "Edit"
+      - button "Open in Today"
     - button "Legend"
   - contentinfo "Legal and Trademark Disclaimers":
     - text: Legal & Trademark Information

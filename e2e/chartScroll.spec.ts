@@ -107,3 +107,31 @@ test.describe('Chart on a phone', () => {
     await expect.poll(lefts).toEqual([137, 137]);
   });
 });
+
+test.describe('Chart on a desktop', () => {
+  test.use({ viewport: { width: 1440, height: 900 } });
+
+  test('selects a day with a click and the arrow keys, and opens it in Today', async ({ page }) => {
+    await openChart(page, 20);
+    const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
+    const detail = chart.getByRole('region', { name: en.chartStrip.detailLabel });
+    // Today is selected when the chart opens
+    await expect(detail).toContainText('Cycle 1, day 20');
+
+    const today = chart.locator('.chart-cell.is-today');
+    await today.click();
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+    await page.keyboard.press('ArrowLeft');
+    await expect(detail).toContainText('Cycle 1, day 19');
+    await expect(chart.locator('.chart-cell.is-selected')).toBeFocused();
+
+    // The column of 44 px keeps 28 days in view at 1440 px
+    const width = await today.evaluate(cell => cell.getBoundingClientRect().width);
+    expect(width).toBe(44);
+
+    await detail.getByRole('button', { name: en.chartStrip.openInToday }).click();
+    // Today opens on the selected day, the day before today
+    const todayPage = page.getByRole('tabpanel', { name: en.tabs.today });
+    await expect(todayPage.getByText(en.todayView.yesterday, { exact: true })).toBeVisible();
+  });
+});

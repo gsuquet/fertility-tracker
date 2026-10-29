@@ -256,7 +256,7 @@ const MainApp: React.FC = () => {
           <ErrorBoundary key={activeTab}>
             <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
               {activeTab === 'today' && <TodayView />}
-              {activeTab === 'chart' && <ChartRow />}
+              {activeTab === 'chart' && <ChartRow onOpenToday={() => setActiveTab('today')} />}
               {activeTab === 'calendar' && <CalendarGrid />}
               {activeTab === 'analytics' && (
                 <>
