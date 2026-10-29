@@ -28,6 +28,7 @@ test.describe('Keyboard shortcuts', () => {
     await expect(date).toBeVisible();
 
     // A key typed in a field stays in the field
+    await page.getByRole('button', { name: new RegExp(`^${en.observationForm.notes}`) }).click();
     const notes = page.getByPlaceholder(en.todayView.notesPlaceholder);
     await notes.click();
     await page.keyboard.type('n2');

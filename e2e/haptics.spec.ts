@@ -27,7 +27,7 @@ test.describe('Haptic feedback', () => {
     await recordVibrations(page);
     await openApp(page);
     await page.getByRole('textbox', { name: en.labels.directInput }).fill('10KL');
-    await page.getByRole('button', { name: en.actions.setPeak }).click();
+    await page.getByRole('switch', { name: en.actions.setPeak }).click();
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect.poll(() => vibrations(page)).toEqual([10, 15]);
     await page.getByRole('button', { name: en.mobileTabs.log, exact: true }).click();
@@ -43,7 +43,7 @@ test.describe('Haptic feedback', () => {
     // The choice stays after a reload
     await page.reload();
     await page.getByRole('button', { name: en.mobileTabs.log, exact: true }).click();
-    await page.getByRole('dialog').getByRole('button', { name: en.actions.removePeak }).click();
+    await page.getByRole('dialog').getByRole('switch', { name: en.actions.setPeak }).click();
     expect(await vibrations(page)).toEqual([]);
   });
 });

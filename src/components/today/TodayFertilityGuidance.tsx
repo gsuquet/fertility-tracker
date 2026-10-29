@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatMessage } from '../../i18n';
 import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { Info, Sparkles } from 'lucide-react';
@@ -12,6 +13,8 @@ interface TodayFertilityGuidanceProps {
   isManualPeak: boolean;
   intercourse: boolean;
   variant: 'banner' | 'card';
+  /** The observation actions menu, at the right of the status. */
+  menu: React.ReactNode;
 }
 
 export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
@@ -21,6 +24,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   isManualPeak,
   intercourse,
   variant,
+  menu,
 }) => {
   const { t } = useLanguage();
 
@@ -33,7 +37,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       case 'LIGHT_GREEN_BABY_1':
       case 'LIGHT_GREEN_BABY_2':
       case 'LIGHT_GREEN_BABY_3':
-        return t.todayView.guidance.postPeak;
+        return formatMessage(t.todayView.guidance.postPeak, { day: stamp.slice(-1) });
       default:
         return t.todayView.guidance.dry;
     }
@@ -41,7 +45,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
 
   if (variant === 'banner') {
     return (
-      <div className="today-top-status-banner mobile-only-stamp-banner">
+      <div className="today-top-status-banner mobile-only-stamp-banner" aria-live="polite">
         <div className="status-stamp-hero">
           <StampBadge
             stamp={stamp}
@@ -54,13 +58,9 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
             <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
               {isEmpty ? t.todayView.noObservation : currentCode}
             </div>
-            {!isEmpty && (
-              <div className="status-hero-guidance">
-                <Info size={15} className="guidance-icon" />
-                <span>{getFertilityGuidance()}</span>
-              </div>
-            )}
+            {!isEmpty && <div className="status-hero-guidance">{getFertilityGuidance()}</div>}
           </div>
+          {menu}
         </div>
       </div>
     );
@@ -71,6 +71,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       <div className="status-card-header">
         <Sparkles size={18} className="status-header-icon" />
         <h3>{t.labels.stampPreview}</h3>
+        {menu}
       </div>
 
       <div className="status-stamp-wrapper">

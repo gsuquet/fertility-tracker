@@ -23,6 +23,8 @@
     /* Light Theme Variables */
     --bg-primary: #f8f6f1;
     --bg-surface: #fffefb;
+    /* Background of the status card of Today. Step 9 of RFC 0002 sets the dark value. */
+    --bg-hero: #fffefb;
     --bg-surface-elevated: #ffffff;
     --bg-surface-border: #e4dfd4;
     --bg-surface-border-strong: #cfc7b8;
@@ -143,6 +145,7 @@
 
     --bg-primary: #13171d;
     --bg-surface: #1b2028;
+    --bg-hero: #1b2028;
     --bg-surface-elevated: #232a34;
     --bg-surface-border: #2b323d;
     --bg-surface-border-strong: #3d4654;

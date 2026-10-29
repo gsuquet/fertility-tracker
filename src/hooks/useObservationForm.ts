@@ -12,7 +12,7 @@ import { formatCodeString, parseCodeString } from '../domain/codeParser';
 import { calculateStamp } from '../domain/stampCalculator';
 import { haptic } from '../utils/haptics';
 import type { ObservationFields } from '../domain/observationForm';
-import { EMPTY_FIELDS, fieldsFromObservation } from '../domain/observationForm';
+import { EMPTY_FIELDS, codeFieldsOf, fieldsFromObservation } from '../domain/observationForm';
 
 const toggle = <T>(items: T[], item: T) =>
   items.includes(item) ? items.filter(i => i !== item) : [...items, item];
@@ -59,6 +59,8 @@ export function useObservationForm() {
       updateCode({ modifiers: toggle(fields.modifiers, mod) }),
     toggleSymptom: (sym: SymptomCode) => updateCode({ symptoms: toggle(fields.symptoms, sym) }),
     toggleIntercourse: () => updateCode({ intercourse: !fields.intercourse }),
+    /** Copies the code of another day, as Copy yesterday does. The form is not saved. */
+    copyCodes: (obs: Observation) => updateCode(codeFieldsOf(obs)),
     setNotes: (notes: string) => update({ notes }),
     toggleManualPeak: () => {
       haptic('light');

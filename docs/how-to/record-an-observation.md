@@ -10,15 +10,15 @@ Use this procedure to record the observation of one day. You can use the **Today
 
 1. Click **Today**.
 2. Select the date. Use **Previous Day**, **Next Day** or a date in the recent history list.
-3. In **Entry Mode**, click **Direct Code Only** or **Detailed Form**.
-4. Enter the observation:
-   - In **Direct Code Only** mode, type the code in **Direct Code Entry**. For example, type `10KLX3 I`.
-   - In **Detailed Form** mode, click the buttons for bleeding, mucus, appearance, frequency and symptoms.
-5. If you had intercourse, click **I - Sexual Intercourse**.
-6. Optional: type a note in **Notes / Observations**.
-7. Make sure that the **Stamp Preview** shows the stamp that you expect.
-8. Click **Save Observation**.
-9. If the **New Cycle Start?** dialog opens, do the procedure in [Start a new cycle](start-a-new-cycle.md).
+3. Enter the observation:
+   - Type the code in **Direct Code Entry**. For example, type `10KLX3 I`.
+   - Or click a group row, for example **Mucus**, and click the buttons of the group.
+   - Or, to use the code of the day before, click ⋮ and then **Copy yesterday**.
+4. If you had intercourse, turn on **I - Sexual Intercourse**.
+5. Optional: click **Notes** and type a note.
+6. Make sure that the status card shows the stamp that you expect.
+7. Click **Save Observation**.
+8. If the **New Cycle Start?** dialog opens, do the procedure in [Start a new cycle](start-a-new-cycle.md).
 
 ## Record from the observation drawer
 
@@ -38,7 +38,13 @@ Use this procedure to record the observation of one day. You can use the **Today
 ## Delete an observation
 
 1. Open the day in the **Today** page or in the drawer.
-2. Click **Delete Entry**. On a phone, the drawer shows only the trash icon.
+2. Click ⋮.
+3. Click **Delete observation**.
+
+## Hide the group rows
+
+1. Click ⋮.
+2. Click **Direct Code Only**. The forms show only the code field, the switches and the notes.
 
 ## Result
 

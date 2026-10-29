@@ -53,7 +53,8 @@ test.describe('App icon badge', () => {
     // The choice stays after a reload: a delete of the observation of today shows the dot again
     await page.reload();
     await expect.poll(() => calls(page)).toEqual(['clear']);
-    await page.getByRole('button', { name: en.actions.delete }).click();
+    await page.getByRole('button', { name: en.observationForm.actionsLabel }).click();
+    await page.getByRole('menuitem', { name: en.observationForm.deleteObservation }).click();
     await expect.poll(() => calls(page)).toEqual(['clear', 'set']);
   });
 });

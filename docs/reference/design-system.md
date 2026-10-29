@@ -17,7 +17,7 @@ The layer order is:
 | `tokens/`     | `tokens.css`: fonts, brand colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
 | `base/`       | `reset.css`: box sizing, resets, font smoothing and touch behavior. `layout.css`: application frame, phone navigation space, safe areas and focus outlines.                                                        |
 | `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                                         |
-| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
+| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `observation-form.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                   |
 | `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
 
 The `.modal-dialog` rule in `primitives/dialogs.css` removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
@@ -26,7 +26,7 @@ The `.modal-dialog` rule in `primitives/dialogs.css` removes the browser styles 
 
 | Scale   | Values                                                                                                                                                                                                                                              |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Control | `--control-size-lg` 44px: the minimum size of a control used each day                                                                                                                                                                               |
+| Control | `--control-size-md` 36px: the ⋮ button. `--control-size-lg` 44px: the minimum size of a control used each day. `--row-height` 48px: a form row and a chip                                                                                           |
 | Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                              |
 | Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                         |
 | Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
@@ -72,22 +72,22 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 
 Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes (WCAG 2 AA). The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
 
-| Text color                                                               | Surface or use                                                                                      |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `--text-primary`, `--text-secondary`, `--text-muted`, `--accent-primary` | `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`                                          |
-| `--color-intercourse-text`, `--color-peak-text`                          | The same surfaces: the intercourse text of the chart and the purple icon of the welcome guide       |
-| `--accent-primary`                                                       | Also `--accent-light`                                                                               |
-| White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                             |
-| White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                         |
-| White                                                                    | `--color-intercourse` and `--color-peak` (active toggles), `--color-success-solid` (`.today-toast`) |
-| `--color-info-text`                                                      | `--color-info-surface`: the entry mode badge of the welcome guide                                   |
-| `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                      |
-| `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                        |
-| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag, the Peak Day pill and the Peak Day button of the chart  |
-| `--stamp-yellow-text`                                                    | `--color-warning`: the `P` key of the chart legend                                                  |
-| `--stamp-light-green-text`, white                                        | `--stamp-light-green`; `--stamp-red` and `--stamp-dark-green`                                       |
+| Text color                                                               | Surface or use                                                                                         |
+| ------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------ |
+| `--text-primary`, `--text-secondary`, `--text-muted`, `--accent-primary` | `--bg-primary`, `--bg-surface`, `--bg-surface-elevated` and `--bg-hero` (the status card of the phone) |
+| `--color-intercourse-text`, `--color-peak-text`                          | The same surfaces: the intercourse text of the chart and the purple icon of the welcome guide          |
+| `--accent-primary`                                                       | Also `--accent-light`                                                                                  |
+| White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                                |
+| White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                            |
+| White                                                                    | `--color-intercourse` and `--color-peak` (active toggles), `--color-success-solid` (`.today-toast`)    |
+| `--color-info-text`                                                      | `--color-info-surface`: the badge of the welcome guide                                                 |
+| `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                         |
+| `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                           |
+| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag, the Peak Day pill and the Peak Day button of the chart     |
+| `--stamp-yellow-text`                                                    | `--color-warning`: the `P` key of the chart legend                                                     |
+| `--stamp-light-green-text`, white                                        | `--stamp-light-green`; `--stamp-red` and `--stamp-dark-green`                                          |
 
-The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`. `--stamp-empty`, the dashed edge of the empty stamp of a day with no code, reaches 3:1 on `--bg-surface` and `--bg-primary`.
+The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`. `--stamp-empty`, the dashed edge of the empty stamp of a day with no code, reaches 3:1 on `--bg-surface` and `--bg-primary`. The three edges also reach 3:1 on `--bg-hero`.
 
 - A rule with white text on an accent color uses `--accent-solid`, not `--accent-primary`.
 - The footer copyright and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.

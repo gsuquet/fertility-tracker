@@ -188,14 +188,14 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
-    await drawer.getByRole('button', { name: en.actions.setPeak }).click();
+    await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
     await expect(peakStat(17, '2026-10-16')).toBeVisible();
     await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
-    await drawer.getByRole('button', { name: en.actions.removePeak }).click();
+    await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
     await expect(peakStat(13, '2026-10-12')).toBeVisible();

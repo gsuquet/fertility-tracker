@@ -63,22 +63,23 @@ To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard sh
 
 The **Today** page and the observation drawer have the same fields.
 
-| Field or button                  | Use                                                                    |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| **Entry Mode**                   | **Direct Code Only** or **Detailed Form**. Only on the **Today** page. |
-| **Direct Code Entry**            | Type the full code, for example `10KLX3 I`.                            |
-| **Bleeding (Flux)**              | One bleeding code.                                                     |
-| **Start of New Cycle**           | Shows only on a day with bleeding. Sets the start of a cycle.          |
-| **Mucus Intensity / Stretch**    | One stretch code.                                                      |
-| **Appearance / Characteristics** | One or more appearance codes.                                          |
-| **Frequency**                    | One frequency code.                                                    |
-| **Contextual Symptoms**          | One or more symptom codes.                                             |
-| **I - Sexual Intercourse**       | Records intercourse.                                                   |
-| **Designate Peak Day (P)**       | Sets this day as the Peak Day.                                         |
-| **Notes / Observations**         | Free text.                                                             |
-| **Stamp Preview**                | Shows the stamp of the day before you save.                            |
-| **Save Observation**             | Saves the day.                                                         |
-| **Delete Entry**                 | Deletes the day. Shows only for a saved day.                           |
+| Field or button            | Use                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| **Direct Code Entry**      | Type the full code, for example `10KLX3 I`.**Done** closes the keyboard.          |
+| **Bleeding**               | One bleeding code. The start of a new cycle shows only on a day with bleeding.    |
+| **Mucus**                  | One stretch code.                                                                 |
+| **Appearance**             | One or more appearance codes.                                                     |
+| **Frequency**              | One frequency code.                                                               |
+| **Symptoms**               | One or more symptom codes.                                                        |
+| **I - Sexual Intercourse** | A switch. Records intercourse.                                                    |
+| **Designate Peak Day (P)** | A switch. Sets this day as the Peak Day.                                          |
+| **Notes**                  | Free text.                                                                        |
+| **Save Observation**       | Saves the day. **Ctrl+S** or **⌘S** also saves.                                   |
+| ⋮ **Copy yesterday**       | Copies the code of the day before. The `I` mark, the Peak Day and the notes stay. |
+| ⋮ **Direct Code Only**     | Hides the group rows. The device keeps the choice.                                |
+| ⋮ **Delete observation**   | Deletes the day. Shows only for a saved day.                                      |
+
+A tap on a group row opens its buttons. The status card shows the stamp of the day before you save.
 
 ## Export and backup dialog
 

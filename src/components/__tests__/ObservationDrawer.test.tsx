@@ -43,9 +43,9 @@ describe('ObservationDrawer Component (Dual Logger)', () => {
     renderDrawer();
     fireEvent.click(screen.getByText('Open Drawer'));
 
-    const heavyBleedingBtn = screen.getByText('H - Heavy Flow');
-    fireEvent.click(heavyBleedingBtn);
+    fireEvent.click(screen.getByRole('button', { name: /^Bleeding/ }));
+    fireEvent.click(screen.getByRole('radio', { name: 'H - Heavy Flow' }));
 
-    expect(screen.getByText('H')).toBeInTheDocument();
+    expect(screen.getByLabelText('Direct Code Entry')).toHaveValue('H');
   });
 });

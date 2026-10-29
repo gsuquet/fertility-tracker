@@ -1,26 +1,25 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
-import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
-import { hasObservationCode } from '../domain/stampCalculator';
+import { copyableCode, hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import { hasObservationCode, showsEmptyStamp } from '../domain/stampCalculator';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { useShortcut } from '../hooks/useKeyboardShortcuts';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { TodayDateNav } from './today/TodayDateNav';
 import { TodayHistoryList } from './today/TodayHistoryList';
-import { TodayObservationForm } from './today/TodayObservationForm';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { getTodayStr, addDays } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
-import { readStorage, writeStorage } from '../utils/storage';
-import { STORAGE_ENTRY_MODE_KEY as ENTRY_MODE_STORAGE_KEY } from '../utils/storageKeys';
+import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
+import { useTopDialog } from './Modal';
+import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
+import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { useToast } from '../hooks/useToast';
-import { CheckCircle2 } from 'lucide-react';
-
-type EntryMode = 'direct' | 'detailed';
+import { Check, CheckCircle2 } from 'lucide-react';
 
 export const TodayView: React.FC = () => {
   const {
@@ -33,19 +32,11 @@ export const TodayView: React.FC = () => {
   } = useCycle();
   const { t } = useLanguage();
 
-  // User preference for entry mode: 'direct' or 'detailed'
-  const [entryMode, setEntryMode] = useState<EntryMode>(() =>
-    readStorage(ENTRY_MODE_STORAGE_KEY) === 'direct' ? 'direct' : 'detailed'
-  );
-
-  // Direct mode override toggle to show/hide detailed button grids on demand
-  const [showDetailedOverride, setShowDetailedOverride] = useState(false);
-
-  const handleSetEntryMode = (mode: EntryMode) => {
-    setEntryMode(mode);
-    setShowDetailedOverride(false);
-    writeStorage(ENTRY_MODE_STORAGE_KEY, mode);
-  };
+  const directOnly = useDirectCodeOnly();
+  // While the code field or the notes have the focus, the phone keyboard is open: the Save bar hides
+  const [typing, setTyping] = useState(false);
+  const formRef = useRef<HTMLFormElement>(null);
+  const topDialog = useTopDialog();
 
   // Selected date state (defaults to Today, but user can navigate)
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -74,7 +65,6 @@ export const TodayView: React.FC = () => {
   }, [selectedObservation]);
 
   const isToday = selectedDate === getTodayStr();
-  const isEmptyDay = !hasObservationCode(fields);
   // A day after today has no cycle day yet
   const cycleDay = selectedDate <= getTodayStr() ? getCycleDayOn(cycles, selectedDate) : undefined;
 
@@ -96,6 +86,30 @@ export const TodayView: React.FC = () => {
   } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
+  const yesterdayObs = observations.find(o => o.date === addDays(selectedDate, -1));
+
+  // A saved day with no change shows its saved stamp, with the Peak Day and the count of three.
+  // A change shows the stamp of the form.
+  const shownObs = hasUnsavedChanges ? undefined : currentObs;
+  const status = shownObs
+    ? { stamp: shownObs.stamp, isPeak: !!shownObs.isPeakDay, isEmpty: showsEmptyStamp(shownObs) }
+    : {
+        stamp: form.calculatedStamp,
+        isPeak: fields.isManualPeak,
+        isEmpty: !hasObservationCode(fields),
+      };
+
+  // Ctrl+S or ⌘S saves, also in a field. A dialog on top keeps the keys.
+  useEffect(() => {
+    if (topDialog) return;
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (!(e.ctrlKey || e.metaKey) || e.key.toLowerCase() !== 's') return;
+      e.preventDefault();
+      if (hasUnsavedChanges) (formRef.current as HTMLFormElement).requestSubmit();
+    };
+    window.addEventListener('keydown', handleKeyDown);
+    return () => window.removeEventListener('keydown', handleKeyDown);
+  }, [topDialog, hasUnsavedChanges]);
 
   const executeSave = (isCycleStart: boolean | undefined) => {
     saveObservation(form.toInput(selectedDate, currentObs?.id, isCycleStart));
@@ -124,6 +138,17 @@ export const TodayView: React.FC = () => {
     setSelectedObservation(null);
     showToast(t.todayView.deletedNotice);
   };
+
+  const actionsMenu = (variant: 'banner' | 'card') => (
+    <ObservationActionsMenu
+      key={variant}
+      yesterdayCode={copyableCode(yesterdayObs)}
+      onCopyYesterday={() => form.copyCodes(yesterdayObs as NonNullable<typeof yesterdayObs>)}
+      directOnly={directOnly}
+      onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
+      onDelete={currentObs ? () => handleDelete(currentObs.id) : undefined}
+    />
+  );
 
   return (
     <div
@@ -154,64 +179,62 @@ export const TodayView: React.FC = () => {
         onDateChange={setSelectedDate}
       />
 
-      {/* Top Stamp & Status Banner (Mobile Viewport) */}
+      {/* Status card (phone): the stamp, the code, the fertility text and the actions menu */}
       <TodayFertilityGuidance
-        stamp={form.calculatedStamp}
+        stamp={status.stamp}
         currentCode={form.currentCode}
-        isEmpty={isEmptyDay}
-        isManualPeak={fields.isManualPeak}
+        isEmpty={status.isEmpty}
+        isManualPeak={status.isPeak}
         intercourse={fields.intercourse}
         variant="banner"
+        menu={actionsMenu('banner')}
       />
 
       {/* Main Grid: 3-column Layout */}
       <div className="today-main-grid" ref={swipeContentRef}>
-        {/* Column 1: Recent 5-Day History Card */}
+        {/* Column 1: Recent 5-Day Observation History Card */}
         <TodayHistoryList
           selectedDate={selectedDate}
           observations={observations}
           onSelectDate={setSelectedDate}
         />
 
-        {/* Column 2: Observation Logger Form */}
-        <TodayObservationForm
-          entryMode={entryMode}
-          showDetailedOverride={showDetailedOverride}
-          onSetEntryMode={handleSetEntryMode}
-          onToggleDetailedOverride={() => setShowDetailedOverride(!showDetailedOverride)}
-          directInputText={form.directInputText}
-          onDirectTextChange={form.setDirectText}
-          intercourse={fields.intercourse}
-          onIntercourseToggle={form.toggleIntercourse}
-          bleeding={fields.bleeding}
-          onBleedingSelect={form.selectBleeding}
-          isCycleStart={fields.isCycleStart}
-          onToggleCycleStart={form.toggleCycleStart}
-          stretch={fields.stretch}
-          onStretchSelect={form.selectStretch}
-          modifiers={fields.modifiers}
-          onToggleModifier={form.toggleModifier}
-          frequency={fields.frequency}
-          onFrequencySelect={form.selectFrequency}
-          symptoms={fields.symptoms}
-          onToggleSymptom={form.toggleSymptom}
-          isManualPeak={fields.isManualPeak}
-          onToggleManualPeak={form.toggleManualPeak}
-          notes={fields.notes}
-          onNotesChange={form.setNotes}
-          hasUnsavedChanges={hasUnsavedChanges}
-          onSave={handleSave}
-          onDelete={currentObs ? () => handleDelete(currentObs.id) : undefined}
-        />
+        {/* Column 2: the progressive observation form and the Save bar */}
+        <form ref={formRef} onSubmit={handleSave} className="today-form-card">
+          <h2 className="sr-only">{t.todayView.title}</h2>
+          <ProgressiveObservationForm
+            form={form}
+            directOnly={directOnly}
+            idPrefix="today"
+            onTypingChange={setTyping}
+          />
+          <div className={`today-save-bar ${typing ? 'typing' : ''}`}>
+            <button
+              type="submit"
+              className="btn btn-primary btn-lg submit-save-btn"
+              disabled={!hasUnsavedChanges}
+            >
+              {!hasUnsavedChanges && currentObs ? (
+                <>
+                  <Check size={18} />
+                  <span>{t.todayView.savedLabel}</span>
+                </>
+              ) : (
+                <span>{t.actions.save}</span>
+              )}
+            </button>
+          </div>
+        </form>
 
-        {/* Column 3: Real-time Stamp Preview & Guidance (Desktop Viewport) */}
+        {/* Column 3: the status card (desktop) */}
         <TodayFertilityGuidance
-          stamp={form.calculatedStamp}
+          stamp={status.stamp}
           currentCode={form.currentCode}
-          isEmpty={isEmptyDay}
-          isManualPeak={fields.isManualPeak}
+          isEmpty={status.isEmpty}
+          isManualPeak={status.isPeak}
           intercourse={fields.intercourse}
           variant="card"
+          menu={actionsMenu('card')}
         />
       </div>
 

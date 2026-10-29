@@ -63,7 +63,7 @@ const themes = [
   ['dark', darkTokens],
 ] as const;
 
-const surfaces = ['--bg-primary', '--bg-surface', '--bg-surface-elevated'];
+const surfaces = ['--bg-primary', '--bg-surface', '--bg-surface-elevated', '--bg-hero'];
 const textTokens = [
   '--text-primary',
   '--text-secondary',
@@ -116,6 +116,9 @@ describe('design token contrast (WCAG 2 AA)', () => {
       ['--stamp-light-green-border', '--bg-surface'],
       ['--stamp-empty', '--bg-surface'],
       ['--stamp-empty', '--bg-primary'],
+      ['--stamp-empty', '--bg-hero'],
+      ['--stamp-white-border', '--bg-hero'],
+      ['--stamp-light-green-border', '--bg-hero'],
       ['--stamp-light-green-border', '--bg-primary'],
     ])('stamp edge %s on %s reaches 3:1', (edge, surface) => {
       expect(contrast(color(edge), color(surface))).toBeGreaterThanOrEqual(AA_NON_TEXT);

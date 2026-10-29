@@ -1,16 +1,19 @@
 import type React from 'react';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import { copyableCode, hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
 import { useObservationForm } from '../hooks/useObservationForm';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { CycleStartModal } from './CycleStartModal';
 import { Modal } from './Modal';
 import { StampBadge } from './StampBadge';
-import { ObservationCodeSelector } from './observation/ObservationCodeSelector';
-import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
-import { getTodayStr } from '../utils/dateUtils';
+import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
+import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
+import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
+import { formatMessage } from '../i18n';
+import { X, Save } from 'lucide-react';
+import { addDays, getTodayStr } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
 import { hasObservationCode } from '../domain/stampCalculator';
@@ -31,6 +34,8 @@ export const ObservationDrawer: React.FC = () => {
   const form = useObservationForm();
   const { fields, load } = form;
   const { intercourse, isCycleStart } = fields;
+  const directOnly = useDirectCodeOnly();
+  const closeRef = useRef<HTMLButtonElement>(null);
   const [showCycleStartModal, setShowCycleStartModal] = useState(false);
 
   // The observation that the form loaded last, or undefined for an empty form
@@ -74,6 +79,7 @@ export const ObservationDrawer: React.FC = () => {
   if (!isDrawerOpen) return null;
 
   const savedId = saved?.id;
+  const yesterdayObs = findSaved(addDays(date, -1));
 
   /**
    * Loads the saved observation of the new date. A form with no change follows the date, so the
@@ -122,11 +128,27 @@ export const ObservationDrawer: React.FC = () => {
       onClose={() => setIsDrawerOpen(false)}
       className="drawer-overlay"
       panelClassName="drawer-container"
+      // The focus starts on Close, as before the actions menu came before it
+      initialFocusRef={closeRef}
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="drawer-header" {...dragHandlers}>
-        <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
+        <div className="drawer-title-group">
+          <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
+          <p className="drawer-day-status">
+            {saved && <span>{formatMessage(t.common.dayNumber, { day: saved.cycleDay })} · </span>}
+            <span>{saved ? t.todayView.loggedStatus : t.todayView.notLoggedStatus}</span>
+          </p>
+        </div>
+        <ObservationActionsMenu
+          yesterdayCode={copyableCode(yesterdayObs)}
+          onCopyYesterday={() => form.copyCodes(yesterdayObs as Observation)}
+          directOnly={directOnly}
+          onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
+          onDelete={savedId ? () => handleDelete(savedId) : undefined}
+        />
         <button
+          ref={closeRef}
           type="button"
           className="icon-button"
           onClick={() => setIsDrawerOpen(false)}
@@ -169,74 +191,10 @@ export const ObservationDrawer: React.FC = () => {
           />
         </div>
 
-        {/* Direct Code Entry Text Box */}
-        <div className="form-group">
-          <label htmlFor="direct-code-input">{t.labels.directInput}</label>
-          <input
-            id="direct-code-input"
-            type="text"
-            className="form-input direct-code-input"
-            placeholder={t.labels.directInputPlaceholder}
-            value={form.directInputText}
-            onChange={e => form.setDirectText(e.target.value)}
-          />
-        </div>
-
-        {/* Intercourse 'I' Marker Quick Toggle */}
-        <div className="form-group">
-          <button
-            type="button"
-            className={`intercourse-toggle-btn ${intercourse ? 'active' : ''}`}
-            onClick={form.toggleIntercourse}
-            aria-pressed={intercourse}
-          >
-            <Heart size={18} fill={intercourse ? 'currentColor' : 'none'} />
-            <span>{t.codes.intercourse.I}</span>
-          </button>
-        </div>
-
-        <ObservationCodeSelector fields={fields} actions={form} />
-
-        {/* Manual Peak Day Flag */}
-        <div className="form-group">
-          <button
-            type="button"
-            className={`peak-toggle-btn ${fields.isManualPeak ? 'active' : ''}`}
-            onClick={form.toggleManualPeak}
-            aria-pressed={fields.isManualPeak}
-          >
-            <Flag size={18} />
-            <span>{fields.isManualPeak ? t.actions.removePeak : t.actions.setPeak}</span>
-          </button>
-        </div>
-
-        {/* Notes */}
-        <div className="form-group">
-          <label htmlFor="obs-notes">{t.labels.notes}</label>
-          <textarea
-            id="obs-notes"
-            className="form-input form-textarea"
-            rows={3}
-            value={fields.notes}
-            onChange={e => form.setNotes(e.target.value)}
-          />
-        </div>
+        <ProgressiveObservationForm form={form} directOnly={directOnly} idPrefix="obs" />
 
         {/* Footer Actions */}
         <div className="drawer-footer">
-          {savedId ? (
-            <button
-              type="button"
-              className="btn btn-danger"
-              onClick={() => handleDelete(savedId)}
-              aria-label={t.actions.delete}
-            >
-              <Trash2 size={16} />
-              <span>{t.actions.delete}</span>
-            </button>
-          ) : (
-            <div />
-          )}
           <div className="drawer-footer-right">
             <button
               type="button"

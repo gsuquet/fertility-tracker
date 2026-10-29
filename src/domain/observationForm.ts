@@ -6,6 +6,7 @@ import type {
   Observation,
   SymptomCode,
 } from '../types/crms';
+import { formatCodeString } from './codeParser';
 import { isFirstBleedingDayOfSeries } from './cycleBoundaryDetector';
 
 /** The values that the observation forms edit. */
@@ -28,6 +29,31 @@ export const EMPTY_FIELDS: ObservationFields = {
   notes: '',
   isManualPeak: false,
 };
+
+/** The CrMS code fields: what **Copy yesterday** copies. */
+export type CodeFields = Pick<
+  ObservationFields,
+  'bleeding' | 'stretch' | 'modifiers' | 'frequency' | 'symptoms'
+>;
+
+/**
+ * Returns the code of an observation, without the I mark, the Peak Day, the notes and the cycle
+ * start choice. These belong to their own day.
+ */
+export function codeFieldsOf(obs: Observation): CodeFields {
+  return {
+    bleeding: obs.bleeding,
+    stretch: obs.stretch,
+    modifiers: obs.modifiers ?? [],
+    frequency: obs.frequency,
+    symptoms: obs.symptoms ?? [],
+  };
+}
+
+/** The code that Copy yesterday copies from a day, or null when the day has no code. */
+export function copyableCode(obs: Observation | undefined): string | null {
+  return obs ? formatCodeString(codeFieldsOf(obs)) || null : null;
+}
 
 /** Returns the form values of a saved observation, or empty values for a new day. */
 export function fieldsFromObservation(obs: Observation | undefined): ObservationFields {

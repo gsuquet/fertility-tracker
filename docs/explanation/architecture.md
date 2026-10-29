@@ -58,7 +58,7 @@ The data context and the user interface context are separate. Thus, when the dra
 
 ## Shared form logic
 
-The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same. The component `ObservationCodeSelector` shows the code buttons of the two forms.
+The **Today** page and the observation drawer edit the same fields. The hook `useObservationForm` and the functions in `observationForm.ts` hold this logic one time. Thus, the two forms always act the same. The component `ProgressiveObservationForm` shows the form on the two screens.
 
 ## Lazy loading
 

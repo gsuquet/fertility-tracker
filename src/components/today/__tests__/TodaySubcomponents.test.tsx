@@ -5,6 +5,7 @@ import { TodayDateNav } from '../TodayDateNav';
 import { TodayHistoryList } from '../TodayHistoryList';
 import { TodayFertilityGuidance } from '../TodayFertilityGuidance';
 import { LanguageProvider } from '../../../context/LanguageContext';
+import { en } from '../../../i18n';
 
 describe('Today View Subcomponents', () => {
   it('TodayDateNav triggers navigation callbacks', async () => {
@@ -72,6 +73,7 @@ describe('Today View Subcomponents', () => {
     const { rerender } = render(
       <LanguageProvider>
         <TodayFertilityGuidance
+          menu={null}
           stamp="WHITE_BABY"
           currentCode="10KL"
           isEmpty={false}
@@ -83,11 +85,12 @@ describe('Today View Subcomponents', () => {
     );
 
     expect(screen.getByText('10KL')).toBeInTheDocument();
-    expect(screen.getByText(/Fertile cervical mucus present/i)).toBeInTheDocument();
+    expect(screen.getByText(en.todayView.guidance.whiteBaby)).toBeInTheDocument();
 
     rerender(
       <LanguageProvider>
         <TodayFertilityGuidance
+          menu={null}
           stamp="RED"
           currentCode="H"
           isEmpty={false}
@@ -98,7 +101,7 @@ describe('Today View Subcomponents', () => {
       </LanguageProvider>
     );
 
-    expect(screen.getByText(/Menses phase/i)).toBeInTheDocument();
+    expect(screen.getByText(en.todayView.guidance.red)).toBeInTheDocument();
   });
 
   it('TodayHistoryList draws the empty stamp for each day with no code', () => {

@@ -8,7 +8,8 @@
     - text: /Tuesday, October \d+, \d+/
     - textbox "Date": /\d+-\d+-\d+/
     - button "Next Day"
-    - text: /Today Day \d+ Saved 0AD Dry \/ Infertile day based on observations\. Continue standard daily monitoring\./
+    - text: /Today Day \d+ Saved 0AD Dry day\. Infertile under the CrMS rules\./
+    - button "Observation actions"
     - heading "Recent 5-Day Observation History" [level=3]
     - button /Fri, \d+\/\d+ 0AD/
     - button /Sat, \d+\/\d+ 0AD/
@@ -16,62 +17,18 @@
     - button /Mon, \d+\/\d+ 0AD/
     - button /Tue, \d+\/\d+ 0AD/
     - heading "Today's Observation" [level=2]
-    - text: Record, view, and track your daily Creighton Model System observations
-    - radiogroup "Entry Mode":
-      - radio "Direct Code Only"
-      - text: Direct Code Only
-      - radio "Detailed Form" [checked]
-      - text: Detailed Form
     - text: Direct Code Entry
     - textbox "Direct Code Entry":
       - /placeholder: e.g. 10KLX3 I AP
       - text: 0AD
-    - button "I - Sexual Intercourse"
-    - group "Bleeding (Flux)":
-      - text: ""
-      - button "H - Heavy Flow"
-      - button "M - Moderate Flow"
-      - button "L - Light Flow"
-      - button "VL - Very Light Flow"
-      - button "B - Brown / Black Blood"
-    - group "Mucus Intensity / Stretch":
-      - text: ""
-      - button "0 - Dry" [pressed]
-      - button "2 - Damp without lubrication"
-      - button "2W - Wet without lubrication"
-      - button "4 - Shiny without lubrication"
-      - button "6 - Slightly stretchy (~0.5cm)"
-      - button "8 - Moderately stretchy (1-2cm)"
-      - button "10 - Very stretchy (2.5cm+)"
-      - button "10DL - Damp with lubrication"
-      - button "10SL - Shiny with lubrication"
-      - button "10WL - Wet with lubrication"
-    - group "Appearance / Characteristics":
-      - text: ""
-      - button "B - Brown blood"
-      - button "C - Cloudy / White"
-      - button "C/K - Cloudy & Clear mixed"
-      - button "G - Gummy / Sticky"
-      - button "K - Clear"
-      - button "L - Lubricative"
-      - button "P - Pasty / Creamy"
-      - button "Y - Yellow"
-    - group "Frequency":
-      - text: ""
-      - button "X1 - One time only"
-      - button "X2 - Two times"
-      - button "X3 - Three times"
-      - button "AD - All Day (4+ times)" [pressed]
-    - group "Contextual Symptoms":
-      - text: ""
-      - button "AP - Abdominal Pain"
-      - button "RAP - Right Abdominal Pain"
-      - button "LAP - Left Abdominal Pain"
-    - button "Designate Peak Day (P)"
-    - text: Notes / Observations
-    - textbox "Notes / Observations":
-      - /placeholder: Add relevant notes (e.g., stress, medication, travel)...
-    - button "Delete Entry"
+    - button "Bleeding None"
+    - button "Mucus 0 - Dry"
+    - button "Appearance None"
+    - button "Frequency AD - All day"
+    - button "Symptoms None"
+    - switch "I - Sexual Intercourse"
+    - switch "Designate Peak Day (P)"
+    - button "Notes None"
     - button "Saved" [disabled]
   - contentinfo "Legal and Trademark Disclaimers":
     - text: Legal & Trademark Information

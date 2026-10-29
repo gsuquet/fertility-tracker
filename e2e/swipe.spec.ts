@@ -14,9 +14,9 @@ test.describe('Swipe between days', () => {
     const cdp = await page.context().newCDPSession(page);
     /** A finger that goes through points, relative to its start, then lifts. */
     const drag = async (points: [number, number][]) => {
-      // The middle of the screen, under the date bar, away from the fields and the edges
+      // The middle of the screen, under the date bar, on the status card, away from the fields and the edges
       const x = 195;
-      const y = 300;
+      const y = 210;
       await cdp.send('Input.dispatchTouchEvent', { type: 'touchStart', touchPoints: [{ x, y }] });
       let from: [number, number] = [0, 0];
       for (const to of points) {

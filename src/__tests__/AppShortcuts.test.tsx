@@ -67,6 +67,9 @@ describe('App keyboard shortcuts', () => {
 
   it('does not use the keys that the user types in a field', () => {
     render(<App />);
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(`^${en.observationForm.notes}`) })
+    );
     const notes = screen.getByPlaceholderText(en.todayView.notesPlaceholder);
     notes.focus();
     press('2');
