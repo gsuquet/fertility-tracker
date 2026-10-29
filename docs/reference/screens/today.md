@@ -15,15 +15,43 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-| Part                                                                                           | Content                                                                                                                                                                                                                                                                                                           |
-| ---------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [TodayDateNav.tsx](../../../src/components/today/TodayDateNav.tsx)                             | Previous and next day (44 px), date picker and date. The day status: **Today** or **Jump to Today**, the cycle day, and **Saved** or **Not saved**. A phone shows the day status on a second line.                                                                                                                |
-| [TodayObservationForm.tsx](../../../src/components/today/TodayObservationForm.tsx)             | **Direct Code Only** or **Detailed Form** mode, the code buttons, intercourse, peak, notes, save and delete.                                                                                                                                                                                                      |
-| [ObservationCodeSelector.tsx](../../../src/components/observation/ObservationCodeSelector.tsx) | The code buttons. The drawer uses the same component ([Observation drawer](observation-drawer.md)).                                                                                                                                                                                                               |
-| [TodayFertilityGuidance.tsx](../../../src/components/today/TodayFertilityGuidance.tsx)         | Stamp preview, code and a guidance text. A banner on a screen of 900 pixels or less, else a card. A day with no code shows the empty stamp and "No observation yet", and no guidance text.                                                                                                                        |
-| [TodayHistoryList.tsx](../../../src/components/today/TodayHistoryList.tsx)                     | The selected date and the 4 days before it, in three columns: date, stamp and code. A day with no observation, or with no code and the `DARK_GREEN` stamp, shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)). A click selects that date. A long code ends with an ellipsis. |
-- The application saves the last entry mode in `fertility_care_entry_mode`.
+| Part                                                                                                 | Content                                                                                                                                                                                                                                                                                                           |
+| ---------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [TodayDateNav.tsx](../../../src/components/today/TodayDateNav.tsx)                                   | Previous and next day (44 px), date picker and date. The day status: **Today** or **Jump to Today**, the cycle day, and **Saved** or **Not saved**. A phone shows the day status on a second line.                                                                                                                |
+| [ProgressiveObservationForm.tsx](../../../src/components/observation/ProgressiveObservationForm.tsx) | The progressive observation form ([Observation form](#observation-form)). The drawer uses the same component ([Observation drawer](observation-drawer.md)).                                                                                                                                                       |
+| [ObservationActionsMenu.tsx](../../../src/components/observation/ObservationActionsMenu.tsx)         | The ⋮ menu of the status card: **Copy yesterday**, **Direct Code Only** and **Delete observation**.                                                                                                                                                                                                               |
+| [TodayFertilityGuidance.tsx](../../../src/components/today/TodayFertilityGuidance.tsx)               | The status card: stamp, code, one guidance sentence and the ⋮ menu. A banner on a screen of 900 pixels or less, else a card. The drawer uses the banner at each width, without the menu. A day with no code shows the empty stamp and "No observation yet", and no guidance text.                                 |
+| [TodayHistoryList.tsx](../../../src/components/today/TodayHistoryList.tsx)                           | The selected date and the 4 days before it, in three columns: date, stamp and code. A day with no observation, or with no code and the `DARK_GREEN` stamp, shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)). A click selects that date. A long code ends with an ellipsis. |
+- The day status shows **Yesterday**, **N days ago**, **Tomorrow** or **In N days** for a day that is not today.
+- **Ctrl+S** or **⌘S** saves the form, also from a field. A dialog on top of the page keeps these keys.
+- On a computer (`pointer: fine`), **Done** does not show. It closes the keyboard of a touch screen.
 - The cycle day of the day status comes from the saved observation. A day with no observation gets the cycle day from the start date of the last cycle that starts on or before that day. A day before the first cycle or after today shows no cycle day.
+
+### Observation form
+
+The form of the **Today** page and of the observation drawer is the same component. It shows these parts, in this sequence:
+
+1. The direct code field (48 px). While the field has the focus, it shows **Done** and how the app reads the code.
+2. One row for each code group: **Bleeding**, **Mucus**, **Appearance**, **Frequency** and **Symptoms**. A closed row shows the code and its short name, or **None**.
+3. The **I - Sexual Intercourse** and **Designate Peak Day (P)** switches (`role="switch"`).
+4. The **Notes** row. A tap opens a text area in the row.
+5. The **Save Observation** button.
+
+- A tap on a row opens the chips of that group and closes the other open group. A second tap closes the row.
+- A chip is 48 px high and shows the code and a short name. The short name is 11 px on a phone and 12 px from 1024 pixels. Under the chips, the full name of the selected code shows.
+- Three chips go on a line on a phone, and four on a screen of 1024 pixels or more. The form is 640 pixels wide or less.
+- In the **Bleeding** group, a bleeding code shows the cycle start choice under the chips.
+- A tap on a selected chip clears it.
+- On a phone, the **Save Observation** button stays at the bottom of the screen, over the tab bar. On a touch screen, the button hides while the keyboard is open.
+
+#### The ⋮ menu
+
+| Item                   | Result                                                                                                                                                                                   |
+| ---------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Copy yesterday**     | Copies the bleeding, mucus, appearance, frequency and symptom codes of the day before. It does not copy the `I` mark, the Peak Day, the notes or the cycle start. The form is not saved. |
+| **Direct Code Only**   | A check item. It hides the group rows, and the list under the code field always shows. Today and the drawer share the choice. The device keeps it in `fertility_care_entry_mode`.        |
+| **Delete observation** | Red, after a line. It shows only for a saved day.                                                                                                                                        |
+- **Copy yesterday** is not available when the day before has no code. The item then shows no code.
 
 ### Day with no code
 
@@ -45,6 +73,7 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 - The page has `touch-action: pan-y pinch-zoom`. Thus, a vertical drag scrolls the page and the browser cancels the swipe. A vertical drag never changes the day.
 - These swipes do nothing:
   - A swipe that starts in an input, a text area, a select or an element that scrolls horizontally.
+  - A swipe that starts on the chips of a group (`data-own-gesture`).
   - A swipe that starts less than 20 pixels from the left or right edge of the screen. The back and forward gestures of iOS use these edges.
   - A swipe that starts its move with an angle of 30 degrees or more from horizontal.
   - A swipe in a dialog of the page, for example **New Cycle Start?**. React sends the events of a portal to the page, so the hook ignores a target outside the page.
@@ -57,7 +86,13 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 
 ## Accessibility
 
-- The entry mode selector is a `role="radiogroup"` with two native radio inputs (`name="entry-mode"`). Each input is in a `<label>`, and the arrow keys move between them.
+- A group row is a button with `aria-expanded` and `aria-controls`. When the row opens, the focus goes to the selected chip, else to the first chip.
+- **Bleeding**, **Mucus** and **Frequency** are a `role="radiogroup"` of `role="radio"` chips with one tab stop. The arrow keys move to the next chip and select it.
+- **Appearance** and **Symptoms** are a `role="group"` of toggle buttons with `aria-pressed`.
+- The name of each chip is the full name of its code, for example "10 - Very stretchy (2.5cm+)".
+- The ⋮ button has `aria-haspopup="menu"`. The menu is a `role="menu"`, and the up and down arrow keys move between its items. Escape, Back and a click outside close it.
+- In the status card, the code and the guidance sentence have `aria-live="polite"`. Thus, a screen reader reads the new code and sentence. The ⋮ button is not in the live region.
+- A selected radio chip clears with a tap, **Space** or **Enter**, as a toggle does. Thus, a group can go back to no code.
 
 ## Implementation
 

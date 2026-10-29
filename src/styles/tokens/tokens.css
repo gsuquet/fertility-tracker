@@ -23,6 +23,8 @@
     /* Light Theme Variables */
     --bg-primary: #f8f6f1;
     --bg-surface: #fffefb;
+    /* Background of the status card of Today. Step 9 of RFC 0002 sets the dark value. */
+    --bg-hero: #fffefb;
     --bg-surface-elevated: #ffffff;
     --bg-surface-border: #e4dfd4;
     --bg-surface-border-strong: #cfc7b8;
@@ -118,8 +120,6 @@
     --shadow-warning-glow: 0 0 6px rgba(245, 158, 11, 0.8);
     --shadow-peak-glow: 0 2px 4px rgba(124, 58, 237, 0.4);
     --shadow-peak-bar-glow: 0 0 8px rgba(236, 72, 153, 0.5);
-    --shadow-peak-toggle: 0 4px 12px rgba(124, 58, 237, 0.3);
-    --shadow-intercourse-toggle: 0 4px 12px rgba(219, 39, 119, 0.3);
 
     /* Ruled lines of the paper chart cells */
     --chart-grid-line: rgba(148, 163, 184, 0.08);
@@ -143,6 +143,7 @@
 
     --bg-primary: #13171d;
     --bg-surface: #1b2028;
+    --bg-hero: #1b2028;
     --bg-surface-elevated: #232a34;
     --bg-surface-border: #2b323d;
     --bg-surface-border-strong: #3d4654;

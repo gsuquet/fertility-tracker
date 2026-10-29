@@ -27,6 +27,7 @@ const NON_TEXT_PROPS = new Set([
   'labelledBy',
   'describedBy',
   'panelClassName',
+  'idPrefix',
 ]);
 
 /** Codes and symbols that are the same in each language */

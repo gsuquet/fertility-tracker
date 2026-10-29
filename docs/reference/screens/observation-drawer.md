@@ -1,6 +1,6 @@
 # Observation drawer
 
-This page gives the rules for the observation drawer, the bottom sheets and the code buttons.
+This page gives the rules for the observation drawer and the bottom sheets.
 
 ## Layout
 
@@ -17,18 +17,23 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 
 ## Behavior
 
-- The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
+- The drawer has the date field and the same form as the **Today** page ([Observation form](today.md#observation-form)).
+- The header shows the title, the cycle day and **Saved** or **Not saved**, the ⋮ menu and the close button. The focus starts on the close button.
+- The cycle day comes from the saved observation. A day with no observation gets the cycle day of the **Today** page. A day after today shows no cycle day.
+- The status card is the banner of the **Today** page. A saved day with no change shows its saved stamp, with the Peak Day and the count of three. A change shows the stamp of the form.
+- **Ctrl+S** or **⌘S** saves while the drawer is the dialog on top.
 - The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
 
-| Condition                   | Result                                                                                 |
-| --------------------------- | -------------------------------------------------------------------------------------- |
-| The date has an observation | The title is **Edit Observation**. The fields show the saved values. **Delete** shows. |
-| **Else**                    | The title is **Log Observation**. The form is empty.                                   |
+| Condition                   | Result                                                                                                      |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| The date has an observation | The title is **Edit Observation**. The fields show the saved values. The ⋮ menu has **Delete observation**. |
+| **Else**                    | The title is **Log Observation**. The form is empty.                                                        |
 - Thus, a save with no change never replaces a saved day with an empty observation.
 - A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
-- The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
-- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save. With no code, it shows the empty stamp and "No observation yet" ([Day with no code](today.md#day-with-no-code)).
-- On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
+- The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete observation** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
+- The direct code and the buttons stay synchronized. The status card shows the stamp and the code before the save. With no code, it shows the empty stamp and "No observation yet" ([Day with no code](today.md#day-with-no-code)).
+- The footer has **Cancel** and **Save Observation**: two equal buttons of 48 px.
+- **Copy yesterday** copies the code of the day before the date of the drawer.
 
 ### Drag down to close
 
@@ -56,18 +61,12 @@ The rules below apply to all these sheets. The body is the part that scrolls. It
 - A close by drag does the same as the close button (for the confirmation dialog and **New Cycle Start?**: the cancel). The draft is not kept, and the history entry of the sheet goes ([Back button and address](../application-behavior.md#back-button-and-address)).
 - The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
 
-[ObservationCodeSelector.tsx](../../../src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
-
-- Bleeding.
-- The cycle start button, only when a bleeding code is selected.
-- Stretch, modifiers, frequency and symptoms.
-
-It reads the values and functions of `useObservationForm`. The drawer and the Today form have the same markup, classes, ARIA attributes and labels.
+[ProgressiveObservationForm.tsx](../../../src/components/observation/ProgressiveObservationForm.tsx) reads the values and functions of `useObservationForm`. The drawer and the Today form have the same markup, classes, ARIA attributes and labels. The field ids start with `obs` in the drawer and with `today` on the **Today** page.
 
 ## Accessibility
 
 - A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
-- Each group of code buttons is a `<fieldset>` with a `<legend>`, so it has the role `group` and a name.
+- The rows, the chips and the ⋮ menu follow the rules of the **Today** page ([Accessibility](today.md#accessibility)).
 
 ## Implementation
 

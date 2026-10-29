@@ -2,6 +2,8 @@ import { describe, it, expect } from 'vitest';
 import type { ObservationFields } from '../observationForm';
 import {
   EMPTY_FIELDS,
+  codeFieldsOf,
+  copyableCode,
   fieldsFromObservation,
   hasFieldChanges,
   needsCycleStartChoice,
@@ -128,5 +130,42 @@ describe('needsCycleStartChoice', () => {
 
   it('does not ask without bleeding', () => {
     expect(needsCycleStartChoice(EMPTY_FIELDS, '2026-09-02', history)).toBe(false);
+  });
+});
+
+describe('copyableCode', () => {
+  it('copies the code without the I mark, the Peak Day, the notes and the cycle start', () => {
+    const day = makeObservation({
+      date: '2026-09-02',
+      bleeding: 'L',
+      stretch: '10',
+      modifiers: ['K'],
+      frequency: 'X2',
+      symptoms: ['AP'],
+      intercourse: true,
+      isManualPeak: true,
+      isCycleStart: true,
+      notes: 'n',
+    });
+    expect(copyableCode(day)).toBe('L 10KX2 AP');
+    expect(Object.keys(codeFieldsOf(day)).sort()).toEqual([
+      'bleeding',
+      'frequency',
+      'modifiers',
+      'stretch',
+      'symptoms',
+    ]);
+  });
+
+  it('gives empty lists for a day saved without modifiers or symptoms', () => {
+    const day = { ...makeObservation({ date: '2026-09-02', stretch: '0' }) };
+    Reflect.deleteProperty(day, 'modifiers');
+    Reflect.deleteProperty(day, 'symptoms');
+    expect(codeFieldsOf(day)).toMatchObject({ modifiers: [], symptoms: [] });
+  });
+
+  it('gives null for a missing day or a day with no code', () => {
+    expect(copyableCode(undefined)).toBeNull();
+    expect(copyableCode(makeObservation({ date: '2026-09-02', intercourse: true }))).toBeNull();
   });
 });

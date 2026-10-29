@@ -1,6 +1,6 @@
 import { fireEvent, screen, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { fr } from '../../i18n';
+import { en, fr } from '../../i18n';
 import { setShortcutsEnabled } from '../../hooks/useKeyboardShortcuts';
 import { renderWithProviders } from '../../test/render';
 import { STORAGE_SHORTCUTS_OFF_KEY } from '../../utils/storageKeys';
@@ -13,8 +13,9 @@ describe('KeyboardShortcutsModal', () => {
     renderWithProviders(<KeyboardShortcutsModal onClose={vi.fn()} />);
     const dialog = screen.getByRole('dialog', { name: 'Keyboard shortcuts' });
     const rows = within(dialog).getAllByRole('row');
-    // The head row and nine shortcuts
-    expect(rows).toHaveLength(10);
+    // The head row, nine shortcuts and the save keys
+    expect(rows).toHaveLength(11);
+    expect(rows[10]).toHaveTextContent(`Ctrl+S⌘S${en.shortcuts.save}`);
     expect(rows[1]).toHaveTextContent('1Open Today');
     expect(rows[5]).toHaveTextContent('NLog a new observation');
     expect(rows[6]).toHaveTextContent('←Previous day, on Today');

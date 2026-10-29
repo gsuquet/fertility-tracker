@@ -109,3 +109,9 @@ export const isShortcutBlocked = (id: ShortcutId, target: EventTarget | null): b
   if (target.closest(FIELDS)) return true;
   return (id === 'prevDay' || id === 'nextDay') && target.closest(ARROW_WIDGETS) !== null;
 };
+
+/**
+ * The save keys of the observation forms, as the user sees them. They are not single-key
+ * shortcuts, so **Use keyboard shortcuts** does not turn them off.
+ */
+export const SAVE_KEY_LABELS = ['Ctrl+S', '⌘S'] as const;

@@ -4,7 +4,7 @@ import { TodayView } from '../TodayView';
 import { useCycleData, useCycleUi } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
 import { makeObservation } from '../../test/factories';
-import { en } from '../../i18n';
+import { en, formatMessage } from '../../i18n';
 import type { Observation } from '../../types/crms';
 
 // Today is 2026-09-15 in these tests
@@ -42,6 +42,8 @@ const typeCode = (code: string) =>
 const saveButton = () =>
   screen.getByRole('button', { name: new RegExp(`${en.actions.save}|Saved`) });
 const saved = () => screen.getByTestId('saved').textContent;
+const openMenu = () =>
+  fireEvent.click(screen.getAllByRole('button', { name: en.observationForm.actionsLabel })[0]!);
 
 /** A fake Vibration API. Each test removes it at the end. */
 const installVibrate = () => {
@@ -65,7 +67,7 @@ describe('TodayView flows', () => {
     const vibrate = installVibrate();
     renderToday();
     typeCode('10kl');
-    fireEvent.click(screen.getByRole('button', { name: en.actions.setPeak }));
+    fireEvent.click(screen.getByRole('switch', { name: en.actions.setPeak }));
     expect(vibrate.mock.calls).toEqual([[10]]);
     fireEvent.click(saveButton());
     expect(vibrate.mock.calls).toEqual([[10], [15]]);
@@ -127,7 +129,8 @@ describe('TodayView flows', () => {
 
   it('deletes a saved observation', () => {
     renderToday([makeObservation({ date: TODAY, stretch: '0' })]);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.delete }));
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitem', { name: en.observationForm.deleteObservation }));
     expect(saved()).toBe('');
     expect(screen.getByRole('status')).toHaveTextContent(en.todayView.deletedNotice);
   });
@@ -181,14 +184,79 @@ describe('TodayView flows', () => {
     expect(screen.getByLabelText(en.labels.date)).toHaveValue('2026-09-10');
   });
 
-  it('remembers the direct entry mode and toggles the detailed selectors', () => {
+  it('remembers Direct Code Only and hides the group rows', () => {
     const { unmount } = renderToday();
-    fireEvent.click(screen.getByRole('radio', { name: /Direct Code/ }));
-    fireEvent.click(screen.getByRole('button', { name: en.todayView.showDetailed }));
-    expect(screen.getByRole('button', { name: en.todayView.hideDetailed })).toBeInTheDocument();
+    openMenu();
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect }));
+    expect(
+      screen.queryByRole('button', { name: new RegExp(`^${en.observationForm.groups.stretch}`) })
+    ).toBeNull();
     unmount();
 
     renderToday();
-    expect(screen.getByRole('radio', { name: /Direct Code/ })).toBeChecked();
+    openMenu();
+    expect(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect })).toHaveAttribute(
+      'aria-checked',
+      'true'
+    );
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect }));
+    expect(
+      screen.getByRole('button', { name: new RegExp(`^${en.observationForm.groups.stretch}`) })
+    ).toBeInTheDocument();
+  });
+
+  it('copies the code of yesterday, without the intercourse mark and the notes', () => {
+    renderToday([
+      makeObservation({
+        date: '2026-09-14',
+        stretch: '10',
+        modifiers: ['K'],
+        intercourse: true,
+        notes: 'n',
+      }),
+    ]);
+    openMenu();
+    const copy = screen.getByRole('menuitem', {
+      name: new RegExp(en.observationForm.copyYesterday),
+    });
+    expect(copy).toHaveTextContent('10K');
+    fireEvent.click(copy);
+    expect(screen.getByLabelText(en.labels.directInput)).toHaveValue('10K');
+    expect(screen.queryByRole('menu')).toBeNull();
+  });
+
+  it('disables Copy yesterday when yesterday has no observation', () => {
+    renderToday();
+    openMenu();
+    expect(screen.getByRole('menuitem', { name: en.observationForm.copyYesterday })).toBeDisabled();
+  });
+
+  it('saves with Ctrl+S and with Cmd+S, and not while a dialog is open', () => {
+    renderToday();
+    // With no change, Ctrl+S saves nothing
+    fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+    expect(saved()).toBe('');
+    typeCode('0');
+    openMenu();
+    fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+    expect(saved()).toBe('');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    fireEvent.keyDown(window, { key: 's' });
+    expect(saved()).toBe('');
+    fireEvent.keyDown(window, { key: 's', metaKey: true });
+    expect(saved()).toBe(`${TODAY}:0:undefined`);
+  });
+
+  it.each([
+    [-1, en.todayView.yesterday],
+    [-3, formatMessage(en.todayView.daysAgo, { count: 3 })],
+    [1, en.todayView.tomorrow],
+    [2, formatMessage(en.todayView.daysAhead, { count: 2 })],
+  ])('names a day %i days from today', (offset, label) => {
+    renderToday();
+    const button = en.todayView[offset < 0 ? 'prevDay' : 'nextDay'];
+    for (let i = 0; i < Math.abs(offset); i++)
+      fireEvent.click(screen.getByRole('button', { name: button }));
+    expect(screen.getByText(label, { selector: '.badge' })).toBeInTheDocument();
   });
 });

@@ -18,8 +18,8 @@ const SLIDE_OFFSET = '30%';
 /** True when the user zoomed in. The finger then pans the zoomed page, so a swipe is a pan. */
 const isZoomed = () => (window.visualViewport?.scale ?? 1) > 1;
 
-/** Fields and lists keep their own gestures. */
-const OWN_GESTURE = 'input, textarea, select, [contenteditable="true"]';
+/** Fields, lists and the chips of the observation form keep their own gestures. */
+const OWN_GESTURE = 'input, textarea, select, [contenteditable="true"], [data-own-gesture]';
 
 /** True when the gesture starts in a field or in an element that scrolls horizontally. */
 const startsInOwnGesture = (target: Element, root: Element) => {

@@ -4,8 +4,11 @@ import type {
   MucusModifier,
   MucusStretch,
   Observation,
+  StampType,
   SymptomCode,
 } from '../types/crms';
+import { formatCodeString } from './codeParser';
+import { hasObservationCode, showsEmptyStamp } from './stampCalculator';
 import { isFirstBleedingDayOfSeries } from './cycleBoundaryDetector';
 
 /** The values that the observation forms edit. */
@@ -28,6 +31,61 @@ export const EMPTY_FIELDS: ObservationFields = {
   notes: '',
   isManualPeak: false,
 };
+
+/** The CrMS code fields: what **Copy yesterday** copies. */
+export type CodeFields = Pick<
+  ObservationFields,
+  'bleeding' | 'stretch' | 'modifiers' | 'frequency' | 'symptoms'
+>;
+
+/**
+ * Returns the code of an observation, without the I mark, the Peak Day, the notes and the cycle
+ * start choice. These belong to their own day.
+ */
+export function codeFieldsOf(obs: Observation): CodeFields {
+  return {
+    bleeding: obs.bleeding,
+    stretch: obs.stretch,
+    modifiers: obs.modifiers ?? [],
+    frequency: obs.frequency,
+    symptoms: obs.symptoms ?? [],
+  };
+}
+
+/** The code that Copy yesterday copies from a day, or null when the day has no code. */
+export function copyableCode(obs: Observation | undefined): string | null {
+  return obs ? formatCodeString(codeFieldsOf(obs)) || null : null;
+}
+
+/** What the status card of a form shows. */
+export interface FormStatus {
+  stamp: StampType;
+  isPeak: boolean;
+  isEmpty: boolean;
+}
+
+/**
+ * The status of a form. A saved day with no change shows its saved stamp, with the detected Peak
+ * Day and the count of three. A change, or a day with no observation, shows the stamp of the form.
+ */
+export function formStatus(
+  fields: ObservationFields,
+  calculatedStamp: StampType,
+  unchangedSaved: Observation | undefined
+): FormStatus {
+  if (unchangedSaved) {
+    return {
+      stamp: unchangedSaved.stamp,
+      isPeak: !!unchangedSaved.isPeakDay,
+      isEmpty: showsEmptyStamp(unchangedSaved),
+    };
+  }
+  return {
+    stamp: calculatedStamp,
+    isPeak: fields.isManualPeak,
+    isEmpty: !hasObservationCode(fields),
+  };
+}
 
 /** Returns the form values of a saved observation, or empty values for a new day. */
 export function fieldsFromObservation(obs: Observation | undefined): ObservationFields {

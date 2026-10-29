@@ -10,7 +10,6 @@ import { Footer } from '../Footer';
 import { Header } from '../Header';
 import { MobileNav } from '../MobileNav';
 import { ObservationDrawer } from '../ObservationDrawer';
-import { ObservationCodeSelector } from '../observation/ObservationCodeSelector';
 import { PrintExportView } from '../PrintExportView';
 import { StampBadge } from '../StampBadge';
 import { TodayView } from '../TodayView';
@@ -354,12 +353,25 @@ describe('French text of the components', () => {
       <TodayView />,
       inFrench([makeObservation({ date: TODAY, stretch: '0', codeString: '0' })])
     );
-    expect(screen.getByTitle(fr.todayView.modeDirectTitle)).toBeInTheDocument();
-    expect(screen.getByTitle(fr.todayView.modeDetailedTitle)).toBeInTheDocument();
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(`^${fr.observationForm.notes}`) })
+    );
     expect(screen.getByPlaceholderText(fr.todayView.notesPlaceholder)).toBeInTheDocument();
     // The save button and the day status both say saved
     expect(screen.getAllByText(fr.todayView.savedLabel)).toHaveLength(2);
     expect(screen.getByText(formatMessage(fr.common.dayNumber, { day: 1 }))).toBeInTheDocument();
+  });
+
+  it('translates the observation actions menu', () => {
+    renderWithProviders(<TodayView />, inFrench());
+    fireEvent.click(screen.getAllByRole('button', { name: fr.observationForm.actionsLabel })[0]!);
+    const menu = screen.getByRole('menu', { name: fr.observationForm.actionsLabel });
+    expect(
+      within(menu).getByRole('menuitem', { name: fr.observationForm.copyYesterday })
+    ).toBeDisabled();
+    expect(
+      within(menu).getByRole('menuitemcheckbox', { name: fr.todayView.modeDirect })
+    ).toHaveAttribute('aria-checked', 'false');
   });
 
   it('translates the close button of the export dialog', () => {
@@ -417,18 +429,11 @@ describe('French text of the components', () => {
     [false, fr.cycleStartModal.isCycleStartNo],
   ])('translates the cycle start choice %s', (isCycleStart, template) => {
     renderWithProviders(
-      <ObservationCodeSelector
-        fields={{ bleeding: 'M', isCycleStart, modifiers: [], symptoms: [] }}
-        actions={{
-          selectBleeding: () => {},
-          toggleCycleStart: () => {},
-          selectStretch: () => {},
-          toggleModifier: () => {},
-          selectFrequency: () => {},
-          toggleSymptom: () => {},
-        }}
-      />,
-      inFrench()
+      <TodayView />,
+      inFrench([makeObservation({ date: TODAY, bleeding: 'M', isCycleStart, codeString: 'M' })])
+    );
+    fireEvent.click(
+      screen.getByRole('button', { name: new RegExp(`^${fr.observationForm.groups.bleeding}`) })
     );
     expect(
       screen.getByRole('button', {

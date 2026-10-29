@@ -1,56 +1,21 @@
 - dialog "Edit Observation":
   - heading "Edit Observation" [level=2]
+  - paragraph: /Day \d+ · Saved/
+  - button "Observation actions"
   - button "Close entry panel"
-  - text: Stamp Preview 0AD Date
+  - text: 0AD Dry day. Infertile under the CrMS rules. Date
   - textbox "Date": /\d+-\d+-\d+/
   - text: Direct Code Entry
   - textbox "Direct Code Entry":
     - /placeholder: e.g. 10KLX3 I AP
     - text: 0AD
-  - button "I - Sexual Intercourse"
-  - group "Bleeding (Flux)":
-    - text: ""
-    - button "H - Heavy Flow"
-    - button "M - Moderate Flow"
-    - button "L - Light Flow"
-    - button "VL - Very Light Flow"
-    - button "B - Brown / Black Blood"
-  - group "Mucus Intensity / Stretch":
-    - text: ""
-    - button "0 - Dry" [pressed]
-    - button "2 - Damp without lubrication"
-    - button "2W - Wet without lubrication"
-    - button "4 - Shiny without lubrication"
-    - button "6 - Slightly stretchy (~0.5cm)"
-    - button "8 - Moderately stretchy (1-2cm)"
-    - button "10 - Very stretchy (2.5cm+)"
-    - button "10DL - Damp with lubrication"
-    - button "10SL - Shiny with lubrication"
-    - button "10WL - Wet with lubrication"
-  - group "Appearance / Characteristics":
-    - text: ""
-    - button "B - Brown blood"
-    - button "C - Cloudy / White"
-    - button "C/K - Cloudy & Clear mixed"
-    - button "G - Gummy / Sticky"
-    - button "K - Clear"
-    - button "L - Lubricative"
-    - button "P - Pasty / Creamy"
-    - button "Y - Yellow"
-  - group "Frequency":
-    - text: ""
-    - button "X1 - One time only"
-    - button "X2 - Two times"
-    - button "X3 - Three times"
-    - button "AD - All Day (4+ times)" [pressed]
-  - group "Contextual Symptoms":
-    - text: ""
-    - button "AP - Abdominal Pain"
-    - button "RAP - Right Abdominal Pain"
-    - button "LAP - Left Abdominal Pain"
-  - button "Designate Peak Day (P)"
-  - text: Notes / Observations
-  - textbox "Notes / Observations"
-  - button "Delete Entry"
+  - button "Bleeding None"
+  - button "Mucus 0 - Dry"
+  - button "Appearance None"
+  - button "Frequency AD - All day"
+  - button "Symptoms None"
+  - switch "I - Sexual Intercourse"
+  - switch "Designate Peak Day (P)"
+  - button "Notes None"
   - button "Cancel"
   - button "Save Observation"

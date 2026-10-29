@@ -63,7 +63,7 @@ const themes = [
   ['dark', darkTokens],
 ] as const;
 
-const surfaces = ['--bg-primary', '--bg-surface', '--bg-surface-elevated'];
+const surfaces = ['--bg-primary', '--bg-surface', '--bg-surface-elevated', '--bg-hero'];
 const textTokens = [
   '--text-primary',
   '--text-secondary',
@@ -116,6 +116,9 @@ describe('design token contrast (WCAG 2 AA)', () => {
       ['--stamp-light-green-border', '--bg-surface'],
       ['--stamp-empty', '--bg-surface'],
       ['--stamp-empty', '--bg-primary'],
+      ['--stamp-empty', '--bg-hero'],
+      ['--stamp-white-border', '--bg-hero'],
+      ['--stamp-light-green-border', '--bg-hero'],
       ['--stamp-light-green-border', '--bg-primary'],
     ])('stamp edge %s on %s reaches 3:1', (edge, surface) => {
       expect(contrast(color(edge), color(surface))).toBeGreaterThanOrEqual(AA_NON_TEXT);
@@ -185,10 +188,6 @@ describe('contrast-safe token usage', () => {
     const rule = /\.cycle-start-toggle-btn\.active\s*\{([^}]*)\}/.exec(forms);
     expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-cycle-start-text\)/);
     expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-cycle-start-surface\)/);
-    // It must come after .peak-toggle-btn.active, which has the same specificity
-    expect(forms.indexOf('.cycle-start-toggle-btn.active')).toBeGreaterThan(
-      forms.indexOf('.peak-toggle-btn.active')
-    );
   });
 
   it.each(cssFiles(stylesDir).map(path => [path.slice(stylesDir.length + 1), path]))(
@@ -214,16 +213,15 @@ describe('contrast-safe token usage', () => {
     expect([...used].filter(name => !defined.has(name))).toEqual([]);
   });
 
-  it.each([
-    ['primitives/forms.css', '.intercourse-toggle-btn.active', '--color-intercourse'],
-    ['primitives/forms.css', '.peak-toggle-btn.active', '--color-peak'],
-    ['views/today.css', '.today-toast', '--color-success-solid'],
-  ])('%s fills %s with %s', (file, selector, token) => {
-    const css = readCss(file);
-    const escaped = selector.replace(/[.]/g, '\\.');
-    const rule = new RegExp(`(?:^|\\s)${escaped}\\s*\\{([^}]*)\\}`).exec(css);
-    expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(${token}\\)`));
-  });
+  it.each([['views/today.css', '.today-toast', '--color-success-solid']])(
+    '%s fills %s with %s',
+    (file, selector, token) => {
+      const css = readCss(file);
+      const escaped = selector.replace(/[.]/g, '\\.');
+      const rule = new RegExp(`(?:^|\\s)${escaped}\\s*\\{([^}]*)\\}`).exec(css);
+      expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(${token}\\)`));
+    }
+  );
 
   it.each([
     ['.stamp-white_baby', '--stamp-white-border'],

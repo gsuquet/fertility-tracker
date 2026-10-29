@@ -56,6 +56,36 @@ const drawer = () => screen.getByRole('dialog', { name: /Observation/ });
 const saved = () => screen.getByTestId('saved').textContent;
 const press = (name: string | RegExp) =>
   fireEvent.click(within(drawer()).getByRole('button', { name }));
+const flip = (name: string) => fireEvent.click(within(drawer()).getByRole('switch', { name }));
+type Group = keyof typeof en.observationForm.groups;
+/** Opens the row of the group when it is closed, then presses the chip of the code. */
+const chip = (group: Group, code: string) => {
+  const name = (en.codes[group] as Record<string, string>)[code] as string;
+  if (
+    !within(drawer()).queryByRole(
+      group === 'modifiers' || group === 'symptoms' ? 'button' : 'radio',
+      { name }
+    )
+  ) {
+    press(new RegExp(`^${en.observationForm.groups[group]}`));
+  }
+  fireEvent.click(
+    within(drawer()).getByRole(group === 'modifiers' || group === 'symptoms' ? 'button' : 'radio', {
+      name,
+    })
+  );
+};
+/** The actions menu of a day with no saved observation has no Delete item. */
+const expectNoDelete = () => {
+  press(en.observationForm.actionsLabel);
+  expect(screen.queryByRole('menuitem', { name: en.observationForm.deleteObservation })).toBeNull();
+  fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+};
+const openNotes = () => press(new RegExp(`^${en.observationForm.notes}`));
+const deleteFromMenu = () => {
+  press(en.observationForm.actionsLabel);
+  fireEvent.click(screen.getByRole('menuitem', { name: en.observationForm.deleteObservation }));
+};
 
 /** A fake Vibration API. Each test removes it at the end. */
 const installVibrate = () => {
@@ -78,8 +108,8 @@ describe('ObservationDrawer flows', () => {
   it('vibrates briefly on the Peak Day button and on a save', () => {
     const vibrate = installVibrate();
     renderDrawer(null);
-    press(en.codes.stretch['10']);
-    press(en.actions.setPeak);
+    chip('stretch', '10');
+    flip(en.actions.setPeak);
     press(en.actions.save);
     expect(vibrate.mock.calls).toEqual([[10], [15]]);
   });
@@ -88,12 +118,13 @@ describe('ObservationDrawer flows', () => {
     renderDrawer(null);
     expect(within(drawer()).getByText(en.todayView.noObservation)).toBeInTheDocument();
     expect(drawer().querySelector('.stamp-empty')).toBeInTheDocument();
-    press(en.codes.stretch['10']);
-    press(en.codes.modifiers.K);
-    press(en.codes.frequency.X3);
-    press(en.codes.symptoms.AP);
-    press(en.codes.intercourse.I);
-    press(en.actions.setPeak);
+    chip('stretch', '10');
+    chip('modifiers', 'K');
+    chip('frequency', 'X3');
+    chip('symptoms', 'AP');
+    flip(en.codes.intercourse.I);
+    flip(en.actions.setPeak);
+    openNotes();
     fireEvent.change(within(drawer()).getByLabelText(en.labels.notes), {
       target: { value: 'note' },
     });
@@ -114,21 +145,21 @@ describe('ObservationDrawer flows', () => {
     const d12 = makeObservation({ id: 'd12', date: '2026-09-12', stretch: '10', modifiers: ['K'] });
     renderDrawer(d12, [makeObservation({ date: '2026-09-01', bleeding: 'H' }), p10, d12]);
     expect(screen.getByTestId('peaks')).toHaveTextContent('2026-09-10:true');
-    press(en.actions.setPeak);
+    flip(en.actions.setPeak);
     press(en.actions.save);
     expect(screen.getByTestId('peaks').textContent).toBe('2026-09-12:true');
   });
 
   it('clears a selection when it is pressed again', () => {
     renderDrawer(null);
-    press(en.codes.bleeding.M);
-    press(en.codes.bleeding.M);
-    press(en.codes.stretch['4']);
-    press(en.codes.stretch['4']);
-    press(en.codes.frequency.AD);
-    press(en.codes.frequency.AD);
-    press(en.actions.setPeak);
-    press(en.actions.removePeak);
+    chip('bleeding', 'M');
+    chip('bleeding', 'M');
+    chip('stretch', '4');
+    chip('stretch', '4');
+    chip('frequency', 'AD');
+    chip('frequency', 'AD');
+    flip(en.actions.setPeak);
+    flip(en.actions.setPeak);
     expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('');
   });
 
@@ -137,7 +168,7 @@ describe('ObservationDrawer flows', () => {
     renderDrawer(obs, [obs]);
     expect(within(drawer()).getByText('Edit Observation')).toBeInTheDocument();
     expect(within(drawer()).getByLabelText(en.labels.date)).toHaveValue('2026-09-10');
-    press(en.actions.delete);
+    deleteFromMenu();
     expect(saved()).toBe('');
     expect(screen.getByTestId('selection')).toHaveTextContent('none');
   });
@@ -154,8 +185,12 @@ describe('ObservationDrawer flows', () => {
     renderDrawer(null, [today]);
     expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.drawer.editTitle);
     expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('10KL');
-    expect(within(drawer()).getByLabelText(en.labels.notes)).toHaveValue('today note');
-    expect(within(drawer()).getByRole('button', { name: en.actions.delete })).toBeInTheDocument();
+    expect(within(drawer()).getByText('today note')).toBeInTheDocument();
+    press(en.observationForm.actionsLabel);
+    expect(
+      screen.getByRole('menuitem', { name: en.observationForm.deleteObservation })
+    ).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     // A save with no change keeps the saved values
     press(en.actions.save);
     expect(saved()).toBe('2026-09-15:10KL:undefined');
@@ -173,7 +208,7 @@ describe('ObservationDrawer flows', () => {
     fireEvent.change(dateInput, { target: { value: '2026-09-11' } });
     expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
     expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('');
-    expect(within(drawer()).queryByRole('button', { name: en.actions.delete })).toBeNull();
+    expectNoDelete();
   });
 
   it('keeps a changed draft when the date moves from a saved day to an empty day', () => {
@@ -249,7 +284,7 @@ describe('ObservationDrawer flows', () => {
   it('treats a blank calendar day as a new entry on its date', () => {
     renderDrawer(makeObservation({ id: '', date: '2026-09-11' }));
     expect(within(drawer()).getByRole('heading')).toHaveTextContent(en.actions.newEntry);
-    expect(within(drawer()).queryByRole('button', { name: en.actions.delete })).toBeNull();
+    expectNoDelete();
     fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
       target: { value: '0' },
     });
@@ -265,7 +300,7 @@ describe('ObservationDrawer flows', () => {
     [/No, Continue Current Cycle/, 'false'],
   ])('asks about a new cycle on the first bleeding day: %s', (answer, stored) => {
     renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
-    press(en.codes.bleeding.H);
+    chip('bleeding', 'H');
     press(en.actions.save);
     fireEvent.click(screen.getByRole('button', { name: answer }));
     expect(saved()).toContain(`2026-09-15:H:${stored}`);
@@ -273,7 +308,7 @@ describe('ObservationDrawer flows', () => {
 
   it('keeps the drawer open when the cycle question is cancelled', () => {
     renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
-    press(en.codes.bleeding.H);
+    chip('bleeding', 'H');
     press(en.actions.save);
     const question = screen.getByRole('dialog', { name: en.cycleStartModal.title });
     fireEvent.click(within(question).getByRole('button', { name: en.cycleStartModal.cancelBtn }));
@@ -284,7 +319,7 @@ describe('ObservationDrawer flows', () => {
 
   it('saves the cycle start toggle without asking', () => {
     renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
-    press(en.codes.bleeding.H);
+    chip('bleeding', 'H');
     press(en.cycleStartModal.isCycleStartLabel);
     press(`${en.cycleStartModal.isCycleStartLabel} (Yes)`);
     press(`${en.cycleStartModal.isCycleStartLabel} (No)`);
@@ -295,7 +330,7 @@ describe('ObservationDrawer flows', () => {
   it('closes from the close button, cancel, the overlay and Escape only', () => {
     renderDrawer(null);
     fireEvent.keyDown(drawer(), { key: 'Enter' });
-    fireEvent.click(within(drawer()).getByText(en.labels.stampPreview));
+    fireEvent.click(within(drawer()).getByText(en.todayView.noObservation));
     expect(drawer()).toBeInTheDocument();
 
     press('Close entry panel');
@@ -327,7 +362,7 @@ describe('ObservationDrawer flows', () => {
 
   it('closes only the cycle question on Escape, and gives the focus back to Save', () => {
     renderDrawer(null, [makeObservation({ date: '2026-09-14', stretch: '0' })]);
-    press(en.codes.bleeding.H);
+    chip('bleeding', 'H');
     within(drawer()).getByRole('button', { name: en.actions.save }).focus();
     press(en.actions.save);
     const question = screen.getByRole('dialog', { name: en.cycleStartModal.title });
@@ -335,5 +370,69 @@ describe('ObservationDrawer flows', () => {
     expect(screen.queryByRole('dialog', { name: en.cycleStartModal.title })).toBeNull();
     expect(drawer()).toBeInTheDocument();
     expect(within(drawer()).getByRole('button', { name: en.actions.save })).toHaveFocus();
+  });
+
+  it('copies the code of the day before the date of the sheet', () => {
+    const before = makeObservation({ date: '2026-09-09', stretch: '6', codeString: '6' });
+    renderDrawer(makeObservation({ id: '', date: '2026-09-10' }), [before]);
+    press(en.observationForm.actionsLabel);
+    fireEvent.click(
+      screen.getByRole('menuitem', { name: new RegExp(en.observationForm.copyYesterday) })
+    );
+    expect(within(drawer()).getByLabelText(en.labels.directInput)).toHaveValue('6');
+  });
+
+  it('turns Direct Code Only on from the sheet menu', () => {
+    renderDrawer(null);
+    press(en.observationForm.actionsLabel);
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect }));
+    expect(within(drawer()).queryByRole('button', { name: /^Bleeding/ })).toBeNull();
+    press(en.observationForm.actionsLabel);
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.todayView.modeDirect }));
+    expect(within(drawer()).getByRole('button', { name: /^Bleeding/ })).toBeInTheDocument();
+  });
+
+  it('shows the cycle day of a day with no observation, and none after today', () => {
+    renderDrawer(makeObservation({ id: '', date: '2026-09-12' }), [
+      makeObservation({ date: '2026-09-10', bleeding: 'H' }),
+    ]);
+    expect(within(drawer()).getByText(/Day 3 ·/)).toBeInTheDocument();
+    expect(within(drawer()).getByText(en.todayView.notLoggedStatus)).toBeInTheDocument();
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.date), {
+      target: { value: '2026-09-20' },
+    });
+    expect(within(drawer()).queryByText(/Day \d+ ·/)).toBeNull();
+  });
+
+  it('shows the saved stamp of a day with no change, and the stamp of the form after a change', () => {
+    const days = [
+      makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-09-10', stretch: '10', modifiers: ['K'], isManualPeak: true }),
+      makeObservation({ id: 'd11', date: '2026-09-11', stretch: '0', codeString: '0' }),
+    ];
+    renderDrawer(days[2] as Observation, days);
+    // The day after the Peak Day is the first day of the count of three
+    expect(drawer().querySelector('.stamp-light_green_baby_1')).toBeInTheDocument();
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '2' },
+    });
+    expect(drawer().querySelector('.stamp-light_green_baby_1')).toBeNull();
+  });
+
+  it('saves with Ctrl+S while the sheet is on top', () => {
+    renderDrawer(null);
+    fireEvent.change(within(drawer()).getByLabelText(en.labels.directInput), {
+      target: { value: '0' },
+    });
+    fireEvent.keyDown(window, { key: 's' });
+    expect(screen.getByRole('dialog')).toBeInTheDocument();
+    // The ⋮ menu over the sheet keeps the keys
+    press(en.observationForm.actionsLabel);
+    fireEvent.keyDown(window, { key: 's', ctrlKey: true });
+    expect(saved()).toBe('');
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    fireEvent.keyDown(window, { key: 'S', ctrlKey: true });
+    expect(saved()).toBe('2026-09-15:0:undefined');
+    expect(screen.queryByRole('dialog')).toBeNull();
   });
 });

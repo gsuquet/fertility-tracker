@@ -1,7 +1,7 @@
 import type React from 'react';
 import { X } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
-import { SHORTCUT_IDS, SHORTCUT_LABELS } from '../domain/keyboardShortcuts';
+import { SAVE_KEY_LABELS, SHORTCUT_IDS, SHORTCUT_LABELS } from '../domain/keyboardShortcuts';
 import { setShortcutsEnabled, useShortcutsEnabled } from '../hooks/useKeyboardShortcuts';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
@@ -68,6 +68,14 @@ export const KeyboardShortcutsModal: React.FC<KeyboardShortcutsModalProps> = ({ 
                 <td>{t.shortcuts.actions[id]}</td>
               </tr>
             ))}
+            <tr>
+              <td>
+                {SAVE_KEY_LABELS.map(label => (
+                  <kbd key={label}>{label}</kbd>
+                ))}
+              </td>
+              <td>{t.shortcuts.save}</td>
+            </tr>
           </tbody>
         </table>
       </div>

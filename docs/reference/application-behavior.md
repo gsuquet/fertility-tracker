@@ -134,6 +134,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 | `←` `→`         | Previous day and next day                              | **Today** page |
 | `T`             | The date of today                                      | **Today** page |
 | `?`             | Open the **Keyboard shortcuts** dialog                 | All pages      |
+- **Ctrl+S** or **⌘S** saves the observation form on the **Today** page and in the drawer. It is not a single-key shortcut, so it also works in a field. **Use keyboard shortcuts** does not turn it off. The dialog on top keeps it: on the **Today** page, no dialog must be open. In the drawer, the drawer must be the dialog on top.
 - One `keydown` listener on `document` handles all the shortcuts. `useShortcut(id, handler)` adds a handler while its component is mounted. When two components add the same shortcut, the last one handles it, until it unmounts. `App` adds the pages, `N` and `?`. `TodayView` adds the arrows and `T`.
 - [keyboardShortcuts.ts](../../src/domain/keyboardShortcuts.ts) finds the shortcut of a key event:
   - A key with `Ctrl`, `Meta` or `Alt`, or a key of an input method composition, is not a shortcut. Thus, the shortcuts of the browser and the system stay, and `Ctrl+P` prints the report.
@@ -147,7 +148,7 @@ The first install has no controller. Thus, it activates at once and the applicat
   - For `←` and `→` only: the focus is in a widget that uses the arrow keys. These roles are such widgets: `listbox`, `grid`, `menu`, `menubar`, `radiogroup`, `slider` and `tree`. The page tabs do not use the arrows, so the arrows change the day there.
   - Another handler already used the key (`event.defaultPrevented`).
   - The page of the shortcut is not open. For example, `←` does nothing on the chart page.
-- The **Keyboard shortcuts** dialog lists each shortcut with its translated action. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
+- The **Keyboard shortcuts** dialog lists each shortcut with its translated action, and then **Ctrl+S** and **⌘S**. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
 - These open the dialog: `?`, and the **Keyboard shortcuts** button of the footer, of the phone menu and of the **About & Version Tracker** dialog. The installed app has no footer, so the **About** dialog has the button too. When the shortcuts are off, `?` does nothing, and the buttons stay.
 - These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
@@ -201,7 +202,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 - `haptic(kind)` gives a short vibration with `navigator.vibrate`. A `light` vibration is 10 ms. A `success` vibration is 15 ms.
 - Only three actions vibrate:
   - A save of an observation, on the **Today** page or in the drawer: `success`.
-  - A tap on **Designate Peak Day (P)** or **Remove Peak Day (P)**, on the **Today** page or in the drawer: `light`.
+  - A tap on the **Designate Peak Day (P)** switch, on the **Today** page or in the drawer: `light`.
   - A tap on the **Log** button of the phone navigation bar: `light`.
 - No other action vibrates. More vibrations make the signal less useful.
 - `haptic` does nothing in these cases:

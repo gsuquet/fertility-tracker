@@ -29,6 +29,10 @@
 
     /* Minimum size of a control used each day (ADR 0011) */
     --control-size-lg: 44px;
+    /* Size of a secondary icon button */
+    --control-size-md: 36px;
+    /* Height of a row of a list or a form */
+    --row-height: 48px;
 
     /* Phone page buttons: their height, and the space they take above the home indicator */
     --mobile-nav-height: 62px;

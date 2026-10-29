@@ -62,7 +62,8 @@ describe('observation drawer styles', () => {
     const [footerButton] = declarationsOf(mobile, '.drawer-footer .btn');
     expect(footerButton).toMatch(/flex-shrink:\s*1/);
     expect(footerButton).toMatch(/min-width:\s*0/);
-    const [deleteLabel] = declarationsOf(mobile, '.drawer-footer .btn-danger span');
-    expect(deleteLabel).toMatch(/display:\s*none/);
+    // The two buttons are 48 px high at each width
+    const [base] = declarationsOf(drawer, '.drawer-footer .btn');
+    expect(base).toMatch(/min-height:\s*var\(--row-height\)/);
   });
 });

@@ -228,95 +228,14 @@
     box-shadow: var(--shadow-sm);
   }
 
-  .today-form-card .button-grid {
-    grid-template-columns: repeat(auto-fill, minmax(88px, 1fr));
-  }
-
-  .today-card-header {
+  /* The Save bar: one filled button of 48 px */
+  .today-save-bar {
     display: flex;
-    align-items: flex-start;
-    justify-content: space-between;
-    flex-wrap: wrap;
-    gap: 1rem;
+    justify-content: flex-end;
   }
 
-  .today-card-header h2 {
-    font-size: var(--font-size-xl);
-    font-weight: 800;
-    color: var(--text-primary);
-    margin-bottom: 0.25rem;
-  }
-
-  .today-card-header .subtitle {
-    font-size: var(--font-size-md);
-    color: var(--text-muted);
-  }
-
-  .entry-mode-toggle {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    background-color: var(--bg-primary);
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-lg);
-    padding: 3px;
-  }
-
-  .mode-toggle-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.35rem 0.7rem;
-    border-radius: var(--radius-md);
-    background: transparent;
-    border: none;
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    color: var(--text-muted);
-    cursor: pointer;
-    transition: all 0.18s ease;
-  }
-
-  .mode-toggle-btn:hover {
-    color: var(--text-primary);
-  }
-
-  .mode-toggle-btn.active {
-    background-color: var(--bg-surface);
-    color: var(--accent-primary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  /* Each label holds a hidden native radio input: the label shows its keyboard focus */
-  label.mode-toggle-btn {
-    position: relative;
-  }
-
-  .mode-toggle-btn:has(input:focus-visible) {
-    outline: 2px solid var(--accent-primary);
-    outline-offset: 2px;
-  }
-
-  .direct-mode-expand-wrapper {
-    display: flex;
-    justify-content: flex-start;
-  }
-
-  .toggle-detailed-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.4rem;
-    font-size: var(--font-size-sm);
-    font-weight: 700;
-  }
-
-  .today-form-actions {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding-top: 1rem;
-    border-top: 1px solid var(--bg-surface-border);
-    margin-top: 0.5rem;
+  .today-save-bar .submit-save-btn {
+    min-height: var(--row-height);
   }
 
   /* Side Panel: Status & History */
@@ -349,6 +268,10 @@
     font-weight: 800;
     color: var(--text-primary);
     margin: 0;
+  }
+
+  .status-card-header .obs-actions-btn {
+    margin-left: auto;
   }
 
   .status-stamp-wrapper {
@@ -474,61 +397,57 @@
     font-style: italic;
   }
 
-  /* Top Stamp Hero Banner (Mobile & Desktop DX) */
+  /* Status card of the phone: the stamp (40 px), the code (22 px), one sentence and the menu */
   .today-top-status-banner {
     border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-xl);
-    padding: 1.25rem 1.75rem;
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    padding: var(--space-sm) var(--space-xs) var(--space-sm) var(--space-md);
+    min-height: 64px;
     display: flex;
     align-items: center;
-    justify-content: center;
-    background: linear-gradient(135deg, var(--bg-surface) 0%, var(--accent-soft) 100%);
+    background-color: var(--bg-hero);
   }
 
   .status-stamp-hero {
     display: flex;
     align-items: center;
-    gap: 1.75rem;
+    gap: var(--space-md);
     width: 100%;
+  }
+
+  .status-stamp-hero .stamp-badge-container {
+    width: auto;
+    flex-shrink: 0;
+  }
+
+  .status-stamp-hero .stamp-lg .stamp-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
   }
 
   .status-hero-info {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
+    gap: var(--space-2xs);
     flex: 1;
+    min-width: 0;
   }
 
   .status-code-display {
     font-family: var(--font-mono);
-    font-size: var(--font-size-2xl);
-    font-weight: 900;
-    letter-spacing: 0.05em;
+    font-size: var(--font-size-xl);
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
   }
 
   .status-hero-guidance {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.55rem;
-    font-size: var(--font-size-md);
-    line-height: 1.4;
+    font-size: var(--font-size-sm);
+    line-height: 1.35;
     color: var(--text-secondary);
-    background-color: var(--accent-soft);
-    border: 1px solid var(--accent-glow);
-    padding: 0.65rem 0.95rem;
-    border-radius: var(--radius-md);
-  }
-
-  /* Grayed out Submit button when form matches saved observation */
-  .submit-save-btn.disabled-submit {
-    opacity: 0.45;
-    cursor: not-allowed;
-    filter: grayscale(40%);
-    box-shadow: none !important;
-    transform: none !important;
-    pointer-events: none;
   }
 
   /* Responsive Breakpoints */
@@ -629,33 +548,35 @@
       padding-inline: var(--space-sm);
     }
 
-    .today-top-status-banner {
-      padding: 0.85rem;
-    }
-
-    .status-stamp-hero {
-      flex-direction: column;
-      align-items: center;
-      text-align: center;
-      gap: 0.75rem;
-    }
-
-    .status-code-display {
-      font-size: var(--font-size-xl);
-    }
-
-    .status-hero-guidance {
-      text-align: left;
-      font-size: var(--font-size-sm);
-      padding: 0.5rem 0.75rem;
-    }
-
     .today-formatted-date {
       font-size: var(--font-size-lg);
     }
 
+    /* On a phone, the rows are the card: the form has no card around them */
     .today-form-card {
-      padding: 1rem;
+      padding: 0;
+      background: transparent;
+      border: 0;
+      box-shadow: none;
+      gap: var(--space-sm);
+    }
+
+    /* The Save bar stays above the bottom bar. It hides while the phone keyboard is open. */
+    .today-save-bar {
+      position: sticky;
+      bottom: calc(var(--mobile-nav-space) + var(--space-sm));
+      z-index: var(--z-sticky);
+    }
+
+    .today-save-bar .submit-save-btn {
+      width: 100%;
+      justify-content: center;
+    }
+  }
+
+  @media (max-width: 600px) and (pointer: coarse) {
+    .today-save-bar.typing {
+      display: none;
     }
   }
 }

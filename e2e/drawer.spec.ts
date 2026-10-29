@@ -16,7 +16,11 @@ test.describe('Observation drawer', () => {
     await nav.getByRole('button', { name: en.mobileTabs.log }).click();
     const drawer = page.getByRole('dialog', { name: en.drawer.editTitle });
     await expect(drawer.getByRole('textbox', { name: en.labels.directInput })).toHaveValue('10KL');
-    await expect(drawer.getByRole('button', { name: en.actions.delete })).toBeVisible();
+    await drawer.getByRole('button', { name: en.observationForm.actionsLabel }).click();
+    await expect(
+      page.getByRole('menuitem', { name: en.observationForm.deleteObservation })
+    ).toBeVisible();
+    await page.keyboard.press('Escape');
 
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();

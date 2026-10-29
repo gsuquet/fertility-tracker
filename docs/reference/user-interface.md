@@ -4,12 +4,12 @@ This page lists the pages, buttons and dialogs of the application. The names are
 
 ## Pages
 
-| Page                  | Phone name    | Content                                                                      |
-| --------------------- | ------------- | ---------------------------------------------------------------------------- |
-| **Today**             | **Today**     | The observation form for one date, the stamp preview and the last five days. |
-| **Paper Chart Strip** | **Chart**     | One row for each cycle, in the format of the Creighton paper chart.          |
-| **Monthly Calendar**  | **Calendar**  | One month, with the stamp and the code of each day.                          |
-| **Cycle Analytics**   | **Analytics** | Phase lengths, the mucus score, the stamp counts and a clinical summary.     |
+| Page                  | Phone name    | Content                                                                    |
+| --------------------- | ------------- | -------------------------------------------------------------------------- |
+| **Today**             | **Today**     | The observation form for one date, the status card and the last five days. |
+| **Paper Chart Strip** | **Chart**     | One row for each cycle, in the format of the Creighton paper chart.        |
+| **Monthly Calendar**  | **Calendar**  | One month, with the stamp and the code of each day.                        |
+| **Cycle Analytics**   | **Analytics** | Phase lengths, the mucus score, the stamp counts and a clinical summary.   |
 
 On a screen of 640 pixels or less, the page buttons are at the bottom of the screen.
 
@@ -56,6 +56,7 @@ On a computer, one key starts an action. A shortcut does nothing while a dialog 
 | `←` `→`         | Opens the previous day or the next day on **Today**.       |
 | `T`             | Opens the date of today on **Today**.                      |
 | `?`             | Opens the **Keyboard shortcuts** dialog.                   |
+| `Ctrl+S` `⌘S`   | Saves the observation form. It also works in a field.      |
 
 To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. The footer, the phone menu and the **About & Version Tracker** dialog open it too.
 
@@ -63,22 +64,23 @@ To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard sh
 
 The **Today** page and the observation drawer have the same fields.
 
-| Field or button                  | Use                                                                    |
-| -------------------------------- | ---------------------------------------------------------------------- |
-| **Entry Mode**                   | **Direct Code Only** or **Detailed Form**. Only on the **Today** page. |
-| **Direct Code Entry**            | Type the full code, for example `10KLX3 I`.                            |
-| **Bleeding (Flux)**              | One bleeding code.                                                     |
-| **Start of New Cycle**           | Shows only on a day with bleeding. Sets the start of a cycle.          |
-| **Mucus Intensity / Stretch**    | One stretch code.                                                      |
-| **Appearance / Characteristics** | One or more appearance codes.                                          |
-| **Frequency**                    | One frequency code.                                                    |
-| **Contextual Symptoms**          | One or more symptom codes.                                             |
-| **I - Sexual Intercourse**       | Records intercourse.                                                   |
-| **Designate Peak Day (P)**       | Sets this day as the Peak Day.                                         |
-| **Notes / Observations**         | Free text.                                                             |
-| **Stamp Preview**                | Shows the stamp of the day before you save.                            |
-| **Save Observation**             | Saves the day.                                                         |
-| **Delete Entry**                 | Deletes the day. Shows only for a saved day.                           |
+| Field or button            | Use                                                                               |
+| -------------------------- | --------------------------------------------------------------------------------- |
+| **Direct Code Entry**      | Type the full code, for example `10KLX3 I`.**Done** closes the keyboard.          |
+| **Bleeding**               | One bleeding code. The start of a new cycle shows only on a day with bleeding.    |
+| **Mucus**                  | One stretch code.                                                                 |
+| **Appearance**             | One or more appearance codes.                                                     |
+| **Frequency**              | One frequency code.                                                               |
+| **Symptoms**               | One or more symptom codes.                                                        |
+| **I - Sexual Intercourse** | A switch. Records intercourse.                                                    |
+| **Designate Peak Day (P)** | A switch. Sets this day as the Peak Day.                                          |
+| **Notes**                  | Free text.                                                                        |
+| **Save Observation**       | Saves the day. On a computer, **Ctrl+S** or **⌘S** also saves.                    |
+| ⋮ **Copy yesterday**       | Copies the code of the day before. The `I` mark, the Peak Day and the notes stay. |
+| ⋮ **Direct Code Only**     | Hides the group rows. The device keeps the choice.                                |
+| ⋮ **Delete observation**   | Deletes the day. Shows only for a saved day.                                      |
+
+A tap on a group row opens its buttons. The status card shows the stamp of the day before you save.
 
 ## Export and backup dialog
 

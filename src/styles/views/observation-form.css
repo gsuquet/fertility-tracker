@@ -1,0 +1,384 @@
+/* ==========================================================================
+   Progressive observation form of Today and of the observation sheet (RFC 0002)
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  .obs-form {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    width: 100%;
+    max-width: 640px;
+  }
+
+  /* The direct code field: 48 px, with Done while it has the focus */
+  .obs-code-field {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-height: var(--row-height);
+    padding: 0 var(--space-xs) 0 var(--space-md);
+    border: 1px solid var(--bg-surface-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+  }
+
+  .obs-code-field.focused {
+    border-color: var(--accent-primary);
+    box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  .obs-code-field label {
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    color: var(--text-secondary);
+    white-space: nowrap;
+  }
+
+  .obs-code-field input {
+    flex: 1;
+    min-width: 0;
+    min-height: var(--control-size-lg);
+    border: 0;
+    background: transparent;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-base);
+    font-weight: 600;
+    color: var(--text-primary);
+  }
+
+  .obs-code-field input:focus {
+    outline: none;
+  }
+
+  .obs-done-btn {
+    min-height: var(--control-size-lg);
+  }
+
+  .obs-code-wrap {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+  }
+
+  /* How the app reads the code */
+  .obs-parse {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-xs);
+    list-style: none;
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  .obs-parse.floating {
+    position: absolute;
+    top: calc(100% + var(--space-xs));
+    left: 0;
+    right: 0;
+    z-index: var(--z-raised);
+    padding: var(--space-sm);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    box-shadow: var(--shadow-md);
+  }
+
+  .obs-parse li {
+    padding: var(--space-2xs) var(--space-sm);
+    border-radius: var(--radius-full);
+    background-color: var(--accent-light);
+  }
+
+  .obs-parse b {
+    font-family: var(--font-mono);
+  }
+
+  /* One card of rows: the groups, the two switches and the notes */
+  .obs-rows {
+    display: flex;
+    flex-direction: column;
+    background-color: var(--bg-surface);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    overflow: hidden;
+  }
+
+  .obs-group {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .obs-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    min-height: var(--row-height);
+    padding: 0 var(--space-sm) 0 var(--space-md);
+    border: 0;
+    border-bottom: 1px solid var(--bg-surface-border);
+    background: transparent;
+    color: var(--text-primary);
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .obs-rows > :last-child,
+  .obs-rows > :last-child > .obs-row:last-child {
+    border-bottom: 0;
+  }
+
+  .obs-row.open {
+    background-color: var(--accent-soft);
+    border-bottom: 0;
+  }
+
+  .obs-row svg {
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+
+  .obs-row-key {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+
+  .obs-row-value {
+    flex: 1;
+    min-width: 0;
+    text-align: right;
+    font-size: var(--font-size-md);
+    color: var(--text-muted);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .obs-row-value.set {
+    color: var(--text-primary);
+    font-weight: 600;
+  }
+
+  /* The chips of the open group: the code over a short name, 48 px high */
+  .obs-chips {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    padding: var(--space-xs) var(--space-md) var(--space-md);
+    background-color: var(--accent-soft);
+    border-bottom: 1px solid var(--bg-surface-border);
+    animation: obs-chips-open 160ms ease-out;
+  }
+
+  .obs-chip-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: var(--space-sm);
+  }
+
+  .obs-chip {
+    min-height: var(--row-height);
+    padding: var(--space-xs);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-2xs);
+    line-height: 1.15;
+    border-radius: var(--radius-sm);
+    border: 1px solid var(--bg-surface-border-strong);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    text-align: center;
+    cursor: pointer;
+  }
+
+  .obs-chip-code {
+    font-family: var(--font-mono);
+    font-weight: 700;
+    font-size: var(--font-size-md);
+  }
+
+  .obs-chip small {
+    font-weight: 500;
+    font-size: var(--font-size-2xs);
+    color: var(--text-secondary);
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+
+  .obs-chip[aria-checked='true'],
+  .obs-chip[aria-pressed='true'] {
+    background-color: var(--accent-solid);
+    border-color: var(--accent-solid);
+    color: var(--color-white);
+  }
+
+  .obs-chip[aria-checked='true'] small,
+  .obs-chip[aria-pressed='true'] small {
+    color: var(--color-white);
+  }
+
+  .obs-chip-name {
+    font-size: var(--font-size-xs);
+    color: var(--text-secondary);
+  }
+
+  /* The I and Peak Day switches */
+  .obs-switch-row {
+    justify-content: space-between;
+  }
+
+  .obs-switch {
+    position: relative;
+    width: 44px;
+    height: 26px;
+    flex-shrink: 0;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-surface-border-strong);
+    transition: background-color var(--transition-fast);
+  }
+
+  .obs-switch::after {
+    content: '';
+    position: absolute;
+    top: 3px;
+    left: 3px;
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    background-color: var(--color-white);
+    box-shadow: var(--shadow-xs);
+    transition: left var(--transition-fast);
+  }
+
+  .obs-switch-row[aria-checked='true'] .obs-switch {
+    background-color: var(--accent-solid);
+  }
+
+  .obs-switch-row[aria-checked='true'] .obs-switch::after {
+    left: 21px;
+  }
+
+  .obs-notes {
+    padding: var(--space-xs) var(--space-md) var(--space-md);
+    background-color: var(--accent-soft);
+  }
+
+  /* The observation actions menu: a small menu under its ⋮ button */
+  .obs-actions-btn {
+    width: var(--control-size-md);
+    height: var(--control-size-md);
+    flex-shrink: 0;
+  }
+
+  .obs-menu-backdrop {
+    display: block;
+    position: fixed;
+    inset: 0;
+    background: transparent;
+  }
+
+  .obs-menu {
+    position: fixed;
+    min-width: 240px;
+    padding: var(--space-xs);
+    margin: 0;
+    background-color: var(--bg-surface-elevated);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-lg);
+  }
+
+  .obs-menu-item {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    min-height: var(--control-size-lg);
+    padding: 0 var(--space-md);
+    border: 0;
+    border-radius: var(--radius-sm);
+    background: transparent;
+    color: var(--text-primary);
+    font-size: var(--font-size-md);
+    font-weight: 500;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .obs-menu-item:hover:not(:disabled),
+  .obs-menu-item:focus-visible {
+    background-color: var(--accent-soft);
+  }
+
+  .obs-menu-item:disabled {
+    color: var(--text-muted);
+    cursor: not-allowed;
+  }
+
+  .obs-menu-item svg {
+    color: var(--text-secondary);
+    flex-shrink: 0;
+  }
+
+  .obs-menu-hint {
+    margin-left: auto;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+  }
+
+  .obs-menu-check {
+    margin-left: auto;
+  }
+
+  .obs-menu-item.danger,
+  .obs-menu-item.danger svg {
+    color: var(--color-danger);
+  }
+
+  .obs-menu hr {
+    border: 0;
+    border-top: 1px solid var(--bg-surface-border);
+    margin: var(--space-xs);
+  }
+
+  /* On a wide screen, the chips are in rows of four */
+  @media (min-width: 1024px) {
+    .obs-chip-grid {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    /* 12 px or more on a desktop (ADR 0011) */
+    .obs-chip small {
+      font-size: var(--font-size-xs);
+    }
+  }
+
+  /* Done closes the keyboard of a touch screen. A mouse or a trackpad does not need it. */
+  @media (pointer: fine) {
+    .obs-done-btn {
+      display: none;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .obs-chips {
+      animation: none;
+    }
+  }
+
+  @keyframes obs-chips-open {
+    from {
+      opacity: 0;
+      transform: translateY(-4px);
+    }
+  }
+}

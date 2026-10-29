@@ -44,6 +44,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.34.0',
+    date: '2026-10-29',
+    title: 'A Lighter Observation Form',
+    titleFr: 'Un formulaire d’observation plus léger',
+    tagline: 'Log a day with fewer taps: one row for each code group, and the actions in one menu',
+    taglineFr:
+      'Notez un jour en moins de gestes : une ligne par groupe de codes, et les actions dans un menu',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The form shows one row for each code group. A tap opens the buttons of that group only',
+      'Intercourse and Peak Day are switches, and the notes open in their row',
+      'The ⋮ menu of the status card has Copy yesterday, Direct Code Only and Delete observation',
+      'The status card shows one short sentence, and the date bar says Yesterday or 3 days ago',
+      'On a phone, Save stays at the bottom of the screen. Ctrl+S or ⌘S also saves',
+    ],
+    highlightsFr: [
+      'Le formulaire montre une ligne par groupe de codes. Un appui ouvre les boutons de ce groupe seulement',
+      'Rapport et jour Sommet sont des interrupteurs, et les notes s’ouvrent dans leur ligne',
+      'Le menu ⋮ de la carte d’état contient Copier la veille, Code Direct Seul et Supprimer l’observation',
+      'La carte d’état montre une phrase courte, et la barre de date indique Hier ou Il y a 3 jours',
+      'Sur un téléphone, Enregistrer reste en bas de l’écran. Ctrl+S ou ⌘S enregistre aussi',
+    ],
+  },
+  {
     version: '1.33.0',
     date: '2026-10-29',
     title: 'An Empty Day Looks Empty',

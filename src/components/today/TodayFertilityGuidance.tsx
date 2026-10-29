@@ -1,5 +1,6 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatMessage } from '../../i18n';
 import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { Info, Sparkles } from 'lucide-react';
@@ -11,7 +12,10 @@ interface TodayFertilityGuidanceProps {
   isEmpty: boolean;
   isManualPeak: boolean;
   intercourse: boolean;
-  variant: 'banner' | 'card';
+  /** banner: the phone of the Today page. sheet: the observation sheet, at each width. */
+  variant: 'banner' | 'sheet' | 'card';
+  /** The observation actions menu, at the right of the status. */
+  menu: React.ReactNode;
 }
 
 export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
@@ -21,6 +25,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   isManualPeak,
   intercourse,
   variant,
+  menu,
 }) => {
   const { t } = useLanguage();
 
@@ -33,15 +38,17 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       case 'LIGHT_GREEN_BABY_1':
       case 'LIGHT_GREEN_BABY_2':
       case 'LIGHT_GREEN_BABY_3':
-        return t.todayView.guidance.postPeak;
+        return formatMessage(t.todayView.guidance.postPeak, { day: stamp.slice(-1) });
       default:
         return t.todayView.guidance.dry;
     }
   };
 
-  if (variant === 'banner') {
+  if (variant !== 'card') {
+    // The banner of Today shows only on a phone. The banner of the sheet shows at each width.
+    const phoneOnly = variant === 'banner' ? 'mobile-only-stamp-banner' : '';
     return (
-      <div className="today-top-status-banner mobile-only-stamp-banner">
+      <div className={`today-top-status-banner ${phoneOnly}`}>
         <div className="status-stamp-hero">
           <StampBadge
             stamp={stamp}
@@ -50,17 +57,14 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
             size="lg"
             isEmpty={isEmpty}
           />
-          <div className="status-hero-info">
+          {/* Only the code and the sentence are read again, not the menu */}
+          <div className="status-hero-info" aria-live="polite">
             <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
               {isEmpty ? t.todayView.noObservation : currentCode}
             </div>
-            {!isEmpty && (
-              <div className="status-hero-guidance">
-                <Info size={15} className="guidance-icon" />
-                <span>{getFertilityGuidance()}</span>
-              </div>
-            )}
+            {!isEmpty && <div className="status-hero-guidance">{getFertilityGuidance()}</div>}
           </div>
+          {menu}
         </div>
       </div>
     );
@@ -71,9 +75,10 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       <div className="status-card-header">
         <Sparkles size={18} className="status-header-icon" />
         <h3>{t.labels.stampPreview}</h3>
+        {menu}
       </div>
 
-      <div className="status-stamp-wrapper">
+      <div className="status-stamp-wrapper" aria-live="polite">
         <StampBadge
           stamp={stamp}
           isPeakDay={isManualPeak}
@@ -87,7 +92,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       </div>
 
       {!isEmpty && (
-        <div className="status-guidance-box">
+        <div className="status-guidance-box" aria-live="polite">
           <Info size={16} className="guidance-icon" />
           <p>{getFertilityGuidance()}</p>
         </div>

@@ -73,21 +73,16 @@ describe('TodayView Component (Dedicated Today Page)', () => {
     expect(screen.getByText('Observation saved successfully!')).toBeInTheDocument();
   });
 
-  it('allows toggling between Direct Code Only mode and Detailed Form mode', () => {
+  it('hides the group rows in Direct Code Only and shows them again', () => {
     renderTodayView();
-    const directModeBtn = screen.getByText('Direct Code Only');
-    const detailedModeBtn = screen.getByText('Detailed Form');
-
-    expect(directModeBtn).toBeInTheDocument();
-    expect(detailedModeBtn).toBeInTheDocument();
-
-    // Click Direct Code Only mode
-    fireEvent.click(directModeBtn);
-    expect(screen.getByText('Show Detailed Selectors')).toBeInTheDocument();
-
-    // Click Detailed Form mode
-    fireEvent.click(detailedModeBtn);
-    expect(screen.getByText('Bleeding (Flux)')).toBeInTheDocument();
+    const toggle = () => {
+      fireEvent.click(screen.getAllByRole('button', { name: 'Observation actions' })[0]!);
+      fireEvent.click(screen.getByRole('menuitemcheckbox', { name: 'Direct Code Only' }));
+    };
+    toggle();
+    expect(screen.queryByRole('button', { name: /^Bleeding/ })).toBeNull();
+    toggle();
+    expect(screen.getByRole('button', { name: /^Bleeding/ })).toBeInTheDocument();
   });
 
   it('opens the next day with a swipe to the left and the previous day with a swipe to the right', () => {

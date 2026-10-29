@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useShortcutHint } from '../../hooks/useKeyboardShortcuts';
 import type { Observation } from '../../types/crms';
 import { formatMessage } from '../../i18n';
-import { formatDateDisplay } from '../../utils/dateUtils';
+import { formatDateDisplay, getDaysDifference, getTodayStr } from '../../utils/dateUtils';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -55,6 +55,16 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   const formattedDateTitle = formatDateDisplay(selectedDate, t.locale);
   const shownCycleDay = currentObs?.cycleDay ?? cycleDay;
 
+  /** "Yesterday", "3 days ago", "Tomorrow" or "In 2 days" for a day that is not today. */
+  const relativeDay = () => {
+    const daysAgo = getDaysDifference(selectedDate, getTodayStr());
+    if (daysAgo === 1) return t.todayView.yesterday;
+    if (daysAgo === -1) return t.todayView.tomorrow;
+    return daysAgo > 0
+      ? formatMessage(t.todayView.daysAgo, { count: daysAgo })
+      : formatMessage(t.todayView.daysAhead, { count: -daysAgo });
+  };
+
   return (
     <div className="today-header-card compact-date-bar">
       <div className="compact-date-nav-controls">
@@ -103,6 +113,9 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
             {t.todayView.todayLabel}
           </span>
         ) : (
+          <span className="badge badge-secondary badge-sm">{relativeDay()}</span>
+        )}
+        {!isToday && (
           <button
             type="button"
             className="btn btn-xs btn-outline jump-today-btn"
