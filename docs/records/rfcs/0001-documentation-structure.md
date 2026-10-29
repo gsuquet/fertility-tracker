@@ -69,7 +69,7 @@ The current ADR 0001 and ADR 0002 move to `docs/records/adrs/`. They keep their 
 | Page type        | A record. It is not a Diátaxis page.                          | A record. It is not a Diátaxis page.                        |
 | After the merge  | The text changes only in an amendment. The status can change. | The text does not change. A new ADR can replace an old ADR. |
 
-The maintainer can decide in writing to amend a merged RFC. The amendment changes the text and adds an **Amended** line to the header, with the date and the reason. A coding agent never amends an RFC without this decision.
+The maintainer can decide in writing to amend a merged RFC. The amendment changes the text and adds an **Amended** line to the header, with the date and the reason. It does not change the status. A coding agent never amends an RFC without this decision.
 
 When the project accepts an RFC, the author writes a short ADR for each decision in the RFC. The ADR links to the RFC in its **More information** section. Thus, a reader finds all the decisions in `records/adrs/`.
 
@@ -268,13 +268,16 @@ The design work starts without a place for proposals and without layouts. The de
 
 ## Unresolved questions
 
-This RFC has no open questions. The discussion of this RFC answered these questions:
+This RFC has no open questions. The amendment answered the two questions of the first text:
+
+1. Does the project use frames? Answered: no. The project uses ARIA snapshots and screenshots ([ADR 0006](../adrs/0006-screen-layout-snapshots-and-screenshots.md)). Read [Screen pages](#screen-pages) and [Layout](#layout).
+2. What keeps the text in a frame equal to `src/i18n/locales/en.ts`? Answered: a test compares each screen with its snapshot. When a label changes, the test fails until the snapshot is updated ([ADR 0006](../adrs/0006-screen-layout-snapshots-and-screenshots.md)).
+
+The discussion of this RFC answered these questions:
 
 - ADR 0001 and ADR 0002 keep their text. Read [Folders](#folders).
 - A screen page does not need a line that marks it as the specification. All the pages in `reference/` are the specification. Read [Screen pages](#screen-pages).
 - `reference/user-interface.md` stays as the overview for users, with no copied rules. Read [Screen pages](#screen-pages).
-- The project uses ARIA snapshots and screenshots, not text frames. Read [Screen pages](#screen-pages) and [ADR 0006](../adrs/0006-screen-layout-snapshots-and-screenshots.md).
-- A test compares each screen with its snapshot, so a change of a label makes the test fail until the snapshot is updated. Read [ADR 0006](../adrs/0006-screen-layout-snapshots-and-screenshots.md).
 - Each screen must meet WCAG 2.2 level AA. Read [Screen pages](#screen-pages).
 
 ## Future possibilities

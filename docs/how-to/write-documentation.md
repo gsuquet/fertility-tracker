@@ -29,6 +29,7 @@ Use this procedure to add or change a page in `docs/`. The docs use Simplified T
 5. Open a pull request. For an RFC, use the title `docs(rfc): ...` and set the status to **Proposed**.
 6. For an RFC, wait for the written decision of the maintainer. Do not merge the pull request before this decision.
 7. After the merge of an accepted RFC, open a new pull request. In it, write a short ADR for each decision of the RFC. Set the status of each ADR to **Accepted**, and link it to the RFC in **More information**.
+8. To change a merged RFC, wait for the written decision of the maintainer to amend it. Then change the text and add an **Amended** line to the header, with the date and the reason. Do not change the status.
 
 ## Result
 
