@@ -80,14 +80,14 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 ## backupReminder.ts
 
-| Export                 | Signature                                                                             | Returns                                                                                                                                                                         |
-| ---------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `BACKUP_REMINDER_DAYS` | `number`                                                                              | `30`.                                                                                                                                                                           |
-| `BACKUP_SNOOZE_DAYS`   | `number`                                                                              | `7`.                                                                                                                                                                            |
-| `DEMO_ID_PREFIX`       | `string`                                                                              | `demo_`, the start of the id of a demo observation.                                                                                                                             |
-| `isUserObservation`    | `(obs: Observation) => boolean`                                                       | `true` if the observation is not demo data.                                                                                                                                     |
-| `hasUserObservations`  | `(observations: Observation[]) => boolean`                                            | `true` if one observation or more is not demo data.                                                                                                                             |
-| `isBackupDue`          | `(dates: BackupReminderDates, observations: Observation[], today: string) => boolean` | `true` if all these conditions are true: a day that is not demo data exists, and no snooze is active. Also, 30 days passed since the last backup or the first real observation. |
+| Export                 | Signature                                                                             | Returns                                                                                                                                    |
+| ---------------------- | ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `BACKUP_REMINDER_DAYS` | `number`                                                                              | `30`.                                                                                                                                      |
+| `BACKUP_SNOOZE_DAYS`   | `number`                                                                              | `7`.                                                                                                                                       |
+| `DEMO_ID_PREFIX`       | `string`                                                                              | `demo_`, the start of the id of a demo observation.                                                                                        |
+| `isUserObservation`    | `(obs: Observation) => boolean`                                                       | `true` if the observation is not demo data.                                                                                                |
+| `hasUserObservations`  | `(observations: Observation[]) => boolean`                                            | `true` if one observation or more is not demo data.                                                                                        |
+| `isBackupDue`          | `(dates: BackupReminderDates, observations: Observation[], today: string) => boolean` | `true` when: a day that is not demo data exists; no snooze is active; 30 days or more passed since `lastBackupDate`, else `reminderStart`. |
 
 ## backupImport.ts
 

@@ -76,7 +76,7 @@ These rules come from ASD-STE100 Simplified Technical English.
 | Write the names of buttons and fields in bold, as the screen shows them.                   | No      |
 | Put code, commands, file names and values in code format.                                  | No      |
 
-The docs check counts code in backticks as one word. It ignores code blocks and headings. It reads the text of each table cell.
+The docs check counts code in backticks as one word. It ignores code blocks and headings. It reads the text of each table cell. Use code format only for code, values and examples of words. Do not put a prose word in code format to pass the check.
 
 ## Words that are not approved
 
