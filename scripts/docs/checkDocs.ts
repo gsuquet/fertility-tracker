@@ -60,7 +60,7 @@ const NOT_APPROVED: Record<string, string> = {
 const CONTRACTION =
   /\b[A-Za-z]+n't\b|\b(?:it|that|there|what|here|let)'s\b|\b[A-Za-z]+'(?:re|ll|ve|d)\b/gi;
 
-/** Returns the prose of a Markdown file: paragraphs and list items, without code or tables. */
+/** Returns the prose of a Markdown file: paragraphs, list items and table cells, without code. */
 export function proseBlocks(markdown: string): ProseBlock[] {
   const blocks: ProseBlock[] = [];
   let current: ProseBlock | undefined;
@@ -79,7 +79,12 @@ export function proseBlocks(markdown: string): ProseBlock[] {
       continue;
     }
     if (inFence) continue;
-    if (line === '' || /^(#|\||<!--|---)/.test(line)) {
+    if (line.startsWith('|')) {
+      flush();
+      if (!/^\|[\s:|-]+\|$/.test(line)) blocks.push(...tableCells(line, index + 1));
+      continue;
+    }
+    if (line === '' || /^(#|<!--|---)/.test(line)) {
       flush();
       continue;
     }
@@ -97,6 +102,16 @@ export function proseBlocks(markdown: string): ProseBlock[] {
   flush();
 
   return blocks.map(block => ({ ...block, text: plainText(block.text) }));
+}
+
+/** Returns the cells of one table row that have text. A pipe with a backslash stays in its cell. */
+function tableCells(row: string, line: number): ProseBlock[] {
+  return row
+    .replace(/^\||\|$/g, '')
+    .split(/(?<!\\)\|/)
+    .map(cell => cell.trim())
+    .filter(cell => cell !== '')
+    .map(text => ({ line, text, step: false }));
 }
 
 function plainText(text: string): string {

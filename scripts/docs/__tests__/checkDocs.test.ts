@@ -15,19 +15,36 @@ import {
 const messages = (findings: { message: string }[]) => findings.map(f => f.message);
 
 describe('proseBlocks', () => {
-  it('skips code blocks, tables, headings and comments', () => {
+  it('skips code blocks, headings and comments', () => {
     const md = [
       '# Title',
       '',
       '```bash',
       'this is code and never prose.',
-      '```',
-      '',
       '| a | b |',
+      '```',
       '<!-- note -->',
       'A real sentence.',
     ].join('\n');
-    expect(proseBlocks(md)).toEqual([{ line: 9, text: 'A real sentence.', step: false }]);
+    expect(proseBlocks(md)).toEqual([{ line: 8, text: 'A real sentence.', step: false }]);
+  });
+
+  it('reads each table cell with text, but not the separator row', () => {
+    const md = [
+      'Before the table.',
+      '| Name | Rule |',
+      '| :--- | ---: |',
+      '| `a \\| b` | One cell. |',
+      '|      | Empty name. |',
+    ].join('\n');
+    expect(proseBlocks(md)).toEqual([
+      { line: 1, text: 'Before the table.', step: false },
+      { line: 2, text: 'Name', step: false },
+      { line: 2, text: 'Rule', step: false },
+      { line: 4, text: 'CODE', step: false },
+      { line: 4, text: 'One cell.', step: false },
+      { line: 5, text: 'Empty name.', step: false },
+    ]);
   });
 
   it('joins wrapped lines and marks numbered steps', () => {
@@ -48,6 +65,18 @@ describe('proseBlocks', () => {
 describe('checkProse', () => {
   const longSentence = (words: number) =>
     `${Array.from({ length: words }, () => 'word').join(' ')}.`;
+
+  it('checks the words and the sentences of a table cell, but not its code', () => {
+    const md = [
+      '| Word | Note | Text |',
+      '| --- | --- | --- |',
+      `| \`should\` | Utilize it. | ${longSentence(26)} |`,
+    ].join('\n');
+    expect(checkProse(md)).toEqual([
+      { line: 3, message: 'Do not use "utilize". Use "use".' },
+      { line: 3, message: 'Sentence has 26 words. The limit for descriptive text is 25.' },
+    ]);
+  });
 
   it('accepts a descriptive sentence of 25 words', () => {
     expect(checkProse(longSentence(25))).toEqual([]);

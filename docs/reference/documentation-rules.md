@@ -64,7 +64,7 @@ These rules come from ASD-STE100 Simplified Technical English.
 | Write a maximum of 20 words in a sentence of a procedure step.                             | Yes     |
 | Write a maximum of 25 words in a descriptive sentence.                                     | Yes     |
 | Write a maximum of 6 sentences in a paragraph.                                             | Yes     |
-| Do not use contractions. Write "do not", not "don't".                                      | Yes     |
+| Do not use contractions. Write "do not", not `don't`.                                      | Yes     |
 | Use only the approved words in the table below.                                            | Yes     |
 | Write one instruction in each sentence.                                                    | No      |
 | Use the imperative in an instruction: "Click **Save Observation**."                        | No      |
@@ -76,31 +76,31 @@ These rules come from ASD-STE100 Simplified Technical English.
 | Write the names of buttons and fields in bold, as the screen shows them.                   | No      |
 | Put code, commands, file names and values in code format.                                  | No      |
 
-The docs check counts code in backticks as one word. It ignores code blocks, tables and headings.
+The docs check counts code in backticks as one word. It ignores code blocks and headings. It reads the text of each table cell.
 
 ## Words that are not approved
 
-| Do not use             | Use                   |
-| ---------------------- | --------------------- |
-| approximately          | about                 |
-| commence               | start                 |
-| comprehensive          | full                  |
-| could                  | can                   |
-| e.g.                   | for example           |
-| easily, simply, please | the instruction only  |
-| ensure, ensures        | make sure, makes sure |
-| etc.                   | a full list           |
-| i.e.                   | that is               |
-| in order to            | to                    |
-| leverage, utilize      | use                   |
-| might                  | can                   |
-| numerous               | many                  |
-| prior to               | before                |
-| robust, seamless       | a specific word       |
-| should                 | must                  |
-| terminate              | stop                  |
-| via                    | through               |
-| whilst                 | while                 |
+| Do not use               | Use                   |
+| ------------------------ | --------------------- |
+| `approximately`          | about                 |
+| `commence`               | start                 |
+| `comprehensive`          | full                  |
+| `could`                  | can                   |
+| `e.g.`                   | for example           |
+| `easily, simply, please` | the instruction only  |
+| `ensure, ensures`        | make sure, makes sure |
+| `etc.`                   | a full list           |
+| `i.e.`                   | that is               |
+| `in order to`            | to                    |
+| `leverage, utilize`      | use                   |
+| `might`                  | can                   |
+| `numerous`               | many                  |
+| `prior to`               | before                |
+| `robust, seamless`       | a specific word       |
+| `should`                 | must                  |
+| `terminate`              | stop                  |
+| `via`                    | through               |
+| `whilst`                 | while                 |
 
 The list is in `scripts/docs/checkDocs.ts`. Add a word to the list and to this table at the same time.
 
