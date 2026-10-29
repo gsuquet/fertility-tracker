@@ -21,23 +21,23 @@ This page gives the rules for the state of the application and the data in the b
 
 [storageKeys.ts](../../src/utils/storageKeys.ts) defines each key one time. All modules import the keys from this file.
 
-| Constant                            | Key                                       | Content                                                                                                             |
-| ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`             | All observations                                                                                                    |
-| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery`    | Copy of saved data that is not readable                                                                             |
-| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`        | Copy before the last replacing change                                                                               |
-| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup, `YYYY-MM-DD`                                                                          |
-| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder, `YYYY-MM-DD`                                                                     |
-| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze, `YYYY-MM-DD`                                                                       |
-| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                              |
-| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                            |
-| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | Last entry mode of the Today page                                                                                   |
-| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                                                                                   |
-| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                                                                                   |
-| `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it                                                       |
-| `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off ([Keyboard shortcuts](../../SPEC.md#514-keyboard-shortcuts)) |
-| `STORAGE_BADGE_ON_KEY`              | `fertility_tracker_badge_on`              | `true` when the user turned the app icon badge on ([App icon badge](../../SPEC.md#516-app-icon-badge))              |
-| `STORAGE_HAPTICS_OFF_KEY`           | `fertility_tracker_haptics_off`           | `true` when the user turned the vibrations off ([Haptic feedback](../../SPEC.md#517-haptic-feedback))               |
+| Constant                            | Key                                       | Content                                                                                                                   |
+| ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------------- |
+| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`             | All observations                                                                                                          |
+| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery`    | Copy of saved data that is not readable                                                                                   |
+| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`        | Copy before the last replacing change                                                                                     |
+| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup, `YYYY-MM-DD`                                                                                |
+| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder, `YYYY-MM-DD`                                                                           |
+| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze, `YYYY-MM-DD`                                                                             |
+| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                                    |
+| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                                  |
+| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | Last entry mode of the Today page                                                                                         |
+| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                                                                                         |
+| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                                                                                         |
+| `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it                                                             |
+| `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off ([Keyboard shortcuts](application-behavior.md#keyboard-shortcuts)) |
+| `STORAGE_BADGE_ON_KEY`              | `fertility_tracker_badge_on`              | `true` when the user turned the app icon badge on ([App icon badge](application-behavior.md#app-icon-badge))              |
+| `STORAGE_HAPTICS_OFF_KEY`           | `fertility_tracker_haptics_off`           | `true` when the user turned the vibrations off ([Haptic feedback](application-behavior.md#haptic-feedback))               |
 
 ## Storage format
 

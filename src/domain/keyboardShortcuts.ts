@@ -1,4 +1,4 @@
-/** The actions that a key can start. See SPEC 5.14. */
+/** The actions that a key can start. See docs/reference/application-behavior.md. */
 export type ShortcutId =
   | 'today'
   | 'chart'

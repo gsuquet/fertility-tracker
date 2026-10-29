@@ -46,6 +46,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Stamp and Peak Day rules](reference/stamp-and-peak-rules.md)
 - [Cycle and phase rules](reference/cycle-and-phase-rules.md)
 - [User interface](reference/user-interface.md)
+- [Application behavior](reference/application-behavior.md)
 - [Data format](reference/data-format.md)
 - [Data storage](reference/data-storage.md)
 
