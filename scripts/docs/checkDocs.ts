@@ -25,7 +25,7 @@ const MAX_PARAGRAPH_SENTENCES = 6;
 
 const DIATAXIS_FOLDERS = ['tutorials', 'how-to', 'reference', 'explanation'];
 const PROCEDURE_FOLDERS = ['tutorials', 'how-to'];
-const RECORD_FOLDERS = ['adr', 'records/rfcs', 'records/adrs'];
+const RECORD_FOLDERS = ['records/rfcs', 'records/adrs'];
 
 /** Words that STE does not approve, with the approved word to use. */
 const NOT_APPROVED: Record<string, string> = {
@@ -249,7 +249,7 @@ export function checkDiataxis(root: string): Finding[] {
     }
     if (!DIATAXIS_FOLDERS.includes(folder) && !RECORD_FOLDERS.includes(recordFolder)) {
       report(
-        'Put the page in tutorials, how-to, reference or explanation. Put a record in adr, records/rfcs or records/adrs.'
+        'Put the page in tutorials, how-to, reference or explanation. Put a record in records/rfcs or records/adrs.'
       );
     }
     if (!indexed.has(file)) report('docs/README.md does not link to this page.');

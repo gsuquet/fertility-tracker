@@ -72,5 +72,9 @@ Records are not Diátaxis pages. An RFC proposes a large change before the work 
 
 - [RFC template](records/rfcs/0000-template.md)
 - [RFC 0001: Documentation structure, records and screen frames](records/rfcs/0001-documentation-structure.md)
-- [ADR 0001: Automatic backup and synchronization with zero-knowledge privacy](adr/0001-automated-backup-and-sync-privacy.md)
-- [ADR 0002: CSS in cascade layers with a shared design system](adr/0002-css-maintainability-design-system.md)
+- [ADR template](records/adrs/0000-template.md)
+- [ADR 0001: Automatic backup and synchronization with zero-knowledge privacy](records/adrs/0001-automated-backup-and-sync-privacy.md)
+- [ADR 0002: CSS in cascade layers with a shared design system](records/adrs/0002-css-maintainability-design-system.md)
+- [ADR 0003: Records for proposals and decisions](records/adrs/0003-records-for-proposals-and-decisions.md)
+- [ADR 0004: Specification in reference pages](records/adrs/0004-specification-in-reference-pages.md)
+- [ADR 0005: Accessibility level of the screens](records/adrs/0005-accessibility-level.md)
