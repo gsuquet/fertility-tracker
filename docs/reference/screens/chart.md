@@ -25,7 +25,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)                   | A filled cell, an empty day cell or a blank grid cell. Each cell is a native `<button type="button">`.     |
 | [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx)     | Details of a filled cell: code, bleeding, stretch, modifiers, intercourse and notes.                       |
 - Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows a minimum of 35 cells. A longer cycle adds cells in groups of 7. **Compact Strip** shows only the recorded days.
-- Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark. A saved day with no bleeding, mucus or frequency code shows the empty stamp.
+- Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark. A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 - Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
 - When the chart opens, the row of the current cycle shows today near the middle of its scroll area. Late in the cycle, the row stops at its end. The current cycle is the newest cycle, when today is on or after its start date.
   - If today has no cell, the row opens at its end. For example, today is after the last cell of the grid, or has no observation in **Compact Strip**.
