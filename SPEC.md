@@ -16,12 +16,7 @@ This document is the full specification of the application. Change it before you
 3. [Domain rules](#3-domain-rules)
 4. [Data types](#4-data-types)
 5. [User interface](#5-user-interface)
-   - [5.1 Navigation and dialogs](#51-navigation-and-dialogs)
-   - [5.2 Statistics bar](#52-statistics-bar)
-   - [5.3 Today page](#53-today-page)
-   - [5.4 Paper Chart Strip page](#54-paper-chart-strip-page)
-   - [5.5 Monthly Calendar page](#55-monthly-calendar-page)
-   - [5.6 Cycle Analytics page](#56-cycle-analytics-page)
+   - [5.1 to 5.6 Navigation, dialog component and pages](#51-to-56-navigation-dialog-component-and-pages)
    - [5.7 Observation drawer](#57-observation-drawer)
    - [5.8 Export, backup and print](#58-export-backup-and-print)
    - [5.9 Version dialog](#59-version-dialog)
@@ -127,158 +122,9 @@ The types are in [Data format](docs/reference/data-format.md#typescript-types).
 
 ## 5. User interface
 
-The application has four pages, a header, a statistics bar, an observation drawer and dialogs. A phone screen is 640 pixels wide or less.
+### 5.1 to 5.6 Navigation, dialog component and pages
 
-### 5.1 Navigation and dialogs
-
-| Part                                                         | Wide screen                                                                                                                                                                            | Phone screen                                                                                                          |
-| ------------------------------------------------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| Header ([Header.tsx](src/components/Header.tsx))             | Logo, page tabs, cycle picker, **Log Observation**, export, guide, version, language (`en`, `fr`) and theme buttons. The header is 68 pixels high, and the buttons are 42 pixels high. | Logo (sprout), cycle picker and a menu button (`⋮`). The buttons are 38 pixels high. The other buttons are in a menu. |
-| Page buttons ([MobileNav.tsx](src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | Fixed at the bottom, with a **+** button for a new observation                                                        |
-| Dialogs                                                      | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer           |
-| Footer ([Footer.tsx](src/components/Footer.tsx))             | Legal text, **Install app** (when the browser can install the application), **User Guide** button and version button. Not in the installed application.                                | The copyright and the buttons are on separate lines. Not in the installed application.                                |
-- The phone menu (`aria-label="Mobile Navigation Menu"`) uses the dialog component below. It opens from the bottom of the screen.
-- The page selector is a `role="tablist"` element. Each tab has `aria-controls` that points to the `role="tabpanel"` element of its page.
-- Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
-- The cycle menu of [CyclePicker.tsx](src/components/CyclePicker.tsx) uses the dialog component below (`aria-label="Filter Cycle View"`). Its list of cycles is a `role="listbox"` element. On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
-- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only. When it opens, the focus goes to the selected cycle.
-- On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it (section 5.7). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
-- The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([Back button and address](docs/reference/application-behavior.md#back-button-and-address)).
-
-[Modal.tsx](src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, `InstallGuideModal`, `KeyboardShortcutsModal`, `ErrorBoundary`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
-
-| Function       | Rule                                                                                                                                                                 |
-| -------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Element        | A native `<dialog>` in a portal on `document.body`, opened with `showModal()`. The browser makes the page under it inert.                                            |
-| Name           | `aria-modal="true"`, and a name from `aria-labelledby` (the title) or `aria-label`.`aria-describedby` is optional.                                                   |
-| First focus    | The element of `initialFocusRef`, else the first element that can get the focus. The `<dialog>` itself does not scroll to it.                                        |
-| Focus trap     | `Tab` on the last element goes to the first. `Shift+Tab` on the first goes to the last.                                                                              |
-| Two dialogs    | The dialog on top keeps the focus. The dialog under it ignores the keys.                                                                                             |
-| `Escape`       | Calls `onClose` of the top dialog only. The event does not go to the dialog under it or to the document.                                                             |
-| `cancel` event | Calls `onClose`. It does not close the `<dialog>` itself, so React state always controls the dialog.                                                                 |
-| Backdrop       | A click on the `<dialog>` outside the panel calls `onClose`. A click in the panel does not.                                                                          |
-| Back           | **Back** calls `onClose` of the top dialog only, with `useHistoryLayer` ([Back button and address](docs/reference/application-behavior.md#back-button-and-address)). |
-| Focus return   | On close, it calls `close()`, then moves the focus back to the element that had it before.                                                                           |
-| Listeners      | `keydown` and `click` are native listeners on the `<dialog>`. Thus, they also get events from portals, such as the undo message.                                     |
-| Scroll area    | A body that scrolls is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).                                                                      |
-
-`useTopDialog()` gives the open `<dialog>` on top, or `null`. `showModal()` makes all the page outside the dialog inert, also a `popover` element. Thus, while a dialog is open, `UndoToast` goes into the top dialog with a portal.
-
-- In a dialog, the undo message stays visible, and **Undo** and **Delete the copy** stay available. The focus trap includes them.
-- After **Undo** or **Delete the copy** in a dialog, the focus goes to the top dialog. When the dialog closes, the message goes back to the page.
-- In the phone menu, the undo message shows at the top of the screen. Thus, it does not cover the menu.
-
-### 5.2 Statistics bar
-
-**Module:** [src/components/CycleStatsHeader.tsx](src/components/CycleStatsHeader.tsx)
-
-The bar shows four cards for the selected cycle, or for all cycles:
-
-| Card                  | One cycle                                    | All cycles                                                         |
-| --------------------- | -------------------------------------------- | ------------------------------------------------------------------ |
-| Cycle Length          | Number of observations                       | Average number of observations per cycle (`stats.averageDays`)     |
-| Estimated Peak Day    | Cycle day and date of the Peak Day, or `---` | The Peak Day of the newest cycle that has one, or `---`            |
-| Luteal Phase Count    | Days after the Peak Day                      | Average of the cycles with a Peak Day. Without a Peak Day: 0 days. |
-| Intercourse Frequency | Days with `I`                                | Days with `I` in all cycles                                        |
-
-On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics** page.
-
-### 5.3 Today page
-
-**Module:** [src/components/TodayView.tsx](src/components/TodayView.tsx)
-
-| Part                                                                                  | Content                                                                                                                                           |
-| ------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [TodayDateNav.tsx](src/components/today/TodayDateNav.tsx)                             | Previous and next day, date picker, date, and status: today, cycle day, recorded or not.                                                          |
-| [TodayObservationForm.tsx](src/components/today/TodayObservationForm.tsx)             | **Direct Code Only** or **Detailed Form** mode, the code buttons, intercourse, peak, notes, save and delete.                                      |
-| [ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) | The code buttons. The drawer uses the same component (section 5.7).                                                                               |
-| [TodayFertilityGuidance.tsx](src/components/today/TodayFertilityGuidance.tsx)         | Stamp preview, code and a guidance text. A banner on a screen of 900 pixels or less, else a card.                                                 |
-| [TodayHistoryList.tsx](src/components/today/TodayHistoryList.tsx)                     | The selected date and the 4 days before it, in three columns: date, stamp and code. A click selects that date. A long code ends with an ellipsis. |
-- The entry mode selector is a `role="radiogroup"` with two native radio inputs (`name="entry-mode"`). Each input is in a `<label>`, and the arrow keys move between them.
-- The application saves the last entry mode in `fertility_care_entry_mode`.
-- A save or a delete shows a message (`role="status"`). The message closes 3 seconds after the last save or delete. The page stops the timer when it unmounts.
-
-#### Swipe between days
-
-On a touch screen, a swipe on the **Today** page changes the day. The hook [useDaySwipe.ts](src/hooks/useDaySwipe.ts) uses Pointer Events of `touch` and `pen` type only. Thus, a mouse does not swipe, and the arrow buttons stay for the keyboard and the desktop.
-
-- A swipe to the left opens the next day. A swipe to the right opens the previous day. The swipe calls the same functions as the arrow buttons, with the same rules.
-- [swipe.ts](src/domain/swipe.ts) decides at the release:
-  - The angle of the swipe must be less than 30 degrees from horizontal.
-  - The swipe must be longer than 60 pixels, or a fast flick: at least 0.5 pixels per millisecond over at least 24 pixels.
-- The page has `touch-action: pan-y pinch-zoom`. Thus, a vertical drag scrolls the page and the browser cancels the swipe. A vertical drag never changes the day.
-- These swipes do nothing:
-  - A swipe that starts in an input, a text area, a select or an element that scrolls horizontally.
-  - A swipe that starts less than 20 pixels from the left or right edge of the screen. The back and forward gestures of iOS use these edges.
-  - A swipe that starts its move with an angle of 30 degrees or more from horizontal.
-  - A swipe in a dialog of the page, for example **New Cycle Start?**. React sends the events of a portal to the page, so the hook ignores a target outside the page.
-  - A swipe on a zoomed page. The page then has `touch-action: auto`, so that the finger can pan the zoomed page in all directions.
-- After a swipe, the hook blocks the next click for 100 milliseconds. Thus, a swipe that starts on a button does not also press it. A tap that moves a little is not a swipe, so its click stays.
-- A second swipe during the slide first applies the day change of the first swipe. Thus, two fast swipes move two days.
-- During the swipe, the main grid follows the finger by 40% of the move. After a swipe, the grid slides out in the swipe direction in 150 milliseconds. Then the day changes, and the grid slides in from the other side. Else the grid goes back.
-- With `prefers-reduced-motion: reduce`, the grid does not move. The day changes at the release.
-
-### 5.4 Paper Chart Strip page
-
-**Module:** [src/components/ChartRow.tsx](src/components/ChartRow.tsx)
-
-| Part                                                                  | Content                                                                                                    |
-| --------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------- |
-| [ChartToolbar.tsx](src/components/chart/ChartToolbar.tsx)             | Title, grid mode, phase bar and legend buttons. An empty chart shows only the title and the legend button. |
-| [ChartLegend.tsx](src/components/chart/ChartLegend.tsx)               | The stamp legend.                                                                                          |
-| [ChartBlankGrid.tsx](src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each cell opens a new observation.                 |
-| [ChartCycleRow.tsx](src/components/chart/ChartCycleRow.tsx)           | One cycle: number, dates, length, Peak Day, scroll and jump buttons, phase bar and cells.                  |
-| [ChartPhaseTimeline.tsx](src/components/chart/ChartPhaseTimeline.tsx) | The phase bar above the cells of a cycle.                                                                  |
-| [ChartCell.tsx](src/components/chart/ChartCell.tsx)                   | A filled cell, an empty day cell or a blank grid cell. Each cell is a native `<button type="button">`.     |
-| [ChartCellPopover.tsx](src/components/chart/ChartCellPopover.tsx)     | Details of a filled cell: code, bleeding, stretch, modifiers, intercourse and notes.                       |
-- Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows a minimum of 35 cells. A longer cycle adds cells in groups of 7. **Compact Strip** shows only the recorded days.
-- Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark.
-- Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
-- When the chart opens, the row of the current cycle shows today near the middle of its scroll area. Late in the cycle, the row stops at its end. The current cycle is the newest cycle, when today is on or after its start date.
-  - If today has no cell, the row opens at its end. For example, today is after the last cell of the grid, or has no observation in **Compact Strip**.
-  - The row sets `scrollLeft` at once, before the browser paints. There is no smooth scroll, and the page does not scroll vertically.
-  - A change of the grid mode puts today in view again.
-  - The rows of past cycles open at day 1.
-- A click, `Enter` or `Space` on a cell opens the observation drawer. The user sets or removes the manual Peak Day there with **Designate Peak Day (P)**.
-- The details show when the mouse is on a filled cell or when the cell has the focus. Each cell has its own hover state, so a hover does not render other cells again.
-- Two details can show at the same time: one on the cell with the focus and one under the mouse.
-- Today has a 2-pixel accent border, a `TODAY` label (`.cell-today-pill`) and `aria-current="date"`. This applies to filled cells and empty cells. The date of today comes from `getTodayStr()`.
-
-### 5.5 Monthly Calendar page
-
-**Module:** [src/components/CalendarGrid.tsx](src/components/CalendarGrid.tsx)
-
-- The grid shows one month. Each day shows its stamp, its code and the intercourse mark.
-- A click on a day opens the observation drawer for that date. Days after today are disabled.
-- The next-month button is disabled in the current month. Thus, the user cannot go to a month after the current month.
-- Today (`.calendar-day.is-today`) has a 2-pixel accent border, an `--accent-soft` background, a round day number and `aria-current="date"`. The date of today comes from `getTodayStr()`.
-- Text uses the theme tokens `--text-primary` and `--text-secondary`. Thus, it is readable in the dark theme.
-- On a phone, a long code goes onto more lines and the day cell becomes taller. The code is never cut.
-
-#### Swipe between months
-
-On a touch screen, a swipe on the calendar changes the month. It uses the hook of the **Today** page, [useDaySwipe.ts](src/hooks/useDaySwipe.ts), with the same rules (section 5.3), and these differences:
-
-- A swipe to the left opens the next month. A swipe to the right opens the previous month. The swipe calls the same functions as the arrow buttons.
-- In the current month, a swipe to the left does nothing, as the disabled next-month button. The grid goes back, and the click after the swipe is blocked.
-- The days grid follows the finger and slides. The header with the month name and the buttons stays in place.
-- The calendar has `touch-action: pan-y pinch-zoom`. Thus, a vertical drag scrolls the page and never changes the month.
-
-### 5.6 Cycle Analytics page
-
-**Module:** [src/components/CycleAnalyticsView.tsx](src/components/CycleAnalyticsView.tsx)
-
-| Section                          | Content                                                                                                                                                                                                 |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md), as bars.                                                                                   |
-| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.                                                                                                                                     |
-| Creighton Mucus Score Trend      | One bar for each day, with its [mucus score](docs/reference/cycle-and-phase-rules.md#mucus-score). Dry bars are dark green, fertile bars (score 6 or more) use the accent and the Peak Day bar is pink. |
-| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count.                                                                                                                               |
-| Creighton Mucus Score guide      | A short explanation of the score.                                                                                                                                                                       |
-- Before the Peak Day, the page shows "in progress" after the follicular value.
-- Luteal phase health is "Normal" from 9 to 17 days. Above 0 and below 9 days, or above 17 days, it is "Short/Extended". The value of all cycles is an average and can have decimals. At 0 days, it is "Pending Peak Day".
-- The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on a narrow screen. It is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).
-- Without observations, the page shows an empty state with `id="analytics-panel"`.
+These rules are in [Navigation](docs/reference/screens/navigation.md), [Dialog component](docs/reference/dialog-component.md), [Statistics bar](docs/reference/screens/statistics-bar.md), [Today page](docs/reference/screens/today.md), [Paper Chart Strip page](docs/reference/screens/chart.md), [Monthly Calendar page](docs/reference/screens/calendar.md) and [Cycle Analytics page](docs/reference/screens/analytics.md).
 
 ### 5.7 Observation drawer
 
@@ -296,7 +142,7 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 
 #### Drag down to close
 
-On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets (section 5.1). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
+On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets ([Navigation](docs/reference/screens/navigation.md)). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
 
 The rules below apply to all these sheets. The body is the part that scrolls. It is the form of the drawer, the list of a menu, or the body of a dialog.
 

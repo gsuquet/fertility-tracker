@@ -182,4 +182,6 @@ If a page or a dialog cannot load, the application shows the message **This part
 
 ## Related documents
 
+- [Navigation](screens/navigation.md), [Today page](screens/today.md), [Paper Chart Strip page](screens/chart.md), [Monthly Calendar page](screens/calendar.md) and [Cycle Analytics page](screens/analytics.md): the rules of each screen, for contributors
+- [Application behavior](application-behavior.md)
 - [Record an observation](../how-to/record-an-observation.md)

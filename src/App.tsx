@@ -250,7 +250,7 @@ const MainApp: React.FC = () => {
         <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
         <CycleStatsHeader />
 
-        {/* The page slides on a page change, see docs/reference/application-behavior.md */}
+        {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
         <div className="page-view">
           {/* The key resets the alert of a failed page when the tab changes */}
           <ErrorBoundary key={activeTab}>
