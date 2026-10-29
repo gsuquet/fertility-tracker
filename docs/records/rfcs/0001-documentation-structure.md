@@ -1,7 +1,7 @@
 # RFC 0001: Documentation structure, records and screen frames
 
 - **Start date:** 2026-10-28
-- **Status:** Accepted
+- **Status:** Completed
 - **Author:** Gabriel
 - **Pull request:** [#100](https://github.com/gsuquet/fertility-tracker/pull/100)
 

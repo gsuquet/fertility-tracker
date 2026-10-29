@@ -40,7 +40,7 @@ fertility-tracker/
 │   ├── App.tsx                  # Application layout
 │   └── main.tsx                 # Entry point
 ├── AGENTS.md                    # Rules for AI coding agents
-├── SPEC.md                      # Full specification
+├── SPEC.md                      # Index of the specification
 ├── biome.json                   # Linter and formatter settings
 ├── package.json                 # Dependencies and npm scripts
 ├── playwright.config.ts         # End-to-end test settings: browser and web server

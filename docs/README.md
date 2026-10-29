@@ -79,7 +79,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Commit messages](reference/commit-messages.md)
 - [Deployment](reference/deployment.md)
 - [Legal and medical limits](reference/legal-and-medical-limits.md)
-- [Full specification (SPEC.md)](../SPEC.md)
+- [Specification index (SPEC.md)](../SPEC.md)
 
 ## Explanation
 

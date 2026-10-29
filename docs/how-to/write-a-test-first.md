@@ -5,7 +5,7 @@ Use this procedure to change the behavior of the application with test-driven de
 ## Before you start
 
 - Install the tools and the dependencies. Read [Install and run locally](install-and-run-locally.md).
-- Write the change in `SPEC.md` first. Read [Release a new version](release-a-new-version.md).
+- Write the change in its reference page first. [SPEC.md](../../SPEC.md) gives the page of each source file. Read [Release a new version](release-a-new-version.md).
 
 ## Procedure
 

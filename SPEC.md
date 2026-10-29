@@ -1,29 +1,10 @@
 # Fertility Tracker specification
 
-- **Document version:** 1.32.0
-- **Status:** Approved
-- **Last updated:** October 28, 2026
 - **Repository:** [github.com/gsuquet/fertility-tracker](https://github.com/gsuquet/fertility-tracker)
 
-This document is the full specification of the application. Change it before you change the code. The [docs](docs/README.md) give the same rules for users and contributors.
+This page is the index of the specification. The specification is the set of pages in [docs/reference/](docs/README.md#reference). Change the page of a rule before you change the code ([ADR 0004](docs/records/adrs/0004-specification-in-reference-pages.md)).
 
-## Table of contents
-
-1. [Summary](#1-summary)
-2. [Architecture and technology](#2-architecture-and-technology)
-3. [Domain rules](#3-domain-rules)
-4. [Data types](#4-data-types)
-5. [User interface](#5-user-interface)
-   - [5.1 to 5.6 Navigation, dialog component and pages](#51-to-56-navigation-dialog-component-and-pages)
-   - [5.7 to 5.11 Drawer, dialogs and error screen](#57-to-511-drawer-dialogs-and-error-screen)
-   - [5.12 to 5.18 Application behavior](#512-to-518-application-behavior)
-6. [State and data storage](#6-state-and-data-storage)
-7. [Languages and design system](#7-languages-and-design-system)
-8. [Tests and quality](#8-tests-and-quality)
-9. [Deployment and CI](#9-deployment-and-ci)
-10. [Privacy, trademarks and medical limits](#10-privacy-trademarks-and-medical-limits)
-
-## 1. Summary
+## Summary
 
 Fertility Tracker is a web application to chart fertility signs with the Creighton Model FertilityCare™ System (CrMS). The user records bleeding and cervical mucus each day with the standard CrMS codes.
 
@@ -36,48 +17,45 @@ The application does not predict fertile days from a calendar. It uses only the 
 | Privacy        | All data stays in the browser. There is no server database, no account and no tracking.  |
 | Export         | The user can print a 35-day chart, save it as a PDF file, and back up the data as JSON.  |
 
-## 2. Architecture and technology
+## Page of each source file
 
-These rules are in [Technology](docs/reference/technology.md). The folders are in [Project structure](docs/reference/project-structure.md).
+Find the file or the folder that you change. Then change its page first.
 
-## 3. Domain rules
+| Source                                                                                                   | Page                                                                   |
+| -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
+| `src/domain/codeParser.ts`                                                                               | [Observation codes](docs/reference/observation-codes.md)               |
+| `src/domain/stampCalculator.ts`, `src/domain/peakDetector.ts`                                            | [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md)     |
+| `src/domain/cycleBoundaryDetector.ts`, `src/domain/cyclePhases.ts`, `src/domain/mucusScore.ts`           | [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md)       |
+| `src/domain/versionTracker.ts`, `src/domain/appVersion.ts`                                               | [Version tracker](docs/reference/version-tracker.md)                   |
+| The other files in `src/domain/`                                                                         | [Domain API](docs/reference/domain-api.md)                             |
+| `src/types/crms.ts`                                                                                      | [Data format](docs/reference/data-format.md)                           |
+| `src/context/`, `src/utils/storage.ts`, `src/utils/storageKeys.ts`                                       | [Data storage](docs/reference/data-storage.md)                         |
+| `src/i18n/`                                                                                              | [Languages](docs/reference/languages.md)                               |
+| `src/styles/`, `src/components/icons/`, `src/components/StampBadge.tsx`                                  | [Design system](docs/reference/design-system.md)                       |
+| `src/components/Modal.tsx`                                                                               | [Dialog component](docs/reference/dialog-component.md)                 |
+| `src/components/Header.tsx`, `Footer.tsx`, `MobileNav.tsx`, `CyclePicker.tsx`                            | [Navigation](docs/reference/screens/navigation.md)                     |
+| `src/components/CycleStatsHeader.tsx`                                                                    | [Statistics bar](docs/reference/screens/statistics-bar.md)             |
+| `src/components/TodayView.tsx`, `src/components/today/`                                                  | [Today page](docs/reference/screens/today.md)                          |
+| `src/components/ChartRow.tsx`, `src/components/chart/`                                                   | [Paper Chart Strip page](docs/reference/screens/chart.md)              |
+| `src/components/CalendarGrid.tsx`                                                                        | [Monthly Calendar page](docs/reference/screens/calendar.md)            |
+| `src/components/CycleAnalyticsView.tsx`                                                                  | [Cycle Analytics page](docs/reference/screens/analytics.md)            |
+| `src/components/ObservationDrawer.tsx`, `src/components/observation/`                                    | [Observation drawer](docs/reference/screens/observation-drawer.md)     |
+| `src/components/ExportModal.tsx`, `PrintExportView.tsx`, `ConfirmDialog.tsx`, `src/utils/exportUtils.ts` | [Export dialog](docs/reference/screens/export-dialog.md)               |
+| `src/components/VersionModal.tsx`                                                                        | [Version dialog](docs/reference/screens/version-dialog.md)             |
+| `src/components/WelcomeModal.tsx`                                                                        | [Welcome guide](docs/reference/screens/welcome-guide.md)               |
+| `src/components/ErrorBoundary.tsx`                                                                       | [Error screen](docs/reference/screens/error-screen.md)                 |
+| `src/components/LegalNotice.tsx`                                                                         | [Legal and medical limits](docs/reference/legal-and-medical-limits.md) |
+| `src/App.tsx`, `src/hooks/`, `src/pwa/` and the other files in `src/components/` and `src/utils/`        | [Application behavior](docs/reference/application-behavior.md)         |
+| `src/sw/`, `public/`, `index.html`, `scripts/pwa/`, `wrangler.json`                                      | [Deployment](docs/reference/deployment.md)                             |
+| `package.json`, `vite.config.ts`, `src/main.tsx`, `src/vite-env.d.ts`                                    | [Technology](docs/reference/technology.md)                             |
+| `tsconfig.json`, `biome.json`, `.node-version`, `.npmrc`, `.mise/config.toml`, `.pre-commit-config.yaml` | [Technology](docs/reference/technology.md)                             |
+| `e2e/`, `playwright.config.ts`, `src/test/`, `src/setupTests.ts` and the `__tests__` folders             | [Test rules and helpers](docs/reference/test-rules.md)                 |
+| `.mise/tasks/`, `.github/workflows/`                                                                     | [Commands](docs/reference/commands.md)                                 |
+| `scripts/commits/`, `.github/dependabot.yml`                                                             | [Commit messages](docs/reference/commit-messages.md)                   |
+| `docs/`, `scripts/docs/`, `README.md`, `AGENTS.md`, `SPEC.md`                                            | [Documentation rules](docs/reference/documentation-rules.md)           |
 
-These rules are in [Observation codes](docs/reference/observation-codes.md), [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md), [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md), [Domain API](docs/reference/domain-api.md) and [Version tracker](docs/reference/version-tracker.md).
+When a page does not give a rule, read [Project structure](docs/reference/project-structure.md) and [Architecture](docs/explanation/architecture.md).
 
-## 4. Data types
+## History
 
-The types are in [Data format](docs/reference/data-format.md#typescript-types).
-
-## 5. User interface
-
-### 5.1 to 5.6 Navigation, dialog component and pages
-
-These rules are in [Navigation](docs/reference/screens/navigation.md), [Dialog component](docs/reference/dialog-component.md), [Statistics bar](docs/reference/screens/statistics-bar.md), [Today page](docs/reference/screens/today.md), [Paper Chart Strip page](docs/reference/screens/chart.md), [Monthly Calendar page](docs/reference/screens/calendar.md) and [Cycle Analytics page](docs/reference/screens/analytics.md).
-
-### 5.7 to 5.11 Drawer, dialogs and error screen
-
-These rules are in [Observation drawer](docs/reference/screens/observation-drawer.md), [Export dialog](docs/reference/screens/export-dialog.md), [Version dialog](docs/reference/screens/version-dialog.md), [Welcome guide](docs/reference/screens/welcome-guide.md) and [Error screen](docs/reference/screens/error-screen.md).
-
-### 5.12 to 5.18 Application behavior
-
-The rules of sections 5.12 to 5.18 are in [Application behavior](docs/reference/application-behavior.md).
-
-## 6. State and data storage
-
-These rules are in [Data storage](docs/reference/data-storage.md).
-
-## 7. Languages and design system
-
-These rules are in [Languages](docs/reference/languages.md) and [Design system](docs/reference/design-system.md).
-
-## 8. Tests and quality
-
-These rules are in [Test rules and helpers](docs/reference/test-rules.md), [Commands](docs/reference/commands.md), [Documentation rules](docs/reference/documentation-rules.md) and [Commit messages](docs/reference/commit-messages.md).
-
-## 9. Deployment and CI
-
-These rules are in [Deployment](docs/reference/deployment.md). The CI workflow is in [Commands](docs/reference/commands.md#ci-workflow).
-
-## 10. Privacy, trademarks and medical limits
-
-These rules are in [Legal and medical limits](docs/reference/legal-and-medical-limits.md).
+This page had all the rules in one file until version 1.32.0. [RFC 0001](docs/records/rfcs/0001-documentation-structure.md) moved them to the reference pages. The version of the application in `package.json` and the release notes in `src/domain/versionTracker.ts` are the history. The pages have no document version.

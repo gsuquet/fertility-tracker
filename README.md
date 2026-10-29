@@ -38,12 +38,12 @@ mise run dev          # http://localhost:5173
 
 ## Documentation
 
-All the documentation is in [docs/](docs/README.md). It has tutorials, how-to guides, reference pages and explanations. The full specification is in [SPEC.md](SPEC.md).
+All the documentation is in [docs/](docs/README.md). It has tutorials, how-to guides, reference pages and explanations. The specification is the set of reference pages. [SPEC.md](SPEC.md) gives the page of each source file.
 
 ## Contribute
 
 1. Make a branch from `main`.
-2. Write the change in `SPEC.md`.
+2. Write the change in its reference page. [SPEC.md](SPEC.md) gives the page of each source file.
 3. Write a test first, then the code. Read [Write a test first](docs/how-to/write-a-test-first.md).
 4. Increase the version and add the release notes. Read [Release a new version](docs/how-to/release-a-new-version.md).
 5. Run all the quality gates:
