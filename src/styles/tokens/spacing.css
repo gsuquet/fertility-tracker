@@ -31,6 +31,8 @@
     --control-size-lg: 44px;
     /* Size of a secondary icon button */
     --control-size-md: 36px;
+    /* Size of the other controls, with 8 px between them */
+    --control-size-sm: 32px;
     /* Height of a row of a list or a form */
     --row-height: 48px;
 

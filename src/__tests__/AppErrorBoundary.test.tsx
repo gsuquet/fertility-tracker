@@ -62,14 +62,14 @@ describe('App error boundaries', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
-    const footer = within(screen.getByRole('contentinfo'));
+    const header = within(screen.getByRole('banner'));
 
-    fireEvent.click(footer.getByRole('button', { name: en.welcomeModal.title }));
+    fireEvent.click(header.getByRole('button', { name: en.welcomeModal.title }));
     const failed = await screen.findByRole('dialog', { name: en.errorBoundary.title });
     fireEvent.keyDown(failed, { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
 
-    fireEvent.click(footer.getByRole('button', { name: en.versionTracker.title }));
+    fireEvent.click(header.getByRole('button', { name: en.versionTracker.title }));
     const notes = await screen.findByRole(
       'dialog',
       { name: en.versionTracker.title },
@@ -79,7 +79,7 @@ describe('App error boundaries', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
 
     // The next opening tries again
-    fireEvent.click(footer.getByRole('button', { name: en.welcomeModal.title }));
+    fireEvent.click(header.getByRole('button', { name: en.welcomeModal.title }));
     expect(await screen.findByRole('dialog', { name: en.errorBoundary.title })).toBeInTheDocument();
   });
 });

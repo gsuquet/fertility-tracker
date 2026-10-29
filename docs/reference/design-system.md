@@ -26,7 +26,7 @@ The `.modal-dialog` rule in `primitives/dialogs.css` removes the browser styles 
 
 | Scale   | Values                                                                                                                                                                                                                                              |
 | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Control | `--control-size-md` 36px: the ⋮ button. `--control-size-lg` 44px: the minimum size of a control used each day. `--row-height` 48px: a form row and a chip                                                                                           |
+| Control | `--control-size-sm` 32px: the other controls, for example the footer links. `--control-size-md` 36px: the ⋮ button. `--control-size-lg` 44px: the minimum size of a control used each day. `--row-height` 48px: a form row and a chip               |
 | Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                              |
 | Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                         |
 | Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
@@ -90,7 +90,7 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`. `--stamp-empty`, the dashed edge of the empty stamp of a day with no code, reaches 3:1 on `--bg-surface` and `--bg-primary`. The three edges also reach 3:1 on `--bg-hero`.
 
 - A rule with white text on an accent color uses `--accent-solid`, not `--accent-primary`.
-- The footer copyright and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.
+- The footer and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.
 
 ## Related documents
 

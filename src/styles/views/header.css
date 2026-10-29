@@ -7,10 +7,9 @@
   .app-header {
     /* The header stays under the status bar and away from the notch */
     height: calc(68px + env(safe-area-inset-top, 0px));
-    background-color: var(--glass-bg);
-    backdrop-filter: blur(16px);
-    -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid var(--glass-border);
+    /* Opaque, so the page does not show through the bar (RFC 0002) */
+    background-color: var(--bg-surface);
+    border-bottom: 1px solid var(--bg-surface-border);
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -162,6 +161,11 @@
     display: none;
   }
 
+  /* The page controls of the phone top bar. A wider screen keeps them in the page. */
+  .header-page-slot {
+    display: none;
+  }
+
   /* Responsive Mobile Header */
   @media (max-width: 640px) {
     .app-header {
@@ -182,14 +186,67 @@
       padding: 2px 4px;
     }
 
-    .brand-logo {
-      width: 30px;
-      height: 30px;
+    /* The phone top bar has no brand: it holds the controls of the page */
+    .header-brand-btn {
+      display: none;
     }
 
-    /* On mobile, collapse brand text completely (only logo stays) to preserve space for controls */
-    .brand-text {
-      display: none !important;
+    .header-page-slot {
+      display: flex;
+      flex: 1;
+      align-items: center;
+      gap: var(--space-xs);
+      min-width: 0;
+    }
+
+    .top-bar-title {
+      margin: 0 0 0 var(--space-sm);
+      overflow: hidden;
+      font-family: var(--font-display);
+      font-size: var(--font-size-xl);
+      font-weight: 800;
+      color: var(--text-primary);
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+
+    /* Today: the previous day, the short date and the next day */
+    .header-page-slot .compact-date-nav-controls {
+      flex: 1;
+      gap: 0;
+      min-width: 0;
+    }
+
+    .header-page-slot .compact-nav-btn {
+      border: 0;
+      background: none;
+    }
+
+    .header-page-slot .compact-picker-inline {
+      flex: 1;
+      justify-content: center;
+      min-width: 0;
+      min-height: var(--control-size-lg);
+      padding: 0;
+      border: 0;
+      background: none;
+    }
+
+    .header-page-slot .date-picker-icon {
+      display: none;
+    }
+
+    .header-page-slot .today-formatted-date-text {
+      overflow: hidden;
+      font-size: var(--font-size-lg);
+      text-overflow: ellipsis;
+    }
+
+    /* Chart: 35-day or Strip, and the menu of the chart */
+    .header-page-slot .chart-strip-toolbar {
+      flex: 1;
+      gap: var(--space-xs);
+      min-width: 0;
     }
 
     .header-tabs {
@@ -201,6 +258,15 @@
       flex-wrap: nowrap;
       overflow: visible;
       flex-shrink: 0;
+    }
+
+    /* On Chart, the cycle picker comes first, as in the mockup */
+    .page-chart .header-controls {
+      display: contents;
+    }
+
+    .page-chart .cycle-picker-container {
+      order: -1;
     }
 
     .desktop-only-action {

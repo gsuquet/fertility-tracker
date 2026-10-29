@@ -1,7 +1,5 @@
 - banner:
-  - button "Creighton FertilityCare System Home":
-    - heading "Fertility Tracker" [level=1]
-    - text: Creighton Model System (CrMS)
+  - button "Creighton FertilityCare System Home": Fertility Tracker Creighton Model System (CrMS)
   - tablist "Main Navigation Views":
     - tab "Today"
     - tab "Paper Chart Strip" [selected]
@@ -17,7 +15,7 @@
 - main:
   - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
   - tabpanel "Paper Chart Strip":
-    - heading "Paper Chart Strip" [level=2]
+    - heading "Paper Chart Strip" [level=1]
     - group "Chart view":
       - text: ""
       - button /\d+-day/ [pressed]
@@ -75,12 +73,7 @@
       - button "Edit"
       - button "Open in Today"
     - button "Legend"
-  - contentinfo "Legal and Trademark Disclaimers":
-    - text: Legal & Trademark Information
-    - paragraph: FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).
-    - text: Medical Disclaimer
-    - paragraph: This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.
-    - text: /© \d+ Fertility Tracker • Open Source Software/
-    - button "Welcome to Fertility Tracker": User Guide
-    - button "Keyboard shortcuts"
-    - button "About & Version Tracker": /v\d+\.\d+\.\d+/
+- contentinfo "Legal and Trademark Disclaimers":
+  - text: /© \d+ Fertility Tracker/
+  - button "Legal"
+  - button /v\d+\.\d+\.\d+/

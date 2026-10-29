@@ -2,64 +2,38 @@ import { render, screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Footer } from '../Footer';
 import { LanguageProvider } from '../../context/LanguageContext';
+import { en } from '../../i18n';
+
+const renderFooter = () => {
+  const onOpenVersion = vi.fn();
+  const onOpenLegal = vi.fn();
+  render(
+    <LanguageProvider>
+      <Footer onOpenVersion={onOpenVersion} onOpenLegal={onOpenLegal} />
+    </LanguageProvider>
+  );
+  return { onOpenVersion, onOpenLegal };
+};
 
 describe('Footer Component', () => {
-  it('renders trademark and medical disclaimers', () => {
-    render(
-      <LanguageProvider>
-        <Footer />
-      </LanguageProvider>
+  it('has one line: the copyright, Legal and the version', () => {
+    renderFooter();
+    const footer = screen.getByRole('contentinfo', { name: en.footer.label });
+    expect(footer).toHaveTextContent(
+      new RegExp(`^© ${new Date().getFullYear()} Fertility Tracker·Legal·v\\d+\\.\\d+\\.\\d+$`)
     );
-
-    expect(screen.getByText(/Saint Paul VI Institute/i)).toBeInTheDocument();
-    expect(
-      screen.getByText(/Fertility Tracker is an independent open-source/i)
-    ).toBeInTheDocument();
-    expect(screen.getByText(/medical advice, diagnosis, or treatment/i)).toBeInTheDocument();
+    // The full notice is in the version dialog and the welcome guide, not in the footer
+    expect(screen.queryByText(/Saint Paul VI Institute/i)).toBeNull();
   });
 
-  it('renders version badge when onOpenVersion callback is provided', () => {
-    const handleOpenVersion = vi.fn();
-    render(
-      <LanguageProvider>
-        <Footer onOpenVersion={handleOpenVersion} />
-      </LanguageProvider>
-    );
+  it('opens the legal notice and the version dialog', () => {
+    const { onOpenVersion, onOpenLegal } = renderFooter();
+    fireEvent.click(screen.getByRole('button', { name: en.footer.legal }));
+    expect(onOpenLegal).toHaveBeenCalledOnce();
 
-    const versionBtn = screen.getByRole('button', { name: /About & Version Tracker/i });
-    expect(versionBtn).toBeInTheDocument();
-    expect(versionBtn).toHaveTextContent(/v\d+\.\d+\.\d+/);
-
-    fireEvent.click(versionBtn);
-    expect(handleOpenVersion).toHaveBeenCalledTimes(1);
-  });
-
-  it('renders user guide button when onOpenWelcome callback is provided', () => {
-    const handleOpenWelcome = vi.fn();
-    render(
-      <LanguageProvider>
-        <Footer onOpenWelcome={handleOpenWelcome} />
-      </LanguageProvider>
-    );
-
-    const guideBtn = screen.getByRole('button', {
-      name: /Welcome to Fertility Tracker|User Guide|Bienvenue/i,
-    });
-    expect(guideBtn).toBeInTheDocument();
-    expect(guideBtn).toHaveTextContent(/User Guide/i);
-
-    fireEvent.click(guideBtn);
-    expect(handleOpenWelcome).toHaveBeenCalledTimes(1);
-  });
-
-  it('opens the keyboard shortcuts', () => {
-    const onOpenShortcuts = vi.fn();
-    render(
-      <LanguageProvider>
-        <Footer onOpenShortcuts={onOpenShortcuts} />
-      </LanguageProvider>
-    );
-    fireEvent.click(screen.getByRole('button', { name: 'Keyboard shortcuts' }));
-    expect(onOpenShortcuts).toHaveBeenCalledOnce();
+    const version = screen.getByRole('button', { name: /^v\d+\.\d+\.\d+$/ });
+    expect(version).toHaveAttribute('title', en.versionTracker.title);
+    fireEvent.click(version);
+    expect(onOpenVersion).toHaveBeenCalledOnce();
   });
 });

@@ -40,7 +40,7 @@ describe('App with chunks that fail to load', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
     fireEvent.click(
-      within(screen.getByRole('contentinfo')).getByRole('button', { name: en.versionTracker.title })
+      within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
     );
     const failed = await screen.findByRole(
       'dialog',

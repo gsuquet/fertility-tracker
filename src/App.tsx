@@ -27,6 +27,7 @@ import { UndoToast } from './components/UndoToast';
 import { LoadingStatus } from './components/LoadingStatus';
 import { InstallBanner } from './components/InstallBanner';
 import { UpdatePrompt } from './components/UpdatePrompt';
+import { TopBarProvider } from './components/shell/TopBar';
 
 const loadCycleAnalyticsView = () => import('./components/CycleAnalyticsView');
 const loadExportModal = () => import('./components/ExportModal');
@@ -102,7 +103,10 @@ const MainApp: React.FC = () => {
     canAnimateTo
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
-  const [isVersionModalOpen, setIsVersionModalOpen] = useState(false);
+  // The open version dialog and its first tab
+  const [versionTab, setVersionTab] = useState<'notes' | 'system' | null>(null);
+  // The element of the phone top bar that holds the page controls
+  const [topBarSlot, setTopBarSlot] = useState<HTMLDivElement | null>(null);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
@@ -189,7 +193,7 @@ const MainApp: React.FC = () => {
     setExportStartsWithRestore(false);
     setLaunchedBackup(null);
   };
-  const closeVersionModal = () => setIsVersionModalOpen(false);
+  const closeVersionModal = () => setVersionTab(null);
   const closeWelcomeModal = () => setIsWelcomeModalOpen(false);
   const closeInstallGuide = () => setIsInstallGuideOpen(false);
   const closeShortcuts = () => setIsShortcutsOpen(false);
@@ -235,128 +239,131 @@ const MainApp: React.FC = () => {
   };
 
   return (
-    <div className="app-layout">
-      <Header
-        activeTab={activeTab}
-        setActiveTab={setActiveTab}
-        onOpenExport={() => setIsExportModalOpen(true)}
-        onOpenVersion={() => setIsVersionModalOpen(true)}
-        onOpenWelcome={() => setIsWelcomeModalOpen(true)}
-        onOpenShortcuts={openShortcuts}
-        onInstall={handleInstall}
-      />
-
-      <main
-        className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
-      >
-        <StorageSaveWarning onOpenExport={() => setIsExportModalOpen(true)} />
-        <StorageRecoveryNotice />
-        <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
-        <CycleStatsHeader />
-
-        {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
-        <div className="page-view">
-          {/* The key resets the alert of a failed page when the tab changes */}
-          <ErrorBoundary key={activeTab}>
-            <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
-              {activeTab === 'today' && <TodayView />}
-              {activeTab === 'chart' && <ChartRow onOpenToday={() => setActiveTab('today')} />}
-              {activeTab === 'calendar' && <CalendarGrid />}
-              {activeTab === 'analytics' && (
-                <>
-                  <CycleAnalyticsView />
-                  <ChunkReady onReady={markAnalyticsShown} />
-                </>
-              )}
-            </React.Suspense>
-          </ErrorBoundary>
-        </div>
-
-        <Footer
-          onOpenVersion={() => setIsVersionModalOpen(true)}
+    <TopBarProvider value={topBarSlot}>
+      <div className="app-layout">
+        <Header
+          activeTab={activeTab}
+          setActiveTab={setActiveTab}
+          onOpenExport={() => setIsExportModalOpen(true)}
+          onOpenVersion={() => setVersionTab('notes')}
           onOpenWelcome={() => setIsWelcomeModalOpen(true)}
           onOpenShortcuts={openShortcuts}
           onInstall={handleInstall}
+          onTopBarSlot={setTopBarSlot}
         />
-      </main>
 
-      <ObservationDrawer />
+        <main
+          className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
+        >
+          <StorageSaveWarning onOpenExport={() => setIsExportModalOpen(true)} />
+          <StorageRecoveryNotice />
+          <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
+          <CycleStatsHeader />
 
-      {/* Each dialog renders only while it is open, so its chunk loads when it opens first.
+          {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
+          <div className="page-view">
+            {/* The key resets the alert of a failed page when the tab changes */}
+            <ErrorBoundary key={activeTab}>
+              <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
+                {activeTab === 'today' && <TodayView />}
+                {activeTab === 'chart' && <ChartRow onOpenToday={() => setActiveTab('today')} />}
+                {activeTab === 'calendar' && <CalendarGrid />}
+                {activeTab === 'analytics' && (
+                  <>
+                    <CycleAnalyticsView />
+                    <ChunkReady onReady={markAnalyticsShown} />
+                  </>
+                )}
+              </React.Suspense>
+            </ErrorBoundary>
+          </div>
+        </main>
+
+        {/* The footer landmark is outside main (RFC 0002) */}
+        <Footer
+          onOpenVersion={() => setVersionTab('notes')}
+          onOpenLegal={() => setVersionTab('system')}
+        />
+
+        <ObservationDrawer />
+
+        {/* Each dialog renders only while it is open, so its chunk loads when it opens first.
           Its own boundary shows a failure as a dialog, and closing the dialog removes it. */}
-      {isExportModalOpen && (
-        <ErrorBoundary onClose={closeExportModal}>
-          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <ExportModal
-              onClose={closeExportModal}
-              onPreparePrint={handlePreparePrint}
-              startWithRestore={exportStartsWithRestore}
-              launchedBackup={launchedBackup}
-            />
+        {isExportModalOpen && (
+          <ErrorBoundary onClose={closeExportModal}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <ExportModal
+                onClose={closeExportModal}
+                onPreparePrint={handlePreparePrint}
+                startWithRestore={exportStartsWithRestore}
+                launchedBackup={launchedBackup}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {versionTab && (
+          <ErrorBoundary onClose={closeVersionModal}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <VersionModal
+                initialTab={versionTab}
+                onClose={closeVersionModal}
+                onOpenShortcuts={() => {
+                  closeVersionModal();
+                  openShortcuts();
+                }}
+              />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {isWelcomeModalOpen && (
+          <ErrorBoundary onClose={closeWelcomeModal}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <WelcomeModal onClose={closeWelcomeModal} onRestore={handleRestore} />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {isInstallGuideOpen && (
+          <ErrorBoundary onClose={closeInstallGuide}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <InstallGuideModal onClose={closeInstallGuide} />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {isShortcutsOpen && (
+          <ErrorBoundary onClose={closeShortcuts}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <KeyboardShortcutsModal onClose={closeShortcuts} />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {/* Always rendered, so the browser print command (Ctrl+P) also prints the report */}
+        <ErrorBoundary onError={() => setPrintView('failed')}>
+          <React.Suspense fallback={null}>
+            <PrintExportView selectedCycleIds={printCycleIds} />
+            <ChunkReady onReady={setPrintView} />
           </React.Suspense>
         </ErrorBoundary>
-      )}
 
-      {isVersionModalOpen && (
-        <ErrorBoundary onClose={closeVersionModal}>
-          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <VersionModal
-              onClose={closeVersionModal}
-              onOpenShortcuts={() => {
-                closeVersionModal();
-                openShortcuts();
-              }}
-            />
-          </React.Suspense>
-        </ErrorBoundary>
-      )}
+        {toastMessage && (
+          <div className="today-toast" role="status" aria-live="polite">
+            <span>{toastMessage}</span>
+          </div>
+        )}
 
-      {isWelcomeModalOpen && (
-        <ErrorBoundary onClose={closeWelcomeModal}>
-          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <WelcomeModal onClose={closeWelcomeModal} onRestore={handleRestore} />
-          </React.Suspense>
-        </ErrorBoundary>
-      )}
+        <UndoToast />
 
-      {isInstallGuideOpen && (
-        <ErrorBoundary onClose={closeInstallGuide}>
-          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <InstallGuideModal onClose={closeInstallGuide} />
-          </React.Suspense>
-        </ErrorBoundary>
-      )}
+        {/* The update message comes first: the banner hides while an update is ready */}
+        <UpdatePrompt />
+        {handleInstall && <InstallBanner onInstall={handleInstall} />}
 
-      {isShortcutsOpen && (
-        <ErrorBoundary onClose={closeShortcuts}>
-          <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-            <KeyboardShortcutsModal onClose={closeShortcuts} />
-          </React.Suspense>
-        </ErrorBoundary>
-      )}
-
-      {/* Always rendered, so the browser print command (Ctrl+P) also prints the report */}
-      <ErrorBoundary onError={() => setPrintView('failed')}>
-        <React.Suspense fallback={null}>
-          <PrintExportView selectedCycleIds={printCycleIds} />
-          <ChunkReady onReady={setPrintView} />
-        </React.Suspense>
-      </ErrorBoundary>
-
-      {toastMessage && (
-        <div className="today-toast" role="status" aria-live="polite">
-          <span>{toastMessage}</span>
-        </div>
-      )}
-
-      <UndoToast />
-
-      {/* The update message comes first: the banner hides while an update is ready */}
-      <UpdatePrompt />
-      {handleInstall && <InstallBanner onInstall={handleInstall} />}
-
-      <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
-    </div>
+        <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+      </div>
+    </TopBarProvider>
   );
 };
 

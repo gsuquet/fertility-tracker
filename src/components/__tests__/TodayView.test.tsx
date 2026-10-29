@@ -89,7 +89,13 @@ describe('TodayView Component (Dedicated Today Page)', () => {
     // Reduced motion, so that the day changes at the release
     const media = vi.mocked(window.matchMedia).getMockImplementation();
     vi.mocked(window.matchMedia).mockImplementation(
-      query => ({ matches: true, media: query }) as MediaQueryList
+      query =>
+        ({
+          matches: true,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
     );
     try {
       renderTodayView();

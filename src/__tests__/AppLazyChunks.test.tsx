@@ -34,7 +34,7 @@ describe('App lazy chunks', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);
     fireEvent.click(
-      within(screen.getByRole('contentinfo')).getByRole('button', { name: en.versionTracker.title })
+      within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
     );
     expect(screen.getByRole('status')).toHaveTextContent(en.common.loading);
     expect(screen.queryByRole('dialog')).toBeNull();

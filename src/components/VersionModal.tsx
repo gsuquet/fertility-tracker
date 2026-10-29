@@ -50,13 +50,19 @@ interface VersionModalProps {
   onClose: () => void;
   /** Closes this dialog and opens the keyboard shortcuts. */
   onOpenShortcuts?: () => void;
+  /** The tab that shows first. **Legal** in the footer opens the system tab, with the notice. */
+  initialTab?: 'notes' | 'system';
 }
 
-export const VersionModal: React.FC<VersionModalProps> = ({ onClose, onOpenShortcuts }) => {
+export const VersionModal: React.FC<VersionModalProps> = ({
+  onClose,
+  onOpenShortcuts,
+  initialTab = 'notes',
+}) => {
   const { t, language } = useLanguage();
   // On a phone, a drag down closes the dialog as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
-  const [activeTab, setActiveTab] = useState<'notes' | 'system'>('notes');
+  const [activeTab, setActiveTab] = useState<'notes' | 'system'>(initialTab);
   const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
     '1.1.0': true,
   });

@@ -41,6 +41,8 @@ interface HeaderProps {
   onOpenShortcuts: () => void;
   /** Installs the app. Not given when the app is installed or the browser cannot install it. */
   onInstall?: (() => void) | undefined;
+  /** Receives the element of the top bar that holds the page controls on a phone */
+  onTopBarSlot?: ((slot: HTMLDivElement | null) => void) | undefined;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,6 +53,7 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenWelcome,
   onOpenShortcuts,
   onInstall,
+  onTopBarSlot,
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -73,7 +76,7 @@ export const Header: React.FC<HeaderProps> = ({
   const currentVersion = getAppVersion();
 
   return (
-    <header className="app-header">
+    <header className={`app-header page-${activeTab}`}>
       <button
         type="button"
         className="header-brand-btn"
@@ -85,10 +88,14 @@ export const Header: React.FC<HeaderProps> = ({
           <BrandMark />
         </div>
         <div className="brand-text">
-          <h1 className="brand-title">{t.appTitle}</h1>
+          {/* Each page has its own h1 */}
+          <span className="brand-title">{t.appTitle}</span>
           <span className="brand-subtitle">{t.subtitle}</span>
         </div>
       </button>
+
+      {/* Phone: the date of Today, the chart controls or the page title */}
+      <div className="header-page-slot" ref={onTopBarSlot} />
 
       <div className="header-tabs" role="tablist" aria-label={t.menu.mainNavLabel}>
         <button

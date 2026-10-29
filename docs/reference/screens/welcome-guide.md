@@ -19,7 +19,7 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 
 | Slide | Content                                                                                          |
 | ----- | ------------------------------------------------------------------------------------------------ |
-| 1     | The CrMS method and the privacy of the data.                                                     |
+| 1     | The CrMS method, the privacy of the data, and the full legal and medical notice.                 |
 | 2     | The stamps: red, green, green with a baby, white with a baby and yellow, and the count of three. |
 | 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
 | 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |

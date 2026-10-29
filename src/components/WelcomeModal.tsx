@@ -1,4 +1,5 @@
 import type React from 'react';
+import { LegalDisclaimers } from './LegalNotice';
 import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useCycle } from '../context/CycleContext';
@@ -153,6 +154,8 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
                 <p className="justified-text">{slides.slide1.crmsText}</p>
               </div>
             </div>
+            {/* The browser footer has one line: the full notice is here and in the version dialog */}
+            <LegalDisclaimers />
           </div>
         )}
 

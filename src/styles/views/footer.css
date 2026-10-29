@@ -12,18 +12,33 @@
     }
   }
 
+  /* One line under the last card. The version dialog has the full legal and medical notice. */
   .app-footer {
-    margin-top: 3rem;
-    padding: 1.5rem 0 2rem 0;
-    border-top: 1px solid var(--bg-surface-border);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: center;
+    gap: var(--space-xs) var(--space-sm);
     width: 100%;
+    max-width: 1440px;
+    margin: 0 auto;
+    padding: var(--space-md) var(--space-md) var(--space-lg);
+    font-size: var(--font-size-xs);
+    color: var(--text-muted);
+    text-align: center;
   }
 
-  .footer-container {
-    display: flex;
-    flex-direction: column;
-    gap: 1rem;
-    max-width: 100%;
+  .footer-link {
+    min-height: var(--control-size-sm);
+    padding: 0 var(--space-xs);
+    border: 0;
+    background: none;
+    color: var(--accent-primary);
+    font: inherit;
+    font-weight: 600;
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
   }
 
   .footer-disclaimer-box {
@@ -65,75 +80,5 @@
     line-height: 1.45;
     color: var(--text-muted);
     margin: 0;
-  }
-
-  .footer-copyright {
-    display: flex;
-    justify-content: center;
-    align-items: center;
-    flex-wrap: wrap;
-    gap: 0.75rem;
-    font-size: var(--font-size-xs);
-    color: var(--text-muted);
-    text-align: center;
-  }
-
-  .footer-links {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.5rem;
-    flex-wrap: wrap;
-    justify-content: center;
-  }
-
-  .footer-version-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-sm);
-    color: var(--accent-primary);
-    font-size: var(--font-size-2xs);
-    font-weight: 600;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    font-family: inherit;
-  }
-
-  .footer-version-btn:hover {
-    background-color: var(--accent-solid);
-    color: var(--color-white);
-    border-color: var(--accent-primary);
-    transform: translateY(-1px);
-  }
-
-  @media (max-width: 640px) {
-    .app-footer {
-      margin-top: 2rem;
-      /* The body keeps the space of the page buttons */
-      padding: 1.25rem 0 var(--space-md) 0;
-    }
-
-    .footer-copyright {
-      flex-direction: column;
-      gap: 0.5rem;
-      align-items: center;
-    }
-
-    .footer-copyright-text {
-      line-height: 1.35;
-      max-width: 90%;
-      display: block;
-    }
-
-    .footer-links {
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      gap: 0.6rem;
-      width: 100%;
-    }
   }
 }

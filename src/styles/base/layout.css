@@ -11,8 +11,9 @@
     background-color: var(--bg-primary);
   }
 
+  /* The footer line comes right under the last card (RFC 0002) */
   .main-content {
-    flex: 1;
+    flex: none;
     padding: 1.25rem 1.5rem;
     padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
     padding-right: max(1.5rem, env(safe-area-inset-right, 0px));

@@ -308,9 +308,9 @@ describe('contrast-safe token usage', () => {
     for (const rule of rules) expect(rule[2]).not.toMatch(/opacity/);
   });
 
-  it('keeps the footer copyright text opaque', () => {
+  it('keeps the footer text opaque', () => {
     const footer = readCss('views/footer.css');
-    const rule = /\.footer-copyright-text\s*\{([^}]*)\}/.exec(footer);
+    const rule = /\.app-footer\s*\{([^}]*)\}/.exec(footer.replace(/@media[^{]*\{[^}]*\}\s*\}/, ''));
     expect(rule?.[1]).not.toMatch(/opacity/);
   });
 

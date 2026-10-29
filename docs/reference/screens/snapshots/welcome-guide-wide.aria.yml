@@ -16,5 +16,9 @@
     - paragraph: Your reproductive health data stays exclusively in your browser storage. No accounts, no backend servers, and zero third-party tracking.
     - heading "Natural Biomarker Observation" [level=4]
     - paragraph: Unlike statistical period calculators that guess your cycle, CrMS relies on daily physical observations of mucus, bleeding, and sensation.
+    - text: Legal & Trademark Information
+    - paragraph: FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).
+    - text: Medical Disclaimer
+    - paragraph: This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.
   - button "Skip Tour"
   - button "Next"

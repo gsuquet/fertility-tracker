@@ -1,4 +1,5 @@
 import type React from 'react';
+import { PageTitle } from './shell/TopBar';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -73,6 +74,7 @@ export const CalendarGrid: React.FC = () => {
       ref={swipePageRef}
       {...swipeHandlers}
     >
+      <PageTitle title={t.tabs.calendar} phoneTitle={t.mobileTabs.calendar} />
       <div className="calendar-header">
         <button
           type="button"
