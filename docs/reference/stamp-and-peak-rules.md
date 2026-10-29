@@ -16,7 +16,7 @@ This page gives the rules that set the stamp of each day and the Peak Day of eac
 
 ## Day with no code
 
-A saved observation with no code, for example a day with only notes, keeps the stamp of the rules below in the data. The screens and the printed chart show the empty stamp for this day: a dashed square with `--stamp-empty`. Thus, a day with no code does not look like a dry day.
+A saved observation with no bleeding, mucus or frequency code keeps the stamp of the rules below in the data. For example, a day with only the `I` mark, symptoms or notes. The screens and the printed chart show the empty stamp for this day: a dashed square with `--stamp-empty`. Thus, a day with no code does not look like a dry day.
 
 ## Stamp of one day
 

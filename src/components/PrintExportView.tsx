@@ -1,4 +1,5 @@
 import type React from 'react';
+import { hasObservationCode } from '../domain/stampCalculator';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
@@ -134,7 +135,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                                 isPeakDay={obs.isPeakDay}
                                 intercourse={obs.intercourse}
                                 size="sm"
-                                isEmpty={!obs.codeString}
+                                isEmpty={!hasObservationCode(obs)}
                               />
                             </div>
 

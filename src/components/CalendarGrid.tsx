@@ -1,4 +1,5 @@
 import type React from 'react';
+import { hasObservationCode } from '../domain/stampCalculator';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -160,7 +161,7 @@ export const CalendarGrid: React.FC = () => {
                       isPeakDay={obs.isPeakDay}
                       intercourse={obs.intercourse}
                       size="sm"
-                      isEmpty={!obs.codeString}
+                      isEmpty={!hasObservationCode(obs)}
                     />
                   </div>
                   <span className="calendar-code">{obs.codeString}</span>

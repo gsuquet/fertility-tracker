@@ -10,6 +10,7 @@ const renderGuidance = (stamp: StampType, variant: 'banner' | 'card', currentCod
     <TodayFertilityGuidance
       stamp={stamp}
       currentCode={currentCode}
+      isEmpty={!currentCode}
       isManualPeak={false}
       intercourse={false}
       variant={variant}

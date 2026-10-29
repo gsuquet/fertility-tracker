@@ -1,4 +1,5 @@
 import type React from 'react';
+import { hasObservationCode } from '../../domain/stampCalculator';
 import { useState } from 'react';
 import { Plus, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -68,7 +69,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
           isPeakDay={obs.isPeakDay}
           intercourse={obs.intercourse}
           size="sm"
-          isEmpty={!obs.codeString}
+          isEmpty={!hasObservationCode(obs)}
         />
       </div>
 

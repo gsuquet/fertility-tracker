@@ -4,7 +4,13 @@ import {
   PEAK_TYPE_STRETCH_CODES,
   isCodeIn,
 } from '../types/crms';
-import type { BleedingCode, MucusStretch, MucusModifier, StampType } from '../types/crms';
+import type {
+  BleedingCode,
+  FrequencyCode,
+  MucusStretch,
+  MucusModifier,
+  StampType,
+} from '../types/crms';
 
 /**
  * Determines if a set of mucus characteristics has Peak-type fertile qualities:
@@ -43,4 +49,17 @@ export function calculateStamp(
 
   // 3. Dry / Non-fertile (Dark Green Stamp)
   return 'DARK_GREEN';
+}
+
+/**
+ * True when a day has a bleeding, mucus or frequency code. The I mark, the symptoms and the notes
+ * alone are not an observation, so such a day shows the empty stamp and no fertility text.
+ */
+export function hasObservationCode(day: {
+  bleeding?: BleedingCode | undefined;
+  stretch?: MucusStretch | undefined;
+  modifiers?: readonly MucusModifier[] | undefined;
+  frequency?: FrequencyCode | undefined;
+}): boolean {
+  return Boolean(day.bleeding || day.stretch || day.frequency || day.modifiers?.length);
 }

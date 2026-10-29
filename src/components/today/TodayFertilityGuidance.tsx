@@ -7,6 +7,8 @@ import { Info, Sparkles } from 'lucide-react';
 interface TodayFertilityGuidanceProps {
   stamp: StampType;
   currentCode: string;
+  /** No bleeding, mucus or frequency code: the empty stamp and no fertility text. */
+  isEmpty: boolean;
   isManualPeak: boolean;
   intercourse: boolean;
   variant: 'banner' | 'card';
@@ -15,13 +17,12 @@ interface TodayFertilityGuidanceProps {
 export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   stamp,
   currentCode,
+  isEmpty,
   isManualPeak,
   intercourse,
   variant,
 }) => {
   const { t } = useLanguage();
-  // A day with no code is not a dry day: no stamp color and no fertility text
-  const isEmpty = !currentCode;
 
   const getFertilityGuidance = () => {
     switch (stamp) {
@@ -51,7 +52,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
           />
           <div className="status-hero-info">
             <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
-              {currentCode || t.todayView.noObservation}
+              {isEmpty ? t.todayView.noObservation : currentCode}
             </div>
             {!isEmpty && (
               <div className="status-hero-guidance">
@@ -81,7 +82,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
           isEmpty={isEmpty}
         />
         <div className={isEmpty ? 'stamp-empty-text' : 'status-code-text'}>
-          {currentCode || t.todayView.noObservation}
+          {isEmpty ? t.todayView.noObservation : currentCode}
         </div>
       </div>
 

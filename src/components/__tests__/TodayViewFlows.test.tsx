@@ -1,4 +1,4 @@
-import { screen, fireEvent, act } from '@testing-library/react';
+import { screen, fireEvent, act, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { TodayView } from '../TodayView';
 import { useCycleData, useCycleUi } from '../../context/CycleContext';
@@ -95,9 +95,25 @@ describe('TodayView flows', () => {
   it('shows the empty stamp and the cycle day of a day with no observation', () => {
     const { container } = renderToday([makeObservation({ date: '2026-09-10', bleeding: 'H' })]);
     expect(screen.getByText('Day 6')).toBeInTheDocument();
-    expect(screen.getAllByText(en.todayView.noObservation).length).toBeGreaterThan(0);
+    const hero = container.querySelector('.status-stamp-hero') as HTMLElement;
+    expect(within(hero).getByText(en.todayView.noObservation)).toBeInTheDocument();
     expect(screen.queryByText(en.todayView.guidance.dry)).toBeNull();
-    expect(container.querySelector('.status-stamp-hero .stamp-empty')).toBeInTheDocument();
+    expect(hero.querySelector('.stamp-empty')).toBeInTheDocument();
+  });
+
+  it('keeps the empty stamp for a day with only the intercourse mark', () => {
+    const { container } = renderToday();
+    typeCode('I');
+    const hero = container.querySelector('.status-stamp-hero') as HTMLElement;
+    expect(hero.querySelector('.stamp-empty')).toBeInTheDocument();
+    expect(within(hero).getByText(en.todayView.noObservation)).toBeInTheDocument();
+    expect(screen.queryByText(/Infertile/)).toBeNull();
+  });
+
+  it('shows no cycle day after today', () => {
+    renderToday([makeObservation({ date: '2026-09-10', bleeding: 'H' })]);
+    fireEvent.click(screen.getByRole('button', { name: en.todayView.nextDay }));
+    expect(screen.queryByText(/^Day \d+$/)).toBeNull();
   });
 
   it('loads a saved observation and shows it as saved', () => {

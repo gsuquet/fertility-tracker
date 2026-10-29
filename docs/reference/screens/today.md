@@ -21,18 +21,18 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | [TodayObservationForm.tsx](../../../src/components/today/TodayObservationForm.tsx)             | **Direct Code Only** or **Detailed Form** mode, the code buttons, intercourse, peak, notes, save and delete.                                                                                       |
 | [ObservationCodeSelector.tsx](../../../src/components/observation/ObservationCodeSelector.tsx) | The code buttons. The drawer uses the same component ([Observation drawer](observation-drawer.md)).                                                                                                |
 | [TodayFertilityGuidance.tsx](../../../src/components/today/TodayFertilityGuidance.tsx)         | Stamp preview, code and a guidance text. A banner on a screen of 900 pixels or less, else a card. A day with no code shows the empty stamp and "No observation yet", and no guidance text.         |
-| [TodayHistoryList.tsx](../../../src/components/today/TodayHistoryList.tsx)                     | The selected date and the 4 days before it, in three columns: date, stamp and code. A click selects that date. A long code ends with an ellipsis.                                                  |
+| [TodayHistoryList.tsx](../../../src/components/today/TodayHistoryList.tsx)                     | The selected date and the 4 days before it, in three columns: date, stamp and code. A day with no code shows the empty stamp. A click selects that date. A long code ends with an ellipsis.        |
 - The application saves the last entry mode in `fertility_care_entry_mode`.
-- The cycle day of the day status comes from the saved observation. A day with no observation gets the cycle day from the start date of the last cycle that starts on or before that day. A day before the first cycle shows no cycle day.
+- The cycle day of the day status comes from the saved observation. A day with no observation gets the cycle day from the start date of the last cycle that starts on or before that day. A day before the first cycle or after today shows no cycle day.
 
 ### Day with no code
 
-A day with no code is not a dry day. The word "Infertile" never shows without a code.
+A day with no code is not a dry day. The word "Infertile" never shows without a code. Here, a code is a bleeding, mucus or frequency code. The `I` mark, the symptoms and the notes alone are not a code. `hasObservationCode` in `src/domain/stampCalculator.ts` gives the rule.
 
-| Condition                                                                          | Result                                                                                                      |
-| ---------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
-| The form has no code: no saved observation, or a saved observation with only notes | The empty stamp (a dashed square with `--stamp-empty`), the text "No observation yet" and no guidance text. |
-| The form has a code                                                                | The stamp of the code, the code and the guidance text of the stamp.                                         |
+| Condition                                                                           | Result                                                                                                      |
+| ----------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- |
+| The form has no code: no saved observation, or only the `I` mark, symptoms or notes | The empty stamp (a dashed square with `--stamp-empty`), the text "No observation yet" and no guidance text. |
+| The form has a code                                                                 | The stamp of the code, the code and the guidance text of the stamp.                                         |
 
 ### Swipe between days
 

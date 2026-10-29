@@ -1,4 +1,5 @@
 import type React from 'react';
+import { hasObservationCode } from '../domain/stampCalculator';
 import { useState, useEffect, useCallback } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -143,13 +144,15 @@ export const ObservationDrawer: React.FC = () => {
               isPeakDay={fields.isManualPeak}
               intercourse={intercourse}
               size="lg"
-              isEmpty={!form.currentCode}
+              isEmpty={!hasObservationCode(fields)}
             />
           </div>
           <div className="preview-details">
             <span className="preview-label">{t.labels.stampPreview}</span>
-            <div className={form.currentCode ? 'preview-code-display' : 'stamp-empty-text'}>
-              {form.currentCode || t.todayView.noObservation}
+            <div
+              className={hasObservationCode(fields) ? 'preview-code-display' : 'stamp-empty-text'}
+            >
+              {hasObservationCode(fields) ? form.currentCode : t.todayView.noObservation}
             </div>
           </div>
         </div>

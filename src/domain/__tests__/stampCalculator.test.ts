@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { calculateStamp, isPeakTypeMucus } from '../stampCalculator';
+import { calculateStamp, hasObservationCode, isPeakTypeMucus } from '../stampCalculator';
 
 describe('isPeakTypeMucus', () => {
   it('returns false when there is no stretch and no modifier', () => {
@@ -34,5 +34,21 @@ describe('calculateStamp', () => {
 
   it('returns DARK_GREEN when there is no observation', () => {
     expect(calculateStamp()).toBe('DARK_GREEN');
+  });
+});
+
+describe('hasObservationCode', () => {
+  it('is false with no bleeding, mucus or frequency code, also with I, symptoms or notes', () => {
+    expect(hasObservationCode({})).toBe(false);
+    expect(hasObservationCode({ modifiers: [] })).toBe(false);
+  });
+
+  it.each([
+    [{ bleeding: 'H' }],
+    [{ stretch: '0' }],
+    [{ modifiers: ['K'] }],
+    [{ frequency: 'AD' }],
+  ] as const)('is true for %o', fields => {
+    expect(hasObservationCode(fields)).toBe(true);
   });
 });

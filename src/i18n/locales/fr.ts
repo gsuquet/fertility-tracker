@@ -31,7 +31,7 @@ export const fr: TranslationSchema = {
     todayLabel: "Aujourd'hui",
     loggedStatus: 'Enregistrée',
     notLoggedStatus: 'Non enregistrée',
-    noObservation: 'Pas encore d’observation',
+    noObservation: "Pas encore d'observation",
     fertilityStatus: 'Statut de fertilité & Conseils',
     recentHistory: 'Historique des 5 derniers jours',
     prevDay: 'Jour précédent',
