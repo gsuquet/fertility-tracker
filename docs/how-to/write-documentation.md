@@ -28,7 +28,7 @@ Use this procedure to add or change a page in `docs/`. The docs use Simplified T
 4. Add a link to the record in the **Records** section of `docs/README.md`.
 5. Open a pull request. For an RFC, use the title `docs(rfc): ...` and set the status to **Proposed**.
 6. For an RFC, wait for the written decision of the maintainer. Do not merge the pull request before this decision.
-7. After the project accepts an RFC, write a short ADR for each decision in it. Link the ADR to the RFC in **More information**.
+7. After the merge of an accepted RFC, open a new pull request. In it, write a short ADR for each decision of the RFC. Set the status of each ADR to **Accepted**, and link it to the RFC in **More information**.
 
 ## Result
 

@@ -26,12 +26,12 @@ Each screen must meet WCAG 2.2 level AA. The **Accessibility** section of each s
 ### Consequences
 
 - Good: one known level for all the screens.
-- Good: the current rules agree with it. The text contrast rule of `SPEC.md` 7.3 is success criterion 1.4.3, and the stamp edge rule is 1.4.11.
+- Good: two current rules map to it. The text contrast rule of `SPEC.md` 7.3 is success criterion 1.4.3, and the stamp edge rule is 1.4.11. The project did not audit the other criteria. Thus, level AA is a target, not a result.
 - Bad: some criteria need a manual review. An automatic test cannot verify all of them.
 
 ### Confirmation
 
-The token contrast test and the accessibility tests in `e2e/` verify a part of the criteria. The review of a screen change verifies the other criteria.
+The token contrast test verifies criteria 1.4.3 and 1.4.11 for the tokens. The accessibility tests in `e2e/` run axe with the tags `wcag2a` and `wcag2aa`. Thus, they verify WCAG 2.0 levels A and AA only. The criteria of WCAG 2.1 and 2.2, for example 2.5.8 (target size), need a manual review of each screen change. This stays true until the tests also run the tags `wcag21a`, `wcag21aa` and `wcag22aa`.
 
 ## Advantages and disadvantages of the options
 
@@ -41,7 +41,7 @@ The token contrast test and the accessibility tests in `e2e/` verify a part of t
 
 ### WCAG 2.2 level AAA
 
-- Bad: some criteria are not possible for all content, for example the contrast of the stamp colors.
+- Bad: AAA adds criterion 1.4.6, a text contrast of 7:1. The text on the colored stamps uses the colors of the Creighton chart, and the project does not change these colors.
 
 ### No general level
 

@@ -28,7 +28,7 @@ These rules apply:
 
 - One reference page for each screen and dialog, in `docs/reference/screens/`. The screen pages are for contributors. `reference/user-interface.md` stays as the overview for users, with no copied rules.
 - A rule with a condition uses a table with the columns **Condition** and **Result**. The rows apply in sequence, the last row is **Else**, and each value has a number and a unit.
-- The docs check reads the text of the table cells for the STE rules.
+- From step 3 of RFC 0001, the docs check reads the text of the table cells for the STE rules.
 - The pull request that moves a section replaces it in `SPEC.md` with a link. A code comment refers to the path of a page, not to a section number.
 - The pages have no document version. The version of the application is the history.
 
@@ -41,7 +41,7 @@ These rules apply:
 
 ### Confirmation
 
-The docs check finds broken links and STE errors in the table cells. The review of each pull request of the move verifies that `SPEC.md` has no second copy of a moved rule.
+The docs check finds broken links. From step 3 of RFC 0001, it also finds STE errors in the table cells. The review of each pull request of the move verifies that `SPEC.md` has no second copy of a moved rule.
 
 ## Advantages and disadvantages of the options
 
