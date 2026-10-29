@@ -1,4 +1,4 @@
-/** The actions that a key can start. See docs/reference/application-behavior.md. */
+/** The actions that a key can start. See docs/reference/application-behavior.md#keyboard-shortcuts. */
 export type ShortcutId =
   | 'today'
   | 'chart'

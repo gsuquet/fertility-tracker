@@ -47,6 +47,16 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Cycle and phase rules](reference/cycle-and-phase-rules.md)
 - [User interface](reference/user-interface.md)
 - [Application behavior](reference/application-behavior.md)
+- [Dialog component](reference/dialog-component.md)
+
+### Screens
+
+- [Navigation](reference/screens/navigation.md)
+- [Statistics bar](reference/screens/statistics-bar.md)
+- [Today page](reference/screens/today.md)
+- [Paper Chart Strip page](reference/screens/chart.md)
+- [Monthly Calendar page](reference/screens/calendar.md)
+- [Cycle Analytics page](reference/screens/analytics.md)
 - [Data format](reference/data-format.md)
 - [Data storage](reference/data-storage.md)
 
