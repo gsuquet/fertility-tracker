@@ -52,6 +52,69 @@ In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is
 | `codeString`   | string              | No       | The code of the day. Calculated again from the fields on load. |
 | `isPeakDay`    | boolean             | No       | Calculated again after each change.                            |
 
+## TypeScript types
+
+The types are in `src/types/crms.ts`. The code lists are in [Observation codes](observation-codes.md#code-lists-in-the-source).
+
+```typescript
+export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
+export type BleedingCode = (typeof BLEEDING_CODES)[number];
+
+export const STRETCH_CODES = ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as const;
+export type MucusStretch = (typeof STRETCH_CODES)[number];
+
+export const MODIFIER_CODES = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as const;
+export type MucusModifier = (typeof MODIFIER_CODES)[number];
+
+export const FREQUENCY_CODES = ['X1', 'X2', 'X3', 'AD'] as const;
+export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
+
+export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
+export type SymptomCode = (typeof SYMPTOM_CODES)[number];
+
+// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (see observation-codes.md)
+
+export type StampType =
+  | 'RED' // Bleeding
+  | 'DARK_GREEN' // Dry day
+  | 'WHITE_BABY' // Peak-type mucus
+  | 'LIGHT_GREEN_BABY_1' // Count of three, day 1
+  | 'LIGHT_GREEN_BABY_2' // Count of three, day 2
+  | 'LIGHT_GREEN_BABY_3' // Count of three, day 3
+  | 'YELLOW'; // Shown in the welcome guide only
+
+export interface Observation {
+  id: string;
+  date: string; // YYYY-MM-DD
+  cycleDay: number;
+  bleeding?: BleedingCode | undefined;
+  stretch?: MucusStretch | undefined;
+  modifiers?: MucusModifier[] | undefined;
+  frequency?: FrequencyCode | undefined;
+  symptoms?: SymptomCode[] | undefined;
+  intercourse?: boolean | undefined;
+  notes?: string | undefined;
+  isManualPeak?: boolean | undefined;
+  isCycleStart?: boolean | undefined;
+  stamp: StampType;
+  codeString: string; // For example "10KLX3 I"
+  isPeakDay?: boolean | undefined;
+}
+
+export type ObservationInput = { [K in keyof Observation]?: Observation[K] | undefined };
+
+export interface Cycle {
+  id: string;
+  startDate: string; // YYYY-MM-DD
+  observations: Observation[];
+  notes?: string | undefined;
+}
+
+export type Language = 'en' | 'fr';
+export type Theme = 'dark' | 'light';
+export type ActiveTab = 'today' | 'chart' | 'calendar' | 'analytics';
+```
+
 ## Validation of a restored file
 
 When you restore a file, the application does these checks:

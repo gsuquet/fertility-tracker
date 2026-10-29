@@ -27,13 +27,13 @@ The application uses the first rule that applies:
 
 Each cycle has a maximum of one Peak Day. The application uses the first rule that applies:
 
-1. If a day of the cycle has a Peak Day that you set, that day is the Peak Day.
+1. If a day of the cycle has a Peak Day that you set (`isManualPeak`), that day is the Peak Day. If more than one day has `isManualPeak`, the first day is the Peak Day.
 2. If not, the last day of the cycle with fertile mucus is the Peak Day.
 3. If the cycle has no day with fertile mucus, the cycle has no Peak Day.
 
 The Peak Day can change when you record more days. A new day with fertile mucus moves the Peak Day to that day.
 
-You can set one Peak Day in each cycle. When you save a new Peak Day, the application removes the old Peak Day of that cycle. The Peak Days that you set in other cycles do not change.
+You can set one Peak Day in each cycle. When you save a new Peak Day, the application removes the old Peak Day of that cycle. It finds that cycle after it adds the saved day. The Peak Days that you set in other cycles do not change.
 
 ## Count of three
 

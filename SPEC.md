@@ -14,13 +14,6 @@ This document is the full specification of the application. Change it before you
    - [2.1 Versions](#21-versions)
    - [2.2 Code splitting and lazy loading](#22-code-splitting-and-lazy-loading)
 3. [Domain rules](#3-domain-rules)
-   - [3.1 Codes](#31-codes)
-   - [3.2 Code parser](#32-code-parser)
-   - [3.3 Stamp of one day](#33-stamp-of-one-day)
-   - [3.4 Peak Day and count of three](#34-peak-day-and-count-of-three)
-   - [3.5 Cycles](#35-cycles)
-   - [3.6 Phases and mucus score](#36-phases-and-mucus-score)
-   - [3.7 Version tracker](#37-version-tracker)
 4. [Data types](#4-data-types)
 5. [User interface](#5-user-interface)
    - [5.1 Navigation and dialogs](#51-navigation-and-dialogs)
@@ -132,214 +125,11 @@ The main chunk has only the code of the first screen. The other parts load with 
 
 ## 3. Domain rules
 
-The rules are pure functions in `src/domain/`. They do not use React.
-
-### 3.1 Codes
-
-[src/types/crms.ts](src/types/crms.ts) is the single source of the code lists. It exports each list as an `as const` array, and each code type comes from its array. No other file repeats a code list.
-
-| Constant                  | Codes                                                       |
-| ------------------------- | ----------------------------------------------------------- |
-| `BLEEDING_CODES`          | `H`, `M`, `L`, `VL`, `B`                                    |
-| `MENSES_BLEEDING_CODES`   | `H`, `M`, `L`, `VL`                                         |
-| `STRETCH_CODES`           | `0`, `2`, `2W`, `4`, `6`, `8`, `10`, `10DL`, `10SL`, `10WL` |
-| `PEAK_TYPE_STRETCH_CODES` | `6`, `8`, `10`, `10DL`, `10SL`, `10WL`                      |
-| `MODIFIER_CODES`          | `B`, `C`, `C/K`, `G`, `K`, `L`, `P`, `Y`                    |
-| `PEAK_TYPE_MODIFIERS`     | `K`, `L`, `C/K`                                             |
-| `FREQUENCY_CODES`         | `X1`, `X2`, `X3`, `AD`                                      |
-| `SYMPTOM_CODES`           | `AP`, `RAP`, `LAP`                                          |
-
-| Group       | Code and meaning                                                                                                                                                                              |
-| ----------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Bleeding    | `H` heavy, `M` moderate, `L` light, `VL` very light, `B` brown or black                                                                                                                       |
-| Stretch     | `0` dry, `2` damp, `2W` wet, `4` shiny (without lubrication). `6` slightly stretchy, `8` moderately stretchy, `10` very stretchy. `10DL`, `10SL`, `10WL` damp, shiny or wet with lubrication. |
-| Modifier    | `B` brown, `C` cloudy, `C/K` cloudy and clear, `G` gummy, `K` clear, `L` lubricative, `P` pasty, `Y` yellow                                                                                   |
-| Frequency   | `X1` one time, `X2` two times, `X3` three times, `AD` all day                                                                                                                                 |
-| Symptoms    | `AP` abdominal pain, `RAP` right abdominal pain, `LAP` left abdominal pain                                                                                                                    |
-| Intercourse | `I`                                                                                                                                                                                           |
-
-### 3.2 Code parser
-
-**Module:** [src/domain/codeParser.ts](src/domain/codeParser.ts). **CrMS specification version:** `1.1.0`.
-
-`formatCodeString` writes the code in this sequence: `[bleeding] [stretch][modifiers][frequency] [I] [symptoms]`.
-
-A modifier code describes the appearance of the mucus. The form calls the group **Appearance / Characteristics**.
-
-- There is no space between the mucus code and the frequency. Examples: `10KLX3 I AP`, `H`, `2WX2`, `0AD`.
-- The symptoms come last, with a space between them. Thus, `parseCodeString(formatCodeString(obs))` keeps each field.
-- The chart cell and the print layout remove the symptoms from the code and show them in a separate symptom tag.
-- A mucus code with only the modifier `B` or `L` is the same text as a bleeding code. `formatCodeString` writes it with a dash: `-B` or `-L`.
-
-`parseCodeString` reads the text that the user types.
-
-- It accepts lowercase letters, and text with or without a space before the frequency. For example, `10KLX3`, `10KL X3`, `0AD` and `0 AD` are correct.
-- It finds the longest stretch code first, for example `10WL` before `10`. The sequence comes from `STRETCH_CODES`, sorted by length.
-- It finds the modifier codes, the frequency, the symptoms and `I`. It ignores letters that are not codes.
-- A `B` token is brown bleeding only when it is the first token. In other positions, it is the brown modifier.
-- A bare `L` token is light bleeding. The parser ignores the dash of `-B` and `-L`, so they are modifier codes.
-- For each set of fields, `parseCodeString(formatCodeString(obs))` gives the same fields.
-
-`appendMissingSymptoms` repairs saved data. The data validator uses it when a saved `codeString` does not have all the `symptoms` of the observation. This occurs in data from before version 1.17.2.
-
-- It adds each missing symptom code to the end of the saved code. It keeps the remaining text.
-- A saved code that is only `B` or `L` (any case), on an observation without bleeding, is a modifier. The validator writes it again as `-B` or `-L`.
-
-### 3.3 Stamp of one day
-
-**Module:** [src/domain/stampCalculator.ts](src/domain/stampCalculator.ts)
-
-`isPeakTypeMucus` is true for stretch `6`, `8`, `10`, `10DL`, `10SL` or `10WL`, or for modifier `K`, `L` or `C/K`. `calculateStamp` uses the first rule that applies:
-
-```mermaid
-flowchart TD
-    Start[Observation of one day] --> Fertile{Peak-type mucus?}
-    Fertile -- Yes --> White[WHITE_BABY]
-    Fertile -- No --> Bleeding{Bleeding H, M, L or VL? Or B without stretch or with stretch 0?}
-    Bleeding -- Yes --> Red[RED]
-    Bleeding -- No --> Green[DARK_GREEN]
-```
-
-### 3.4 Peak Day and count of three
-
-**Module:** [src/domain/peakDetector.ts](src/domain/peakDetector.ts)
-
-`processCycleObservations` sorts the days of one cycle by date. It sets `cycleDay`, `stamp` and `isPeakDay` on each day. The Peak Day is the first day of the cycle with `isManualPeak`. If no day has `isManualPeak`, it is the last day of the cycle with Peak-type mucus.
-
-A cycle has a maximum of one manual Peak Day. When `saveObservation` saves a day with `isManualPeak`, it clears `isManualPeak` on the other days of the same cycle. It finds that cycle after it adds the saved day. The manual Peak Days of other cycles do not change.
-
-The count of three follows each run of fertile days. The Peak Day is also a fertile day for this rule.
-
-| Calendar days after the last fertile day | Stamp of a dry day   |
-| ---------------------------------------- | -------------------- |
-| 1                                        | `LIGHT_GREEN_BABY_1` |
-| 2                                        | `LIGHT_GREEN_BABY_2` |
-| 3                                        | `LIGHT_GREEN_BABY_3` |
-| 4 or more                                | `DARK_GREEN`         |
-- The count applies before and after the Peak Day.
-- The count uses calendar days. A day without an observation is part of the count.
-- A new `WHITE_BABY` day starts the count again.
-- Only a `DARK_GREEN` day changes. A `RED` day stays red.
-- A `WHITE_BABY` day after a manual Peak Day stays white.
-
-### 3.5 Cycles
-
-**Module:** [src/domain/cycleBoundaryDetector.ts](src/domain/cycleBoundaryDetector.ts)
-
-`groupObservationsIntoCycles` puts the days into cycles. The first observation starts the first cycle. For each subsequent day, the first rule that matches applies:
-
-| Condition                                                               | Result                                                                   |
-| ----------------------------------------------------------------------- | ------------------------------------------------------------------------ |
-| `isCycleStart === true`                                                 | The day starts a new cycle.                                              |
-| `isCycleStart === false`                                                | The day stays in the current cycle, for example spotting between cycles. |
-| Bleeding `H`, `M`, `L` or `VL` after a day without bleeding or with `B` | The day starts a new cycle.                                              |
-| Other days                                                              | The day stays in the current cycle.                                      |
-- The function gives the cycles from the newest to the oldest. The `id` of a cycle is `cycle_` and its start date.
-- Each cycle goes through `processCycleObservations`. Thus, `cycleDay` counts from the start date of its cycle.
-- `getCycleEndDate` gives the date of the last observation of a cycle.
-
-The form asks "Is this bleeding day the start of a new cycle?" when `needsCycleStartChoice` in [observationForm.ts](src/domain/observationForm.ts) is true. That occurs in this condition:
-
-- The day has a bleeding code: `H`, `M`, `L`, `VL` or `B`.
-- The previous observation has no bleeding, or there is no previous observation.
-- The user did not answer for this day before (`isCycleStart` is not set).
-
-### 3.6 Phases and mucus score
-
-**Modules:** [src/domain/cyclePhases.ts](src/domain/cyclePhases.ts), [src/domain/mucusScore.ts](src/domain/mucusScore.ts)
-
-| Value      | One cycle (`getCyclePhases`)                                       | All cycles (`averagePhases`)                  |
-| ---------- | ------------------------------------------------------------------ | --------------------------------------------- |
-| Length     | Cycle day of the last observation                                  | Average of all cycles                         |
-| Menses     | Number of `RED` days                                               | Average of all cycles                         |
-| Follicular | Cycle day 1 to the Peak Day. Before the Peak Day: all days so far. | Average of the cycles with a Peak Day, if any |
-| Luteal     | Days after the Peak Day. Before the Peak Day: 0.                   | Average of the cycles with a Peak Day, if any |
-
-`getMucusScore` gives the mucus score of one day:
-
-| Observation                                                    | Score |
-| -------------------------------------------------------------- | ----- |
-| Stretch `10`, `10DL`, `10SL` or `10WL`, or modifier `K` or `L` | 10    |
-| Stretch `8`                                                    | 8     |
-| Stretch `6`                                                    | 6     |
-| Stretch `4`                                                    | 4     |
-| Stretch `2` or `2W`                                            | 2     |
-| Other days                                                     | 0     |
-
-The modifier `C/K` alone gives a score of 0, although `isPeakTypeMucus` is true for `C/K`.
-
-### 3.7 Version tracker
-
-**Modules:** [src/domain/versionTracker.ts](src/domain/versionTracker.ts), [src/domain/appVersion.ts](src/domain/appVersion.ts)
-
-- `VERSION_HISTORY` has the release notes, newest first. Each release has a version, a date, a title, a tagline, highlights and the CrMS version, in English and French.
-- Vite puts the version from `package.json` and the build time into `__APP_VERSION__` and `__BUILD_DATE__`. `appVersion.ts` reads them.
-- `checkAndRecordVersionSeen()` in `appVersion.ts` compares the version with `fertility_tracker_last_seen_version` in `localStorage`. Then it saves the current version.
-- `appVersion.ts` does not import `versionTracker.ts`. Thus, the release notes stay out of the main chunk (section 2.2).
-- `getStorageStats()` counts the storage keys, the size, the observations and the cycles. It reads the observations with `parseObservationData()` ([Storage format](docs/reference/data-storage.md#storage-format)).
+These rules are in [Observation codes](docs/reference/observation-codes.md), [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md), [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md), [Domain API](docs/reference/domain-api.md) and [Version tracker](docs/reference/version-tracker.md).
 
 ## 4. Data types
 
-**Module:** [src/types/crms.ts](src/types/crms.ts)
-
-```typescript
-export const BLEEDING_CODES = ['H', 'M', 'L', 'VL', 'B'] as const;
-export type BleedingCode = (typeof BLEEDING_CODES)[number];
-
-export const STRETCH_CODES = ['0', '2', '2W', '4', '6', '8', '10', '10DL', '10SL', '10WL'] as const;
-export type MucusStretch = (typeof STRETCH_CODES)[number];
-
-export const MODIFIER_CODES = ['B', 'C', 'C/K', 'G', 'K', 'L', 'P', 'Y'] as const;
-export type MucusModifier = (typeof MODIFIER_CODES)[number];
-
-export const FREQUENCY_CODES = ['X1', 'X2', 'X3', 'AD'] as const;
-export type FrequencyCode = (typeof FREQUENCY_CODES)[number];
-
-export const SYMPTOM_CODES = ['AP', 'RAP', 'LAP'] as const;
-export type SymptomCode = (typeof SYMPTOM_CODES)[number];
-
-// Subsets: MENSES_BLEEDING_CODES, PEAK_TYPE_STRETCH_CODES, PEAK_TYPE_MODIFIERS (section 3.1)
-
-export type StampType =
-  | 'RED' // Bleeding
-  | 'DARK_GREEN' // Dry day
-  | 'WHITE_BABY' // Peak-type mucus
-  | 'LIGHT_GREEN_BABY_1' // Count of three, day 1
-  | 'LIGHT_GREEN_BABY_2' // Count of three, day 2
-  | 'LIGHT_GREEN_BABY_3' // Count of three, day 3
-  | 'YELLOW'; // Shown in the welcome guide only
-
-export interface Observation {
-  id: string;
-  date: string; // YYYY-MM-DD
-  cycleDay: number;
-  bleeding?: BleedingCode | undefined;
-  stretch?: MucusStretch | undefined;
-  modifiers?: MucusModifier[] | undefined;
-  frequency?: FrequencyCode | undefined;
-  symptoms?: SymptomCode[] | undefined;
-  intercourse?: boolean | undefined;
-  notes?: string | undefined;
-  isManualPeak?: boolean | undefined;
-  isCycleStart?: boolean | undefined;
-  stamp: StampType;
-  codeString: string; // For example "10KLX3 I"
-  isPeakDay?: boolean | undefined;
-}
-
-export type ObservationInput = { [K in keyof Observation]?: Observation[K] | undefined };
-
-export interface Cycle {
-  id: string;
-  startDate: string; // YYYY-MM-DD
-  observations: Observation[];
-  notes?: string | undefined;
-}
-
-export type Language = 'en' | 'fr';
-export type Theme = 'dark' | 'light';
-export type ActiveTab = 'today' | 'chart' | 'calendar' | 'analytics';
-```
+The types are in [Data format](docs/reference/data-format.md#typescript-types).
 
 ## 5. User interface
 
@@ -484,13 +274,13 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 
 **Module:** [src/components/CycleAnalyticsView.tsx](src/components/CycleAnalyticsView.tsx)
 
-| Section                          | Content                                                                                                                                                        |
-| -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from section 3.6, as bars.                                                                                               |
-| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.                                                                                            |
-| Creighton Mucus Score Trend      | One bar for each day, with its mucus score (section 3.6). Dry bars are dark green, fertile bars (score 6 or more) use the accent and the Peak Day bar is pink. |
-| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count.                                                                                      |
-| Creighton Mucus Score guide      | A short explanation of the score.                                                                                                                              |
+| Section                          | Content                                                                                                                                                                                                 |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cycle Phases Breakdown           | Menses, follicular and luteal lengths from [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md), as bars.                                                                                   |
+| Mucus & Stamp Score Distribution | Number and percentage of red, dry, fertile and count-of-three days.                                                                                                                                     |
+| Creighton Mucus Score Trend      | One bar for each day, with its [mucus score](docs/reference/cycle-and-phase-rules.md#mucus-score). Dry bars are dark green, fertile bars (score 6 or more) use the accent and the Peak Day bar is pink. |
+| Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count.                                                                                                                               |
+| Creighton Mucus Score guide      | A short explanation of the score.                                                                                                                                                                       |
 - Before the Peak Day, the page shows "in progress" after the follicular value.
 - Luteal phase health is "Normal" from 9 to 17 days. Above 0 and below 9 days, or above 17 days, it is "Short/Extended". The value of all cycles is an average and can have decimals. At 0 days, it is "Pending Peak Day".
 - The trend chart (`.mucus-trend-wrapper`) scrolls horizontally on a narrow screen. It is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).
