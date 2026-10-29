@@ -2,6 +2,17 @@
 
 This page gives the rules for the **Monthly Calendar** page.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                      | ARIA snapshot                                                |
+| ------------------------ | ----------------------------------------------- | ------------------------------------------------------------ |
+| Phone, 390 by 844 pixels | [calendar-phone.png](images/calendar-phone.png) | [calendar-phone.aria.yml](snapshots/calendar-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [calendar-wide.png](images/calendar-wide.png)   | [calendar-wide.aria.yml](snapshots/calendar-wide.aria.yml)   |
+
+![The Monthly Calendar page on a phone](images/calendar-phone.png)
+
 ## Behavior
 
 - The grid shows one month. Each day shows its stamp, its code and the intercourse mark.

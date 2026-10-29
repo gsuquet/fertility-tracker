@@ -1,0 +1,75 @@
+- banner:
+  - button "Creighton FertilityCare System Home":
+    - heading "Fertility Tracker" [level=1]
+    - text: Creighton Model System (CrMS)
+  - tablist "Main Navigation Views":
+    - tab "Today"
+    - tab "Paper Chart Strip" [selected]
+    - tab "Monthly Calendar"
+    - tab "Cycle Analytics"
+  - button "Filter cycle view": /Cycle 2 \(\d+-\d+-\d+\)/
+  - button "Log Observation"
+  - button "Practitioner PDF / PNG"
+  - button "Welcome to Fertility Tracker"
+  - button "About & Version Tracker"
+  - button "Switch Language": EN
+  - button "Toggle Dark/Light Mode"
+- main:
+  - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
+  - tabpanel "Paper Chart Strip":
+    - text: Paper Chart Strip Creighton Model System
+    - button /Full \d+-Day Paper Grid/
+    - button "Compact Strip"
+    - button "Phases"
+    - button "Legend Key"
+    - text: "/Cycle 2 \\d+-\\d+-\\d+ → \\d+-\\d+-\\d+ \\d+ days Peak Day \\(P\\): Day \\d+/"
+    - button "Jump to Day 1"
+    - button "P"
+    - button "Jump to Latest"
+    - button "Scroll left"
+    - button "Scroll right"
+    - text: ""
+    - button /Cycle Day 1, Date \d+-\d+-\d+, Stamp RED, Code H/: /1 Wed \d+-\d+ H/
+    - button /Cycle Day 2, Date \d+-\d+-\d+, Stamp RED, Code M/: /2 Thu \d+-\d+ M/
+    - button /Cycle Day 3, Date \d+-\d+-\d+, Stamp RED, Code L/: /3 Fri \d+-\d+ L/
+    - button /Cycle Day 4, Date \d+-\d+-\d+, Stamp RED, Code VL/: /4 Sat \d+-\d+ VL/
+    - button /Cycle Day 5, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /5 Sun \d+-\d+ 0AD/
+    - button /Cycle Day 6, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /6 Mon \d+-\d+ 0AD/
+    - button /Cycle Day 7, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /7 Tue \d+-\d+ 0AD/
+    - button /Cycle Day 8, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /8 Wed \d+-\d+ 0AD/
+    - button /Cycle Day 9, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 2CX2/: /9 Thu \d+-\d+ 2CX2/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 2CX2/: /\d+ Fri \d+-\d+ 2CX2/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp WHITE_BABY, Code 6C\/KX3 I/: /\d+ Sat \d+-\d+ I 6C\/KX3 I/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp WHITE_BABY, Code 8KX3/: /\d+ Sun \d+-\d+ 8KX3/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp WHITE_BABY, Code 10KLAD AP/: /\d+ Mon \d+-\d+ P 10KLAD AP/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp LIGHT_GREEN_BABY_1, Code 0AD/: /\d+ Tue \d+-\d+ 1 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp LIGHT_GREEN_BABY_2, Code 0AD I/: /\d+ Wed \d+-\d+ 2 I 0AD I/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp LIGHT_GREEN_BABY_3, Code 0AD/: /\d+ Thu \d+-\d+ 3 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Fri \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sat \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sun \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Mon \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD I/: /\d+ Tue \d+-\d+ I 0AD I/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Wed \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Thu \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Fri \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sat \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sun \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Mon \d+-\d+ 0AD/
+    - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD, Today/: /Today \d+ Tue \d+-\d+ 0AD/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+    - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ \d+-\d+/
+  - contentinfo "Legal and Trademark Disclaimers":
+    - text: Legal & Trademark Information
+    - paragraph: FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).
+    - text: Medical Disclaimer
+    - paragraph: This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.
+    - text: /© \d+ Fertility Tracker • Open Source Software/
+    - button "Welcome to Fertility Tracker": User Guide
+    - button "Keyboard shortcuts"
+    - button "About & Version Tracker": /v\d+\.\d+\.\d+/

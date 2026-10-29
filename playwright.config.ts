@@ -13,6 +13,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 1 : 0,
   reporter: process.env.CI ? [['list'], ['html', { open: 'never' }]] : 'list',
+  // The screen pages link to the ARIA snapshots (ADR 0006)
+  expect: {
+    toMatchAriaSnapshot: { pathTemplate: 'docs/reference/screens/snapshots/{arg}{ext}' },
+  },
   use: {
     baseURL,
     timezoneId: 'UTC',

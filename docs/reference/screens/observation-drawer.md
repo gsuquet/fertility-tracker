@@ -2,6 +2,19 @@
 
 This page gives the rules for the observation drawer, the bottom sheets and the code buttons.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+On a phone, the drawer opens from **Log**. On a wide screen, it opens from the cell of today on the chart.
+
+| Size                     | Screenshot                                                          | ARIA snapshot                                                                    |
+| ------------------------ | ------------------------------------------------------------------- | -------------------------------------------------------------------------------- |
+| Phone, 390 by 844 pixels | [observation-drawer-phone.png](images/observation-drawer-phone.png) | [observation-drawer-phone.aria.yml](snapshots/observation-drawer-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [observation-drawer-wide.png](images/observation-drawer-wide.png)   | [observation-drawer-wide.aria.yml](snapshots/observation-drawer-wide.aria.yml)   |
+
+![The observation drawer on a phone](images/observation-drawer-phone.png)
+
 ## Behavior
 
 - The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.

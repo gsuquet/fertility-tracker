@@ -2,6 +2,17 @@
 
 This page gives the rules for the **Paper Chart Strip** page.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                | ARIA snapshot                                          |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------ |
+| Phone, 390 by 844 pixels | [chart-phone.png](images/chart-phone.png) | [chart-phone.aria.yml](snapshots/chart-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [chart-wide.png](images/chart-wide.png)   | [chart-wide.aria.yml](snapshots/chart-wide.aria.yml)   |
+
+![The Paper Chart Strip page on a phone](images/chart-phone.png)
+
 ## Behavior
 
 | Part                                                                           | Content                                                                                                    |

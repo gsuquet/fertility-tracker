@@ -2,6 +2,17 @@
 
 This page gives the rules for the welcome guide.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                                | ARIA snapshot                                                          |
+| ------------------------ | --------------------------------------------------------- | ---------------------------------------------------------------------- |
+| Phone, 390 by 844 pixels | [welcome-guide-phone.png](images/welcome-guide-phone.png) | [welcome-guide-phone.aria.yml](snapshots/welcome-guide-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [welcome-guide-wide.png](images/welcome-guide-wide.png)   | [welcome-guide-wide.aria.yml](snapshots/welcome-guide-wide.aria.yml)   |
+
+![The welcome guide on a phone](images/welcome-guide-phone.png)
+
 ## Behavior
 
 The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is not in `localStorage`. It has four slides:

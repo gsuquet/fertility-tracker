@@ -1,0 +1,50 @@
+- banner:
+  - button "Creighton FertilityCare System Home"
+  - button "Filter cycle view": Cycle 2
+  - button "More actions"
+- main:
+  - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
+  - tabpanel "Cycle Analytics":
+    - button "What is the Creighton Mucus Score (MCS)?"
+    - heading "Cycle Phases Breakdown (Cycle 2)" [level=3]
+    - text: Menses Phase
+    - strong: 4 days
+    - text: Follicular Phase (up to Peak P)
+    - strong: /\d+ days/
+    - text: Luteal Phase (Post-Peak P)
+    - strong: /\d+ days/
+    - heading "Mucus & Stamp Score Distribution" [level=3]
+    - text: Red Menses Bleeding
+    - strong: /4 days \(\d+%\)/
+    - text: Dark Green Infertile Dry Days
+    - strong: /\d+ days \(\d+%\)/
+    - text: White 👶 Fertile Mucus Days
+    - strong: /3 days \(\d+%\)/
+    - text: Light Green 👶 Post-Peak Count (1-2-3)
+    - strong: 3 days
+    - heading /Creighton Mucus Score Trend \(0 to \d+\)/ [level=3]
+    - region /Creighton Mucus Score Trend \(0 to \d+\)/: /CD1 CD2 CD3 CD4 CD5 CD6 CD7 CD8 2 CD9 2 CD10 6 CD11 \d+ CD12 \d+ CD13 CD14 CD15 CD16 CD17 CD18 CD19 CD20 CD21 CD22 CD23 CD24 CD25 CD26 CD27 CD28/
+    - heading "Practitioner Clinical Summary (CrMS / NaPro)" [level=3]
+    - strong: "Average Mucus Score:"
+    - text: /1\.1 \/ \d+/
+    - strong: "Peak Day (P):"
+    - text: /CD \d+ \(\d+-\d+-\d+\)/
+    - strong: "Luteal Phase Health:"
+    - text: /Normal \(9-\d+ days\)/
+    - strong: "Intercourse Frequency:"
+    - text: 3 total
+  - contentinfo "Legal and Trademark Disclaimers":
+    - text: Legal & Trademark Information
+    - paragraph: FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).
+    - text: Medical Disclaimer
+    - paragraph: This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.
+    - text: /© \d+ Fertility Tracker • Open Source Software/
+    - button "Welcome to Fertility Tracker": User Guide
+    - button "Keyboard shortcuts"
+    - button "About & Version Tracker": /v\d+\.\d+\.\d+/
+- navigation "Mobile Navigation":
+  - button "Today"
+  - button "Chart"
+  - button "Log"
+  - button "Calendar"
+  - button "Analytics"

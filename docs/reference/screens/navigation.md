@@ -2,6 +2,10 @@
 
 This page gives the rules for the header, the page buttons, the footer, the phone menu and the cycle menu.
 
+## Layout
+
+This part shows on each page. Its layout is in the screenshots and the ARIA snapshots of the pages, for example [Today page](today.md#layout).
+
 ## Behavior
 
 The application has four pages, a header, a statistics bar, an observation drawer and dialogs. A phone screen is 640 pixels wide or less.

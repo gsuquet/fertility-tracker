@@ -1,0 +1,56 @@
+- banner:
+  - button "Creighton FertilityCare System Home"
+  - button "Filter cycle view": Cycle 2
+  - button "More actions"
+- main:
+  - tabpanel "Monthly Calendar":
+    - button "Previous month"
+    - heading /October \d+/ [level=2]
+    - button "Future months disabled" [disabled]
+    - text: M T W T F S S
+    - button /Date \d+-\d+-\d+, Observation M/: 1 M
+    - button /Date \d+-\d+-\d+, Observation L/: 2 L
+    - button /Date \d+-\d+-\d+, Observation VL/: 3 VL
+    - button /Date \d+-\d+-\d+, Observation 0AD/: 4 0AD
+    - button /Date \d+-\d+-\d+, Observation 0AD/: 5 0AD
+    - button /Date \d+-\d+-\d+, Observation 0AD/: 6 0AD
+    - button /Date \d+-\d+-\d+, Observation 0AD/: 7 0AD
+    - button /Date \d+-\d+-\d+, Observation 2CX2/: 8 2CX2
+    - button /Date \d+-\d+-\d+, Observation 2CX2/: 9 2CX2
+    - button /Date \d+-\d+-\d+, Observation 6C\/KX3 I/: /\d+ I 6C\/KX3 I/
+    - button /Date \d+-\d+-\d+, Observation 8KX3/: /\d+ 8KX3/
+    - button /Date \d+-\d+-\d+, Observation 10KLAD AP/: /\d+ P 10KLAD AP/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 1 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD I/: /\d+ 2 I 0AD I/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 3 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD I/: /\d+ I 0AD I/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, No observation/ [disabled]
+    - button /Date \d+-\d+-\d+, No observation/ [disabled]
+    - button /Date \d+-\d+-\d+, No observation/ [disabled]
+    - button /Date \d+-\d+-\d+, No observation/ [disabled]
+  - contentinfo "Legal and Trademark Disclaimers":
+    - text: Legal & Trademark Information
+    - paragraph: FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are registered trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source software project. It is not affiliated with, endorsed by, certified by, or sponsored by the Saint Paul VI Institute, FertilityCare™ Centers of America (FCCA), or FertilityCare™ Centers International (FCCI).
+    - text: Medical Disclaimer
+    - paragraph: This software is for personal tracking, record-keeping, and educational purposes only. It does not provide medical advice, diagnosis, or treatment. Always consult a certified FertilityCare Practitioner or Medical Consultant for clinical guidance.
+    - text: /© \d+ Fertility Tracker • Open Source Software/
+    - button "Welcome to Fertility Tracker": User Guide
+    - button "Keyboard shortcuts"
+    - button "About & Version Tracker": /v\d+\.\d+\.\d+/
+- navigation "Mobile Navigation":
+  - button "Today"
+  - button "Chart"
+  - button "Log"
+  - button "Calendar"
+  - button "Analytics"

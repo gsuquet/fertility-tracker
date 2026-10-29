@@ -2,6 +2,19 @@
 
 This page gives the rules for the **About & Version Tracker** dialog.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+The release notes change at each release. Thus, the snapshots and the screenshots show the **System Information** tab.
+
+| Size                     | Screenshot                                                  | ARIA snapshot                                                            |
+| ------------------------ | ----------------------------------------------------------- | ------------------------------------------------------------------------ |
+| Phone, 390 by 844 pixels | [version-dialog-phone.png](images/version-dialog-phone.png) | [version-dialog-phone.aria.yml](snapshots/version-dialog-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [version-dialog-wide.png](images/version-dialog-wide.png)   | [version-dialog-wide.aria.yml](snapshots/version-dialog-wide.aria.yml)   |
+
+![The version dialog on a phone](images/version-dialog-phone.png)
+
 ## Behavior
 
 - The info button in the header, the **About & Version Tracker** item of the phone menu and the version button in the footer open the dialog.

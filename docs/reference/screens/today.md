@@ -2,6 +2,17 @@
 
 This page gives the rules for the **Today** page: the date navigation, the observation form, the guidance and the history list.
 
+## Layout
+
+The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen, with the demo data. Read [ADR 0006](../../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+
+| Size                     | Screenshot                                | ARIA snapshot                                          |
+| ------------------------ | ----------------------------------------- | ------------------------------------------------------ |
+| Phone, 390 by 844 pixels | [today-phone.png](images/today-phone.png) | [today-phone.aria.yml](snapshots/today-phone.aria.yml) |
+| Wide, 1440 by 900 pixels | [today-wide.png](images/today-wide.png)   | [today-wide.aria.yml](snapshots/today-wide.aria.yml)   |
+
+![The Today page on a phone](images/today-phone.png)
+
 ## Behavior
 
 | Part                                                                                           | Content                                                                                                                                           |

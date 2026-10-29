@@ -17,6 +17,8 @@ repos:
       - id: check-toml
       - id: check-yaml
       - id: end-of-file-fixer
+        # Playwright writes the ARIA snapshots without a last newline (ADR 0006)
+        exclude: ^docs/reference/screens/snapshots/
       - id: mixed-line-ending
         args: [--fix=lf]
       - id: trailing-whitespace

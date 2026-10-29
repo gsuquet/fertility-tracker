@@ -2,6 +2,10 @@
 
 This page gives the rules for the four statistics cards above the pages.
 
+## Layout
+
+This part shows on each page. Its layout is in the screenshots and the ARIA snapshots of the pages, for example [Today page](today.md#layout).
+
 ## Behavior
 
 The bar shows four cards for the selected cycle, or for all cycles:
