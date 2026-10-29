@@ -19,6 +19,7 @@ Optional footers, for example BREAKING CHANGE: description
 | `!`           | Optional. Shows a change that is not compatible with the previous version.           |
 | `description` | Required. Starts after a colon and a space. Use the imperative: "add", not "added".  |
 | Header        | A maximum of 100 characters.                                                         |
+| Body          | Optional. A blank line must separate the header and the body.                        |
 
 ## Types
 
@@ -54,6 +55,10 @@ The commit message check accepts these messages without a type. The pull request
 | CI            | The `pr-title` workflow checks the pull request title with `--strict`. It runs again when the title changes. |
 | Manual        | `mise run commit-msg FILE` checks a file. Without `FILE`, it reads the standard input.                       |
 | Strict mode   | `--strict` also rejects the messages that Git writes. A squash merge uses the title as the commit message.   |
+
+## Dependabot
+
+Dependabot writes `build(deps)` titles for npm and `ci(deps)` titles for GitHub Actions. The prefixes are in `commit-message.prefix` in `.github/dependabot.yml`.
 
 ## Examples
 

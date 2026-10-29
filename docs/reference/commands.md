@@ -62,15 +62,15 @@ The hooks run on each commit. CI runs them on each pull request with `pre-commit
 
 ## CI workflow
 
-The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It does not run on a push to `main`. The job `validate` does these steps:
+The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It does not run on a push to `main`. Each job installs the pinned tools from `.mise/config.toml` with `jdx/mise-action`. The job `validate` does these steps:
 
 1. Installs the pinned tools with mise.
 2. Installs the dependencies with `npm ci`.
-3. Verifies the registry signatures of the dependencies.
-4. Scans the pull request commits for secrets.
-5. Runs the pre-commit hooks on all files.
-6. Runs the tests with coverage.
-7. Builds the application.
+3. Verifies the registry signatures of the dependencies with `npm audit signatures`.
+4. Scans the pull request commits for secrets with gitleaks.
+5. Runs the pre-commit hooks on all files: file hygiene, Biome, `tsc --noEmit` and the docs check.
+6. Runs the tests with coverage (`npm run test:coverage`).
+7. Builds the application (`vite build`).
 
 The job `e2e` runs at the same time, on pull requests only.
 
@@ -80,9 +80,12 @@ The job `e2e` runs at the same time, on pull requests only.
 4. Runs `npm run test:e2e`.
 5. Keeps the Playwright report for 7 days if a test fails.
 
-The workflow `.github/workflows/pr-title.yml` checks that the pull request title follows [Conventional Commits](commit-messages.md). It runs when a pull request opens, changes or gets new commits.
+The workflow `.github/workflows/pr-title.yml` checks that the pull request title follows [Conventional Commits](commit-messages.md). It runs `.mise/tasks/commit-msg --strict`. It runs when a pull request opens, changes or gets new commits.
+
+Each workflow pins its actions to a full commit SHA, with the release tag in a comment.
 
 ## Related documents
 
 - [Install and run locally](../how-to/install-and-run-locally.md)
 - [Testing strategy](../explanation/testing-strategy.md)
+- [Deployment](deployment.md)
