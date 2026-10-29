@@ -95,6 +95,7 @@ Records are not Diátaxis pages. An RFC proposes a large change before the work 
 
 - [RFC template](records/rfcs/0000-template.md)
 - [RFC 0001: Documentation structure, records and screen frames](records/rfcs/0001-documentation-structure.md)
+- [RFC 0002: Phone-first redesign of the screens](records/rfcs/0002-phone-first-redesign.md)
 - [ADR template](records/adrs/0000-template.md)
 - [ADR 0001: Automatic backup and synchronization with zero-knowledge privacy](records/adrs/0001-automated-backup-and-sync-privacy.md)
 - [ADR 0002: CSS in cascade layers with a shared design system](records/adrs/0002-css-maintainability-design-system.md)
