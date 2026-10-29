@@ -239,6 +239,17 @@ describe('ChartRow on a desktop', () => {
     expect(card(new RegExp(`^Cycle Day 2, Date ${date}`))).toHaveAttribute('aria-pressed', 'true');
   });
 
+  it('does not open the sheet when an arrow key lands on the selected day', () => {
+    renderChart(buildDemoObservations(TODAY));
+    const today = screen.getByRole('button', { current: 'date' });
+    // The focus is on the day before today, and the selection stays on today
+    const before = today.previousElementSibling as HTMLElement;
+    before.focus();
+    fireEvent.keyDown(before, { key: 'ArrowRight' });
+    expect(document.activeElement).toBe(today);
+    expect(drawer()).toBe('closed none');
+  });
+
   it('opens the sheet with a click on the selected day', () => {
     renderChart(buildDemoObservations(TODAY));
     fireEvent.click(screen.getByRole('button', { current: 'date' }));

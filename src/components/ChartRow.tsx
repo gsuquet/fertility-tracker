@@ -168,8 +168,10 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
     ? (detailObs ?? draftDay(shown, getDaysDifference((detailCycle as Cycle).startDate, shown) + 1))
     : undefined;
   // On a desktop, a click selects the day. A click or Enter on the selected day opens the sheet.
+  // An arrow key only moves the selection: it does not open the day that it lands on
+  const moving = useRef(false);
   const selectDay = (date: string) => {
-    if (date === shown && detailDay) openObservation(detailDay);
+    if (date === shown && detailDay && !moving.current) openObservation(detailDay);
     else setSelection(date);
   };
 
@@ -189,7 +191,9 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
     if (!next) return;
     e.preventDefault();
     next.focus();
+    moving.current = true;
     next.click();
+    moving.current = false;
   };
 
   const legend = (
