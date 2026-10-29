@@ -27,6 +27,8 @@ test.describe('Haptic feedback', () => {
     await recordVibrations(page);
     await openApp(page);
     await page.getByRole('textbox', { name: en.labels.directInput }).fill('10KL');
+    // Done closes the keyboard and the reading of the code, which cover the rows below the field
+    await page.getByRole('button', { name: en.observationForm.done, exact: true }).click();
     await page.getByRole('switch', { name: en.actions.setPeak }).click();
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect.poll(() => vibrations(page)).toEqual([10, 15]);

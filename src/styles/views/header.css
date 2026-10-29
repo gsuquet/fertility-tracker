@@ -174,7 +174,8 @@
       padding-top: env(safe-area-inset-top, 0px);
       padding-left: max(0.5rem, env(safe-area-inset-left, 0px));
       padding-right: max(0.5rem, env(safe-area-inset-right, 0px));
-      gap: 0.25rem;
+      /* 8 pixels between the controls of the bar (RFC 0002, touch targets) */
+      gap: var(--space-sm);
       overflow: visible;
       justify-content: space-between;
     }
@@ -195,8 +196,18 @@
       display: flex;
       flex: 1;
       align-items: center;
-      gap: var(--space-xs);
+      gap: var(--space-sm);
       min-width: 0;
+    }
+
+    /* On Chart, the cycle picker shrinks first: its label ends in an ellipsis on a narrow phone */
+    .app-header > .cycle-picker-container {
+      flex-shrink: 1;
+      min-width: 0;
+    }
+
+    .app-header > .cycle-picker-container .cycle-selector-btn {
+      max-width: 100%;
     }
 
     .top-bar-title {
@@ -220,6 +231,7 @@
     .header-page-slot .compact-nav-btn {
       border: 0;
       background: none;
+      box-shadow: none;
     }
 
     .header-page-slot .compact-picker-inline {
@@ -245,8 +257,14 @@
     /* Chart: 35-day or Strip, and the menu of the chart */
     .header-page-slot .chart-strip-toolbar {
       flex: 1;
-      gap: var(--space-xs);
+      gap: var(--space-sm);
       min-width: 0;
+    }
+
+    /* Narrower buttons, so the French labels fit on a 360 pixel phone */
+    .header-page-slot .chart-view-toggle button {
+      height: var(--control-size-sm);
+      padding: 0 var(--space-sm);
     }
 
     .header-tabs {
@@ -258,15 +276,6 @@
       flex-wrap: nowrap;
       overflow: visible;
       flex-shrink: 0;
-    }
-
-    /* On Chart, the cycle picker comes first, as in the mockup */
-    .page-chart .header-controls {
-      display: contents;
-    }
-
-    .page-chart .cycle-picker-container {
-      order: -1;
     }
 
     .desktop-only-action {

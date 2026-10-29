@@ -1,5 +1,5 @@
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import {
   X,
@@ -50,8 +50,8 @@ interface VersionModalProps {
   onClose: () => void;
   /** Closes this dialog and opens the keyboard shortcuts. */
   onOpenShortcuts?: () => void;
-  /** The tab that shows first. **Legal** in the footer opens the system tab, with the notice. */
-  initialTab?: 'notes' | 'system';
+  /** The tab that shows first. `legal`, from **Legal** in the footer, is the system tab scrolled to the notice. */
+  initialTab?: 'notes' | 'system' | 'legal';
 }
 
 export const VersionModal: React.FC<VersionModalProps> = ({
@@ -62,7 +62,13 @@ export const VersionModal: React.FC<VersionModalProps> = ({
   const { t, language } = useLanguage();
   // On a phone, a drag down closes the dialog as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
-  const [activeTab, setActiveTab] = useState<'notes' | 'system'>(initialTab);
+  const [activeTab, setActiveTab] = useState<'notes' | 'system'>(
+    initialTab === 'notes' ? 'notes' : 'system'
+  );
+  const legalRef = useRef<HTMLElement>(null);
+  useEffect(() => {
+    if (initialTab === 'legal') legalRef.current?.scrollIntoView?.({ block: 'start' });
+  }, [initialTab]);
   const [expandedVersions, setExpandedVersions] = useState<Record<string, boolean>>({
     '1.1.0': true,
   });
@@ -321,7 +327,7 @@ export const VersionModal: React.FC<VersionModalProps> = ({
             </div>
 
             {/* Legal notice: the installed application has no footer */}
-            <section className="version-legal-notice" aria-label={t.footer.label}>
+            <section ref={legalRef} className="version-legal-notice" aria-label={t.footer.label}>
               <LegalDisclaimers />
               <Copyright />
             </section>

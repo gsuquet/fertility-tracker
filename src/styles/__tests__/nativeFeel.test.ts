@@ -189,3 +189,23 @@ describe('header in the title bar of an installed app on a computer', () => {
     );
   });
 });
+
+describe('the bars and the footer of RFC 0002', () => {
+  it('makes the top bar and the bottom bar opaque, with no blur', () => {
+    const header = ruleBody(readCss('views/header.css'), /\.app-header/);
+    const nav = ruleBody(readCss('views/mobile-nav.css'), /\.mobile-nav-bar/);
+    for (const bar of [header, nav]) {
+      expect(bar).toMatch(/background-color:\s*var\(--bg-surface\);/);
+      expect(bar).not.toMatch(/backdrop-filter/);
+    }
+  });
+
+  it('has a 32 pixel size for the other controls', () => {
+    expect(readCss('tokens/spacing.css')).toMatch(/--control-size-sm:\s*32px;/);
+  });
+
+  it('does not print the footer', () => {
+    const print = readCss('views/print.css');
+    expect(print).toMatch(/\.app-footer,[^{]*\{\s*display:\s*none !important;/);
+  });
+});

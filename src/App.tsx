@@ -104,7 +104,7 @@ const MainApp: React.FC = () => {
   );
   const [isExportModalOpen, setIsExportModalOpen] = useState(false);
   // The open version dialog and its first tab
-  const [versionTab, setVersionTab] = useState<'notes' | 'system' | null>(null);
+  const [versionTab, setVersionTab] = useState<'notes' | 'system' | 'legal' | null>(null);
   // The element of the phone top bar that holds the page controls
   const [topBarSlot, setTopBarSlot] = useState<HTMLDivElement | null>(null);
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
@@ -282,7 +282,8 @@ const MainApp: React.FC = () => {
         {/* The footer landmark is outside main (RFC 0002) */}
         <Footer
           onOpenVersion={() => setVersionTab('notes')}
-          onOpenLegal={() => setVersionTab('system')}
+          onOpenLegal={() => setVersionTab('legal')}
+          onInstall={handleInstall}
         />
 
         <ObservationDrawer />

@@ -16,6 +16,11 @@ The application has four pages, a header, a statistics bar, an observation drawe
 | Page buttons ([MobileNav.tsx](../../../src/components/MobileNav.tsx)) | In the header                                                                                                                                                                          | The bottom bar: fixed at the bottom, 62 pixels high plus the safe area, with a 44-pixel **+** button for a new observation.                                                                   |
 | Dialogs                                                               | Centered                                                                                                                                                                               | Open from the bottom, with 24-pixel top corners, a maximum height of `88dvh`, and a fixed header and footer                                                                                   |
 | Footer ([Footer.tsx](../../../src/components/Footer.tsx))             | One line under the page: "© 2026 Fertility Tracker · Legal · v1.37.0". Not in the installed application.                                                                               | The same line.                                                                                                                                                                                |
+- On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it ([Observation drawer](observation-drawer.md#drag-down-to-close)). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
+- The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([Back button and address](../application-behavior.md#back-button-and-address)).
+- The phone menu uses the [dialog component](../dialog-component.md). It opens from the bottom of the screen.
+- The cycle menu of [CyclePicker.tsx](../../../src/components/CyclePicker.tsx) uses the [dialog component](../dialog-component.md). On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
+- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only.
 
 ### Top bar on a phone
 
@@ -27,20 +32,19 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 | Chart     | The cycle picker, **35-day** and **Strip**, the **Chart options** menu (`⋮`) and the menu button.                                                  |
 | Calendar  | The title **Calendar**, the cycle picker and `⋮`.                                                                                                  |
 | Analytics | The title **Analytics**, the cycle picker and `⋮`.                                                                                                 |
+- On Chart, the cycle picker is first in the DOM too. Thus, the focus order and the reading order are the same as the visual order. On a narrow phone, the label of the picker ends in an ellipsis.
+- The controls of the bar have 8 pixels between them.
+- When the screen goes across 640 pixels, the controls move between the top bar and the page. React then draws them again, so a control in the move loses the focus, and an open chart menu closes.
 - The top bar and the bottom bar use `--bg-surface`, with no blur. Thus, the page does not show through them.
 - The menu button (`⋮`) opens the phone menu. Step 5 of RFC 0002 replaces it with the gear of **Settings**.
 
 ### Footer
 
-- **Legal** opens **About & Version Tracker** on **System Information**, with the full legal and medical notice. The version opens the release notes.
+- **Legal** opens **About & Version Tracker** on **System Information**, scrolled to the full legal and medical notice. The version opens the release notes.
+- From 641 to 1439 pixels, the footer also has **Install app** when the browser can install it. The header has this button from 1440 pixels, and the phone menu has it up to 640 pixels.
+- The footer does not print.
 - The welcome guide shows the full notice on its first slide.
 - The footer is outside `<main>`.
-
-- On a phone, each dialog of `Modal` is a bottom sheet, like the drawer. The user drags it down to close it ([Observation drawer](observation-drawer.md#drag-down-to-close)). The error screen of `ErrorBoundary` is the only exception: it shows after a crash and keeps its buttons.
-- The address has the hash of the open page: `#today`, `#chart`, `#calendar` or `#analytics` ([Back button and address](../application-behavior.md#back-button-and-address)).
-- The phone menu uses the [dialog component](../dialog-component.md). It opens from the bottom of the screen.
-- The cycle menu of [CyclePicker.tsx](../../../src/components/CyclePicker.tsx) uses the [dialog component](../dialog-component.md). On a wide screen, the menu opens under its button. On a phone, it opens from the bottom of the screen.
-- The cycle menu closes with its close button, `Escape`, **Back**, a choice and a click outside the menu. Its backdrop dims the page on a phone only.
 
 ## Accessibility
 

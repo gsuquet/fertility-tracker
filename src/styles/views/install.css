@@ -93,7 +93,8 @@
   }
 
   /* Below 1440 pixels, the header has no space for one more button. Chromium then shows its own
-     install button in the address bar, and the install banner and the phone menu stay. */
+     install button in the address bar. The footer has Install from 641 to 1439 pixels, and the
+     phone menu has it below. */
   @media (max-width: 1439px) {
     .header-install-btn.desktop-only-action {
       display: none;

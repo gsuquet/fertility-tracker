@@ -308,10 +308,11 @@ describe('contrast-safe token usage', () => {
     for (const rule of rules) expect(rule[2]).not.toMatch(/opacity/);
   });
 
-  it('keeps the footer text opaque', () => {
+  it('keeps the footer text opaque, also in a media query', () => {
     const footer = readCss('views/footer.css');
-    const rule = /\.app-footer\s*\{([^}]*)\}/.exec(footer.replace(/@media[^{]*\{[^}]*\}\s*\}/, ''));
-    expect(rule?.[1]).not.toMatch(/opacity/);
+    const rules = [...footer.matchAll(/\.app-footer\s*\{([^}]*)\}/g)];
+    expect(rules.length).toBeGreaterThan(1);
+    for (const rule of rules) expect(rule[1]).not.toMatch(/opacity/);
   });
 
   it('colors the chart symptom tag with the warning tokens', () => {

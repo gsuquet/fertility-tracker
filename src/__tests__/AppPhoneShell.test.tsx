@@ -50,10 +50,16 @@ describe('App on a phone', () => {
     );
   });
 
-  it('puts the chart controls and the title of the other pages in the top bar', () => {
+  it('puts the chart controls and the title of the other pages in the top bar', async () => {
     render(<App />);
     fireEvent.click(bottomNav().getByRole('button', { name: en.mobileTabs.chart }));
     expect(banner().getByRole('group', { name: en.chartStrip.viewLabel })).toBeInTheDocument();
+    // The cycle picker is first in the DOM, so the focus order is the visual order
+    // (the brand button before it is hidden on a phone)
+    const bar = banner().getAllByRole('button');
+    expect(bar[0]).toHaveAccessibleName(en.menu.homeLabel);
+    expect(bar[1]).toHaveAccessibleName(en.cyclePicker.buttonLabel);
+    expect(bar[2]).toHaveAccessibleName(en.chartStrip.view35);
     expect(banner().getByRole('button', { name: en.chartStrip.optionsLabel })).toBeInTheDocument();
     expect(bottomNav().getByRole('button', { name: en.mobileTabs.chart })).toHaveAttribute(
       'aria-current',
@@ -66,6 +72,12 @@ describe('App on a phone', () => {
     fireEvent.click(bottomNav().getByRole('button', { name: en.mobileTabs.calendar }));
     expect(banner().getByRole('heading', { level: 1, name: en.mobileTabs.calendar })).toBeVisible();
     // The page has one h1: the print report is hidden on a screen
+    expect(within(screen.getByRole('main')).queryByRole('heading', { level: 1 })).toBeNull();
+
+    fireEvent.click(bottomNav().getByRole('button', { name: en.mobileTabs.analytics }));
+    expect(
+      await banner().findByRole('heading', { level: 1, name: en.mobileTabs.analytics })
+    ).toBeVisible();
     expect(within(screen.getByRole('main')).queryByRole('heading', { level: 1 })).toBeNull();
   });
 });

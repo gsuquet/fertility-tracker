@@ -1,10 +1,10 @@
 - banner:
+  - button "Filter cycle view": Cycle 2
   - group "Chart view":
     - text: ""
     - button /\d+-day/ [pressed]
     - button "Strip"
   - button "Chart options"
-  - button "Filter cycle view": Cycle 2
   - button "More actions"
 - main:
   - tabpanel "Paper Chart Strip":
