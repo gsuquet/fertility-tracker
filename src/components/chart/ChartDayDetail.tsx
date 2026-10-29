@@ -7,12 +7,17 @@ import { hasObservationCode, showsEmptyStamp } from '../../domain/stampCalculato
 import { StampBadge } from '../StampBadge';
 import { fertilityGuidance } from '../today/fertilityGuidance';
 
-interface ChartDayDetailProps {
+interface DetailDay {
   date: string;
   cycleNum: number;
   dayNum: number;
   /** The saved observation of the day, if any */
   obs: Observation | undefined;
+}
+
+interface ChartDayDetailProps {
+  /** The selected day. With no day, only the empty live region stays in the page. */
+  day: DetailDay | undefined;
   t: TranslationSchema;
   onEdit: () => void;
   onOpenInToday: () => void;
@@ -23,59 +28,75 @@ interface ChartDayDetailProps {
  * It replaces the observation sheet that a click opens on a phone.
  */
 export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
-  date,
-  cycleNum,
-  dayNum,
-  obs,
+  day,
   t,
   onEdit,
   onOpenInToday,
 }) => {
+  const obs = day?.obs;
   const hasCode = !!obs && hasObservationCode(obs);
-  const sentence = hasCode ? fertilityGuidance(obs.stamp, t) : t.todayView.noObservation;
+  // A saved day with no code, for example with notes only, is not a day with no observation
+  const sentence = hasCode
+    ? fertilityGuidance(obs.stamp, t)
+    : obs
+      ? t.chartStrip.dayNoCode
+      : t.todayView.noObservation;
   const saved = obs ? t.todayView.loggedStatus : t.todayView.notLoggedStatus;
 
+  // The live region keeps its place in the tree, so that it reads the first selection too
   return (
-    <section className="chart-day-detail" aria-label={t.chartStrip.detailLabel}>
-      <StampBadge
-        stamp={obs?.stamp ?? 'DARK_GREEN'}
-        isPeakDay={obs?.isPeakDay}
-        intercourse={obs?.intercourse}
-        size="lg"
-        isEmpty={!obs || showsEmptyStamp(obs)}
-      />
+    <section
+      className={`chart-day-detail ${day ? '' : 'is-empty'}`}
+      aria-label={day ? t.chartStrip.detailLabel : undefined}
+    >
+      {day && (
+        <StampBadge
+          stamp={obs?.stamp ?? 'DARK_GREEN'}
+          isPeakDay={obs?.isPeakDay}
+          intercourse={obs?.intercourse}
+          size="lg"
+          isEmpty={!obs || showsEmptyStamp(obs)}
+        />
+      )}
       {/* Only the text is read again when the selection moves, not the buttons */}
       <div className="chart-day-detail-text" aria-live="polite">
-        <p>
-          <strong>
-            {formatMessage(t.chartStrip.detailDay, {
-              date: formatDateDisplay(date, t.locale, {
-                weekday: 'short',
-                month: 'short',
-                day: 'numeric',
-              }),
-              cycle: cycleNum,
-              day: dayNum,
-            })}
-          </strong>
-          {hasCode && (
-            <>
-              {' · '}
-              <span className="chart-day-detail-code">{obs.codeString}</span>
-            </>
-          )}
-        </p>
-        <p className="chart-day-detail-sentence">
-          {sentence} {saved}.
-        </p>
-        {obs?.notes?.trim() && <p className="chart-day-detail-notes">{obs.notes}</p>}
+        {day && (
+          <>
+            <p>
+              <strong>
+                {formatMessage(t.chartStrip.detailDay, {
+                  date: formatDateDisplay(day.date, t.locale, {
+                    weekday: 'short',
+                    month: 'short',
+                    day: 'numeric',
+                  }),
+                  cycle: day.cycleNum,
+                  day: day.dayNum,
+                })}
+              </strong>
+              {hasCode && (
+                <>
+                  {' · '}
+                  <span className="chart-day-detail-code">{obs.codeString}</span>
+                </>
+              )}
+            </p>
+            <p className="chart-day-detail-sentence">{sentence}</p>
+            <p className="chart-day-detail-sentence">{saved}</p>
+            {obs?.notes?.trim() && <p className="chart-day-detail-notes">{obs.notes}</p>}
+          </>
+        )}
       </div>
-      <button type="button" className="btn btn-secondary" onClick={onEdit}>
-        {t.chartStrip.editDay}
-      </button>
-      <button type="button" className="btn btn-secondary" onClick={onOpenInToday}>
-        {t.chartStrip.openInToday}
-      </button>
+      {day && (
+        <>
+          <button type="button" className="btn btn-secondary" onClick={onEdit}>
+            {t.chartStrip.editDay}
+          </button>
+          <button type="button" className="btn btn-secondary" onClick={onOpenInToday}>
+            {t.chartStrip.openInToday}
+          </button>
+        </>
+      )}
     </section>
   );
 };

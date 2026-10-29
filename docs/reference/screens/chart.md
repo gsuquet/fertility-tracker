@@ -81,13 +81,19 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
 
 - The columns are 44 px wide, with 2 px between them. The cards are 118 px high. At 1440 px, 28 columns show. The page is 1440 px wide or less, so a row of 35 days always scrolls.
 - The controls are at the end of the cycle line.
-- A click on a card selects the day. It does not open the observation drawer. The selected card has a 2 px accent border and a ring of `--accent-glow`.
-- When the chart opens, today is selected. When no row has a card for today, no day is selected and the detail bar does not show.
-- The detail bar under the rows shows the stamp, the date, the cycle and the cycle day. It also shows the code, the guidance sentence, the saved state and the notes. A day with no code shows "No observation yet".
+- A click on a card selects the day. It does not open the observation drawer. A click or `Enter` on the selected day opens the drawer.
+- The selection is a date. All the cards with this date have a 2 px accent border and a ring of `--accent-glow`. For example, a card after the end of a cycle can show a day of the next cycle.
+- A selected Peak Day keeps its ring inside the ring of the selection.
+- When the chart opens, today is selected. When no row has a card for today, no day is selected and the detail bar does not show. When the selected date has no card in the rows, today is selected again.
+- The detail bar under the rows shows the stamp, the date, the cycle and the cycle day. The cycle is the cycle of the saved observation, else the cycle that holds the date. The bar also shows the code, the guidance sentence, the saved state and the notes.
+  - A day with no observation shows "No observation yet".
+  - A saved day with no bleeding, mucus or frequency code shows "No bleeding, mucus or frequency code.".
   - **Edit** opens the observation drawer for the day.
   - **Open in Today** opens the **Today** page on that day.
-- The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row.
-- When more than 4 cycles show, each past cycle shows only the cycle day and the stamp. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
+- The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row. An arrow key with `Alt`, `Ctrl`, `Shift` or the Meta key does not move the selection.
+- When more than 4 cycles show, each past cycle shows only the cycle day and the stamp, with no phase bar. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
+- The empty chart (`ChartBlankGrid`) has no selection. A click on its card opens the drawer.
+- The **Today** tab opens on today, also after **Open in Today**.
 
 ### Other rules
 
@@ -101,7 +107,8 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
 - **35-day** and **Strip** are toggle buttons with `aria-pressed`, in a group with the name **Chart view**.
 - Today has `aria-current="date"`. This applies to day cards with an observation and to empty day cards. The date of today comes from `getTodayStr()`.
 - The phase bar has `aria-hidden="true"`. Each segment has a title with the day and its phase.
-- On a desktop, each card has `aria-pressed`: `true` for the selected day. The text of the detail bar is a polite live region, so a screen reader reads the new day. The buttons are not in the live region.
+- On a desktop, each card has `aria-pressed`: `true` for the selected day. The name of an empty card does not tell the user to click to add an observation.
+- The text of the detail bar is a polite live region, so a screen reader reads the new day. The buttons are not in the live region. The empty live region stays in the page when no day is selected, so a screen reader also reads the first selection.
 
 ## Implementation
 

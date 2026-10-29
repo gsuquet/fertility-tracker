@@ -71,7 +71,7 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
         .getByRole('button', { name: en.mobileTabs.log })
         .click();
     } else {
-      // On a wide screen, the drawer opens from the day detail bar of the chart, or the calendar
+      // On a wide screen, today is selected in the chart, so a click on it opens the drawer
       await openTab(page, size, 'chart');
       const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
       await chart
@@ -82,7 +82,6 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
           }),
         })
         .click();
-      await chart.getByRole('button', { name: en.chartStrip.editDay }).click();
     }
     return settled(page.getByRole('dialog'));
   },

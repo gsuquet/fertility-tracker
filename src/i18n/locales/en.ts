@@ -291,6 +291,8 @@ export const en = {
     editDay: 'Edit',
     openInToday: 'Open in Today',
     showRow: 'Show all the days of cycle {number}',
+    hideRow: 'Show only the stamps of cycle {number}',
+    dayNoCode: 'No bleeding, mucus or frequency code.',
   },
   exportModal: {
     title: 'Practitioner Export & Data Backup',

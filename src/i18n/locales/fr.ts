@@ -293,6 +293,8 @@ export const fr: TranslationSchema = {
     editDay: 'Modifier',
     openInToday: "Ouvrir dans Aujourd'hui",
     showRow: 'Afficher tous les jours du cycle {number}',
+    hideRow: 'Afficher seulement les tampons du cycle {number}',
+    dayNoCode: 'Aucun code de saignement, de glaire ou de fréquence.',
   },
   exportModal: {
     title: 'Export Praticien & Sauvegarde',

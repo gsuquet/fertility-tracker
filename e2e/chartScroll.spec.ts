@@ -118,9 +118,19 @@ test.describe('Chart on a desktop', () => {
     // Today is selected when the chart opens
     await expect(detail).toContainText('Cycle 1, day 20');
 
+    // A click on a day selects it, and a second click opens the drawer
     const today = chart.locator('.chart-cell.is-today');
-    await today.click();
+    const before = chart.locator('.chart-cell').filter({ hasText: /^18/ }).first();
+    await before.click();
     await expect(page.getByRole('dialog')).toHaveCount(0);
+    await expect(detail).toContainText('Cycle 1, day 18');
+    await before.click();
+    await expect(page.getByRole('dialog')).toHaveCount(1);
+    await page.keyboard.press('Escape');
+    await expect(page.getByRole('dialog')).toHaveCount(0);
+
+    await today.click();
+    await expect(detail).toContainText('Cycle 1, day 20');
     await page.keyboard.press('ArrowLeft');
     await expect(detail).toContainText('Cycle 1, day 19');
     await expect(chart.locator('.chart-cell.is-selected')).toBeFocused();

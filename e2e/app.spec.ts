@@ -195,8 +195,8 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(peakStat(17, '2026-10-16')).toBeVisible();
     await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
 
+    // The day is still selected, so a click opens the drawer
     await cell('2026-10-16', 'DARK_GREEN').click();
-    await chart.getByRole('button', { name: en.chartStrip.editDay }).click();
     await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();

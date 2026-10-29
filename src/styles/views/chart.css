@@ -287,6 +287,17 @@
     box-shadow: var(--shadow-sm);
   }
 
+  /* With no day, only the empty live region stays, out of the layout */
+  .chart-day-detail.is-empty {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    padding: 0;
+    overflow: hidden;
+    clip-path: inset(50%);
+    border: 0;
+  }
+
   .chart-day-detail .stamp-badge-container {
     width: auto;
     height: auto;
@@ -489,7 +500,8 @@
     height: 28px;
   }
 
-  .view-compact .empty-cell .add-icon {
+  .view-compact .empty-cell .add-icon,
+  .is-collapsed .empty-cell .add-icon {
     margin-top: 6px;
   }
 
@@ -505,6 +517,13 @@
   .chart-cell.paper-cell.is-selected {
     border: 2px solid var(--accent-primary);
     box-shadow: 0 0 0 3px var(--accent-glow);
+  }
+
+  /* A selected Peak Day keeps its ring inside the ring of the selection */
+  .chart-cell.paper-cell.peak-cell.is-selected {
+    box-shadow:
+      0 0 0 2px var(--color-warning-ring),
+      0 0 0 5px var(--accent-glow);
   }
 
   /*

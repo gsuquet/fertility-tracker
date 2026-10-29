@@ -20,10 +20,10 @@ interface ChartCycleRowProps {
   /** The jump and scroll buttons, on the first row only */
   controls?: React.ReactNode;
   /**
-   * On a desktop, the cycle day of the selected day of this row, or null. Undefined on a phone,
-   * where a click opens the observation sheet.
+   * On a desktop, the date of the selected day, or null. Undefined on a phone, where a click
+   * opens the observation sheet.
    */
-  selectedDay?: number | null | undefined;
+  selectedDate?: string | null | undefined;
   /** A past cycle of a desktop chart with more than 4 cycles: true while it shows the stamps only */
   collapsed?: boolean | undefined;
   /** Opens or closes the full row of a past cycle. Only a row that can collapse has it. */
@@ -48,7 +48,7 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   showPhaseBar,
   todayStr,
   controls,
-  selectedDay,
+  selectedDate,
   collapsed,
   onToggleCollapsed,
   onStripScroll,
@@ -63,8 +63,8 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   const title = `${t.chartStrip.cycleBadge} ${cycleNum}`;
   // A collapsed row keeps the columns of its view, with the content of the Strip view
   const cellMode: ChartViewMode = collapsed ? 'compact' : viewMode;
-  const isSelected = (dayNum: number) =>
-    selectedDay === undefined ? undefined : selectedDay === dayNum;
+  const isSelected = (date: string) =>
+    selectedDate === undefined ? undefined : selectedDate === date;
 
   return (
     <section
@@ -79,7 +79,9 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
                 type="button"
                 className="cycle-line-toggle"
                 aria-expanded={!collapsed}
-                title={formatMessage(t.chartStrip.showRow, { number: cycleNum })}
+                title={formatMessage(collapsed ? t.chartStrip.showRow : t.chartStrip.hideRow, {
+                  number: cycleNum,
+                })}
                 onClick={onToggleCollapsed}
               >
                 {title}
@@ -107,7 +109,9 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
 
       <div className="chart-row-scroll" onScroll={onStripScroll}>
         {/* Phone: one bar over the card, which does not scroll. Desktop: one segment for each column. */}
-        {showPhaseBar && <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />}
+        {showPhaseBar && !collapsed && (
+          <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />
+        )}
         <div className="chart-row-strip">
           {Array.from({ length: totalSlots }, (_, idx) => {
             const dayNum = idx + 1;
@@ -120,7 +124,7 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
                 obs={obs}
                 isToday={isToday}
                 viewMode={cellMode}
-                selected={isSelected(dayNum)}
+                selected={isSelected(dateStr)}
                 onOpen={onOpenObservation}
               />
             ) : (
@@ -130,8 +134,13 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
                 dateStr={dateStr}
                 isToday={isToday}
                 viewMode={cellMode}
-                selected={isSelected(dayNum)}
-                labelTemplate={t.chartStrip.emptyCellLabel}
+                selected={isSelected(dateStr)}
+                labelTemplate={
+                  // On a desktop, a click selects the empty day and does not add an observation
+                  selectedDate === undefined
+                    ? t.chartStrip.emptyCellLabel
+                    : t.chartStrip.blankCellLabel
+                }
                 onOpen={onOpenDay}
               />
             );
