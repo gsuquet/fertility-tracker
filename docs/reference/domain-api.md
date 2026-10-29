@@ -4,6 +4,8 @@ This page lists the exported functions of `src/domain/`. These functions are pur
 
 ## codeParser.ts
 
+The parser follows version `1.1.0` of the CrMS specification (`CRMS_SPEC_VERSION` in `versionTracker.ts`).
+
 | Function                | Signature                                                 | Returns                                                                       |
 | ----------------------- | --------------------------------------------------------- | ----------------------------------------------------------------------------- |
 | `formatCodeString`      | `(obs: ObservationInput) => string`                       | The code string, for example `"10KLX3 I AP"`. The symptoms come last.         |
@@ -103,6 +105,8 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 | `buildDemoObservations` | `(todayStr: string) => Observation[]` | 56 days that end on `todayStr`: two 28-day cycles with the Peak Day on cycle day 13. |
 
 ## versionTracker.ts
+
+The rules are in [Version tracker](version-tracker.md).
 
 | Export              | Signature                               | Returns                                                            |
 | ------------------- | --------------------------------------- | ------------------------------------------------------------------ |

@@ -16,13 +16,13 @@ The application writes the code of a day in this sequence:
 
 Examples: `M`, `0AD`, `10KLX3 I AP`, `L 6CX1`.
 
-In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. The parser gives the same fields back from each code string that the application writes.
+In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. A space before the frequency is optional. For example, `10KLX3`, `10KL X3`, `0AD` and `0 AD` are correct. The parser ignores letters that are not codes. The parser gives the same fields back from each code string that the application writes.
 
-An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow and `-L` as the appearance code for lubricative.
+An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow. It reads `-B` and `-L` as the appearance codes for brown and lubricative.
 
 The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
 
-Data from versions before 1.17.2 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. A stored code `B` or `L` on a day without bleeding becomes `-B` or `-L`.
+Data from versions before 1.17.2 can have a stored code string without the symptoms. When the application loads this data, it adds the missing symptom codes to the end of the code string. It keeps the remaining text. A stored code `B` or `L`, in uppercase or lowercase, on a day without bleeding becomes `-B` or `-L`.
 
 ## Bleeding codes
 
@@ -62,7 +62,7 @@ Data from versions before 1.17.2 can have a stored code string without the sympt
 | `P`   | Pasty or creamy        | No            |
 | `Y`   | Yellow                 | No            |
 
-A day has fertile mucus if its stretch code or one of its appearance codes is fertile.
+A day has fertile mucus if its stretch code or one of its appearance codes is fertile. The source calls these codes modifiers. The form calls the group **Appearance / Characteristics**.
 
 ## Frequency codes
 
@@ -84,7 +84,7 @@ A day has fertile mucus if its stretch code or one of its appearance codes is fe
 
 ## Code lists in the source
 
-Each list is an `as const` array in `src/types/crms.ts`. The code types come from these arrays. The domain functions and the forms use only these arrays.
+Each list is an `as const` array in `src/types/crms.ts`. The code types come from these arrays. The domain functions and the forms use only these arrays. No other file repeats a code list.
 
 | Constant                  | Codes                                                       | Type            |
 | ------------------------- | ----------------------------------------------------------- | --------------- |
