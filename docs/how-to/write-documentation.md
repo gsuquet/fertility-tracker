@@ -18,6 +18,18 @@ Use this procedure to add or change a page in `docs/`. The docs use Simplified T
 
 8. Correct each finding. Then run the docs check again.
 
+## Write a record
+
+1. Select the type of record:
+   - Write an RFC for a large change that needs discussion before the work.
+   - Write an ADR for one decision.
+2. Copy `docs/records/rfcs/0000-template.md` or `docs/records/adrs/0000-template.md` to a new file. Use the next free number of that type.
+3. Write each section of the template.
+4. Add a link to the record in the **Records** section of `docs/README.md`.
+5. Open a pull request. For an RFC, use the title `docs(rfc): ...` and set the status to **Proposed**.
+6. For an RFC, wait for the written decision of the maintainer. Do not merge the pull request before this decision.
+7. After the project accepts an RFC, write a short ADR for each decision in it. Link the ADR to the RFC in **More information**.
+
 ## Result
 
 The docs check passes. The page has one type and the index links to it.

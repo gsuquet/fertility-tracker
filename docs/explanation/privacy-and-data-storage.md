@@ -41,7 +41,7 @@ The backup file ends with `.ftbackup`. It is a JSON file that is not encrypted. 
 
 ## Synchronization in the future
 
-[ADR 0001](../adr/0001-automated-backup-and-sync-privacy.md) compares methods to synchronize data between devices without a loss of privacy. The application does not have synchronization yet.
+[ADR 0001](../records/adrs/0001-automated-backup-and-sync-privacy.md) compares methods to synchronize data between devices without a loss of privacy. The application does not have synchronization yet.
 
 ## Related documents
 

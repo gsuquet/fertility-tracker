@@ -28,6 +28,12 @@ A page that mixes types serves no reader well. For example, a reader who wants a
 
 The project uses a strict form of Diátaxis. Each page has exactly one type and goes in the folder of that type. The docs check makes sure that each page is in a correct folder and that the index links to it.
 
+## Why the records are not Diátaxis pages
+
+A record tells the story of one proposal or one decision at one date. It does not change after the merge, but the product changes. Thus, a record is not a tutorial, a how-to guide, a reference page or an explanation.
+
+The records are in `docs/records/`. An RFC proposes a large change before the work starts. An ADR gives one decision and its reasons. The reference pages give the current rules, and they link to the records for the reasons.
+
 ## Why a docs check in CI
 
 Rules that nobody checks are soon forgotten. The docs check runs in the pre-commit hooks and in CI. It also finds broken links, which occur each time a page moves. The check is small and has its own tests in `scripts/docs/`.

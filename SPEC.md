@@ -1044,7 +1044,7 @@ The test ignores these properties: `className`, `id`, `key`, `stamp`, `size`, `v
 
 ### 7.2 Design system and CSS layers
 
-**Modules:** [src/context/ThemeContext.tsx](src/context/ThemeContext.tsx), [src/styles/index.css](src/styles/index.css). **Decision:** [ADR 0002](docs/adr/0002-css-maintainability-design-system.md).
+**Modules:** [src/context/ThemeContext.tsx](src/context/ThemeContext.tsx), [src/styles/index.css](src/styles/index.css). **Decision:** [ADR 0002](docs/records/adrs/0002-css-maintainability-design-system.md).
 
 The layer order is:
 
@@ -1225,7 +1225,7 @@ mise run validate
 ### 8.5 Documentation
 
 - The pages in `docs/` follow [Diátaxis](https://diataxis.fr/) strictly. Each page is a tutorial, a how-to guide, a reference page or an explanation, in the folder of that type.
-- Decision records are in `docs/adr/`. Proposals for a large change (RFCs) are in `docs/records/rfcs/`. These records are not Diátaxis pages. `docs/README.md` is the index.
+- Decision records (ADRs) are in `docs/records/adrs/`. Proposals for a large change (RFCs) are in `docs/records/rfcs/`. These records are not Diátaxis pages. `docs/README.md` is the index.
 - `README.md`, `AGENTS.md`, `SPEC.md` and `docs/` use a subset of ASD-STE100 Simplified Technical English.
 - The limits are 20 words in a procedure step, 25 words in a descriptive sentence and 6 sentences in a paragraph. Do not use contractions or the words that are not approved.
 - `scripts/docs/checkDocs.ts` checks these rules, the Diátaxis folders, the index, the steps in guides, and the relative links and anchors.

@@ -143,4 +143,4 @@ graph TD
 
 ## Related documents
 
-- [Privacy and data storage](../explanation/privacy-and-data-storage.md)
+- [Privacy and data storage](../../explanation/privacy-and-data-storage.md)

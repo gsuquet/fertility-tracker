@@ -13,14 +13,14 @@ Each page has one type from [Diátaxis](https://diataxis.fr/). Do not mix two ty
 | Reference    | `reference/`   | "What are the facts?"    | Tables and lists of facts. No steps and no opinions.       |
 | Explanation  | `explanation/` | "Why is it like this?"   | Reasons, background and alternatives. No steps.            |
 
-A decision record goes in `adr/`. It records one decision, its context and its consequences. A proposal for a large change goes in `records/rfcs/`. Copy the [RFC template](../records/rfcs/0000-template.md) to start one.
+A decision record (ADR) goes in `records/adrs/`. It records one decision, its context and its consequences. Copy the [ADR template](../records/adrs/0000-template.md) to start one. A proposal for a large change (RFC) goes in `records/rfcs/`. Copy the [RFC template](../records/rfcs/0000-template.md) to start one.
 
-| Rule                                                                                         | Checked |
-| -------------------------------------------------------------------------------------------- | ------- |
-| The page is in one of the four folders, in `adr/`, in `records/rfcs/` or in `records/adrs/`. | Yes     |
-| `docs/README.md` links to the page.                                                          | Yes     |
-| A tutorial or a how-to guide has numbered steps.                                             | Yes     |
-| A reference page or an explanation page has no steps.                                        | No      |
+| Rule                                                                              | Checked |
+| --------------------------------------------------------------------------------- | ------- |
+| The page is in one of the four folders, in `records/rfcs/` or in `records/adrs/`. | Yes     |
+| `docs/README.md` links to the page.                                               | Yes     |
+| A tutorial or a how-to guide has numbered steps.                                  | Yes     |
+| A reference page or an explanation page has no steps.                             | No      |
 
 ## Page templates
 

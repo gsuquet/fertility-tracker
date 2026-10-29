@@ -111,4 +111,4 @@ The project uses option A.
 
 ## Related documents
 
-- [Architecture](../explanation/architecture.md)
+- [Architecture](../../explanation/architecture.md)

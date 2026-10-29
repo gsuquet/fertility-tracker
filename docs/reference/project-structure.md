@@ -10,7 +10,7 @@ fertility-tracker/
 ├── .mise/
 │   ├── config.toml              # Pinned tools: Node.js, npm, pre-commit, gitleaks
 │   └── tasks/                   # mise tasks, one shell file for each task
-├── docs/                        # Documentation (Diátaxis) and decision records
+├── docs/                        # Documentation (Diátaxis) and records (RFCs and ADRs)
 ├── e2e/                         # Playwright end-to-end and accessibility tests
 ├── public/                      # Static files: manifest, icons, headers
 │   └── icons/                   # Logo SVG (favicon), PWA icons (192, 512, maskable 512), Apple touch icon

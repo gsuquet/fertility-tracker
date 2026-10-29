@@ -96,7 +96,7 @@ If a part of the application cannot load, an error boundary shows a message and 
 
 ## Styles
 
-The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../adr/0002-css-maintainability-design-system.md) for the reasons.
+The CSS uses cascade layers: `tokens`, `base`, `primitives`, `views` and `utilities`. A later layer always wins over an earlier layer, whatever the selector. Colors are tokens with one value for the light theme and one value for the dark theme. Read [ADR 0002](../records/adrs/0002-css-maintainability-design-system.md) for the reasons.
 
 All the text uses the font of the operating system: SF Pro on Apple devices, Roboto on Android and Segoe UI on Windows. Thus, the application looks like the other applications of the device. The application has no font file to download or to keep in the cache. Also, no request goes to a font service such as Google Fonts, which can learn about the visit.
 
