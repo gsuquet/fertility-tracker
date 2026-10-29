@@ -57,6 +57,11 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Paper Chart Strip page](reference/screens/chart.md)
 - [Monthly Calendar page](reference/screens/calendar.md)
 - [Cycle Analytics page](reference/screens/analytics.md)
+- [Observation drawer](reference/screens/observation-drawer.md)
+- [Export dialog](reference/screens/export-dialog.md)
+- [Version dialog](reference/screens/version-dialog.md)
+- [Welcome guide](reference/screens/welcome-guide.md)
+- [Error screen](reference/screens/error-screen.md)
 - [Data format](reference/data-format.md)
 - [Data storage](reference/data-storage.md)
 

@@ -1,0 +1,62 @@
+# Observation drawer
+
+This page gives the rules for the observation drawer, the bottom sheets and the code buttons.
+
+## Behavior
+
+- The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
+- The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
+  - When the date has an observation, the title is **Edit Observation**, the fields show the saved values and **Delete** shows.
+  - When the date has no observation, the title is **Log Observation** and the form is empty.
+  - Thus, a save with no change never replaces a saved day with an empty observation.
+- A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
+- The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
+- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
+- On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
+
+### Drag down to close
+
+On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets ([Navigation](navigation.md)). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](../../../src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
+
+The rules below apply to all these sheets. The body is the part that scrolls. It is the form of the drawer, the list of a menu, or the body of a dialog.
+
+- A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
+- A drag in the body scrolls the body. It moves the sheet only when the body is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll. A drag that starts on a button of the body also moves the sheet, and the button does not get a click.
+- A swipe on the sheet never scrolls the page under it:
+  - A body that has nothing to scroll stops the scroll of the browser for each move of one finger. A move that starts in a text area, or in an element of the body that scrolls by itself, keeps its scroll.
+  - A body that scrolls has `overscroll-behavior: contain`. At its end, the page does not scroll.
+  - A move of one finger outside the body, for example on the backdrop, stops the scroll of the browser.
+  - A pinch with two fingers stays available, so the user can zoom. It never moves the sheet, also when the second finger lands outside the body.
+- One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
+- A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
+- The backdrop becomes lighter in proportion to the drag.
+- At the release, [sheetDrag.ts](../../../src/domain/sheetDrag.ts) decides:
+  - The sheet closes when the drag is more than 25% of the sheet height.
+  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
+  - Else the sheet goes back to its position.
+- A close by drag does the same as the close button (for the confirmation dialog and **New Cycle Start?**: the cancel). The draft is not kept, and the history entry of the sheet goes ([Back button and address](../application-behavior.md#back-button-and-address)).
+- The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
+
+[ObservationCodeSelector.tsx](../../../src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
+
+- Bleeding.
+- The cycle start button, only when a bleeding code is selected.
+- Stretch, modifiers, frequency and symptoms.
+
+It reads the values and functions of `useObservationForm`. The drawer and the Today form have the same markup, classes, ARIA attributes and labels.
+
+## Accessibility
+
+- A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
+- Each group of code buttons is a `<fieldset>` with a `<legend>`, so it has the role `group` and a name.
+
+## Implementation
+
+- [src/components/ObservationDrawer.tsx](../../../src/components/ObservationDrawer.tsx)
+
+## Related documents
+
+- [Today page](today.md)
+- [Application behavior](../application-behavior.md)
+- [Dialog component](../dialog-component.md)
+- [User interface](../user-interface.md)

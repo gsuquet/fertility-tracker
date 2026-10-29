@@ -17,11 +17,7 @@ This document is the full specification of the application. Change it before you
 4. [Data types](#4-data-types)
 5. [User interface](#5-user-interface)
    - [5.1 to 5.6 Navigation, dialog component and pages](#51-to-56-navigation-dialog-component-and-pages)
-   - [5.7 Observation drawer](#57-observation-drawer)
-   - [5.8 Export, backup and print](#58-export-backup-and-print)
-   - [5.9 Version dialog](#59-version-dialog)
-   - [5.10 Welcome guide](#510-welcome-guide)
-   - [5.11 Error boundary](#511-error-boundary)
+   - [5.7 to 5.11 Drawer, dialogs and error screen](#57-to-511-drawer-dialogs-and-error-screen)
    - [5.12 to 5.18 Application behavior](#512-to-518-application-behavior)
 6. [State and data storage](#6-state-and-data-storage)
 7. [Languages and design system](#7-languages-and-design-system)
@@ -109,7 +105,7 @@ The main chunk has only the code of the first screen. The other parts load with 
 - While a page or a dialog loads, a hidden `role="status"` element announces `common.loading`. A dialog shows nothing visible while it loads. The page fallback keeps a minimum height, so the footer does not move.
 - After the first render, when the browser is idle, the application imports the four lazy chunks, except `InstallGuideModal`. Only Safari on iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
 - A failed preload has no effect. The part tries again when the user opens it.
-- Each lazy dialog has its own `ErrorBoundary` in dialog mode (section 5.11). A failure does not block the other dialogs, and the next opening tries again.
+- Each lazy dialog has its own `ErrorBoundary` in dialog mode ([Error screen](docs/reference/screens/error-screen.md)). A failure does not block the other dialogs, and the next opening tries again.
 - The service worker keeps all the lazy chunks ([Offline use and installation](docs/reference/deployment.md#offline-use-and-installation)). Thus, each lazy part also opens offline.
 
 ## 3. Domain rules
@@ -126,154 +122,9 @@ The types are in [Data format](docs/reference/data-format.md#typescript-types).
 
 These rules are in [Navigation](docs/reference/screens/navigation.md), [Dialog component](docs/reference/dialog-component.md), [Statistics bar](docs/reference/screens/statistics-bar.md), [Today page](docs/reference/screens/today.md), [Paper Chart Strip page](docs/reference/screens/chart.md), [Monthly Calendar page](docs/reference/screens/calendar.md) and [Cycle Analytics page](docs/reference/screens/analytics.md).
 
-### 5.7 Observation drawer
+### 5.7 to 5.11 Drawer, dialogs and error screen
 
-**Module:** [src/components/ObservationDrawer.tsx](src/components/ObservationDrawer.tsx)
-
-- The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
-- The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
-  - When the date has an observation, the title is **Edit Observation**, the fields show the saved values and **Delete** shows.
-  - When the date has no observation, the title is **Log Observation** and the form is empty.
-  - Thus, a save with no change never replaces a saved day with an empty observation.
-- A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
-- The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
-- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
-- On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
-
-#### Drag down to close
-
-On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets ([Navigation](docs/reference/screens/navigation.md)). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
-
-The rules below apply to all these sheets. The body is the part that scrolls. It is the form of the drawer, the list of a menu, or the body of a dialog.
-
-- A grab handle shows at the top center of the sheet. It has `aria-hidden="true"`. The close button stays the accessible way to close the sheet.
-- A drag down from the handle or the header moves the sheet with the finger. These two parts have `touch-action: none` and use Pointer Events. A press on a button of the header does not start a drag.
-- A drag in the body scrolls the body. It moves the sheet only when the body is at the top and the finger moves down. The body uses touch events, so that the drag can stop the scroll. A drag that starts on a button of the body also moves the sheet, and the button does not get a click.
-- A swipe on the sheet never scrolls the page under it:
-  - A body that has nothing to scroll stops the scroll of the browser for each move of one finger. A move that starts in a text area, or in an element of the body that scrolls by itself, keeps its scroll.
-  - A body that scrolls has `overscroll-behavior: contain`. At its end, the page does not scroll.
-  - A move of one finger outside the body, for example on the backdrop, stops the scroll of the browser.
-  - A pinch with two fingers stays available, so the user can zoom. It never moves the sheet, also when the second finger lands outside the body.
-- One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
-- A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
-- The backdrop becomes lighter in proportion to the drag.
-- At the release, [sheetDrag.ts](src/domain/sheetDrag.ts) decides:
-  - The sheet closes when the drag is more than 25% of the sheet height.
-  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
-  - Else the sheet goes back to its position.
-- A close by drag does the same as the close button (for the confirmation dialog and **New Cycle Start?**: the cancel). The draft is not kept, and the history entry of the sheet goes ([Back button and address](docs/reference/application-behavior.md#back-button-and-address)).
-- The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
-
-[ObservationCodeSelector.tsx](src/components/observation/ObservationCodeSelector.tsx) shows the button groups in this sequence:
-
-- Bleeding.
-- The cycle start button, only when a bleeding code is selected.
-- Stretch, modifiers, frequency and symptoms.
-
-It reads the values and functions of `useObservationForm`. The drawer and the Today form have the same markup, classes, ARIA attributes and labels. Each group is a `<fieldset>` with a `<legend>`, so it has the role `group` and a name.
-
-### 5.8 Export, backup and print
-
-**Modules:** [ExportModal.tsx](src/components/ExportModal.tsx), [PrintExportView.tsx](src/components/PrintExportView.tsx), [exportUtils.ts](src/utils/exportUtils.ts), [backupImport.ts](src/domain/backupImport.ts)
-
-| Action              | Result                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Print / Save as PDF | Prints one cycle or the selected cycles with the browser print dialog.                |
-| Backup Data         | Downloads `fertility-tracker-backup-YYYY-MM-DD.ftbackup` and records the backup date. |
-| Restore Data        | Shows a preview, then replaces or merges the observations with the file.              |
-| Load Demo Cycle     | Replaces all observations with the demo data.                                         |
-| Clear Data / Reset  | Deletes all observations.                                                             |
-
-`getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export.
-
-#### Backup file
-
-- The file uses the write format of the browser storage ([Storage format](docs/reference/data-storage.md#storage-format)). In this version, that is a bare JSON array, so older versions can restore it.
-- **Restore Data** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
-- The file is plain JSON. It is not encrypted. The texts `exportModal.jsonDescription` and `exportModal.pdfDescription` tell this to the user.
-- **Restore Data** is a button that opens a hidden file input. Thus, the keyboard can reach it.
-- The file has the extension `.ftbackup` and the type `application/octet-stream`. With `application/json`, a browser can add `.json` after the name. The content is plain JSON, and any text editor can open it.
-- The file input has no `accept` filter. iOS greys out a file with an extension that it does not know. The application checks the contents, not the extension. Thus, a `.ftbackup` file and an old `.json` backup both restore.
-- A file that is not a valid backup shows `exportModal.importError` (`role="alert"`) in the export dialog. The data does not change.
-
-#### Confirmation
-
-[ConfirmDialog.tsx](src/components/ConfirmDialog.tsx) is a small confirmation dialog. It replaces `window.confirm()` and `window.alert()`, which no code in `src/` uses.
-
-- It opens over the export dialog, with `aria-labelledby` (its title) and `aria-describedby` (its message). All its text comes from the dictionary (`confirmDialog.*`, `actions.cancel`).
-- When it opens, the focus goes to **Cancel**. `Escape`, **Cancel** and a click on the backdrop cancel it. They do not close the export dialog.
-- **Load Demo Cycle**, **Restore Data** and **Clear Data / Reset** open it when observations exist.
-- Without observations, **Load Demo Cycle** and **Restore Data** act immediately, and **Clear Data / Reset** is disabled.
-- The message for **Clear Data / Reset** says that a copy stays on the device until the user selects **Delete the copy**.
-
-Before a backup changes existing observations, the dialog shows a preview from `summarizeObservations()`. The preview gives the number of observations in the file and the first and last date. If the file has no observations, the preview says so.
-
-| Action  | Result                                                                                                                  |
-| ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Replace | `importDataJson(text, 'replace')`: the file replaces all the current observations.                                      |
-| Merge   | `importDataJson(text, 'merge')`: each day of the file replaces the current day with the same date. The other days stay. |
-
-During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
-
-#### Print
-
-1. The dialog names the selection: `cycle-N`, `selected-cycles` or `all-cycles`.
-2. The application sets the document title to the file name, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD`.
-3. The application calls `window.print()`. The browser uses the title as the default PDF file name.
-4. The application restores the title one second later. A second print in that second restores the first title.
-5. The application closes the dialog. It shows the success message when the user clicks, before the print starts. The message closes 3.5 seconds after the last print.
-
-When the application unmounts, it stops the title and message timers.
-
-The print layout:
-
-- It is landscape, with 35 days in each row. It hides the user interface.
-- It does not show the day of the week. It removes the spaces from the codes and lets a long code go onto two lines.
-- It has a line under the code of each day for the notes.
-- Without cycles, it shows one empty cycle that starts today (`getTodayStr()`).
-- It uses the language of the interface: `printExport.*`, `chartStrip.*` and `t.locale` for the export date. The CrMS codes and the stamp colors are the same in each language.
-- The date of each cell uses `common.monthDay`: `MM-DD` in English and `DD/MM` in French.
-- Each legend label is one text: `chartStrip.legendMenses`, `legendDry`, `legendFertile`, `legendPostPeak` and `legendPeakDay`. The chart legend uses the same texts.
-
-### 5.9 Version dialog
-
-**Module:** [src/components/VersionModal.tsx](src/components/VersionModal.tsx)
-
-- The info button in the header, the **About & Version Tracker** item of the phone menu and the version button in the footer open the dialog.
-- The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.
-- The **System Information** tab shows the version, the CrMS version, the build date and the environment. It also has the repository link.
-- The tab also shows the storage statistics: the number of storage keys, cycles and observations, and the size in KB.
-- At the end, the tab shows the legal notice of the footer ([LegalNotice.tsx](src/components/LegalNotice.tsx)): the trademark text, the medical text and the copyright. Thus, the installed application, which has no footer, also shows this text.
-- The dialog uses the surface tokens `--bg-surface`, `--bg-primary` and `--bg-surface-border`.
-
-### 5.10 Welcome guide
-
-**Module:** [src/components/WelcomeModal.tsx](src/components/WelcomeModal.tsx)
-
-The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is not in `localStorage`. It has four slides:
-
-| Slide | Content                                                                                          |
-| ----- | ------------------------------------------------------------------------------------------------ |
-| 1     | The CrMS method and the privacy of the data.                                                     |
-| 2     | The stamps: red, green, green with a baby, white with a baby and yellow, and the count of three. |
-| 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
-| 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
-
-In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog with the focus on **Restore Data** ([Install and update](docs/reference/application-behavior.md#install-and-update)).
-
-The guide has **Previous**, **Next** and **Skip** buttons and step dots. The dialog component gives `Escape`, the focus trap and the focus return. The slide body can get the focus and scroll. The guide is in English and in French.
-
-### 5.11 Error boundary
-
-**Module:** [src/components/ErrorBoundary.tsx](src/components/ErrorBoundary.tsx)
-
-- `App.tsx` puts each `React.Suspense` in an `ErrorBoundary`: the pages, the lazy dialogs and the print view.
-- The boundary of the pages has `key={activeTab}`. Thus, a change of page removes the alert and loads the new page again.
-- When a child fails during render, or a lazy chunk does not load, the boundary shows an alert (`role="alert"`). The header, the footer and the navigation stay visible.
-- The alert shows `errorBoundary.title`, `errorBoundary.message` and a **Reload** button (`errorBoundary.reload`) that calls `window.location.reload()`.
-- With an `onClose` property, the boundary shows the alert in the dialog component, named by the alert title. It adds a **Close** button (`errorBoundary.close`).
-- In this dialog mode, **Close**, `Escape` and the backdrop call `onClose`. Each lazy dialog uses this mode.
-- With an `onError` property, the boundary calls it one time when a child fails. The print view uses it to show `exportModal.printError`.
+These rules are in [Observation drawer](docs/reference/screens/observation-drawer.md), [Export dialog](docs/reference/screens/export-dialog.md), [Version dialog](docs/reference/screens/version-dialog.md), [Welcome guide](docs/reference/screens/welcome-guide.md) and [Error screen](docs/reference/screens/error-screen.md).
 
 ### 5.12 to 5.18 Application behavior
 
