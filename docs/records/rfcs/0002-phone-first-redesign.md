@@ -1,10 +1,11 @@
 # RFC 0002: Phone-first redesign of the screens
 
 - **Start date:** 2026-10-29
-- **Status:** Proposed
+- **Status:** Accepted
 - **Author:** Gabriel
 - **Pull request:** [#116](https://github.com/gsuquet/fertility-tracker/pull/116)
 - **Issue:** [#115](https://github.com/gsuquet/fertility-tracker/issues/115)
+- **Decision records:** [ADR 0007](../adrs/0007-phone-first-shell-and-settings.md), [ADR 0008](../adrs/0008-progressive-observation-form.md), [ADR 0009](../adrs/0009-chart-density-and-desktop-columns.md), [ADR 0010](../adrs/0010-one-line-legal-footer.md)
 
 ## Summary
 
