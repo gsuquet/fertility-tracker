@@ -121,24 +121,27 @@ describe('VersionModal Component', () => {
     Element.prototype.scrollIntoView = vi.fn(function (this: Element) {
       scrolled.push(this);
     });
-    render(
-      <LanguageProvider>
-        <VersionModal onClose={() => {}} initialTab="legal" />
-      </LanguageProvider>
-    );
-    expect(screen.getByRole('tab', { name: /System Information/i })).toHaveAttribute(
-      'aria-selected',
-      'true'
-    );
-    expect(scrolled).toEqual([screen.getByRole('region', { name: en.footer.label })]);
-    // @ts-expect-error: jsdom has no scrollIntoView
-    delete Element.prototype.scrollIntoView;
+    try {
+      render(
+        <LanguageProvider>
+          <VersionModal onClose={() => {}} initialTab="legal" />
+        </LanguageProvider>
+      );
+      expect(screen.getByRole('tab', { name: /System Information/i })).toHaveAttribute(
+        'aria-selected',
+        'true'
+      );
+      expect(scrolled).toEqual([screen.getByRole('region', { name: en.footer.label })]);
+    } finally {
+      // @ts-expect-error: jsdom has no scrollIntoView
+      delete Element.prototype.scrollIntoView;
+    }
   });
 
   it('opens the system tab without a scroll when the browser has no scrollIntoView', () => {
     render(
       <LanguageProvider>
-        <VersionModal onClose={() => {}} initialTab="system" />
+        <VersionModal onClose={() => {}} initialTab="legal" />
       </LanguageProvider>
     );
     expect(screen.getByRole('region', { name: en.footer.label })).toBeInTheDocument();

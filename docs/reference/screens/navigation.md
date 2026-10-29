@@ -32,7 +32,7 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 | Chart     | The cycle picker, **35-day** and **Strip**, the **Chart options** menu (`⋮`) and the menu button.                                                  |
 | Calendar  | The title **Calendar**, the cycle picker and `⋮`.                                                                                                  |
 | Analytics | The title **Analytics**, the cycle picker and `⋮`.                                                                                                 |
-- On Chart, the cycle picker is first in the DOM too. Thus, the focus order and the reading order are the same as the visual order. On a narrow phone, the label of the picker ends in an ellipsis.
+- On Chart, the cycle picker is first in the DOM too. Thus, the focus order and the reading order are the same as the visual order. The picker has no icon there, so its label fits in French at 360 pixels. On a narrower phone, the label ends in an ellipsis.
 - The controls of the bar have 8 pixels between them.
 - When the screen goes across 640 pixels, the controls move between the top bar and the page. React then draws them again, so a control in the move loses the focus, and an open chart menu closes.
 - The top bar and the bottom bar use `--bg-surface`, with no blur. Thus, the page does not show through them.

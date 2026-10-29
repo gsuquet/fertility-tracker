@@ -206,8 +206,24 @@
       min-width: 0;
     }
 
+    /* No icon and less padding, so "Cycle 2" and "Tous (12)" fit at 360 pixels in French */
     .app-header > .cycle-picker-container .cycle-selector-btn {
       max-width: 100%;
+      gap: var(--space-xs);
+      padding-inline: var(--space-sm) var(--space-xs);
+    }
+
+    .app-header > .cycle-picker-container .cycle-selector-icon {
+      display: none;
+    }
+
+    .app-header > .cycle-picker-container .cycle-selector-text {
+      min-width: 0;
+    }
+
+    /* The chart controls keep their width: the picker before them shrinks instead */
+    .app-header > .cycle-picker-container + .header-page-slot {
+      flex: 1 0 auto;
     }
 
     .top-bar-title {

@@ -27,6 +27,7 @@ test.describe('Top bar of a narrow phone in French', () => {
       .click();
 
     const bar = page.getByRole('banner');
+    await expect(bar.getByRole('group', { name: fr.chartStrip.viewLabel })).toBeVisible();
     const controls = [
       bar.getByRole('button', { name: fr.cyclePicker.buttonLabel }),
       bar.getByRole('button', { name: fr.chartStrip.view35 }),
@@ -34,6 +35,11 @@ test.describe('Top bar of a narrow phone in French', () => {
       bar.getByRole('button', { name: fr.chartStrip.optionsLabel }),
       bar.getByRole('button', { name: fr.menu.moreActionsLabel }),
     ];
+    // The label of the picker shows in full: "Cycle 2", not "Cycle…"
+    const label = bar.locator('.cycle-selector-text.mobile-text');
+    await expect(label).toHaveText(/^Cycle \d+$/);
+    expect(await label.evaluate(el => el.scrollWidth <= el.clientWidth)).toBe(true);
+
     const boxes = [];
     for (const control of controls) {
       const box = await control.boundingBox();
