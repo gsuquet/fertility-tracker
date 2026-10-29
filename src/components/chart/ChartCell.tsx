@@ -7,6 +7,7 @@ import type { Observation } from '../../types/crms';
 import { formatDayOfWeek } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 import { ChartCellPopover } from './ChartCellPopover';
+import { showsEmptyStamp } from '../../domain/stampCalculator';
 
 /** Removes the symptom codes, which the cell shows in its own tag */
 const cleanCode = (codeString: string) =>
@@ -68,6 +69,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
           isPeakDay={obs.isPeakDay}
           intercourse={obs.intercourse}
           size="sm"
+          isEmpty={showsEmptyStamp(obs)}
         />
       </div>
 

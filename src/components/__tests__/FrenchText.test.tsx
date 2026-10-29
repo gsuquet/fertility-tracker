@@ -357,7 +357,8 @@ describe('French text of the components', () => {
     expect(screen.getByTitle(fr.todayView.modeDirectTitle)).toBeInTheDocument();
     expect(screen.getByTitle(fr.todayView.modeDetailedTitle)).toBeInTheDocument();
     expect(screen.getByPlaceholderText(fr.todayView.notesPlaceholder)).toBeInTheDocument();
-    expect(screen.getByText(fr.todayView.savedLabel)).toBeInTheDocument();
+    // The save button and the day status both say saved
+    expect(screen.getAllByText(fr.todayView.savedLabel)).toHaveLength(2);
     expect(screen.getByText(formatMessage(fr.common.dayNumber, { day: 1 }))).toBeInTheDocument();
   });
 

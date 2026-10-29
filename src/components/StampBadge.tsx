@@ -8,6 +8,8 @@ interface StampBadgeProps {
   isPeakDay?: boolean | undefined;
   intercourse?: boolean | undefined;
   size?: 'sm' | 'md' | 'lg' | undefined;
+  /** A day with no code: a dashed empty square instead of the stamp. */
+  isEmpty?: boolean | undefined;
 }
 
 export const StampBadge: React.FC<StampBadgeProps> = ({
@@ -15,9 +17,11 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
   isPeakDay = false,
   intercourse = false,
   size = 'md',
+  isEmpty = false,
 }) => {
   const { t } = useLanguage();
-  const isLightGreen = stamp.startsWith('LIGHT_GREEN');
+  const isLightGreen = !isEmpty && stamp.startsWith('LIGHT_GREEN');
+  const stampClass = isEmpty ? 'stamp-empty' : `stamp-${stamp.toLowerCase()}`;
   const postPeakNumber = stamp.endsWith('1')
     ? '1'
     : stamp.endsWith('2')
@@ -28,9 +32,9 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
 
   return (
     <div className={`stamp-badge-container stamp-${size}`}>
-      <div className={`stamp-badge stamp-${stamp.toLowerCase()} ${isPeakDay ? 'stamp-peak' : ''}`}>
+      <div className={`stamp-badge ${stampClass} ${isPeakDay ? 'stamp-peak' : ''}`}>
         {/* Baby icon for White and Light Green stamps */}
-        {(stamp === 'WHITE_BABY' || isLightGreen) && (
+        {((!isEmpty && stamp === 'WHITE_BABY') || isLightGreen) && (
           <div className="baby-icon-wrapper">
             <BabyIcon />
             {postPeakNumber && <span className="post-peak-number">{postPeakNumber}</span>}

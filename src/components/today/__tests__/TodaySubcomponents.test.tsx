@@ -74,6 +74,7 @@ describe('Today View Subcomponents', () => {
         <TodayFertilityGuidance
           stamp="WHITE_BABY"
           currentCode="10KL"
+          isEmpty={false}
           isManualPeak={false}
           intercourse={true}
           variant="card"
@@ -89,6 +90,7 @@ describe('Today View Subcomponents', () => {
         <TodayFertilityGuidance
           stamp="RED"
           currentCode="H"
+          isEmpty={false}
           isManualPeak={false}
           intercourse={false}
           variant="banner"
@@ -97,5 +99,22 @@ describe('Today View Subcomponents', () => {
     );
 
     expect(screen.getByText(/Menses phase/i)).toBeInTheDocument();
+  });
+
+  it('TodayHistoryList draws the empty stamp for each day with no code', () => {
+    const { container } = render(
+      <LanguageProvider>
+        <TodayHistoryList
+          selectedDate="2026-09-02"
+          observations={[
+            { id: 'obs-1', date: '2026-09-02', cycleDay: 1, stamp: 'DARK_GREEN', codeString: '' },
+          ]}
+          onSelectDate={vi.fn()}
+        />
+      </LanguageProvider>
+    );
+    // The saved day with notes only and the 4 days with no observation
+    expect(container.querySelectorAll('.stamp-empty')).toHaveLength(5);
+    expect(container.querySelector('.stamp-dark_green')).toBeNull();
   });
 });

@@ -7,6 +7,7 @@ import { addDays, getTodayStr } from '../utils/dateUtils';
 import { formatMessage } from '../i18n';
 import { Target } from 'lucide-react';
 import { BabyIcon } from './icons/BabyIcon';
+import { showsEmptyStamp } from '../domain/stampCalculator';
 
 interface PrintExportViewProps {
   selectedCycleIds: string[];
@@ -134,6 +135,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                                 isPeakDay={obs.isPeakDay}
                                 intercourse={obs.intercourse}
                                 size="sm"
+                                isEmpty={showsEmptyStamp(obs)}
                               />
                             </div>
 

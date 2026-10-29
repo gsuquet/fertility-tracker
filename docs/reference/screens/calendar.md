@@ -15,7 +15,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-- The grid shows one month. Each day shows its stamp, its code and the intercourse mark.
+- The grid shows one month. Each day shows its stamp, its code and the intercourse mark. A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 - A click on a day opens the observation drawer for that date. Days after today are disabled.
 - The next-month button is disabled in the current month. Thus, the user cannot go to a month after the current month.
 - Text uses the theme tokens `--text-primary` and `--text-secondary`. Thus, it is readable in the dark theme.

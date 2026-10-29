@@ -7,6 +7,8 @@ import { Info, Sparkles } from 'lucide-react';
 interface TodayFertilityGuidanceProps {
   stamp: StampType;
   currentCode: string;
+  /** No bleeding, mucus or frequency code: the empty stamp and no fertility text. */
+  isEmpty: boolean;
   isManualPeak: boolean;
   intercourse: boolean;
   variant: 'banner' | 'card';
@@ -15,6 +17,7 @@ interface TodayFertilityGuidanceProps {
 export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   stamp,
   currentCode,
+  isEmpty,
   isManualPeak,
   intercourse,
   variant,
@@ -40,13 +43,23 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
     return (
       <div className="today-top-status-banner mobile-only-stamp-banner">
         <div className="status-stamp-hero">
-          <StampBadge stamp={stamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+          <StampBadge
+            stamp={stamp}
+            isPeakDay={isManualPeak}
+            intercourse={intercourse}
+            size="lg"
+            isEmpty={isEmpty}
+          />
           <div className="status-hero-info">
-            <div className="status-code-display">{currentCode || '---'}</div>
-            <div className="status-hero-guidance">
-              <Info size={15} className="guidance-icon" />
-              <span>{getFertilityGuidance()}</span>
+            <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
+              {isEmpty ? t.todayView.noObservation : currentCode}
             </div>
+            {!isEmpty && (
+              <div className="status-hero-guidance">
+                <Info size={15} className="guidance-icon" />
+                <span>{getFertilityGuidance()}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -61,14 +74,24 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       </div>
 
       <div className="status-stamp-wrapper">
-        <StampBadge stamp={stamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
-        <div className="status-code-text">{currentCode || '---'}</div>
+        <StampBadge
+          stamp={stamp}
+          isPeakDay={isManualPeak}
+          intercourse={intercourse}
+          size="lg"
+          isEmpty={isEmpty}
+        />
+        <div className={isEmpty ? 'stamp-empty-text' : 'status-code-text'}>
+          {isEmpty ? t.todayView.noObservation : currentCode}
+        </div>
       </div>
 
-      <div className="status-guidance-box">
-        <Info size={16} className="guidance-icon" />
-        <p>{getFertilityGuidance()}</p>
-      </div>
+      {!isEmpty && (
+        <div className="status-guidance-box">
+          <Info size={16} className="guidance-icon" />
+          <p>{getFertilityGuidance()}</p>
+        </div>
+      )}
     </div>
   );
 };

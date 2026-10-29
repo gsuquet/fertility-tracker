@@ -3,6 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import type { Observation } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { addDays, formatDateDisplay } from '../../utils/dateUtils';
+import { showsEmptyStamp } from '../../domain/stampCalculator';
 
 interface TodayHistoryListProps {
   selectedDate: string;
@@ -48,13 +49,16 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
             >
               <span className="recent-date-label">{dayLabel}</span>
               <div className="recent-stamp-slot">
-                {obs && (
+                {obs ? (
                   <StampBadge
                     stamp={obs.stamp}
                     isPeakDay={obs.isPeakDay || obs.isManualPeak}
                     intercourse={obs.intercourse}
                     size="sm"
+                    isEmpty={showsEmptyStamp(obs)}
                   />
+                ) : (
+                  <StampBadge stamp="DARK_GREEN" size="sm" isEmpty />
                 )}
               </div>
               <span className={obs ? 'recent-code' : 'recent-empty'}>

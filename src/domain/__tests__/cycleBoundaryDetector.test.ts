@@ -3,6 +3,7 @@ import {
   groupObservationsIntoCycles,
   isFirstBleedingDayOfSeries,
   getCycleEndDate,
+  getCycleDayOn,
 } from '../cycleBoundaryDetector';
 import type { Observation } from '../../types/crms';
 import { makeObservation } from '../../test/factories';
@@ -181,5 +182,23 @@ describe('getCycleEndDate', () => {
     expect(getCycleEndDate({ id: 'c', startDate: '2026-09-01', observations: [] })).toBe(
       '2026-09-01'
     );
+  });
+});
+
+describe('getCycleDayOn', () => {
+  const cycles = [
+    { id: 'c2', startDate: '2026-09-29', observations: [] },
+    { id: 'c1', startDate: '2026-09-01', observations: [] },
+  ];
+
+  it('counts the days from the start of the last cycle that starts on or before the date', () => {
+    expect(getCycleDayOn(cycles, '2026-09-01')).toBe(1);
+    expect(getCycleDayOn(cycles, '2026-09-28')).toBe(28);
+    expect(getCycleDayOn(cycles, '2026-10-03')).toBe(5);
+  });
+
+  it('gives no cycle day before the first cycle or with no cycle', () => {
+    expect(getCycleDayOn(cycles, '2026-08-31')).toBeUndefined();
+    expect(getCycleDayOn([], '2026-09-01')).toBeUndefined();
   });
 });

@@ -68,6 +68,21 @@
     color: var(--stamp-white-text);
   }
 
+  /* A day with no code: not a dry day, so no stamp color */
+  .stamp-empty {
+    background: transparent;
+    border: 2px dashed var(--stamp-empty);
+    box-shadow: none;
+    color: var(--text-primary);
+  }
+
+  /* "No observation yet" in place of the code: body text, not a code */
+  .stamp-empty-text {
+    font-size: var(--font-size-base);
+    font-weight: 700;
+    color: var(--text-secondary);
+  }
+
   .stamp-light_green_baby_1,
   .stamp-light_green_baby_2,
   .stamp-light_green_baby_3 {

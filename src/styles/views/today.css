@@ -56,7 +56,7 @@
     align-items: center;
     justify-content: space-between;
     gap: 0.75rem;
-    min-height: 44px;
+    min-height: var(--control-size-lg);
   }
 
   .compact-date-nav-controls {
@@ -66,10 +66,10 @@
   }
 
   .compact-nav-btn {
-    width: 32px;
-    height: 32px;
-    min-width: 32px;
-    min-height: 32px;
+    width: var(--control-size-lg);
+    height: var(--control-size-lg);
+    min-width: var(--control-size-lg);
+    min-height: var(--control-size-lg);
     padding: 0;
     border-radius: 50%;
   }
@@ -608,7 +608,7 @@
 
     .today-header-card.compact-date-bar {
       padding: 0.35rem 0.5rem;
-      min-height: 38px;
+      min-height: var(--control-size-lg);
       gap: 0.35rem;
     }
 
@@ -616,15 +616,17 @@
       font-size: var(--font-size-sm);
     }
 
-    .compact-nav-btn {
-      width: 28px;
-      height: 28px;
-      min-width: 28px;
-      min-height: 28px;
+    /* The day status goes to a second line: today or Jump to Today, the cycle day, saved or not */
+    .compact-badge-group {
+      width: 100%;
+      flex-wrap: nowrap;
     }
 
-    .compact-badge-group {
-      display: none;
+    .jump-today-btn {
+      order: 1;
+      margin-left: auto;
+      min-height: var(--control-size-lg);
+      padding-inline: var(--space-sm);
     }
 
     .today-top-status-banner {

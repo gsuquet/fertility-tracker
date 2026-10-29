@@ -13,6 +13,7 @@ import { X, Save, Trash2, Heart, Flag } from 'lucide-react';
 import { getTodayStr } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
+import { hasObservationCode } from '../domain/stampCalculator';
 
 export const ObservationDrawer: React.FC = () => {
   const {
@@ -45,6 +46,7 @@ export const ObservationDrawer: React.FC = () => {
   const findSaved = (day: string) => observations.find(o => o.date === day);
   const saved = isDrawerOpen ? findSaved(date) : undefined;
   const isDraft = hasFieldChanges(fields, loaded);
+  const isEmptyDay = !hasObservationCode(fields);
 
   // When the saved data changes while the drawer is open (for example with Undo), a form with no
   // change shows the new saved values. Thus, a save with no change never writes old values.
@@ -143,11 +145,14 @@ export const ObservationDrawer: React.FC = () => {
               isPeakDay={fields.isManualPeak}
               intercourse={intercourse}
               size="lg"
+              isEmpty={isEmptyDay}
             />
           </div>
           <div className="preview-details">
             <span className="preview-label">{t.labels.stampPreview}</span>
-            <div className="preview-code-display">{form.currentCode || '---'}</div>
+            <div className={isEmptyDay ? 'stamp-empty-text' : 'preview-code-display'}>
+              {isEmptyDay ? t.todayView.noObservation : form.currentCode}
+            </div>
           </div>
         </div>
 

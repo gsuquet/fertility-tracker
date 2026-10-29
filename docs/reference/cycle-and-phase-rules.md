@@ -29,6 +29,8 @@ The `id` of a cycle is `cycle_` and its start date. `groupObservationsIntoCycles
 
 Cycle day 1 is the first day of the cycle. The cycle day of each subsequent day is the number of calendar days from day 1, plus 1. A day without an observation is part of the count.
 
+`getCycleDayOn` gives the cycle day of a date that has no observation. It uses the last cycle that starts on or before the date. It gives no cycle day for a date before the first cycle.
+
 ## Cycle numbers
 
 The oldest cycle is cycle 1. The cycle picker and the paper chart show the newest cycle first.

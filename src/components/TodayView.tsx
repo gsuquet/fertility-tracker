@@ -2,7 +2,9 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
 import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
+import { hasObservationCode } from '../domain/stampCalculator';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { useShortcut } from '../hooks/useKeyboardShortcuts';
 import { useObservationForm } from '../hooks/useObservationForm';
@@ -23,6 +25,7 @@ type EntryMode = 'direct' | 'detailed';
 export const TodayView: React.FC = () => {
   const {
     observations,
+    cycles,
     saveObservation,
     deleteObservation,
     selectedObservation,
@@ -71,6 +74,9 @@ export const TodayView: React.FC = () => {
   }, [selectedObservation]);
 
   const isToday = selectedDate === getTodayStr();
+  const isEmptyDay = !hasObservationCode(fields);
+  // A day after today has no cycle day yet
+  const cycleDay = selectedDate <= getTodayStr() ? getCycleDayOn(cycles, selectedDate) : undefined;
 
   // Navigation handlers
   const handlePrevDay = () => setSelectedDate(prev => addDays(prev, -1));
@@ -141,6 +147,7 @@ export const TodayView: React.FC = () => {
         selectedDate={selectedDate}
         isToday={isToday}
         currentObs={currentObs}
+        cycleDay={cycleDay}
         onPrevDay={handlePrevDay}
         onNextDay={handleNextDay}
         onGoToToday={handleGoToToday}
@@ -151,6 +158,7 @@ export const TodayView: React.FC = () => {
       <TodayFertilityGuidance
         stamp={form.calculatedStamp}
         currentCode={form.currentCode}
+        isEmpty={isEmptyDay}
         isManualPeak={fields.isManualPeak}
         intercourse={fields.intercourse}
         variant="banner"
@@ -200,6 +208,7 @@ export const TodayView: React.FC = () => {
         <TodayFertilityGuidance
           stamp={form.calculatedStamp}
           currentCode={form.currentCode}
+          isEmpty={isEmptyDay}
           isManualPeak={fields.isManualPeak}
           intercourse={fields.intercourse}
           variant="card"

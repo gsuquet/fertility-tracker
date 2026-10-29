@@ -55,6 +55,8 @@ describe('PrintExportView cycles', () => {
         makeObservation({ date: '2026-09-02', codeString: 'AP' }),
       ],
     });
+    // The day with no code keeps its cell but shows the empty stamp
+    expect(document.querySelectorAll('.print-cell .stamp-empty')).toHaveLength(1);
     expect(screen.getByText('AP')).toHaveClass('print-symptoms');
     expect(screen.getByText('cramps')).toHaveAttribute('title', 'cramps');
     expect(screen.getByText('---')).toHaveClass('print-code');

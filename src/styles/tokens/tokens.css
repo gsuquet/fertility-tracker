@@ -49,6 +49,8 @@
     --stamp-white: #ffffff;
     /* Stamp edges reach 3:1 on the stamp and on the page (WCAG 1.4.11) */
     --stamp-white-border: #64748b;
+    /* Dashed edge of the empty stamp of a day with no code (3:1 on the page) */
+    --stamp-empty: #64748b;
     --stamp-light-green: #4ade80;
     --stamp-light-green-text: #064e3b;
     --stamp-light-green-border: #15803d;
@@ -158,6 +160,7 @@
     --accent-soft: rgba(169, 193, 224, 0.08);
 
     --stamp-white-border: #7a8597;
+    --stamp-empty: #7a8597;
 
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;

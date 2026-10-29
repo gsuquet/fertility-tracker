@@ -4,6 +4,9 @@ import { CalendarGrid } from '../CalendarGrid';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider } from '../../context/CycleContext';
 import { ObservationDrawer } from '../ObservationDrawer';
+import { renderWithProviders } from '../../test/render';
+import { makeObservation } from '../../test/factories';
+import { getTodayStr } from '../../utils/dateUtils';
 
 const renderCalendarGrid = () => {
   return render(
@@ -54,5 +57,15 @@ describe('CalendarGrid Component', () => {
     expect(todayElement).toBeInTheDocument();
     expect(todayElement).toHaveClass('is-today');
     expect(todayElement).toHaveAttribute('aria-current', 'date');
+  });
+
+  it('draws the empty stamp for a saved day with no code', () => {
+    const today = getTodayStr();
+    const { container } = renderWithProviders(<CalendarGrid />, {
+      observations: [makeObservation({ date: today, notes: 'notes only' })],
+    });
+    const cell = screen.getByRole('button', { name: new RegExp(`Date ${today}`) });
+    expect(cell.querySelector('.stamp-empty')).toBeInTheDocument();
+    expect(container.querySelector('.stamp-dark_green')).toBeNull();
   });
 });
