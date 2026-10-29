@@ -43,11 +43,11 @@ These rules apply:
 - Good: a screenshot shows the colors, the sizes and the real position of each part.
 - Bad: a snapshot does not show the position of a part. The screenshot gives the position, but no test checks the screenshot.
 - Bad: the screenshots are binary files. Each update adds to the size of the repository.
-- Bad: a contributor must update the snapshots when a change of a screen is correct. The command is `npx playwright test --update-snapshots`.
+- Bad: a contributor must update the snapshots when a change of a screen is correct. The command is `npx playwright test e2e/screenLayout.spec.ts --update-snapshots`. It updates only the screen snapshots.
 
 ### Confirmation
 
-The end-to-end job of CI runs the snapshot test. The review of a pull request that changes a screen verifies that the screenshots are new.
+The end-to-end job of CI runs the snapshot test. A pull request that changes a screen also runs `mise run screenshots` and adds the new screenshots. The review of the pull request verifies this.
 
 ## Advantages and disadvantages of the options
 
