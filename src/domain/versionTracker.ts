@@ -52,11 +52,11 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     taglineFr: 'L’app installée trouve maintenant une nouvelle version quand vous y revenez',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'Each time the app comes back to the screen, it checks for a new version',
+      'When the app comes back to the screen, it checks for a new version, at most once a day',
       'Before, an app that stayed open in the background could keep an old version for days',
     ],
     highlightsFr: [
-      'Chaque fois que l’app revient à l’écran, elle cherche une nouvelle version',
+      'Quand l’app revient à l’écran, elle cherche une nouvelle version, au plus une fois par jour',
       'Avant, une app restée ouverte en arrière-plan pouvait garder une ancienne version pendant des jours',
     ],
   },

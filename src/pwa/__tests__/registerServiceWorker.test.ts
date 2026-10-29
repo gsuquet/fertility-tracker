@@ -116,6 +116,8 @@ describe('update of a new version', () => {
     vi.unstubAllEnvs();
     Reflect.deleteProperty(navigator, 'serviceWorker');
     Reflect.deleteProperty(window, 'isSecureContext');
+    Reflect.deleteProperty(document, 'visibilityState');
+    vi.useRealTimers();
   });
 
   it('finds a worker that already waits when the page has a controller', async () => {
@@ -218,8 +220,9 @@ describe('update of a new version', () => {
     expect(result.current).toBe(false);
   });
 
-  it('checks for a new version each time the page becomes visible', async () => {
-    const { registerServiceWorker } = await load();
+  it('checks for a new version at most once a day when the page becomes visible', async () => {
+    const { registerServiceWorker, UPDATE_CHECK_INTERVAL_MS } = await load();
+    vi.useFakeTimers();
     const registration = makeRegistration();
     register.mockResolvedValue(registration);
     setServiceWorker({});
@@ -228,16 +231,26 @@ describe('update of a new version', () => {
       Object.defineProperty(document, 'visibilityState', { value: state, configurable: true });
       document.dispatchEvent(new Event('visibilitychange'));
     };
+    // The load just checked, so a return within a day does not check again
+    vi.advanceTimersByTime(UPDATE_CHECK_INTERVAL_MS - 1);
+    setVisibility('visible');
+    expect(registration.update).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1);
     setVisibility('hidden');
     expect(registration.update).not.toHaveBeenCalled();
     setVisibility('visible');
     expect(registration.update).toHaveBeenCalledOnce();
-    // Offline, the check fails, and the app keeps working
-    registration.update.mockRejectedValueOnce(new Error('offline'));
     setVisibility('visible');
-    await Promise.resolve();
+    expect(registration.update).toHaveBeenCalledOnce();
+    // Offline, the check fails. The page catches the error, so no unhandled rejection occurs
+    const offline = Promise.reject(new Error('offline'));
+    const handle = vi.spyOn(offline, 'catch');
+    registration.update.mockReturnValueOnce(offline);
+    vi.advanceTimersByTime(UPDATE_CHECK_INTERVAL_MS);
+    setVisibility('visible');
     expect(registration.update).toHaveBeenCalledTimes(2);
-    Reflect.deleteProperty(document, 'visibilityState');
+    expect(handle).toHaveBeenCalledOnce();
+    await expect(offline).rejects.toThrow('offline');
   });
 
   it('does nothing on Reload when no worker waits', async () => {
