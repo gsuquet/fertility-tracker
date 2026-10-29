@@ -19,7 +19,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
 | [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)             | One row: **35-day** and **Strip**, and the ⋮ menu (**Chart options**) with the **Phase bar** and **Legend** check items. An empty chart shows only the menu. |
 | [ChartCycleRow.tsx](../../../src/components/chart/ChartCycleRow.tsx)           | One card for each cycle: the cycle line, the phase bar and one row of day cards. The first card also has the controls.                                       |
-| [ChartPhaseTimeline.tsx](../../../src/components/chart/ChartPhaseTimeline.tsx) | The phase bar: one segment of 6 px for each day, over the width of the card. It does not scroll.                                                             |
+| [ChartPhaseTimeline.tsx](../../../src/components/chart/ChartPhaseTimeline.tsx) | The phase bar: one segment for each day, 6 px high, over the width of the card. It does not scroll.                                                          |
 | [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)                   | A day card with an observation, or an empty day card. Each card is a native `<button type="button">`.                                                        |
 | [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx)     | Details of a day card: code, bleeding, stretch, modifiers, intercourse and notes.                                                                            |
 | [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each card opens a new observation.                                                                   |
@@ -27,7 +27,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ### Cycle line
 
-One line gives the cycle, the dates, the length and the Peak Day. For example: "Cycle 2 Sep 30 – Oct 27 · 28 days · P Day 13". The length is the cycle day of the last observation.
+One line gives the cycle, the dates, the length and the Peak Day. For example: "Cycle 2 Sep 30 – Oct 27 · 28 days · P Day 13". The length is the cycle day of the last observation. When the line is too long, the dates end with an ellipsis.
 
 ### Controls
 
@@ -47,14 +47,14 @@ The first card has the controls. They act on all the rows. Each button is 36 px.
 | **35-day** | 44 × 116 px | The cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code (11 px, mono) and the symptom tag. |
 | **Strip**  | 34 × 62 px  | The cycle day and the stamp.                                                                                            |
 - Each row has 35 day cards or more. A longer cycle adds cards in groups of 7. All the rows have the same number of cards. **Strip** keeps a card for each day, so that the columns align.
-- The code shows one token on each line, and two lines or less. A token wider than the card ends with an ellipsis. The code does not show the `I` mark and the symptoms. The stamp shows the `I` mark, and the tag shows the symptoms. The accessible name has the full code.
+- The code shows one token on each line, and two lines or less. A token wider than the card ends with an ellipsis. The code does not show the `I` mark and the symptoms. The stamp shows the `I` mark, and the tag shows the symptoms. The accessible name has the full code. A long symptom tag ends with an ellipsis.
 - An empty day card has a dashed border, the weekday, the date and a + sign.
 - Today has a 2 px accent border and `--accent-soft`. The Peak Day has a ring of `--color-warning-ring`.
 - A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 
 ### Phase bar
 
-The phases are the phases of Analytics ([Cycle and phase rules](../cycle-and-phase-rules.md)).
+The bar uses the four phases of Analytics ([Cycle and phase rules](../cycle-and-phase-rules.md)), day by day. A day with a bleeding code or a red stamp before the Peak Day is a menses day.
 
 | Phase                          | Color                 |
 | ------------------------------ | --------------------- |

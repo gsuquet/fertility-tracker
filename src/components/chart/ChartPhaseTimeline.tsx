@@ -12,7 +12,7 @@ interface ChartPhaseTimelineProps {
 type Phase = 'menses' | 'follicular' | 'peak' | 'post-peak' | 'luteal' | 'unknown';
 
 /**
- * The phase of a day, as Analytics counts it: menses, then the follicular phase up to the Peak
+ * The phase of a day, with the four phases of Analytics: menses, then the follicular phase up to the Peak
  * Day, then the 3 days of the count, then the luteal phase. A cycle with no Peak Day has no count.
  * The Peak Day is the last day of the follicular phase, with its own name.
  */

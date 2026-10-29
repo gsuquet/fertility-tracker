@@ -158,6 +158,18 @@
     color: var(--text-secondary);
   }
 
+  /* The dates give way first, so that the Peak Day stays in view with the French text */
+  .cycle-line > * {
+    flex: none;
+  }
+
+  .cycle-line > .cycle-line-dates {
+    flex: 0 1 auto;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
   .cycle-line-title {
     margin: 0;
     font-size: var(--font-size-md);
@@ -358,6 +370,10 @@
   }
 
   .cell-symptom-tag {
+    max-width: 42px;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
     font-size: var(--font-size-2xs);
     font-weight: 700;
     color: var(--color-warning-text);

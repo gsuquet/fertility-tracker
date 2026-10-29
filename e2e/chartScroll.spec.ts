@@ -99,10 +99,11 @@ test.describe('Chart on a phone', () => {
     const lefts = () =>
       strips.evaluateAll(all => all.map(strip => Math.round((strip as HTMLElement).scrollLeft)));
     // The rows open on the column of today
-    await expect.poll(async () => new Set(await lefts()).size).toBe(1);
+    await expect.poll(async () => (await lefts())[0]).toBeGreaterThan(0);
+    expect(new Set(await lefts()).size).toBe(1);
     await strips.nth(1).evaluate(strip => {
-      strip.scrollLeft = 0;
+      strip.scrollLeft = 137;
     });
-    await expect.poll(lefts).toEqual([0, 0]);
+    await expect.poll(lefts).toEqual([137, 137]);
   });
 });

@@ -54,7 +54,7 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
     <section className={`chart-row-container view-${viewMode}`} aria-label={title}>
       <div className="cycle-line">
         <h3 className="cycle-line-title">{title}</h3>
-        <span>
+        <span className="cycle-line-dates">
           {shortDate(cycle.startDate, t.locale)} – {shortDate(getCycleEndDate(cycle), t.locale)}
         </span>
         <span aria-hidden="true">·</span>

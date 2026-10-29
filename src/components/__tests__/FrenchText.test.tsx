@@ -276,6 +276,7 @@ describe('French text of the components', () => {
       screen.getByRole('menuitemcheckbox', { name: fr.chartStrip.phaseBar })
     ).toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
+    expect(screen.queryByRole('menu')).toBeNull();
     expect(
       screen.getAllByTitle(
         formatMessage(fr.chartStrip.dayPhase, { day: 1, phase: fr.chartStrip.phaseMenses })

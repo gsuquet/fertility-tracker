@@ -11,14 +11,16 @@ const TODAY = '2026-09-15';
 
 /**
  * jsdom has no layout, so this gives one. The strip starts at x 20, shows 340 pixels and is 2000
- * pixels wide. The cell of today is 48 pixels wide at x 1900.
+ * pixels wide. The cell of today is 48 pixels wide at x 1900, and the Peak Day cell at x 600.
  */
 const fakeLayout = () => {
   const rect = (left: number, width: number) => ({ left, width }) as DOMRect;
   vi.spyOn(HTMLElement.prototype, 'getBoundingClientRect').mockImplementation(function (
     this: HTMLElement
   ) {
-    return this.classList.contains('is-today') ? rect(1900, 48) : rect(20, 340);
+    if (this.classList.contains('is-today')) return rect(1900, 48);
+    if (this.classList.contains('peak-cell')) return rect(600, 48);
+    return rect(20, 340);
   });
   vi.spyOn(HTMLElement.prototype, 'clientWidth', 'get').mockReturnValue(340);
   vi.spyOn(Element.prototype, 'scrollWidth', 'get').mockReturnValue(2000);
@@ -157,13 +159,40 @@ describe('ChartRow shared scroll', () => {
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToStart }));
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToToday }));
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.jumpToPeak }));
-    // The peak cell has the layout of a strip in the fake layout: 20 - 20 - (340 - 340) / 2
+    // 600 - 20 - (340 - 48) / 2 for the Peak Day
     expect(scrollTo.mock.calls).toEqual([
       [{ left: 0, behavior: 'smooth' }],
       [{ left: 1734, behavior: 'smooth' }],
-      [{ left: 0, behavior: 'smooth' }],
+      [{ left: 434, behavior: 'smooth' }],
     ]);
     expect(scrollBy.mock.contexts).toEqual([first, first]);
-    expect(scrollTo.mock.contexts[0]).toBe(first);
+    const stripOf = (selector: string) =>
+      document.querySelector(selector)?.closest('.chart-row-scroll');
+    expect(scrollTo.mock.contexts).toEqual([first, stripOf('.is-today'), stripOf('.peak-cell')]);
+  });
+});
+
+describe('ChartRow today', () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it('marks today only in the cycle that holds it, not in the last days of a past row', () => {
+    vi.useFakeTimers({ toFake: ['Date'] });
+    // Day 3 of the current cycle: day 31 of the previous row has the same date, 2026-09-03
+    vi.setSystemTime(new Date(2026, 8, 3, 12));
+    renderChart(
+      [
+        makeObservation({ date: '2026-08-04', bleeding: 'H' }),
+        makeObservation({ date: '2026-08-20', stretch: '0' }),
+        makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      ],
+      'all'
+    );
+    expect(screen.getAllByRole('region')).toHaveLength(2);
+    const today = screen.getAllByRole('button', { current: 'date' });
+    expect(today).toHaveLength(1);
+    const [newest] = screen.getAllByRole('region');
+    expect(newest).toContainElement(today[0] as HTMLElement);
   });
 });
