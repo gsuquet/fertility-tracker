@@ -24,6 +24,7 @@ const makeRegistration = (waiting: ReturnType<typeof makeWorker> | null = null) 
   const registration = {
     waiting,
     installing: null as ReturnType<typeof makeWorker> | null,
+    update: vi.fn(() => Promise.resolve()),
     addEventListener: (_type: string, listener: Listener) => listeners.push(listener),
     /** A new worker starts to install. */
     find(worker: ReturnType<typeof makeWorker> | null) {
@@ -215,6 +216,28 @@ describe('update of a new version', () => {
     expect(result.current).toBe(true);
     act(() => newer.setState('redundant'));
     expect(result.current).toBe(false);
+  });
+
+  it('checks for a new version each time the page becomes visible', async () => {
+    const { registerServiceWorker } = await load();
+    const registration = makeRegistration();
+    register.mockResolvedValue(registration);
+    setServiceWorker({});
+    await registerServiceWorker();
+    const setVisibility = (state: DocumentVisibilityState) => {
+      Object.defineProperty(document, 'visibilityState', { value: state, configurable: true });
+      document.dispatchEvent(new Event('visibilitychange'));
+    };
+    setVisibility('hidden');
+    expect(registration.update).not.toHaveBeenCalled();
+    setVisibility('visible');
+    expect(registration.update).toHaveBeenCalledOnce();
+    // Offline, the check fails, and the app keeps working
+    registration.update.mockRejectedValueOnce(new Error('offline'));
+    setVisibility('visible');
+    await Promise.resolve();
+    expect(registration.update).toHaveBeenCalledTimes(2);
+    Reflect.deleteProperty(document, 'visibilityState');
   });
 
   it('does nothing on Reload when no worker waits', async () => {

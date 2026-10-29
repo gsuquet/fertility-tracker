@@ -44,6 +44,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.34.1',
+    date: '2026-10-29',
+    title: 'Updates Arrive Without Closing the App',
+    titleFr: 'Les mises à jour arrivent sans fermer l’app',
+    tagline: 'The installed app now finds a new version when you come back to it',
+    taglineFr: 'L’app installée trouve maintenant une nouvelle version quand vous y revenez',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Each time the app comes back to the screen, it checks for a new version',
+      'Before, an app that stayed open in the background could keep an old version for days',
+    ],
+    highlightsFr: [
+      'Chaque fois que l’app revient à l’écran, elle cherche une nouvelle version',
+      'Avant, une app restée ouverte en arrière-plan pouvait garder une ancienne version pendant des jours',
+    ],
+  },
+  {
     version: '1.34.0',
     date: '2026-10-29',
     title: 'A Lighter Observation Form',

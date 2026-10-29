@@ -50,6 +50,11 @@ const watchForUpdate = (registration: ServiceWorkerRegistration) => {
       if (worker.state === 'installed' && hasController()) offerWorker(worker);
     });
   });
+  // The browser checks for a new sw.js only when it loads the page. An installed app often comes
+  // back from the background without a load, so the page asks for the check. Offline, it fails.
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState === 'visible') registration.update().catch(() => undefined);
+  });
   // Only the Reload of this window reloads it. When another window applies the update, this
   // window keeps its work and its message: its Reload then only reloads.
   navigator.serviceWorker.addEventListener('controllerchange', () => {

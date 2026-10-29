@@ -111,6 +111,8 @@ The service worker of a new version waits ([Offline use and installation](deploy
 - after the registration, from `registration.waiting`
 - when an installing worker gets the state `installed`
 
+The browser checks for a new `sw.js` only when it loads the page. An installed application often comes back from the background without a load. In Chromium, a second launch also shows the open window ([Offline use and installation](deployment.md#offline-use-and-installation)). Thus, each time the page becomes visible (`visibilitychange`), `registerServiceWorker()` calls `registration.update()`. A failed check, for example offline, has no effect.
+
 The first install has no controller. Thus, it activates at once and the application works offline from the first visit.
 
 | Step                            | Result                                                                                                                                                              |
