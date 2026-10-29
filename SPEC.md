@@ -42,17 +42,7 @@ This document is the full specification of the application. Change it before you
    - [5.17 Haptic feedback](#517-haptic-feedback)
    - [5.18 Desktop title bar and backup files](#518-desktop-title-bar-and-backup-files)
 6. [State and data storage](#6-state-and-data-storage)
-   - [6.1 Contexts](#61-contexts)
-   - [6.2 Storage keys](#62-storage-keys)
-   - [6.3 Storage format](#63-storage-format)
-   - [6.4 Data recovery](#64-data-recovery)
-   - [6.5 Save failure and persistent storage](#65-save-failure-and-persistent-storage)
-   - [6.6 Backup reminder](#66-backup-reminder)
-   - [6.7 Undo of replaced data](#67-undo-of-replaced-data)
 7. [Languages and design system](#7-languages-and-design-system)
-   - [7.1 Languages](#71-languages)
-   - [7.2 Design system and CSS layers](#72-design-system-and-css-layers)
-   - [7.3 Text contrast](#73-text-contrast)
 8. [Tests and quality](#8-tests-and-quality)
 9. [Deployment and CI](#9-deployment-and-ci)
 10. [Privacy, trademarks and medical limits](#10-privacy-trademarks-and-medical-limits)
@@ -286,7 +276,7 @@ The modifier `C/K` alone gives a score of 0, although `isPeakTypeMucus` is true 
 - Vite puts the version from `package.json` and the build time into `__APP_VERSION__` and `__BUILD_DATE__`. `appVersion.ts` reads them.
 - `checkAndRecordVersionSeen()` in `appVersion.ts` compares the version with `fertility_tracker_last_seen_version` in `localStorage`. Then it saves the current version.
 - `appVersion.ts` does not import `versionTracker.ts`. Thus, the release notes stay out of the main chunk (section 2.2).
-- `getStorageStats()` counts the storage keys, the size, the observations and the cycles. It reads the observations with `parseObservationData()` (section 6.3).
+- `getStorageStats()` counts the storage keys, the size, the observations and the cycles. It reads the observations with `parseObservationData()` ([Storage format](docs/reference/data-storage.md#storage-format)).
 
 ## 4. Data types
 
@@ -568,7 +558,7 @@ It reads the values and functions of `useObservationForm`. The drawer and the To
 
 #### Backup file
 
-- The file uses the write format of the browser storage (section 6.3). In this version, that is a bare JSON array, so older versions can restore it.
+- The file uses the write format of the browser storage ([Storage format](docs/reference/data-storage.md#storage-format)). In this version, that is a bare JSON array, so older versions can restore it.
 - **Restore Data** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
 - The file is plain JSON. It is not encrypted. The texts `exportModal.jsonDescription` and `exportModal.pdfDescription` tell this to the user.
 - **Restore Data** is a button that opens a hidden file input. Thus, the keyboard can reach it.
@@ -738,7 +728,7 @@ The install banner is a slim card above the page buttons, at the bottom of the s
 - `fertility_tracker_install_banner_closed` is not in `localStorage`.
 - No dialog and no drawer is open (`useTopDialog()` is `null`).
 - No update is ready. The update message comes first.
-- The undo message does not show. It has the same place on the screen ([6.7](#67-undo-of-replaced-data)).
+- The undo message does not show. It has the same place on the screen ([Undo of replaced data](docs/reference/data-storage.md#undo-of-replaced-data)).
 
 On a phone, **Install** is under the text, so the text keeps its width. While the banner or the update message shows, the body gets a bottom padding of `--install-banner-space`. Thus, the end of the page can scroll above the message.
 
@@ -883,239 +873,11 @@ Only Chromium browsers on a computer (Chrome and Edge) have these two functions.
 
 ## 6. State and data storage
 
-**Module:** [src/context/CycleContext.tsx](src/context/CycleContext.tsx)
-
-### 6.1 Contexts
-
-| Context or hook                      | Content                                                                                     |
-| ------------------------------------ | ------------------------------------------------------------------------------------------- |
-| `CycleDataContext`, `useCycleData()` | Observations, cycles, selected cycle, save, delete, import, demo, clear, recovery and undo. |
-| `CycleUiContext`, `useCycleUi()`     | The selected observation and the open drawer.                                               |
-| `useCycle()`                         | Both contexts together.                                                                     |
-- The two contexts are separate. Thus, the drawer does not make the chart and the calendar render again.
-- `deleteObservation(id)` deletes only the observation with that `id`. A date does not match an observation.
-- `LanguageProvider` and `ThemeProvider` memoize their values. Thus, a parent that renders again with the same values does not give new values.
-- After each change, the application calculates the cycles, the Peak Days and the stamps again for all days. This includes a change of the manual Peak Day.
-- `buildDemoObservations` makes 56 days that end today: two 28-day cycles with the Peak Day on cycle day 13.
-
-### 6.2 Storage keys
-
-[storageKeys.ts](src/utils/storageKeys.ts) defines each key one time. All modules import the keys from this file.
-
-| Constant                            | Key                                       | Content                                                       |
-| ----------------------------------- | ----------------------------------------- | ------------------------------------------------------------- |
-| `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`             | All observations                                              |
-| `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery`    | Copy of saved data that is not readable                       |
-| `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`        | Copy before the last replacing change                         |
-| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup                                  |
-| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder                             |
-| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze                               |
-| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language                                                      |
-| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme                                                         |
-| `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | Last entry mode of the Today page                             |
-| `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                             |
-| `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                             |
-| `STORAGE_INSTALL_BANNER_CLOSED_KEY` | `fertility_tracker_install_banner_closed` | The user closed the install banner or chose **Install** in it |
-| `STORAGE_SHORTCUTS_OFF_KEY`         | `fertility_tracker_shortcuts_off`         | `true` when the user turned the keyboard shortcuts off (5.14) |
-| `STORAGE_BADGE_ON_KEY`              | `fertility_tracker_badge_on`              | `true` when the user turned the app icon badge on (5.16)      |
-| `STORAGE_HAPTICS_OFF_KEY`           | `fertility_tracker_haptics_off`           | `true` when the user turned the vibrations off (5.17)         |
-
-### 6.3 Storage format
-
-[storageFormat.ts](src/domain/storageFormat.ts) controls the saved format of the observations.
-
-| Format | Content                                                    |
-| ------ | ---------------------------------------------------------- |
-| 0      | A bare JSON array                                          |
-| 1      | The object `{ "schemaVersion": 1, "observations": [...] }` |
-
-`STORAGE_SCHEMA_VERSION = 1` is the newest format that the application reads. The change to format 1 occurs in two steps:
-
-- **Step 1 (now):** The application reads both formats in the storage, the undo copy and backups. It still writes format 0, because `WRITE_SCHEMA_VERSION = 0`. Thus, versions 1.17.x and older can read all the data, for example after a rollback.
-- **Step 2 (later):** When no installation runs a version older than 1.18.0, a release sets `WRITE_SCHEMA_VERSION` to 1. No other code changes.
-
-`serializeObservations(observations, indent?, version = WRITE_SCHEMA_VERSION)` writes the data. `parseObservationData(text)` reads either format. It gives `{ observations, droppedCount }`, or `null` when it cannot read the text.
-
-- A bare array keeps each valid record.
-- An object without an `observations` array cannot be read. An object with a `schemaVersion` that is not an integer from 1 to `STORAGE_SCHEMA_VERSION` cannot be read.
-- For data that it cannot read, the application uses the recovery in section 6.4. Thus, it never writes over data from a newer version.
-- Each record goes through `validateObservation()`. `droppedCount` is the number of records that it rejects, for example a record without a valid `date`.
-- Two records with the same date keep the last one. This is not a dropped record.
-- `parseObservationData()` calculates `codeString` again with `formatCodeString()`. The function removes text in a saved code that no field holds. For example, `M custom` becomes `M`.
-- The provider then calculates `stamp`, `cycleDay` and the Peak Day again.
-
-### 6.4 Data recovery
-
-When `parseObservationData()` cannot read `fertility_care_observations`, the application starts with no observations. Before it saves, it copies the original text to `fertility_care_observations_recovery`. It does this only when that key is empty, so it never replaces a copy.
-
-- `writeStorage` gives `false` when the browser refuses a write, for example when the storage is full.
-- If the application cannot write the copy, it does not write `fertility_care_observations` until the observations change. The original text stays in its key.
-- `useCycleData()` gives `recoveryData` (the original text or `null`), `recoveryKept` and `dismissRecovery()`. `recoveryKept` is `true` when the recovery key has the text.
-- `dismissRecovery()` deletes the copy when `recoveryKept` is `true`. Otherwise, it only hides the message.
-- `clearAllData()` also deletes the recovery copy and sets `recoveryData` to `null`. The undo copy stays.
-
-When the saved list is readable but `droppedCount` is more than 0, the application shows the valid observations. It keeps the original text with the same rules. `useCycleData()` gives `droppedCount`.
-
-- On a subsequent load, the application calculates `droppedCount` again from the recovery copy. If the copy is not readable, `droppedCount` is 0.
-- `StorageRecoveryNotice` shows `storageRecovery.messagePartial` (copy kept) or `storageRecovery.messagePartialNoCopy` (no copy), with the number of dropped records.
-- For one dropped record, it uses `messagePartialOne` and `messagePartialNoCopyOne`.
-
-`StorageRecoveryNotice` shows an alert above the pages while `recoveryData` is set.
-
-- **Download unreadable data** saves the original text as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`.
-- When `recoveryKept` is `true`, the message says that a copy is kept. The second button is **Delete the copy**. It opens a confirmation (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`), and only its confirm button calls `dismissRecovery()`.
-- When `recoveryKept` is `false`, the message says that the next change replaces the data. The second button is **Close**.
-
-### 6.5 Save failure and persistent storage
-
-- Each write of `fertility_care_observations` gives its result. `saveFailed` in `useCycleData()` is `true` after a refused write and `false` after the next write that succeeds.
-- [StorageSaveWarning.tsx](src/components/StorageSaveWarning.tsx) shows an alert (`role="alert"`, `storageWarning.saveFailed`) above the pages while `saveFailed` is `true`. It has no close button.
-- The alert has a **Back up now** button. It opens the export dialog, so the user can download the observations that are only in memory.
-- When observations exist, the provider calls `requestPersistentStorage()` from [storage.ts](src/utils/storage.ts) one time. It calls `navigator.storage.persist()` to stop the browser from removing the data.
-- `requestPersistentStorage()` gives `false` when the API is not available or fails. The application works the same when the browser refuses.
-
-### 6.6 Backup reminder
-
-**Modules:** [backupReminder.ts](src/domain/backupReminder.ts), [BackupReminder.tsx](src/components/BackupReminder.tsx)
-
-- **Backup Data** calls `markBackedUp()`. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
-- When the first observation that is not demo data exists, the provider saves today in `fertility_care_backup_reminder_start` (`backupReminderStart`). Before that, `backupReminderStart` is `null`. A value that exists does not change.
-- `saveObservation()` gives a new `id` (`obs_DATE_TIME`) to a day whose `id` starts with `demo_`. Thus, a changed demo day is an observation of the user.
-- Delete, the manual Peak Day and the merge find a day by its new `id` or by its date.
-
-`isBackupDue({ lastBackupDate, reminderStart, snoozedUntil }, observations, today)` is `true` when all these conditions are true:
-
-- At least one observation is not demo data. Its `id` does not start with `demo_`.
-- No snooze is active. `snoozedUntil` is missing, is not a valid date, or is not after `today`.
-- `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup. Without a valid backup date, the count starts at `reminderStart`. Without either date, the result is `false`.
-
-`BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** opens the export dialog. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`. Thus, the message stays hidden after a reload.
-
-### 6.7 Undo of replaced data
-
-Before `loadDemoData()`, `importDataJson()` or `clearAllData()` changes the observations, the provider writes them to `fertility_care_observations_undo`. It uses the write format of section 6.3.
-
-- While a copy exists, a second replacing change does not replace it. Thus, **Undo** after the demo and a reset brings back the data from before the demo.
-- `saveObservation()` and `deleteObservation()` delete the copy, as `dismissUndo()` does, and the message closes. Thus, **Undo** never removes a day that the user saved after the change.
-- `undoPersisted` is `false` when `writeStorage` cannot write the copy. The message then adds `undoToast.notSaved`: **Undo** works only until the page loads again.
-- `undoChange` is the last change that the copy can undo: `'demo'`, `'import'`, `'merge'`, `'clear'` or `'earlier'`. It is `null` without a copy.
-- `undoLastChange()` restores the copy, selects its newest cycle and deletes the copy. `dismissUndo()` deletes the copy and keeps the change.
-- At start, if the undo key has readable data, `undoChange` is `'earlier'`. Thus, the copy stays available after a reload.
-- [UndoToast.tsx](src/components/UndoToast.tsx) shows a message (`role="status"`, `undoToast.*`) while `undoChange` is set. It has **Undo** and **Delete the copy** buttons, and it does not close by itself.
+These rules are in [Data storage](docs/reference/data-storage.md).
 
 ## 7. Languages and design system
 
-### 7.1 Languages
-
-**Modules:** [src/context/LanguageContext.tsx](src/context/LanguageContext.tsx), `src/i18n/`
-
-| File                     | Content                                                  |
-| ------------------------ | -------------------------------------------------------- |
-| `src/i18n/types.ts`      | The types `TranslationSchema` and `SupportedLanguage`    |
-| `src/i18n/locales/en.ts` | The English text                                         |
-| `src/i18n/locales/fr.ts` | The French text, with the type of the translation schema |
-| `src/i18n/index.ts`      | The objects `translations` and `supportedLanguages`      |
-| `src/i18n/format.ts`     | The function `formatMessage(template, values)`           |
-- The languages are English (`en`) and French (`fr`). The type check fails if a language file does not have all the keys.
-- Components get each text and the date locale (`t.locale`: `en-US` or `fr-FR`) from the dictionary. They do not test `language === 'fr'` and they have no fallback texts.
-- `LanguageProvider` sets `document.documentElement.lang` to the language at each change. Thus, screen readers use the correct voice.
-- `formatMessage` replaces each `{name}` with its value. It keeps a placeholder without a value, and it reads only the own properties of `values` (`Object.hasOwn`).
-- A template has the full sentence, for example `Day {day}: {phase}`. Thus, each language can put the values in its own word sequence.
-- Each release in `VERSION_HISTORY` has English and French text: `title` and `titleFr`, `tagline` and `taglineFr`, `highlights` and `highlightsFr`.
-
-All the text that the user sees comes from the dictionary. This includes:
-
-- JSX text and the `aria-label`, `aria-description`, `title`, `placeholder` and `alt` attributes.
-- The chart cell labels, the details, the legends, the calendar month and day names, the cycle picker and the footer.
-- The empty analytics page, the printed report, the chart subtitle (`chartStrip.subtitle`, `chartStrip.subtitleBlank`) and the cycle start state (`cycleStartModal.isCycleStartYes`, `isCycleStartNo`).
-- The average values of the statistics bar (`stats.averageDays`, `{value} days (avg)`).
-
-Some texts are the same in each language: the CrMS codes (`10KLX3 I AP`, `P`, `I`), the stamp names in cell labels and the prefix `v`. The cycle day abbreviation is `CD` in English and `JC` (_jour du cycle_) in French.
-
-`src/i18n/__tests__/noHardcodedText.test.ts` reads each `.tsx` file of `src/`, but not the tests, with the parser of Vite. It fails when one of these items has a letter:
-
-- A JSX text, or a string or template literal in a JSX expression.
-- A string in an `aria-label`, `aria-description`, `title`, `placeholder` or `alt` attribute.
-- A string property of an application component, that is a tag that starts with a capital letter.
-
-The test ignores these properties: `className`, `id`, `key`, `stamp`, `size`, `variant`, `fill`, `aria-hidden`, `labelledBy`, `describedBy` and `panelClassName`. It reads through parentheses, TypeScript casts, arrays, conditions, `&&`, `||` and `+`. The test accepts the texts `P`, `I`, `v` and `10KLX3 I AP`.
-
-### 7.2 Design system and CSS layers
-
-**Modules:** [src/context/ThemeContext.tsx](src/context/ThemeContext.tsx), [src/styles/index.css](src/styles/index.css). **Decision:** [ADR 0002](docs/records/adrs/0002-css-maintainability-design-system.md).
-
-The layer order is:
-
-```css
-@layer tokens, base, primitives, views, utilities;
-```
-
-| Folder        | Files                                                                                                                                                                                                              |
-| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| `tokens/`     | `tokens.css`: fonts, brand colors, light and dark themes, each with its `color-scheme`, radii, shadows, stamp, accent and feedback colors. `spacing.css`: spacing and z-index scales. `animations.css`: keyframes. |
-| `base/`       | `reset.css`: box sizing, resets, font smoothing and touch behavior. `layout.css`: application frame, phone navigation space, safe areas and focus outlines.                                                        |
-| `primitives/` | `buttons.css`, `forms.css`, `badges.css`, `dialogs.css` (dialogs, confirmation and drawer) and `toast.css` (undo message).                                                                                         |
-| `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
-| `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
-
-| Scale   | Values                                                                                                                                                                                                                                              |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                              |
-| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                         |
-| Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
-| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                                                                              |
-- `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
-- The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
-#### Brand
-
-The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS chart. The stamps are the only strong colors on the screen. The brand hue (navy, about 215°) is far from the red and green hues of the stamps.
-
-| Token                                | Light                | Dark      | Use                                                   |
-| ------------------------------------ | -------------------- | --------- | ----------------------------------------------------- |
-| `--brand-ink`                        | `#1f3a5f`            | `#1f3a5f` | Manifest theme color, the `I` mark and its legend key |
-| `--brand-tile`                       | `#1f3a5f`            | `#2b5080` | Tile of the logo                                      |
-| `--brand-leaf`, `--brand-leaf-light` | `#86efac`, `#bbf7d0` | Same      | Leaves of the logo                                    |
-| `--bg-primary`                       | `#f8f6f1` (paper)    | `#13171d` | Page                                                  |
-| `--accent-primary`                   | `#1f3a5f`            | `#a9c1e0` | Accent text, icons and borders                        |
-| `--accent-solid`                     | `#1f3a5f`            | `#34659e` | Fills behind white text                               |
-- The logo is a sprout on an ink tile. [BrandMark.tsx](src/components/icons/BrandMark.tsx) draws it in the header. The `fill` attributes have the light colors. The classes in `header.css` give the colors of each theme. [public/icons/logo.svg](public/icons/logo.svg) is the same drawing for the favicon. The task `mise run icons` draws the PNG icons from this file.
-- [BabyIcon.tsx](src/components/icons/BabyIcon.tsx) is the only drawing of the baby of the white and light green stamps: a round head with a curl and a swaddled body. The stamps, the chart legend and the print legend use it. The CSS sets its size: 18 pixels in a stamp, 12 pixels in the chart legend and 10 pixels in the print legend.
-
-#### Fonts
-
-- All the text uses the font of the operating system: SF Pro on Apple devices, Roboto on Android and Segoe UI on Windows. Thus, the application looks like the other applications of the device.
-- `--font-family` has this stack: `system-ui`, `-apple-system`, `BlinkMacSystemFont`, `'Segoe UI'`, `Roboto`, `'Helvetica Neue'`, `Arial`, `sans-serif`.
-- The wordmark and the `h1`, `h2` and `h3` headings use `--font-display`, which is `var(--font-family)`. The size and the weight of the type scale make the difference between headings and text. Print keeps its own font, also for headings.
-- The application has no font file and no `@font-face` rule. No font or stylesheet comes from another host, such as Google Fonts.
-- Each custom property that a style or a component uses has a definition in `src/styles/tokens/`.
-- Only `src/styles/tokens/` and `views/print.css` contain color values, such as `#1f3a5f`, `rgba()` or `white`. The other style files use tokens. Print has its own colors for paper.
-- Outside `views/print.css`, each `font-size` is a type scale token (`--font-size-*`), or `100%` in `reset.css`. Each `border-radius` is a radius token, `0` or `50%`. Print uses `pt` sizes.
-- A token has the values of both themes. Thus, a view has no `[data-theme='dark']` rule.
-- The test `src/styles/__tests__/tokenUsage.test.ts` checks these rules.
-
-### 7.3 Text contrast
-
-Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes (WCAG 2 AA). The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.
-
-| Text color                                                               | Surface or use                                                                                      |
-| ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------- |
-| `--text-primary`, `--text-secondary`, `--text-muted`, `--accent-primary` | `--bg-primary`, `--bg-surface` and `--bg-surface-elevated`                                          |
-| `--color-intercourse-text`, `--color-peak-text`                          | The same surfaces: the intercourse text of the chart and the purple icon of the welcome guide       |
-| `--accent-primary`                                                       | Also `--accent-light`                                                                               |
-| White                                                                    | `--accent-solid` and `--accent-solid-hover`, for example `.btn-primary`                             |
-| White                                                                    | `--color-danger` and `--color-danger-hover` (`.btn-danger`)                                         |
-| White                                                                    | `--color-intercourse` and `--color-peak` (active toggles), `--color-success-solid` (`.today-toast`) |
-| `--color-info-text`                                                      | `--color-info-surface`: the entry mode badge of the welcome guide                                   |
-| `--color-success-text`                                                   | `--color-success-surface`: the version badge of the phone menu                                      |
-| `--color-cycle-start-text`                                               | `--color-cycle-start-surface`: the active cycle start button                                        |
-| `--color-warning-text`                                                   | `--color-warning-surface`: the symptom tag, the Peak Day pill and the Peak Day button of the chart  |
-| `--stamp-yellow-text`                                                    | `--color-warning`: the `P` key of the chart legend                                                  |
-| `--stamp-light-green-text`, white                                        | `--stamp-light-green`; `--stamp-red` and `--stamp-dark-green`                                       |
-
-The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`.
-
-- A rule with white text on an accent color uses `--accent-solid`, not `--accent-primary`.
-- The footer copyright and the empty days of the chart have no opacity. Thus, their text keeps the contrast of its token. Empty days have a dashed border.
+These rules are in [Languages](docs/reference/languages.md) and [Design system](docs/reference/design-system.md).
 
 ## 8. Tests and quality
 
