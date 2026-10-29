@@ -183,7 +183,7 @@ describe('French text of the components', () => {
     ).toBeInTheDocument();
   });
 
-  it('translates the header and the mobile menu', () => {
+  it('translates the header and the gear', () => {
     renderWithProviders(
       <Header
         activeTab="today"
@@ -191,7 +191,7 @@ describe('French text of the components', () => {
         onOpenExport={() => {}}
         onOpenVersion={() => {}}
         onOpenWelcome={() => {}}
-        onOpenShortcuts={() => {}}
+        onOpenSettings={() => {}}
       />,
       inFrench()
     );
@@ -202,12 +202,10 @@ describe('French text of the components', () => {
       fr.menu.languageTitle
     );
     expect(screen.getByRole('button', { name: fr.menu.themeToggleLabel })).toBeInTheDocument();
-    const more = screen.getByRole('button', { name: fr.menu.moreActionsLabel });
-    expect(more).toHaveAttribute('title', fr.menu.moreActionsTitle);
-
-    fireEvent.click(more);
-    const sheet = screen.getByRole('dialog', { name: fr.menu.mobileMenuLabel });
-    expect(within(sheet).getByRole('button', { name: fr.menu.closeMenu })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.settings.open })).toHaveAttribute(
+      'title',
+      fr.settings.open
+    );
   });
 
   it('translates the mobile navigation', () => {

@@ -82,8 +82,10 @@ test.describe('Fertility Tracker with damaged or unavailable storage', () => {
     await expect(directCode(page)).toHaveValue('10KLX3');
     expect(await readKey(page, STORAGE_OBSERVATIONS_KEY)).toBeNull();
 
+    // Back up now downloads the backup at once
+    const download = page.waitForEvent('download');
     await warning.getByRole('button', { name: en.storageWarning.backUpNow }).click();
-    await expect(page.getByRole('dialog', { name: en.exportModal.title })).toBeVisible();
+    expect((await download).suggestedFilename()).toMatch(/\.ftbackup$/);
   });
 
   test('loads and saves without a network after the first visit', async ({ page, context }) => {

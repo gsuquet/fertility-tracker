@@ -1,0 +1,53 @@
+- dialog "Settings":
+  - button "Close settings"
+  - heading "Settings" [level=2]
+  - region "Appearance and input":
+    - heading "Appearance and input" [level=3]
+    - list:
+      - listitem:
+        - text: Language
+        - combobox "Language":
+          - option "English" [selected]
+          - option "Français"
+      - listitem:
+        - group "Theme":
+          - text: ""
+          - radio "Light" [checked]
+          - text: Light
+          - radio "Dark"
+          - text: Dark
+      - listitem:
+        - switch "Vibration" [checked]
+      - listitem:
+        - switch "App icon badge": App icon badge Show a dot on the app icon when today has no observation
+      - listitem:
+        - switch "Keyboard shortcuts" [checked]
+  - region "Backup and restore":
+    - heading "Backup and restore" [level=3]
+    - list:
+      - listitem:
+        - button "Back up now": Back up now No backup yet
+      - listitem:
+        - button "Restore from a file"
+  - paragraph: "Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private."
+  - region "Help":
+    - heading "Help" [level=3]
+    - list:
+      - listitem:
+        - button "Welcome guide"
+      - listitem:
+        - button "Keyboard shortcuts"
+  - region "About":
+    - heading "About" [level=3]
+    - list:
+      - listitem:
+        - button "About Fertility Tracker": /About Fertility Tracker Release notes, storage v\d+\.\d+\.\d+/
+      - listitem:
+        - button "Legal and medical notice"
+  - region "Data":
+    - heading "Data" [level=3]
+    - list:
+      - listitem:
+        - button "Load the demo cycles"
+      - listitem:
+        - button "Delete all data"

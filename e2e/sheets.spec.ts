@@ -3,7 +3,7 @@ import type { CDPSession, Locator, Page } from '@playwright/test';
 import { buildDemoObservations } from '../src/domain/demoData';
 import { en } from '../src/i18n/locales/en';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
-import { TODAY, openApp } from './fixtures';
+import { TODAY, openApp, openShareChart } from './fixtures';
 
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
@@ -44,65 +44,43 @@ const settledBox = async (sheet: Locator) => {
 };
 
 test.describe('Bottom sheets with touch', () => {
-  test('closes the phone menu with a swipe down, and a swipe up does not scroll the page', async ({
-    page,
-  }) => {
+  test('slides a dialog sheet up from the bottom of the screen when it opens', async ({ page }) => {
     await openWithDemo(page);
-    const swipe = finger(page, await page.context().newCDPSession(page));
-    const open = async () => {
-      await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-      const menu = page.getByRole('dialog', { name: en.menu.mobileMenuLabel });
-      await expect(menu).toBeVisible();
-      return menu;
-    };
-
-    const menu = await open();
-    const box = await settledBox(menu.locator('.mobile-action-sheet'));
-    // A swipe up on the list and on the backdrop keeps the page in place
-    await swipe(195, box.y + 150, 0, -300);
-    await swipe(195, box.y - 100, 0, -200);
-    await page.waitForTimeout(300);
-    expect(await scrollY(page)).toBe(0);
-    await expect(menu).toBeVisible();
-
-    // A swipe down that starts on an action closes the menu, and the action does not run
-    await swipe(195, box.y + 150, 0, 400);
-    await expect(menu).toBeHidden();
-    await expect(page.getByRole('dialog')).toHaveCount(0);
-
-    // A swipe down on the header closes it too
-    const again = await open();
-    await settledBox(again.locator('.mobile-action-sheet'));
-    const header = await again.locator('.mobile-action-sheet-header').boundingBox();
-    if (!header) throw new Error('The header has no box');
-    await swipe(120, header.y + header.height / 2, 0, 400);
-    await expect(again).toBeHidden();
-  });
-
-  test('slides the phone menu up from the bottom of the screen when it opens', async ({ page }) => {
-    await openWithDemo(page);
+    await page
+      .getByRole('navigation', { name: en.mobileTabs.navLabel })
+      .getByRole('button', { name: en.mobileTabs.chart, exact: true })
+      .click();
+    // A click during the page slide reaches the slide, not the page
+    await page.waitForFunction(() => !document.documentElement.dataset.pageTransition);
+    await page.getByRole('button', { name: en.chartStrip.optionsLabel }).click();
     // The first frame after the click: the sheet is still low, and nothing scrolled to the focus
-    const first = await page.evaluate(
-      () =>
+    const first = await page.getByRole('menuitem', { name: en.chartStrip.shareChart }).evaluate(
+      item =>
         new Promise<{ scrollTop: number; top: number; height: number }>(resolve => {
-          (document.querySelector('.mobile-more-btn') as HTMLElement).click();
-          requestAnimationFrame(() => {
-            const dialog = document.querySelector('dialog') as HTMLDialogElement;
-            const sheet = document.querySelector('.mobile-action-sheet') as HTMLElement;
+          (item as HTMLElement).click();
+          // The dialog is a lazy chunk: measure the first frame that has it
+          const measure = () => {
+            const sheet = document.querySelector('.export-modal-enhanced');
+            if (!sheet) {
+              requestAnimationFrame(measure);
+              return;
+            }
+            const dialog = sheet.closest('dialog') as HTMLDialogElement;
             resolve({
               scrollTop: dialog.scrollTop,
               top: sheet.getBoundingClientRect().top,
               height: sheet.getBoundingClientRect().height,
             });
-          });
+          };
+          requestAnimationFrame(measure);
         })
     );
     expect(first.scrollTop).toBe(0);
     const final = 844 - first.height;
     expect(first.top).toBeGreaterThan(final + 100);
-    await expect(page.getByRole('button', { name: en.menu.closeMenu })).toBeFocused();
+    await expect(page.getByRole('button', { name: en.exportModal.close })).toBeFocused();
     await expect
-      .poll(async () => (await page.locator('.mobile-action-sheet').boundingBox())?.y)
+      .poll(async () => (await page.locator('.export-modal-enhanced').boundingBox())?.y)
       .toBeCloseTo(final, 0);
   });
 
@@ -136,13 +114,7 @@ test.describe('Dialog sheets with touch', () => {
   }) => {
     await openWithDemo(page);
     const swipe = finger(page, await page.context().newCDPSession(page));
-    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-    await page
-      .getByRole('dialog', { name: en.menu.mobileMenuLabel })
-      .getByRole('button', { name: new RegExp(en.actions.exportPdf) })
-      .click();
-    const dialog = page.getByRole('dialog', { name: en.exportModal.title });
-    await expect(dialog).toBeVisible();
+    const dialog = await openShareChart(page);
     await settledBox(dialog.locator('.modal-container'));
     const header = await dialog.locator('.modal-header').boundingBox();
     if (!header) throw new Error('The header has no box');
@@ -157,12 +129,7 @@ test.describe('Dialog sheets with touch', () => {
     await expect(page.getByRole('dialog')).toHaveCount(0);
 
     // A swipe down from the top of the body closes it too
-    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-    await page
-      .getByRole('dialog', { name: en.menu.mobileMenuLabel })
-      .getByRole('button', { name: new RegExp(en.actions.exportPdf) })
-      .click();
-    await expect(dialog).toBeVisible();
+    await openShareChart(page);
     await settledBox(dialog.locator('.modal-container'));
     const body = await dialog.locator('.modal-body').boundingBox();
     if (!body) throw new Error('The body has no box');

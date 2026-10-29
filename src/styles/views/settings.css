@@ -1,0 +1,279 @@
+/* ==========================================================================
+   Settings: a full page on a phone, a 560 pixel dialog on a wider screen
+   Layer: views
+   ========================================================================== */
+
+@layer views {
+  .settings-dialog {
+    max-width: 560px;
+  }
+
+  .settings-header {
+    justify-content: flex-start;
+    gap: var(--space-sm);
+  }
+
+  .settings-header h2 {
+    margin: 0;
+    font-size: var(--font-size-lg);
+    font-weight: 800;
+  }
+
+  /* On a wider screen, the close button is an X at the right */
+  .settings-close {
+    order: 1;
+    margin-left: auto;
+  }
+
+  .settings-close-back {
+    display: none;
+  }
+
+  .settings-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-lg);
+  }
+
+  .settings-install {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    padding: var(--space-md);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--accent-light);
+  }
+
+  .settings-install .btn {
+    flex-shrink: 0;
+    min-height: var(--control-size-lg);
+  }
+
+  .settings-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-xs);
+  }
+
+  .settings-group-title {
+    margin: 0 0 0 var(--space-xs);
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+  }
+
+  .settings-list {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-lg);
+    background-color: var(--bg-surface);
+    overflow: hidden;
+  }
+
+  .settings-list > li + li {
+    border-top: 1px solid var(--bg-surface-border);
+  }
+
+  .settings-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    width: 100%;
+    min-height: var(--row-height);
+    margin: 0;
+    padding: var(--space-sm) var(--space-md);
+    border: 0;
+    background: none;
+    color: var(--text-primary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  button.settings-row:hover:not(:disabled),
+  label.settings-row:hover {
+    background-color: var(--bg-primary);
+  }
+
+  .settings-row:disabled {
+    cursor: not-allowed;
+    color: var(--text-muted);
+  }
+
+  .settings-row-icon {
+    flex-shrink: 0;
+    color: var(--accent-primary);
+  }
+
+  /* Delete all data: red text, never a filled button (RFC 0002) */
+  .settings-row.danger:not(:disabled),
+  .settings-row.danger:not(:disabled) .settings-row-icon {
+    color: var(--color-danger-text);
+  }
+
+  .settings-row-text {
+    display: flex;
+    flex: 1;
+    flex-direction: column;
+    min-width: 0;
+  }
+
+  .settings-row-label {
+    font-size: var(--font-size-md);
+    font-weight: 600;
+  }
+
+  .settings-row-detail {
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    line-height: 1.4;
+  }
+
+  .settings-row-value {
+    flex-shrink: 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+  }
+
+  .settings-row-chevron {
+    flex-shrink: 0;
+    color: var(--text-muted);
+  }
+
+  .settings-select {
+    flex-shrink: 0;
+    min-height: var(--control-size-md);
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--bg-surface-border-strong);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+    font-size: var(--font-size-md);
+  }
+
+  .settings-theme {
+    cursor: default;
+  }
+
+  .settings-segmented {
+    display: inline-flex;
+    flex-shrink: 0;
+    gap: 2px;
+    padding: 3px;
+    border: 1px solid var(--bg-surface-border-strong);
+    border-radius: var(--radius-full);
+  }
+
+  .settings-segmented label {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    min-height: var(--control-size-sm);
+    padding: 0 var(--space-md);
+    border-radius: var(--radius-full);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* The radio stays in the accessibility tree and takes the focus. The label shows its state. */
+  .settings-segmented input {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    margin: 0;
+    opacity: 0;
+    cursor: pointer;
+  }
+
+  .settings-segmented label:has(input:checked) {
+    background-color: var(--accent-solid);
+    color: var(--color-white);
+  }
+
+  .settings-segmented label:has(input:focus-visible) {
+    outline: 2px solid var(--accent-primary);
+    outline-offset: 2px;
+  }
+
+  .settings-note {
+    margin: calc(var(--space-md) * -1) var(--space-xs) 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    line-height: 1.45;
+  }
+
+  .settings-alert {
+    margin: 0;
+    color: var(--color-warning-text);
+    font-size: var(--font-size-sm);
+  }
+
+  .settings-list .settings-alert {
+    padding: 0 var(--space-md) var(--space-sm);
+  }
+
+  /* On a phone, Settings is a full page over the bottom bar. Back closes it (RFC 0002). */
+  @media (max-width: 640px) {
+    .settings-overlay {
+      align-items: stretch;
+      background-color: var(--bg-primary);
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+
+    .settings-dialog {
+      max-width: 100vw;
+      max-height: none;
+      height: 100dvh;
+      border: 0;
+      border-radius: 0;
+      background-color: var(--bg-primary);
+      box-shadow: none;
+      animation: none;
+    }
+
+    .settings-header {
+      min-height: calc(54px + env(safe-area-inset-top, 0px));
+      padding: env(safe-area-inset-top, 0px) var(--space-sm) 0;
+      background-color: var(--bg-surface);
+      touch-action: auto;
+    }
+
+    .settings-close {
+      order: 0;
+      margin-left: 0;
+      width: var(--control-size-lg);
+      height: var(--control-size-lg);
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+
+    .settings-close-back {
+      display: block;
+    }
+
+    .settings-close-x {
+      display: none;
+    }
+
+    .settings-header h2 {
+      font-size: var(--font-size-xl);
+    }
+
+    .settings-body {
+      padding: var(--space-md) var(--space-md)
+        calc(var(--space-xl) + env(safe-area-inset-bottom, 0px));
+    }
+  }
+}

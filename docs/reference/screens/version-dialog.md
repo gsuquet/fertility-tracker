@@ -17,11 +17,12 @@ The release notes change at each release. Thus, the snapshots and the screenshot
 
 ## Behavior
 
-- The info button in the header, the **About & Version Tracker** item of the phone menu and the version in the footer open the dialog. It then shows the **Release Notes** tab.
-- **Legal** in the footer opens the dialog on the **System Information** tab, with the legal notice.
+- The info button of the header on a wide screen, **About Fertility Tracker** in [Settings](settings.md) and the version in the footer open the dialog. It then shows the **Release Notes** tab.
+- **Legal** in the footer and **Legal and medical notice** in Settings open the dialog on the **System Information** tab, with the legal notice.
+- From Settings, the dialog opens over Settings. When it closes, Settings shows again.
 - The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.
 - The **System Information** tab shows the version, the CrMS version, the build date and the environment. It also has the repository link.
-- The tab also shows the storage statistics: the number of storage keys, cycles and observations, and the size in KB.
+- The tab also shows the storage statistics: the number of storage keys, cycles and observations, and the size in KB. The switch of the app icon badge is not in this tab. It is in Settings.
 - At the end, the tab shows the legal notice ([LegalNotice.tsx](../../../src/components/LegalNotice.tsx)): the trademark text, the medical text and the copyright. The footer has one line only, so this tab and the welcome guide have the full notice.
 - The dialog uses the surface tokens `--bg-surface`, `--bg-primary` and `--bg-surface-border`.
 

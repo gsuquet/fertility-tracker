@@ -59,6 +59,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Cycle Analytics page](reference/screens/analytics.md)
 - [Observation drawer](reference/screens/observation-drawer.md)
 - [Export dialog](reference/screens/export-dialog.md)
+- [Settings](reference/screens/settings.md)
 - [Version dialog](reference/screens/version-dialog.md)
 - [Welcome guide](reference/screens/welcome-guide.md)
 - [Error screen](reference/screens/error-screen.md)

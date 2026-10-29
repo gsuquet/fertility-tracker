@@ -24,22 +24,22 @@ describe('StorageSaveWarning', () => {
   });
 
   it('renders nothing when the observations are saved', () => {
-    renderWithProviders(<StorageSaveWarning onOpenExport={vi.fn()} />);
+    renderWithProviders(<StorageSaveWarning onBackUp={vi.fn()} />);
     expect(screen.queryByRole('alert')).toBeNull();
   });
 
   it('warns when the browser refuses to save and opens the export dialog', () => {
     refuseObservationWrites();
-    const onOpenExport = vi.fn();
-    renderWithProviders(<StorageSaveWarning onOpenExport={onOpenExport} />);
+    const onBackUp = vi.fn();
+    renderWithProviders(<StorageSaveWarning onBackUp={onBackUp} />);
     expect(screen.getByRole('alert')).toHaveTextContent(en.storageWarning.saveFailed);
     fireEvent.click(screen.getByRole('button', { name: en.storageWarning.backUpNow }));
-    expect(onOpenExport).toHaveBeenCalledOnce();
+    expect(onBackUp).toHaveBeenCalledOnce();
   });
 
   it('warns in French', () => {
     refuseObservationWrites();
-    renderWithProviders(<StorageSaveWarning onOpenExport={vi.fn()} />, { language: 'fr' });
+    renderWithProviders(<StorageSaveWarning onBackUp={vi.fn()} />, { language: 'fr' });
     expect(screen.getByRole('alert')).toHaveTextContent(fr.storageWarning.saveFailed);
     expect(screen.getByRole('button', { name: fr.storageWarning.backUpNow })).toBeInTheDocument();
   });

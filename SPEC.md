@@ -21,38 +21,39 @@ The application does not predict fertile days from a calendar. It uses only the 
 
 Find the file or the folder that you change. Then change its page first.
 
-| Source                                                                                                   | Page                                                                   |
-| -------------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------- |
-| `src/domain/codeParser.ts`                                                                               | [Observation codes](docs/reference/observation-codes.md)               |
-| `src/domain/stampCalculator.ts`, `src/domain/peakDetector.ts`                                            | [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md)     |
-| `src/domain/cycleBoundaryDetector.ts`, `src/domain/cyclePhases.ts`, `src/domain/mucusScore.ts`           | [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md)       |
-| `src/domain/versionTracker.ts`, `src/domain/appVersion.ts`                                               | [Version tracker](docs/reference/version-tracker.md)                   |
-| The other files in `src/domain/`                                                                         | [Domain API](docs/reference/domain-api.md)                             |
-| `src/types/crms.ts`                                                                                      | [Data format](docs/reference/data-format.md)                           |
-| `src/context/`, `src/utils/storage.ts`, `src/utils/storageKeys.ts`                                       | [Data storage](docs/reference/data-storage.md)                         |
-| `src/i18n/`                                                                                              | [Languages](docs/reference/languages.md)                               |
-| `src/styles/`, `src/components/icons/`, `src/components/StampBadge.tsx`                                  | [Design system](docs/reference/design-system.md)                       |
-| `src/components/Modal.tsx`                                                                               | [Dialog component](docs/reference/dialog-component.md)                 |
-| `src/components/Header.tsx`, `Footer.tsx`, `MobileNav.tsx`, `CyclePicker.tsx`                            | [Navigation](docs/reference/screens/navigation.md)                     |
-| `src/components/CycleStatsHeader.tsx`                                                                    | [Statistics bar](docs/reference/screens/statistics-bar.md)             |
-| `src/components/TodayView.tsx`, `src/components/today/`                                                  | [Today page](docs/reference/screens/today.md)                          |
-| `src/components/ChartRow.tsx`, `src/components/chart/`                                                   | [Paper Chart Strip page](docs/reference/screens/chart.md)              |
-| `src/components/CalendarGrid.tsx`                                                                        | [Monthly Calendar page](docs/reference/screens/calendar.md)            |
-| `src/components/CycleAnalyticsView.tsx`                                                                  | [Cycle Analytics page](docs/reference/screens/analytics.md)            |
-| `src/components/ObservationDrawer.tsx`, `src/components/observation/`                                    | [Observation drawer](docs/reference/screens/observation-drawer.md)     |
-| `src/components/ExportModal.tsx`, `PrintExportView.tsx`, `ConfirmDialog.tsx`, `src/utils/exportUtils.ts` | [Export dialog](docs/reference/screens/export-dialog.md)               |
-| `src/components/VersionModal.tsx`                                                                        | [Version dialog](docs/reference/screens/version-dialog.md)             |
-| `src/components/WelcomeModal.tsx`                                                                        | [Welcome guide](docs/reference/screens/welcome-guide.md)               |
-| `src/components/ErrorBoundary.tsx`                                                                       | [Error screen](docs/reference/screens/error-screen.md)                 |
-| `src/components/LegalNotice.tsx`                                                                         | [Legal and medical limits](docs/reference/legal-and-medical-limits.md) |
-| `src/App.tsx`, `src/hooks/`, `src/pwa/` and the other files in `src/components/` and `src/utils/`        | [Application behavior](docs/reference/application-behavior.md)         |
-| `src/sw/`, `public/`, `index.html`, `scripts/pwa/`, `wrangler.json`                                      | [Deployment](docs/reference/deployment.md)                             |
-| `package.json`, `vite.config.ts`, `src/main.tsx`, `src/vite-env.d.ts`                                    | [Technology](docs/reference/technology.md)                             |
-| `tsconfig.json`, `biome.json`, `.node-version`, `.npmrc`, `.mise/config.toml`, `.pre-commit-config.yaml` | [Technology](docs/reference/technology.md)                             |
-| `e2e/`, `playwright.config.ts`, `src/test/`, `src/setupTests.ts` and the `__tests__` folders             | [Test rules and helpers](docs/reference/test-rules.md)                 |
-| `.mise/tasks/`, `.github/workflows/`                                                                     | [Commands](docs/reference/commands.md)                                 |
-| `scripts/commits/`, `.github/dependabot.yml`                                                             | [Commit messages](docs/reference/commit-messages.md)                   |
-| `docs/`, `scripts/docs/`, `README.md`, `AGENTS.md`, `SPEC.md`                                            | [Documentation rules](docs/reference/documentation-rules.md)           |
+| Source                                                                                                                               | Page                                                                   |
+| ------------------------------------------------------------------------------------------------------------------------------------ | ---------------------------------------------------------------------- |
+| `src/domain/codeParser.ts`                                                                                                           | [Observation codes](docs/reference/observation-codes.md)               |
+| `src/domain/stampCalculator.ts`, `src/domain/peakDetector.ts`                                                                        | [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md)     |
+| `src/domain/cycleBoundaryDetector.ts`, `src/domain/cyclePhases.ts`, `src/domain/mucusScore.ts`                                       | [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md)       |
+| `src/domain/versionTracker.ts`, `src/domain/appVersion.ts`                                                                           | [Version tracker](docs/reference/version-tracker.md)                   |
+| The other files in `src/domain/`                                                                                                     | [Domain API](docs/reference/domain-api.md)                             |
+| `src/types/crms.ts`                                                                                                                  | [Data format](docs/reference/data-format.md)                           |
+| `src/context/`, `src/utils/storage.ts`, `src/utils/storageKeys.ts`                                                                   | [Data storage](docs/reference/data-storage.md)                         |
+| `src/i18n/`                                                                                                                          | [Languages](docs/reference/languages.md)                               |
+| `src/styles/`, `src/components/icons/`, `src/components/StampBadge.tsx`                                                              | [Design system](docs/reference/design-system.md)                       |
+| `src/components/Modal.tsx`                                                                                                           | [Dialog component](docs/reference/dialog-component.md)                 |
+| `src/components/Header.tsx`, `Footer.tsx`, `MobileNav.tsx`, `CyclePicker.tsx`                                                        | [Navigation](docs/reference/screens/navigation.md)                     |
+| `src/components/CycleStatsHeader.tsx`                                                                                                | [Statistics bar](docs/reference/screens/statistics-bar.md)             |
+| `src/components/TodayView.tsx`, `src/components/today/`                                                                              | [Today page](docs/reference/screens/today.md)                          |
+| `src/components/ChartRow.tsx`, `src/components/chart/`                                                                               | [Paper Chart Strip page](docs/reference/screens/chart.md)              |
+| `src/components/CalendarGrid.tsx`                                                                                                    | [Monthly Calendar page](docs/reference/screens/calendar.md)            |
+| `src/components/CycleAnalyticsView.tsx`                                                                                              | [Cycle Analytics page](docs/reference/screens/analytics.md)            |
+| `src/components/ObservationDrawer.tsx`, `src/components/observation/`                                                                | [Observation drawer](docs/reference/screens/observation-drawer.md)     |
+| `src/components/ExportModal.tsx`, `PrintExportView.tsx`, `src/utils/exportUtils.ts`                                                  | [Export dialog](docs/reference/screens/export-dialog.md)               |
+| `src/components/settings/`, `ConfirmDialog.tsx`, `AppBadgeSetting.tsx`, `src/hooks/useBackUpNow.ts`, `src/styles/views/settings.css` | [Settings](docs/reference/screens/settings.md)                         |
+| `src/components/VersionModal.tsx`                                                                                                    | [Version dialog](docs/reference/screens/version-dialog.md)             |
+| `src/components/WelcomeModal.tsx`                                                                                                    | [Welcome guide](docs/reference/screens/welcome-guide.md)               |
+| `src/components/ErrorBoundary.tsx`                                                                                                   | [Error screen](docs/reference/screens/error-screen.md)                 |
+| `src/components/LegalNotice.tsx`                                                                                                     | [Legal and medical limits](docs/reference/legal-and-medical-limits.md) |
+| `src/App.tsx`, `src/hooks/`, `src/pwa/` and the other files in `src/components/` and `src/utils/`                                    | [Application behavior](docs/reference/application-behavior.md)         |
+| `src/sw/`, `public/`, `index.html`, `scripts/pwa/`, `wrangler.json`                                                                  | [Deployment](docs/reference/deployment.md)                             |
+| `package.json`, `vite.config.ts`, `src/main.tsx`, `src/vite-env.d.ts`                                                                | [Technology](docs/reference/technology.md)                             |
+| `tsconfig.json`, `biome.json`, `.node-version`, `.npmrc`, `.mise/config.toml`, `.pre-commit-config.yaml`                             | [Technology](docs/reference/technology.md)                             |
+| `e2e/`, `playwright.config.ts`, `src/test/`, `src/setupTests.ts` and the `__tests__` folders                                         | [Test rules and helpers](docs/reference/test-rules.md)                 |
+| `.mise/tasks/`, `.github/workflows/`                                                                                                 | [Commands](docs/reference/commands.md)                                 |
+| `scripts/commits/`, `.github/dependabot.yml`                                                                                         | [Commit messages](docs/reference/commit-messages.md)                   |
+| `docs/`, `scripts/docs/`, `README.md`, `AGENTS.md`, `SPEC.md`                                                                        | [Documentation rules](docs/reference/documentation-rules.md)           |
 
 When a page does not give a rule, read [Project structure](docs/reference/project-structure.md) and [Architecture](docs/explanation/architecture.md).
 

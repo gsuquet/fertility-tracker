@@ -5,7 +5,7 @@
     - button /\d+-day/ [pressed]
     - button "Strip"
   - button "Chart options"
-  - button "More actions"
+  - button "Settings"
 - main:
   - tabpanel "Paper Chart Strip":
     - heading "Paper Chart Strip" [level=1]

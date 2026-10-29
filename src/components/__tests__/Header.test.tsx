@@ -1,12 +1,9 @@
-import { screen, fireEvent, within } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
-import { makeObservation } from '../../test/factories';
-import { getAppVersion } from '../../domain/appVersion';
 import type { ActiveTab } from '../../types/crms';
-import { STORAGE_HAPTICS_OFF_KEY } from '../../utils/storageKeys';
 
 const SelectionProbe = () => {
   const { selectedObservation } = useCycleUi();
@@ -23,7 +20,7 @@ const renderHeader = (
     onOpenExport: vi.fn(),
     onOpenVersion: vi.fn(),
     onOpenWelcome: vi.fn(),
-    onOpenShortcuts: vi.fn(),
+    onOpenSettings: vi.fn(),
   };
   renderWithProviders(
     <>
@@ -33,11 +30,6 @@ const renderHeader = (
     options
   );
   return props;
-};
-
-const openSheet = () => {
-  fireEvent.click(screen.getByRole('button', { name: 'More actions' }));
-  return screen.getByRole('dialog', { name: 'Mobile Navigation Menu' });
 };
 
 describe('Header', () => {
@@ -108,121 +100,13 @@ describe('Header', () => {
     expect(document.documentElement).toHaveAttribute('data-theme', 'light');
   });
 
-  it('runs each sheet action and closes the sheet', () => {
+  it('opens Settings from the gear, on each screen width', () => {
     const props = renderHeader();
-    for (const [label, handler] of [
-      ['Print or export PDF / JSON charts', props.onOpenExport],
-      ['Interactive guide & biomarker chart tutorial', props.onOpenWelcome],
-      ['Release notes & system storage diagnostics', props.onOpenVersion],
-      ['Keys for the pages, the days and a new observation', props.onOpenShortcuts],
-    ] as const) {
-      fireEvent.click(within(openSheet()).getByText(label));
-      expect(handler).toHaveBeenCalledOnce();
-      expect(screen.queryByRole('dialog')).toBeNull();
-    }
-  });
-
-  it('shows the app version in the sheet', () => {
-    renderHeader();
-    expect(within(openSheet()).getByText(`v${getAppVersion()}`)).toBeInTheDocument();
-  });
-
-  it('toggles language and theme from the sheet', () => {
-    renderHeader();
-    const sheet = openSheet();
-    fireEvent.click(within(sheet).getByText('Theme : Light'));
-    expect(within(sheet).getByText('Theme : Dark')).toBeInTheDocument();
-    fireEvent.click(within(sheet).getByText('Language : English'));
-    expect(within(sheet).getByText('Langue : Français')).toBeInTheDocument();
-    expect(within(sheet).getByText('Thème : Sombre')).toBeInTheDocument();
-    fireEvent.click(within(sheet).getByText('Langue : Français'));
-    expect(within(sheet).getByText('Language : English')).toBeInTheDocument();
-  });
-
-  it('has no vibration button when the browser cannot vibrate', () => {
-    renderHeader();
-    expect(within(openSheet()).queryByText(/Vibration/)).toBeNull();
-  });
-
-  it('turns the vibrations off and on from the sheet when the browser can vibrate', () => {
-    Object.defineProperty(navigator, 'vibrate', { value: vi.fn(), configurable: true });
-    try {
-      renderHeader();
-      const sheet = openSheet();
-      const toggle = within(sheet).getByRole('button', { name: 'Vibration : On' });
-      fireEvent.click(toggle);
-      expect(toggle).toHaveAccessibleName('Vibration : Off');
-      expect(localStorage.getItem(STORAGE_HAPTICS_OFF_KEY)).toBe('true');
-      fireEvent.click(within(sheet).getByText('Language : English'));
-      expect(toggle).toHaveTextContent('Vibration : Désactivée');
-      fireEvent.click(toggle);
-      expect(toggle).toHaveTextContent('Vibration : Activée');
-    } finally {
-      Reflect.deleteProperty(navigator, 'vibrate');
-    }
-  });
-
-  it('closes the sheet with the close button, the overlay and Escape', () => {
-    renderHeader();
-    fireEvent.click(within(openSheet()).getByRole('button', { name: 'Close menu' }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-
-    fireEvent.click(openSheet());
-    expect(screen.queryByRole('dialog')).toBeNull();
-
-    openSheet();
-    fireEvent.keyDown(screen.getByRole('dialog'), { key: 'Enter' });
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
-    expect(screen.queryByRole('dialog')).toBeNull();
-  });
-
-  it('opens the sheet as a native modal dialog and gives the focus back to More actions', () => {
-    renderHeader();
-    const more = screen.getByRole('button', { name: 'More actions' });
-    more.focus();
-    const sheet = openSheet();
-    expect(sheet.tagName).toBe('DIALOG');
-    expect(sheet).toHaveAttribute('aria-modal', 'true');
-    expect(within(sheet).getByRole('button', { name: 'Close menu' })).toHaveFocus();
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
-    expect(more).toHaveFocus();
-  });
-
-  it('keeps the sheet open when the sheet body is clicked', () => {
-    renderHeader({ observations: [makeObservation({ date: '2026-09-01' })] });
-    fireEvent.click(within(openSheet()).getByText('Menu & Options'));
-    expect(screen.getByRole('dialog')).toBeInTheDocument();
-  });
-
-  it('closes the sheet with a drag down on its handle on a phone', () => {
-    const media = vi.mocked(window.matchMedia);
-    const original = media.getMockImplementation();
-    // A phone that prefers reduced motion: the sheet closes at the release
-    media.mockImplementation(
-      query =>
-        ({
-          matches: true,
-          media: query,
-          addEventListener: vi.fn(),
-          removeEventListener: vi.fn(),
-        }) as unknown as MediaQueryList
-    );
-    // jsdom has no pointer capture
-    const nativeCapture = Element.prototype.setPointerCapture;
-    Element.prototype.setPointerCapture = vi.fn();
-    try {
-      renderHeader();
-      const sheet = openSheet();
-      const handle = sheet.querySelector('.sheet-handle') as HTMLElement;
-      expect(handle).toHaveAttribute('aria-hidden', 'true');
-      fireEvent.pointerDown(handle, { pointerId: 1, button: 0, clientY: 100 });
-      fireEvent.pointerMove(handle, { pointerId: 1, clientY: 700 });
-      fireEvent.pointerUp(handle, { pointerId: 1, clientY: 700 });
-      expect(screen.queryByRole('dialog')).toBeNull();
-    } finally {
-      media.mockImplementation(original as (query: string) => MediaQueryList);
-      Element.prototype.setPointerCapture = nativeCapture;
-    }
+    const gear = screen.getByRole('button', { name: 'Settings' });
+    expect(gear).toHaveAttribute('title', 'Settings');
+    fireEvent.click(gear);
+    expect(props.onOpenSettings).toHaveBeenCalledOnce();
+    // The phone menu is gone: Settings has its actions (RFC 0002)
+    expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
   });
 });

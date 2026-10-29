@@ -5,12 +5,12 @@ import { BACKUP_REMINDER_DAYS, isBackupDue } from '../domain/backupReminder';
 import { getTodayStr } from '../utils/dateUtils';
 
 interface BackupReminderProps {
-  /** Opens the export dialog, where the user can download a backup. */
-  onOpenExport: () => void;
+  /** Downloads a backup file at once. */
+  onBackUp: () => void;
 }
 
 /** Reminds the user to download a backup when the last one is old or missing. */
-export const BackupReminder: React.FC<BackupReminderProps> = ({ onOpenExport }) => {
+export const BackupReminder: React.FC<BackupReminderProps> = ({ onBackUp }) => {
   const {
     observations,
     lastBackupDate,
@@ -36,7 +36,7 @@ export const BackupReminder: React.FC<BackupReminderProps> = ({ onOpenExport }) 
     <div className="storage-recovery-notice" role="note">
       <p>{message}</p>
       <div className="storage-recovery-actions">
-        <button type="button" className="btn btn-primary" onClick={onOpenExport}>
+        <button type="button" className="btn btn-primary" onClick={onBackUp}>
           {t.backupReminder.backUpNow}
         </button>
         <button type="button" className="btn btn-secondary" onClick={snoozeBackupReminder}>

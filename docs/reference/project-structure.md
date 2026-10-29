@@ -25,10 +25,11 @@ fertility-tracker/
 │   │   ├── chart/               # Parts of the Chart page
 │   │   ├── icons/               # Logo (BrandMark) and baby of the stamps (BabyIcon)
 │   │   ├── observation/         # Parts of the two observation forms
+│   │   ├── settings/            # Settings: a full page on a phone, a dialog on a wider screen
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
 │   ├── domain/                  # Pure CrMS rules and data functions
-│   ├── hooks/                   # Shared React hooks
+│   ├── hooks/                   # Shared React hooks, for example useBackUpNow.ts (Back up now)
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
 │   ├── pwa/                     # Service worker registration
@@ -73,38 +74,40 @@ fertility-tracker/
 
 ## Components
 
-| Component                                    | Content                                                                       |
-| -------------------------------------------- | ----------------------------------------------------------------------------- |
-| `Header.tsx`                                 | Page buttons, cycle picker, header buttons and the phone menu.                |
-| `MobileNav.tsx`                              | Page buttons at the bottom of a phone screen.                                 |
-| `CycleStatsHeader.tsx`                       | Four statistics cards above the pages.                                        |
-| `CyclePicker.tsx`                            | Selects one cycle or all cycles.                                              |
-| `TodayView.tsx`                              | The **Today** page. Uses the files in `today/`.                               |
-| `ChartRow.tsx`                               | The **Paper Chart Strip** page.                                               |
-| `CalendarGrid.tsx`                           | The **Monthly Calendar** page.                                                |
-| `CycleAnalyticsView.tsx`                     | The **Cycle Analytics** page.                                                 |
-| `ObservationDrawer.tsx`                      | The observation drawer.                                                       |
-| `observation/ProgressiveObservationForm.tsx` | The observation form of the Today page and of the drawer.                     |
-| `observation/ObservationActionsMenu.tsx`     | The ⋮ menu of an observation: copy, Direct Code Only and delete.              |
-| `CycleStartModal.tsx`                        | The **New Cycle Start?** dialog.                                              |
-| `StampBadge.tsx`                             | One stamp.                                                                    |
-| `ExportModal.tsx`                            | The export and backup dialog.                                                 |
-| `ConfirmDialog.tsx`                          | The confirmation dialog before data is replaced or deleted.                   |
-| `Modal.tsx`                                  | The accessible modal dialog that all dialogs and drawers use.                 |
-| `MenuButton.tsx`                             | A ⋮ button and its menu of items, check items and lines.                      |
-| `UndoToast.tsx`                              | The toast that undoes the last replace or delete of the data.                 |
-| `StorageRecoveryNotice.tsx`                  | The alert for saved data that the application cannot read.                    |
-| `StorageSaveWarning.tsx`                     | The alert when the browser does not save the observations.                    |
-| `BackupReminder.tsx`                         | The reminder to make a backup.                                                |
-| `PrintExportView.tsx`                        | The 35-day chart for printing.                                                |
-| `VersionModal.tsx`                           | The **About & Version Tracker** dialog.                                       |
-| `WelcomeModal.tsx`                           | The welcome guide.                                                            |
-| `KeyboardShortcutsModal.tsx`                 | The list of the keyboard shortcuts, with the switch that turns them off.      |
-| `Footer.tsx`                                 | One line: the copyright, **Legal** and the version. Not in the installed app. |
-| `shell/TopBar.tsx`                           | Puts the controls and the title of a page in the top bar of a phone.          |
-| `LegalNotice.tsx`                            | The trademark text, the medical text and the copyright.                       |
-| `ErrorBoundary.tsx`                          | Message and **Reload** button when a part cannot load.                        |
-| `LoadingStatus.tsx`                          | The loading text for a screen reader while a lazy part loads.                 |
+| Component                                    | Content                                                                                                                            |
+| -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
+| `Header.tsx`                                 | Page buttons, cycle picker, header buttons and the **Settings** gear.                                                              |
+| `MobileNav.tsx`                              | Page buttons at the bottom of a phone screen.                                                                                      |
+| `CycleStatsHeader.tsx`                       | Four statistics cards above the pages.                                                                                             |
+| `CyclePicker.tsx`                            | Selects one cycle or all cycles.                                                                                                   |
+| `TodayView.tsx`                              | The **Today** page. Uses the files in `today/`.                                                                                    |
+| `ChartRow.tsx`                               | The **Paper Chart Strip** page.                                                                                                    |
+| `CalendarGrid.tsx`                           | The **Monthly Calendar** page.                                                                                                     |
+| `CycleAnalyticsView.tsx`                     | The **Cycle Analytics** page.                                                                                                      |
+| `ObservationDrawer.tsx`                      | The observation drawer.                                                                                                            |
+| `observation/ProgressiveObservationForm.tsx` | The observation form of the Today page and of the drawer.                                                                          |
+| `observation/ObservationActionsMenu.tsx`     | The ⋮ menu of an observation: copy, Direct Code Only and delete.                                                                   |
+| `CycleStartModal.tsx`                        | The **New Cycle Start?** dialog.                                                                                                   |
+| `StampBadge.tsx`                             | One stamp.                                                                                                                         |
+| `ExportModal.tsx`                            | The **Share chart** dialog: the print of the chart.                                                                                |
+| `settings/SettingsDialog.tsx`                | **Settings**: display settings, backup, restore, help, about, demo data and delete. Its styles are in `styles/views/settings.css`. |
+| `AppBadgeSetting.tsx`                        | The switch row of the app icon badge in Settings.                                                                                  |
+| `ConfirmDialog.tsx`                          | The confirmation dialog before data is replaced or deleted.                                                                        |
+| `Modal.tsx`                                  | The accessible modal dialog that all dialogs and drawers use.                                                                      |
+| `MenuButton.tsx`                             | A ⋮ button and its menu of items, check items and lines.                                                                           |
+| `UndoToast.tsx`                              | The toast that undoes the last replace or delete of the data.                                                                      |
+| `StorageRecoveryNotice.tsx`                  | The alert for saved data that the application cannot read.                                                                         |
+| `StorageSaveWarning.tsx`                     | The alert when the browser does not save the observations.                                                                         |
+| `BackupReminder.tsx`                         | The reminder to make a backup.                                                                                                     |
+| `PrintExportView.tsx`                        | The 35-day chart for printing.                                                                                                     |
+| `VersionModal.tsx`                           | The **About & Version Tracker** dialog.                                                                                            |
+| `WelcomeModal.tsx`                           | The welcome guide.                                                                                                                 |
+| `KeyboardShortcutsModal.tsx`                 | The list of the keyboard shortcuts, with the switch that turns them off.                                                           |
+| `Footer.tsx`                                 | One line: the copyright, **Legal** and the version. Not in the installed app.                                                      |
+| `shell/TopBar.tsx`                           | Puts the controls and the title of a page in the top bar of a phone.                                                               |
+| `LegalNotice.tsx`                            | The trademark text, the medical text and the copyright.                                                                            |
+| `ErrorBoundary.tsx`                          | Message and **Reload** button when a part cannot load.                                                                             |
+| `LoadingStatus.tsx`                          | The loading text for a screen reader while a lazy part loads.                                                                      |
 
 ## Related documents
 

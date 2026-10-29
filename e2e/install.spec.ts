@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
-import { openApp } from './fixtures';
+import { loadDemoData, openApp } from './fixtures';
 
 /**
  * Sends `beforeinstallprompt` as Chromium does when the app can be installed. Headless Chromium
@@ -20,8 +20,7 @@ const offerInstall = (page: Page) =>
   });
 
 const loadDemo = async (page: Page) => {
-  await page.getByRole('button', { name: en.actions.exportPdf }).click();
-  await page.getByRole('button', { name: en.actions.loadDemo }).click();
+  await loadDemoData(page);
   await expect(page.getByRole('dialog')).toHaveCount(0);
   // The banner waits while the undo message shows
   await page.getByRole('button', { name: en.undoToast.dismiss }).click();

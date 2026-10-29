@@ -41,13 +41,6 @@
     cursor: pointer;
   }
 
-  /* The header has Install from 1440 pixels, and the phone menu up to 640 pixels */
-  @media (max-width: 640px), (min-width: 1440px) {
-    .footer-install {
-      display: none;
-    }
-  }
-
   .footer-disclaimer-box {
     background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);

@@ -3,12 +3,12 @@ import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 
 interface StorageSaveWarningProps {
-  /** Opens the export dialog, where the user can download a backup. */
-  onOpenExport: () => void;
+  /** Downloads a backup file at once. */
+  onBackUp: () => void;
 }
 
 /** Warns, until a save succeeds, that the browser refused to save the observations. */
-export const StorageSaveWarning: React.FC<StorageSaveWarningProps> = ({ onOpenExport }) => {
+export const StorageSaveWarning: React.FC<StorageSaveWarningProps> = ({ onBackUp }) => {
   const { saveFailed } = useCycleData();
   const { t } = useLanguage();
 
@@ -18,7 +18,7 @@ export const StorageSaveWarning: React.FC<StorageSaveWarningProps> = ({ onOpenEx
     <div className="storage-recovery-notice" role="alert">
       <p>{t.storageWarning.saveFailed}</p>
       <div className="storage-recovery-actions">
-        <button type="button" className="btn btn-primary" onClick={onOpenExport}>
+        <button type="button" className="btn btn-primary" onClick={onBackUp}>
           {t.storageWarning.backUpNow}
         </button>
       </div>

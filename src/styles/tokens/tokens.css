@@ -71,6 +71,8 @@
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;
     --color-danger-hover: #b91c1c;
+    /* Red text of a destructive action, such as Delete all data */
+    --color-danger-text: #b91c1c;
     --color-success: #10b981;
     --color-success-solid: #047857;
     --color-success-text: #047857;
@@ -166,6 +168,7 @@
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;
     --color-danger-hover: #b91c1c;
+    --color-danger-text: #f87171;
     --color-success: #34d399;
     --color-success-text: #34d399;
     --color-warning: #fbbf24;

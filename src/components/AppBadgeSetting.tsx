@@ -11,9 +11,9 @@ import {
 } from '../pwa/appBadge';
 
 /**
- * The switch of the app icon badge (docs/reference/application-behavior.md#app-icon-badge). It shows
- * only when the browser has the Badging API. On Apple systems, it tells why the system asks for the
- * permission for notifications.
+ * The switch row of the app icon badge in Settings
+ * (docs/reference/application-behavior.md#app-icon-badge). It shows only when the browser has the
+ * Badging API. On Apple systems, it tells why the system asks for the permission for notifications.
  */
 export const AppBadgeSetting: React.FC = () => {
   const { t } = useLanguage();
@@ -35,30 +35,34 @@ export const AppBadgeSetting: React.FC = () => {
   };
 
   return (
-    <div className="system-info-card badge-setting">
-      <h4 className="info-card-title">
-        <BellDot size={16} />
-        <span>{t.appBadge.title}</span>
-      </h4>
-      <label className="badge-setting-toggle">
-        <input
-          type="checkbox"
-          checked={enabled}
-          disabled={pending}
-          onChange={e => void handleChange(e.target.checked)}
-          aria-describedby="badge-setting-hint"
-        />
-        <span>{t.appBadge.label}</span>
-      </label>
-      <p id="badge-setting-hint" className="badge-setting-hint">
-        {t.appBadge.hint}
-        {needsNotificationPermission() && ` ${t.appBadge.iosPermission}`}
-      </p>
+    <li>
+      <button
+        type="button"
+        role="switch"
+        aria-checked={enabled}
+        disabled={pending}
+        className="settings-row"
+        onClick={() => void handleChange(!enabled)}
+        aria-labelledby="badge-setting-label"
+        aria-describedby="badge-setting-hint"
+      >
+        <BellDot size={18} className="settings-row-icon" aria-hidden="true" />
+        <span className="settings-row-text">
+          <span id="badge-setting-label" className="settings-row-label">
+            {t.appBadge.title}
+          </span>
+          <span id="badge-setting-hint" className="settings-row-detail">
+            {t.appBadge.label}
+            {needsNotificationPermission() && `. ${t.appBadge.iosPermission}`}
+          </span>
+        </span>
+        <span className="obs-switch" aria-hidden="true" />
+      </button>
       {denied && (
-        <p className="badge-setting-denied" role="alert">
+        <p className="settings-alert" role="alert">
           {t.appBadge.denied}
         </p>
       )}
-    </div>
+    </li>
   );
 };

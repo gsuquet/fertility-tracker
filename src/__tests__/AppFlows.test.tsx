@@ -138,6 +138,35 @@ describe('App flows', () => {
     expect(within(guide).getByText('Step 1 of 4')).toBeInTheDocument();
   });
 
+  it('opens Share chart from the chart options menu', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.chart }));
+    fireEvent.click(await screen.findByRole('button', { name: en.chartStrip.optionsLabel }));
+    fireEvent.click(screen.getByRole('menuitem', { name: en.chartStrip.shareChart }));
+    expect(await screen.findByRole('dialog', { name: en.exportModal.title })).toBeInTheDocument();
+  });
+
+  it('opens the help and the about dialogs over Settings', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    render(<App />);
+    fireEvent.click(screen.getByRole('button', { name: en.settings.open }));
+    const settings = await screen.findByRole('dialog', { name: en.settings.title });
+    fireEvent.click(within(settings).getByRole('button', { name: en.settings.welcomeGuide }));
+    const guide = await screen.findByRole(
+      'dialog',
+      { name: en.welcomeModal.title },
+      { timeout: 5000 }
+    );
+    fireEvent.keyDown(guide, { key: 'Escape' });
+    // Settings stays open under the guide
+    expect(screen.getByRole('dialog', { name: en.settings.title })).toBeInTheDocument();
+    fireEvent.click(within(settings).getByRole('button', { name: en.settings.legal }));
+    expect(
+      await screen.findByRole('dialog', { name: en.versionTracker.title })
+    ).toBeInTheDocument();
+  });
+
   it('prints the chosen cycles with a dated file name and restores the title', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     const print = vi.spyOn(window, 'print').mockImplementation(() => {});
@@ -215,9 +244,9 @@ describe('App flows', () => {
       JSON.stringify([{ date: '2026-06-01', bleeding: 'H' }])
     );
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
-    const exportDialog = await screen.findByRole('dialog', { name: en.exportModal.title });
-    fireEvent.click(within(exportDialog).getByRole('button', { name: en.actions.loadDemo }));
+    fireEvent.click(screen.getByRole('button', { name: en.settings.open }));
+    const settings = await screen.findByRole('dialog', { name: en.settings.title });
+    fireEvent.click(within(settings).getByRole('button', { name: en.settings.loadDemo }));
     const confirmDialog = screen.getByRole('dialog', { name: en.confirmDialog.demoTitle });
     fireEvent.click(
       within(confirmDialog).getByRole('button', { name: en.confirmDialog.demoConfirm })
@@ -231,7 +260,7 @@ describe('App flows', () => {
     expect(stored).toHaveLength(1);
   });
 
-  it('opens the export dialog from the save warning and from the backup reminder', async () => {
+  it('downloads a backup at once from the save warning and from the backup reminder', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     localStorage.setItem('fertility_care_backup_reminder_start', '2026-01-01');
     localStorage.setItem(
@@ -243,15 +272,18 @@ describe('App flows', () => {
       if (key === 'fertility_care_observations') throw new Error('QuotaExceededError');
       setItem(key, value);
     });
+    Object.assign(URL, { createObjectURL: vi.fn(() => 'blob:backup'), revokeObjectURL: vi.fn() });
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(() => {});
     render(<App />);
-    const warning = screen.getByRole('alert');
-    fireEvent.click(within(warning).getByRole('button', { name: en.storageWarning.backUpNow }));
-    const exportDialog = await screen.findByRole('dialog', { name: en.exportModal.title });
-    fireEvent.click(within(exportDialog).getByRole('button', { name: /close/i }));
-    expect(screen.queryByRole('dialog')).toBeNull();
-
     const reminder = screen.getByRole('note');
     fireEvent.click(within(reminder).getByRole('button', { name: en.backupReminder.backUpNow }));
-    expect(await screen.findByRole('dialog', { name: en.exportModal.title })).toBeInTheDocument();
+    expect(download).toHaveBeenCalledOnce();
+    expect(screen.queryByRole('dialog')).toBeNull();
+    // The backup is recorded, so the reminder goes
+    expect(screen.queryByRole('note')).toBeNull();
+
+    const warning = screen.getByRole('alert');
+    fireEvent.click(within(warning).getByRole('button', { name: en.storageWarning.backUpNow }));
+    expect(download).toHaveBeenCalledTimes(2);
   });
 });

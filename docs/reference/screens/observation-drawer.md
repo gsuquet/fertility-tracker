@@ -37,7 +37,7 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 
 ### Drag down to close
 
-On a phone, the drawer, the phone menu, the cycle menu and the other dialogs are bottom sheets ([Navigation](navigation.md)). The other dialogs are export, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](../../../src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
+On a phone, the drawer, the cycle menu and the other dialogs are bottom sheets ([Navigation](navigation.md)). The other dialogs are **Share chart**, **About & Version Tracker**, the welcome guide, **New Cycle Start?**, the confirmation dialog, the install guide and the keyboard shortcuts. The hook [useSheetDrag.ts](../../../src/hooks/useSheetDrag.ts) lets the user drag them down to close them. On a larger screen, nothing changes.
 
 The rules below apply to all these sheets. The body is the part that scrolls. It is the form of the drawer, the list of a menu, or the body of a dialog.
 

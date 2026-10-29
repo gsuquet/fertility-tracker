@@ -10,6 +10,7 @@ import { STORAGE_HAS_SEEN_WELCOME_KEY } from './utils/storageKeys';
 import { useToast } from './hooks/useToast';
 import type { ActiveTab } from './types/crms';
 import { useShortcut } from './hooks/useKeyboardShortcuts';
+import { useBackUpNow } from './hooks/useBackUpNow';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -35,6 +36,7 @@ const loadVersionModal = () => import('./components/VersionModal');
 const loadWelcomeModal = () => import('./components/WelcomeModal');
 const loadInstallGuideModal = () => import('./components/InstallGuideModal');
 const loadKeyboardShortcutsModal = () => import('./components/KeyboardShortcutsModal');
+const loadSettingsDialog = () => import('./components/settings/SettingsDialog');
 
 const CycleAnalyticsView = React.lazy(() =>
   loadCycleAnalyticsView().then(m => ({ default: m.CycleAnalyticsView }))
@@ -47,6 +49,9 @@ const VersionModal = React.lazy(() => loadVersionModal().then(m => ({ default: m
 const WelcomeModal = React.lazy(() => loadWelcomeModal().then(m => ({ default: m.WelcomeModal })));
 const InstallGuideModal = React.lazy(() =>
   loadInstallGuideModal().then(m => ({ default: m.InstallGuideModal }))
+);
+const SettingsDialog = React.lazy(() =>
+  loadSettingsDialog().then(m => ({ default: m.SettingsDialog }))
 );
 const KeyboardShortcutsModal = React.lazy(() =>
   loadKeyboardShortcutsModal().then(m => ({ default: m.KeyboardShortcutsModal }))
@@ -62,6 +67,7 @@ const PRELOADED_CHUNKS = [
   loadVersionModal,
   loadWelcomeModal,
   loadKeyboardShortcutsModal,
+  loadSettingsDialog,
 ];
 
 /**
@@ -110,12 +116,14 @@ const MainApp: React.FC = () => {
   const [isWelcomeModalOpen, setIsWelcomeModalOpen] = useState(false);
   const [isInstallGuideOpen, setIsInstallGuideOpen] = useState(false);
   const [isShortcutsOpen, setIsShortcutsOpen] = useState(false);
-  // Restore a backup of the welcome guide opens the export dialog on its restore button
-  const [exportStartsWithRestore, setExportStartsWithRestore] = useState(false);
-  // A backup file that the user opened with the app. Each file is a new object, so the export
-  // dialog restores it also when it has the same text as the last one.
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
+  // Restore a backup of the welcome guide opens Settings on Restore from a file
+  const [settingsStartsWithRestore, setSettingsStartsWithRestore] = useState(false);
+  // A backup file that the user opened with the app. Each file is a new object, so Settings
+  // restores it also when it has the same text as the last one.
   const [launchedBackup, setLaunchedBackup] = useState<{ text: string } | null>(null);
   const { observations } = useCycleData();
+  const backUpNow = useBackUpNow();
   const installMode = useInstallMode();
   // The dot on the app icon while today has no observation, when the user turned it on
   useAppBadge(observations);
@@ -149,10 +157,10 @@ const MainApp: React.FC = () => {
       setSelectedObservation(null);
       setIsDrawerOpen(true);
     };
-    // A backup file opens the export dialog, which restores it as Restore Data does
+    // A backup file opens Settings, which restores it as Restore from a file does
     const openBackupFile = (text: string) => {
       setLaunchedBackup({ text });
-      setIsExportModalOpen(true);
+      setIsSettingsOpen(true);
     };
     clearLaunchShortcut();
     if (launchShortcut) openShortcut(launchShortcut);
@@ -188,9 +196,10 @@ const MainApp: React.FC = () => {
   }, [pendingPrintDetail, printView, showToast, t]);
 
   // The dialog and its error boundary close the same way
-  const closeExportModal = () => {
-    setIsExportModalOpen(false);
-    setExportStartsWithRestore(false);
+  const closeExportModal = () => setIsExportModalOpen(false);
+  const closeSettings = () => {
+    setIsSettingsOpen(false);
+    setSettingsStartsWithRestore(false);
     setLaunchedBackup(null);
   };
   const closeVersionModal = () => setVersionTab(null);
@@ -227,8 +236,8 @@ const MainApp: React.FC = () => {
   const handleRestore =
     observations.length === 0 && isIos() && isInstalled()
       ? () => {
-          setExportStartsWithRestore(true);
-          setIsExportModalOpen(true);
+          setSettingsStartsWithRestore(true);
+          setIsSettingsOpen(true);
         }
       : undefined;
 
@@ -247,7 +256,7 @@ const MainApp: React.FC = () => {
           onOpenExport={() => setIsExportModalOpen(true)}
           onOpenVersion={() => setVersionTab('notes')}
           onOpenWelcome={() => setIsWelcomeModalOpen(true)}
-          onOpenShortcuts={openShortcuts}
+          onOpenSettings={() => setIsSettingsOpen(true)}
           onInstall={handleInstall}
           onTopBarSlot={setTopBarSlot}
         />
@@ -255,9 +264,9 @@ const MainApp: React.FC = () => {
         <main
           className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
         >
-          <StorageSaveWarning onOpenExport={() => setIsExportModalOpen(true)} />
+          <StorageSaveWarning onBackUp={backUpNow} />
           <StorageRecoveryNotice />
-          <BackupReminder onOpenExport={() => setIsExportModalOpen(true)} />
+          <BackupReminder onBackUp={backUpNow} />
           <CycleStatsHeader />
 
           {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
@@ -266,7 +275,12 @@ const MainApp: React.FC = () => {
             <ErrorBoundary key={activeTab}>
               <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
                 {activeTab === 'today' && <TodayView />}
-                {activeTab === 'chart' && <ChartRow onOpenToday={() => setActiveTab('today')} />}
+                {activeTab === 'chart' && (
+                  <ChartRow
+                    onOpenToday={() => setActiveTab('today')}
+                    onShare={() => setIsExportModalOpen(true)}
+                  />
+                )}
                 {activeTab === 'calendar' && <CalendarGrid />}
                 {activeTab === 'analytics' && (
                   <>
@@ -283,7 +297,6 @@ const MainApp: React.FC = () => {
         <Footer
           onOpenVersion={() => setVersionTab('notes')}
           onOpenLegal={() => setVersionTab('legal')}
-          onInstall={handleInstall}
         />
 
         <ObservationDrawer />
@@ -293,10 +306,21 @@ const MainApp: React.FC = () => {
         {isExportModalOpen && (
           <ErrorBoundary onClose={closeExportModal}>
             <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-              <ExportModal
-                onClose={closeExportModal}
-                onPreparePrint={handlePreparePrint}
-                startWithRestore={exportStartsWithRestore}
+              <ExportModal onClose={closeExportModal} onPreparePrint={handlePreparePrint} />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
+        {isSettingsOpen && (
+          <ErrorBoundary onClose={closeSettings}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <SettingsDialog
+                onClose={closeSettings}
+                onInstall={handleInstall}
+                onOpenWelcome={() => setIsWelcomeModalOpen(true)}
+                onOpenShortcuts={openShortcuts}
+                onOpenVersion={setVersionTab}
+                startWithRestore={settingsStartsWithRestore}
                 launchedBackup={launchedBackup}
               />
             </React.Suspense>

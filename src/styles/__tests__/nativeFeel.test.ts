@@ -119,13 +119,10 @@ describe('safe areas and the space of the page buttons', () => {
     }
   });
 
-  it('keeps the toasts at the top clear of the status bar and the notch', () => {
+  it('keeps the toast at the top clear of the status bar and the notch', () => {
     const today = ruleBody(readCss('views/today.css'), /\.today-toast/);
     expect(today).toMatch(/top:\s*calc\(80px \+ env\(safe-area-inset-top, 0px\)\);/);
     expect(today).toMatch(/right:\s*max\(24px, env\(safe-area-inset-right, 0px\)\);/);
-    expect(ruleBody(readCss('primitives/toast.css'), /\.mobile-menu-overlay \.undo-toast/)).toMatch(
-      /top:\s*calc\(var\(--space-md\) \+ env\(safe-area-inset-top, 0px\)\);/
-    );
   });
 
   it('keeps the page content and the page buttons away from the notch in landscape', () => {

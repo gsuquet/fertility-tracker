@@ -24,12 +24,12 @@ describe('BackupReminder', () => {
   });
 
   it('renders nothing without observations', () => {
-    renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />);
+    renderWithProviders(<BackupReminder onBackUp={vi.fn()} />);
     expect(screen.queryByRole('note')).toBeNull();
   });
 
   it('renders nothing for the demo data', () => {
-    renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />, {
+    renderWithProviders(<BackupReminder onBackUp={vi.fn()} />, {
       observations: buildDemoObservations('2026-10-27'),
     });
     expect(screen.queryByRole('note')).toBeNull();
@@ -37,27 +37,27 @@ describe('BackupReminder', () => {
 
   it('renders nothing in the first 30 days after the first load or an upgrade', () => {
     localStorage.removeItem(REMINDER_START_KEY);
-    renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />, { observations });
+    renderWithProviders(<BackupReminder onBackUp={vi.fn()} />, { observations });
     expect(screen.queryByRole('note')).toBeNull();
   });
 
   it('renders nothing after a recent backup', () => {
     localStorage.setItem(LAST_BACKUP_KEY, '2026-10-20');
-    renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />, { observations });
+    renderWithProviders(<BackupReminder onBackUp={vi.fn()} />, { observations });
     expect(screen.queryByRole('note')).toBeNull();
   });
 
   it('reminds when there is no backup and opens the export dialog', () => {
-    const onOpenExport = vi.fn();
-    renderWithProviders(<BackupReminder onOpenExport={onOpenExport} />, { observations });
+    const onBackUp = vi.fn();
+    renderWithProviders(<BackupReminder onBackUp={onBackUp} />, { observations });
     expect(screen.getByRole('note')).toHaveTextContent(en.backupReminder.messageNever);
     fireEvent.click(screen.getByRole('button', { name: en.backupReminder.backUpNow }));
-    expect(onOpenExport).toHaveBeenCalledOnce();
+    expect(onBackUp).toHaveBeenCalledOnce();
   });
 
   it('reminds when the last backup is old, and snoozes on Later after a reload, in French', () => {
     localStorage.setItem(LAST_BACKUP_KEY, '2026-09-01');
-    const { unmount } = renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />, {
+    const { unmount } = renderWithProviders(<BackupReminder onBackUp={vi.fn()} />, {
       observations,
       language: 'fr',
     });
@@ -69,7 +69,7 @@ describe('BackupReminder', () => {
     expect(localStorage.getItem(SNOOZE_KEY)).toBe('2026-11-03');
     unmount();
 
-    renderWithProviders(<BackupReminder onOpenExport={vi.fn()} />);
+    renderWithProviders(<BackupReminder onBackUp={vi.fn()} />);
     expect(screen.queryByRole('note')).toBeNull();
   });
 });

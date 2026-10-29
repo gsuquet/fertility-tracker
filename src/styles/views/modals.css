@@ -1309,30 +1309,4 @@
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-xs);
   }
-
-  /* App icon badge setting of the System Information tab */
-  .badge-setting-toggle {
-    display: flex;
-    align-items: flex-start;
-    gap: var(--space-sm);
-    color: var(--text-primary);
-    font-size: var(--font-size-md);
-    font-weight: 600;
-  }
-
-  .badge-setting-toggle input {
-    margin-top: var(--space-2xs);
-  }
-
-  .badge-setting-hint {
-    margin: var(--space-xs) 0 0;
-    color: var(--text-muted);
-    font-size: var(--font-size-sm);
-  }
-
-  .badge-setting-denied {
-    margin: var(--space-sm) 0 0;
-    color: var(--color-warning-text);
-    font-size: var(--font-size-sm);
-  }
 }

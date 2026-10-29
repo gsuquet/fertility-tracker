@@ -71,6 +71,7 @@ const textTokens = [
   '--accent-primary',
   '--color-intercourse-text',
   '--color-peak-text',
+  '--color-danger-text',
 ];
 const whiteTextFills = [
   '--accent-solid',
@@ -291,14 +292,6 @@ describe('contrast-safe token usage', () => {
     const rule = /\.form-mode-badge\s*\{([^}]*)\}/.exec(modals);
     expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-info-text\)/);
     expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-info-surface\)/);
-  });
-
-  it('colors the mobile menu version badge with the success tokens', () => {
-    const header = readCss('views/header.css');
-    // The selector must beat `.sheet-action-content span`, which sets the muted text color
-    const rule = /\.sheet-action-content \.sheet-version-badge\s*\{([^}]*)\}/.exec(header);
-    expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-success-text\)/);
-    expect(rule?.[1]).toMatch(/background-color:\s*var\(--color-success-surface\)/);
   });
 
   it('keeps the text of an empty chart day opaque', () => {

@@ -12,6 +12,7 @@
   - button "About & Version Tracker"
   - button "Switch Language": EN
   - button "Toggle Dark/Light Mode"
+  - button "Settings"
 - main:
   - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
   - tabpanel "Cycle Analytics":

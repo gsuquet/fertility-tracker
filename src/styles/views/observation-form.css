@@ -258,11 +258,11 @@
     transition: left var(--transition-fast);
   }
 
-  .obs-switch-row[aria-checked='true'] .obs-switch {
+  [role='switch'][aria-checked='true'] .obs-switch {
     background-color: var(--accent-solid);
   }
 
-  .obs-switch-row[aria-checked='true'] .obs-switch::after {
+  [role='switch'][aria-checked='true'] .obs-switch::after {
     left: 21px;
   }
 

@@ -4,12 +4,12 @@ import { Footer } from '../Footer';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { en } from '../../i18n';
 
-const renderFooter = (onInstall?: () => void) => {
+const renderFooter = () => {
   const onOpenVersion = vi.fn();
   const onOpenLegal = vi.fn();
   render(
     <LanguageProvider>
-      <Footer onOpenVersion={onOpenVersion} onOpenLegal={onOpenLegal} onInstall={onInstall} />
+      <Footer onOpenVersion={onOpenVersion} onOpenLegal={onOpenLegal} />
     </LanguageProvider>
   );
   return { onOpenVersion, onOpenLegal };
@@ -35,20 +35,5 @@ describe('Footer Component', () => {
     expect(version).toHaveAttribute('title', en.versionTracker.title);
     fireEvent.click(version);
     expect(onOpenVersion).toHaveBeenCalledOnce();
-  });
-
-  it('has Install app when the browser can install it', () => {
-    const onInstall = vi.fn();
-    renderFooter(onInstall);
-    const install = screen.getByRole('button', { name: en.install.menuEntry });
-    // CSS shows it only from 641 to 1439 pixels
-    expect(install).toHaveClass('footer-install');
-    fireEvent.click(install);
-    expect(onInstall).toHaveBeenCalledOnce();
-  });
-
-  it('has no Install entry when the browser cannot install', () => {
-    renderFooter();
-    expect(screen.queryByRole('button', { name: en.install.menuEntry })).toBeNull();
   });
 });

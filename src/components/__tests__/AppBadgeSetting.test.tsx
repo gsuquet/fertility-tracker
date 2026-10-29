@@ -33,18 +33,18 @@ describe('AppBadgeSetting', () => {
     // Chromium needs no permission, so the hint does not tell about it
     vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 Chrome/140.0');
     renderWithProviders(<AppBadgeSetting />);
-    const toggle = screen.getByRole('checkbox', { name: en.appBadge.label });
-    expect(toggle).not.toBeChecked();
-    expect(toggle).toHaveAccessibleDescription(en.appBadge.hint);
+    const toggle = screen.getByRole('switch', { name: en.appBadge.title });
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
+    expect(toggle).toHaveAccessibleDescription(en.appBadge.label);
     expect(toggle).toBeEnabled();
     await act(async () => {
       fireEvent.click(toggle);
     });
-    expect(toggle).toBeChecked();
+    expect(toggle).toHaveAttribute('aria-checked', 'true');
     await act(async () => {
       fireEvent.click(toggle);
     });
-    expect(toggle).not.toBeChecked();
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
   });
 
   it('tells why iOS asks for the permission, and what to do when it is refused', async () => {
@@ -61,8 +61,10 @@ describe('AppBadgeSetting', () => {
       ),
     });
     renderWithProviders(<AppBadgeSetting />, { language: 'fr' });
-    const toggle = screen.getByRole('checkbox', { name: fr.appBadge.label });
-    expect(toggle).toHaveAccessibleDescription(`${fr.appBadge.hint} ${fr.appBadge.iosPermission}`);
+    const toggle = screen.getByRole('switch', { name: fr.appBadge.title });
+    expect(toggle).toHaveAccessibleDescription(
+      `${fr.appBadge.label}. ${fr.appBadge.iosPermission}`
+    );
     await act(async () => {
       fireEvent.click(toggle);
     });
@@ -72,7 +74,7 @@ describe('AppBadgeSetting', () => {
       answer('denied');
     });
     expect(toggle).toBeEnabled();
-    expect(toggle).not.toBeChecked();
+    expect(toggle).toHaveAttribute('aria-checked', 'false');
     expect(screen.getByRole('alert')).toHaveTextContent(fr.appBadge.denied);
   });
 });

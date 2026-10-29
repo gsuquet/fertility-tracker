@@ -28,9 +28,9 @@ const saveObservations = (count: number) =>
     )
   );
 
-const openMenu = () => {
-  fireEvent.click(screen.getByRole('button', { name: en.menu.moreActionsLabel }));
-  return screen.getByRole('dialog', { name: en.menu.mobileMenuLabel });
+const openSettings = async () => {
+  fireEvent.click(screen.getByRole('button', { name: en.settings.open }));
+  return screen.findByRole('dialog', { name: en.settings.title }, { timeout: 5000 });
 };
 
 describe('App install offer', () => {
@@ -42,22 +42,22 @@ describe('App install offer', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
   });
 
-  it('has no install button, menu entry or banner when the browser cannot install', () => {
+  it('has no install button, Settings row or banner when the browser cannot install', async () => {
     saveObservations(3);
     render(<App />);
     expect(screen.queryByRole('button', { name: en.install.headerLabel })).toBeNull();
     expect(screen.queryByRole('complementary', { name: en.install.bannerTitle })).toBeNull();
-    expect(screen.queryByRole('button', { name: en.install.menuEntry })).toBeNull();
-    expect(within(openMenu()).queryByText(en.install.menuEntry)).toBeNull();
+    expect(within(await openSettings()).queryByText(en.install.menuEntry)).toBeNull();
   });
 
-  it('shows the prompt of the browser from the header, the menu and the banner', () => {
+  it('shows the prompt of the browser from the header, Settings and the banner', async () => {
     install.mode = 'prompt';
     saveObservations(3);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: en.install.headerLabel }));
-    fireEvent.click(within(openMenu()).getByText(en.install.menuEntry));
-    expect(screen.queryByRole('dialog', { name: en.menu.mobileMenuLabel })).toBeNull();
+    fireEvent.click(
+      within(await openSettings()).getByRole('button', { name: en.settings.install })
+    );
     fireEvent.click(screen.getByRole('button', { name: en.install.bannerInstall }));
     expect(install.promptInstall).toHaveBeenCalledTimes(3);
   });
@@ -94,22 +94,22 @@ describe('Welcome guide in the installed app on iOS', () => {
     return guide;
   };
 
-  it('offers to restore a backup when there is no data, and opens the export dialog', async () => {
+  it('offers to restore a backup when there is no data, and opens Settings on Restore', async () => {
     render(<App />);
     const guide = await lastSlide();
     fireEvent.click(within(guide).getByRole('button', { name: en.welcomeModal.restoreBackup }));
-    const exportDialog = await screen.findByRole(
+    const settings = await screen.findByRole(
       'dialog',
-      { name: en.exportModal.title },
+      { name: en.settings.title },
       { timeout: 5000 }
     );
-    expect(within(exportDialog).getByRole('button', { name: en.actions.importJson })).toHaveFocus();
+    expect(within(settings).getByRole('button', { name: en.settings.restore })).toHaveFocus();
     expect(screen.queryByRole('dialog', { name: en.welcomeModal.title })).toBeNull();
-    // The next opening of the export dialog starts at the top again
-    fireEvent.click(within(exportDialog).getByRole('button', { name: en.exportModal.close }));
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
-    const again = await screen.findByRole('dialog', { name: en.exportModal.title });
-    expect(within(again).getByRole('button', { name: en.actions.importJson })).not.toHaveFocus();
+    // The next opening of Settings starts at the top again
+    fireEvent.click(within(settings).getByRole('button', { name: en.settings.close }));
+    fireEvent.click(screen.getByRole('button', { name: en.settings.open }));
+    const again = await screen.findByRole('dialog', { name: en.settings.title });
+    expect(within(again).getByRole('button', { name: en.settings.restore })).not.toHaveFocus();
     expect(localStorage.getItem(STORAGE_HAS_SEEN_WELCOME_KEY)).toBe('true');
   });
 

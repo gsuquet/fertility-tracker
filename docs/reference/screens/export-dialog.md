@@ -1,6 +1,6 @@
 # Export dialog
 
-This page gives the rules for the export dialog: print, backup, restore, demo data and reset.
+This page gives the rules for the export dialog (**Share chart**): the print of the chart.
 
 ## Layout
 
@@ -15,49 +15,22 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-| Action              | Result                                                                                |
-| ------------------- | ------------------------------------------------------------------------------------- |
-| Print / Save as PDF | Prints one cycle or the selected cycles with the browser print dialog.                |
-| Backup Data         | Downloads `fertility-tracker-backup-YYYY-MM-DD.ftbackup` and records the backup date. |
-| Restore Data        | Shows a preview, then replaces or merges the observations with the file.              |
-| Load Demo Cycle     | Replaces all observations with the demo data.                                         |
-| Clear Data / Reset  | Deletes all observations.                                                             |
+The dialog has the title **Share chart**. It holds only the print of the chart. Backup, restore, demo data and the delete of all data are in [Settings](settings.md).
+
+These buttons open the dialog:
+
+- **Share chart** in the **Chart options** menu (`⋮`) of the chart page, after **Phase bar** and **Legend** ([Paper Chart Strip page](chart.md)).
+- The export icon button of the header on a wide screen ([Navigation](navigation.md)).
+
+| Action                  | Result                                                                 |
+| ----------------------- | ---------------------------------------------------------------------- |
+| **Single Cycle**        | Prints one cycle, with the cycle of **Select Cycle**.                  |
+| **Multiple Cycles**     | Prints the selected cycles.                                            |
+| **Print / Save as PDF** | Prints one cycle or the selected cycles with the browser print dialog. |
 
 Each opening starts in **Single Cycle** mode, with the cycle of the cycle picker.
 
-`getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export.
-
-### Backup file
-
-- The file uses the write format of the browser storage ([Storage format](../data-storage.md#storage-format)). In this version, that is a bare JSON array, so older versions can restore it.
-- **Restore Data** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
-- The file is plain JSON. It is not encrypted. The texts `exportModal.jsonDescription` and `exportModal.pdfDescription` tell this to the user.
-- The file has the extension `.ftbackup` and the type `application/octet-stream`. With `application/json`, a browser can add `.json` after the name. The content is plain JSON, and any text editor can open it.
-- The file input has no `accept` filter. iOS greys out a file with an extension that it does not know. The application checks the contents, not the extension. Thus, a `.ftbackup` file and an old `.json` backup both restore.
-- A file that is not a valid backup shows `exportModal.importError` in the export dialog. The data does not change.
-
-### Confirmation
-
-[ConfirmDialog.tsx](../../../src/components/ConfirmDialog.tsx) is a small confirmation dialog. It replaces `window.confirm()` and `window.alert()`, which no code in `src/` uses.
-
-- It opens over the export dialog. All its text comes from the dictionary (`confirmDialog.*`, `actions.cancel`).
-- `Escape`, **Cancel** and a click on the backdrop cancel it. They do not close the export dialog.
-- These buttons open it:
-
-| Condition          | Result                                                                                        |
-| ------------------ | --------------------------------------------------------------------------------------------- |
-| Observations exist | **Load Demo Cycle**, **Restore Data** and **Clear Data / Reset** open the confirmation.       |
-| **Else**           | **Load Demo Cycle** and **Restore Data** act immediately. **Clear Data / Reset** is disabled. |
-- The message for **Clear Data / Reset** says that a copy stays on the device until the user selects **Delete the copy**.
-
-Before a backup changes existing observations, the dialog shows a preview from `summarizeObservations()`. The preview gives the number of observations in the file and the first and last date. If the file has no observations, the preview says so.
-
-| Action  | Result                                                                                                                  |
-| ------- | ----------------------------------------------------------------------------------------------------------------------- |
-| Replace | `importDataJson(text, 'replace')`: the file replaces all the current observations.                                      |
-| Merge   | `importDataJson(text, 'merge')`: each day of the file replaces the current day with the same date. The other days stay. |
-
-During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
+`getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export. Step 5b of RFC 0002 adds **Download PNG** and changes the dialog to a sheet.
 
 ### Print
 
@@ -83,21 +56,18 @@ The print layout:
 
 ## Accessibility
 
-- **Restore Data** is a button that opens a hidden file input. Thus, the keyboard can reach it.
-- The message `exportModal.importError` has `role="alert"`.
-- The confirmation dialog has `aria-labelledby` (its title) and `aria-describedby` (its message). When it opens, the focus goes to **Cancel**.
+- The [dialog component](../dialog-component.md) gives the name, the focus trap and the focus return. The name is the title **Share chart**.
+- On a phone, the dialog is a bottom sheet. The user can drag it down to close it ([Drag down to close](observation-drawer.md#drag-down-to-close)).
 
 ## Implementation
 
 - [ExportModal.tsx](../../../src/components/ExportModal.tsx)
 - [PrintExportView.tsx](../../../src/components/PrintExportView.tsx)
 - [exportUtils.ts](../../../src/utils/exportUtils.ts)
-- [backupImport.ts](../../../src/domain/backupImport.ts)
 
 ## Related documents
 
-- [Data storage](../data-storage.md)
-- [Data format](../data-format.md)
+- [Settings](settings.md)
 - [Application behavior](../application-behavior.md)
 - [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)
