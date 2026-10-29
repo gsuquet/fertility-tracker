@@ -44,6 +44,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.35.0',
+    date: '2026-10-29',
+    title: 'A Chart That Fits a Phone',
+    titleFr: 'Un graphique à la taille du téléphone',
+    tagline: 'Seven days fit on a phone, with larger text, and all the cycles scroll together',
+    taglineFr:
+      'Sept jours tiennent sur un téléphone, avec un texte plus grand, et tous les cycles défilent ensemble',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The chart controls are in one row: 35-day or Strip, and a ⋮ menu for the phase bar and the legend',
+      'Each cycle has one line with its dates, its length and its Peak Day',
+      'The day cards are larger, and a long code breaks between its parts',
+      'All the cycles scroll together, so the same cycle day is in the same column',
+      'The Strip view keeps each day, with the day and the stamp only',
+    ],
+    highlightsFr: [
+      'Les commandes du graphique tiennent sur une ligne : 35 jours ou Bande, et un menu ⋮ pour la barre des phases et la légende',
+      'Chaque cycle a une ligne avec ses dates, sa durée et son jour Sommet',
+      'Les cartes des jours sont plus grandes, et un code long passe à la ligne entre ses parties',
+      'Tous les cycles défilent ensemble : le même jour du cycle est dans la même colonne',
+      'La vue Bande garde chaque jour, avec seulement le jour et le tampon',
+    ],
+  },
+  {
     version: '1.34.0',
     date: '2026-10-29',
     title: 'A Lighter Observation Form',

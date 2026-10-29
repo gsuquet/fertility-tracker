@@ -252,10 +252,15 @@ describe('French text of the components', () => {
     renderWithProviders(<ChartRow />, inFrench(demo()));
     expect(screen.getAllByRole('button', { name: /^Jour du cycle 1, date / }).length).toBe(1);
     expect(screen.getByRole('button', { name: /, aujourd’hui$/ })).toBeInTheDocument();
-    expect(screen.getAllByTitle(fr.todayView.todayLabel).length).toBeGreaterThan(0);
     expect(screen.getByRole('button', { name: fr.chartStrip.scrollLeft })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: fr.chartStrip.scrollRight })).toBeInTheDocument();
-    expect(screen.getAllByText(/^Jour Sommet \(P\) : jour \d+$/).length).toBeGreaterThan(0);
+    expect(screen.getByRole('button', { name: fr.chartStrip.jumpToStart })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.chartStrip.jumpToToday })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.chartStrip.view35 })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.chartStrip.viewStrip })).toBeInTheDocument();
+    expect(screen.getByRole('group', { name: fr.chartStrip.viewLabel })).toBeInTheDocument();
+    expect(screen.getAllByText(/^P jour \d+$/).length).toBeGreaterThan(0);
+    expect(screen.getAllByText(/^\d+ jours$/).length).toBeGreaterThan(0);
 
     const [cell] = screen.getAllByRole('button', { name: /^Jour du cycle 1, / }) as [HTMLElement];
     fireEvent.mouseEnter(cell);
@@ -266,15 +271,20 @@ describe('French text of the components', () => {
       within(cell).getByText(formatMessage(fr.common.dayNumber, { day: 1 }))
     ).toBeInTheDocument();
 
-    const phases = screen.getByRole('button', { name: fr.chartStrip.phases });
-    expect(phases).toHaveAttribute('title', fr.chartStrip.togglePhases);
+    fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.optionsLabel }));
+    expect(
+      screen.getByRole('menuitemcheckbox', { name: fr.chartStrip.phaseBar })
+    ).toBeInTheDocument();
+    fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     expect(
       screen.getAllByTitle(
         formatMessage(fr.chartStrip.dayPhase, { day: 1, phase: fr.chartStrip.phaseMenses })
       ).length
     ).toBeGreaterThan(0);
     expect(
-      screen.getAllByTitle(/^Jour \d+ : (Glaire fertile|Sec \/ infertile)$/).length
+      screen.getAllByTitle(
+        formatMessage(fr.chartStrip.dayPhase, { day: 8, phase: fr.chartStrip.phaseFollicular })
+      ).length
     ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.showLegend }));
@@ -416,12 +426,11 @@ describe('French text of the components', () => {
     expect(screen.getByText('09-04')).toBeInTheDocument();
   });
 
-  it('translates the chart toolbar subtitle', () => {
-    const { unmount } = renderWithProviders(<ChartRow />, inFrench());
-    expect(screen.getByText(fr.chartStrip.subtitleBlank)).toBeInTheDocument();
-    unmount();
-    renderWithProviders(<ChartRow />, inFrench(demo()));
-    expect(screen.getByText(fr.chartStrip.subtitle)).toBeInTheDocument();
+  it('translates the chart menu and the legend button', () => {
+    renderWithProviders(<ChartRow />, inFrench());
+    expect(screen.getByRole('heading', { name: fr.tabs.chart })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.showLegend }));
+    expect(screen.getByRole('button', { name: fr.chartStrip.hideLegend })).toBeInTheDocument();
   });
 
   it.each([

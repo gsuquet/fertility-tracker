@@ -15,30 +15,77 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-| Part                                                                           | Content                                                                                                    |
-| ------------------------------------------------------------------------------ | ---------------------------------------------------------------------------------------------------------- |
-| [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)             | Title, grid mode, phase bar and legend buttons. An empty chart shows only the title and the legend button. |
-| [ChartLegend.tsx](../../../src/components/chart/ChartLegend.tsx)               | The stamp legend.                                                                                          |
-| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each cell opens a new observation.                 |
-| [ChartCycleRow.tsx](../../../src/components/chart/ChartCycleRow.tsx)           | One cycle: number, dates, length, Peak Day, scroll and jump buttons, phase bar and cells.                  |
-| [ChartPhaseTimeline.tsx](../../../src/components/chart/ChartPhaseTimeline.tsx) | The phase bar above the cells of a cycle.                                                                  |
-| [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)                   | A filled cell, an empty day cell or a blank grid cell. Each cell is a native `<button type="button">`.     |
-| [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx)     | Details of a filled cell: code, bleeding, stretch, modifiers, intercourse and notes.                       |
-- Each cycle is one row, in the format of the CrMS paper chart. **Full 35-Day Paper Grid** shows a minimum of 35 cells. A longer cycle adds cells in groups of 7. **Compact Strip** shows only the recorded days.
-- Each cell shows the cycle day, the date, the stamp, the code, the symptom tag, the `I` mark and the `P` mark. A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
-- Buttons go to day 1, to the Peak Day and to the newest day of each row. Each row has its own scroll area.
-- When the chart opens, the row of the current cycle shows today near the middle of its scroll area. Late in the cycle, the row stops at its end. The current cycle is the newest cycle, when today is on or after its start date.
-  - If today has no cell, the row opens at its end. For example, today is after the last cell of the grid, or has no observation in **Compact Strip**.
-  - The row sets `scrollLeft` at once, before the browser paints. There is no smooth scroll, and the page does not scroll vertically.
-  - A change of the grid mode puts today in view again.
-  - The rows of past cycles open at day 1.
-- A click, `Enter` or `Space` on a cell opens the observation drawer. The user sets or removes the manual Peak Day there with **Designate Peak Day (P)**.
-- The details show when the mouse is on a filled cell or when the cell has the focus. Each cell has its own hover state, so a hover does not render other cells again.
-- Two details can show at the same time: one on the cell with the focus and one under the mouse.
+| Part                                                                           | Content                                                                                                                                                      |
+| ------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)             | One row: **35-day** and **Strip**, and the ⋮ menu (**Chart options**) with the **Phase bar** and **Legend** check items. An empty chart shows only the menu. |
+| [ChartCycleRow.tsx](../../../src/components/chart/ChartCycleRow.tsx)           | One card for each cycle: the cycle line, the phase bar and one row of day cards. The first card also has the controls.                                       |
+| [ChartPhaseTimeline.tsx](../../../src/components/chart/ChartPhaseTimeline.tsx) | The phase bar: one segment of 6 px for each day, over the width of the card. It does not scroll.                                                             |
+| [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)                   | A day card with an observation, or an empty day card. Each card is a native `<button type="button">`.                                                        |
+| [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx)     | Details of a day card: code, bleeding, stretch, modifiers, intercourse and notes.                                                                            |
+| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each card opens a new observation.                                                                   |
+| [ChartLegend.tsx](../../../src/components/chart/ChartLegend.tsx)               | The stamp legend, under the rows. The **Legend** button under the rows and the menu item show it.                                                            |
+
+### Cycle line
+
+One line gives the cycle, the dates, the length and the Peak Day. For example: "Cycle 2 Sep 30 – Oct 27 · 28 days · P Day 13". The length is the cycle day of the last observation.
+
+### Controls
+
+The first card has the controls. They act on all the rows. Each button is 36 px.
+
+| Button               | Result                                                                                            |
+| -------------------- | ------------------------------------------------------------------------------------------------- |
+| **1**                | Goes to day 1.                                                                                    |
+| **P**                | Goes to the Peak Day of the first cycle with a Peak Day. It shows only when a row has a Peak Day. |
+| Calendar icon        | **Jump to Today**. It shows only when a row has a card for today.                                 |
+| Left and right arrow | Scroll by 320 px.                                                                                 |
+
+### Day card
+
+| View       | Size        | Content                                                                                                                 |
+| ---------- | ----------- | ----------------------------------------------------------------------------------------------------------------------- |
+| **35-day** | 44 × 116 px | The cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code (11 px, mono) and the symptom tag. |
+| **Strip**  | 34 × 62 px  | The cycle day and the stamp.                                                                                            |
+- Each row has 35 day cards or more. A longer cycle adds cards in groups of 7. All the rows have the same number of cards. **Strip** keeps a card for each day, so that the columns align.
+- The code shows one token on each line, and two lines or less. A token wider than the card ends with an ellipsis. The code does not show the `I` mark and the symptoms. The stamp shows the `I` mark, and the tag shows the symptoms. The accessible name has the full code.
+- An empty day card has a dashed border, the weekday, the date and a + sign.
+- Today has a 2 px accent border and `--accent-soft`. The Peak Day has a ring of `--color-warning-ring`.
+- A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
+
+### Phase bar
+
+The phases are the phases of Analytics ([Cycle and phase rules](../cycle-and-phase-rules.md)).
+
+| Phase                          | Color                 |
+| ------------------------------ | --------------------- |
+| Menses, before the Peak Day    | `--stamp-red`         |
+| Follicular, up to the Peak Day | `--color-info`        |
+| Days 1 to 3 after the Peak Day | `--stamp-light-green` |
+| Luteal, after the count        | `--stamp-dark-green`  |
+| No observation                 | `--bg-surface-border` |
+
+### Shared scroll
+
+- All the rows share one scroll position. Thus, the same cycle day is in the same column.
+- A scroll of one row sets `scrollLeft` of the other rows. The scroll event of a row that the sync moved does not move the other rows back.
+- When the chart opens, today is near the middle of the rows. Late in the cycle, the rows stop at their end. Today belongs to the last cycle that starts on or before today.
+  - If today has no card, the rows open at their end. For example, today is after the last card of the row.
+  - The rows set `scrollLeft` at once, before the browser paints. There is no smooth scroll, and the page does not scroll vertically.
+  - A change of the view puts today in view again.
+  - When only a past cycle shows, its row opens at day 1.
+
+### Other rules
+
+- A click, `Enter` or `Space` on a card opens the observation drawer. The user sets or removes the manual Peak Day there with **Designate Peak Day (P)**.
+- The details show when the mouse is on a day card or when the card has the focus. Each card has its own hover state, so a hover does not render other cards again.
+- Two details can show at the same time: one on the card with the focus and one under the mouse.
 
 ## Accessibility
 
-- Today has a 2-pixel accent border, a `TODAY` label (`.cell-today-pill`) and `aria-current="date"`. This applies to filled cells and empty cells. The date of today comes from `getTodayStr()`.
+- The page heading is for screen readers only. Each cycle is a `section` with the name "Cycle N".
+- **35-day** and **Strip** are toggle buttons with `aria-pressed`, in a group with the name **Chart view**.
+- Today has `aria-current="date"`. This applies to day cards with an observation and to empty day cards. The date of today comes from `getTodayStr()`.
+- The phase bar has `aria-hidden="true"`. Each segment has a title with the day and its phase.
 
 ## Implementation
 

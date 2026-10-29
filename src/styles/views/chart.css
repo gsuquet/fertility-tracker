@@ -7,110 +7,47 @@
   .chart-strip-view {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--space-md);
   }
 
-  /* Toolbar Controls */
+  /* One row of controls: 35-day or Strip, and the ⋮ menu */
   .chart-strip-toolbar {
     display: flex;
-    flex-wrap: wrap;
     align-items: center;
-    justify-content: space-between;
-    gap: 0.85rem;
-    background-color: var(--bg-surface);
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-lg);
-    padding: 0.85rem 1.15rem;
-    box-shadow: var(--shadow-sm);
+    gap: var(--space-sm);
   }
 
-  .toolbar-left,
-  .toolbar-right {
-    display: flex;
-    align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+  .chart-toolbar-spacer {
+    flex: 1;
   }
 
-  .strip-title-group {
-    display: flex;
-    flex-direction: column;
-  }
-
-  .strip-main-title {
-    font-size: var(--font-size-lg);
-    font-weight: 800;
-    color: var(--text-primary);
-    letter-spacing: -0.01em;
-  }
-
-  .strip-subtitle-badge {
-    font-size: var(--font-size-2xs);
-    font-weight: 700;
-    color: var(--accent-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
-  }
-
-  .view-mode-toggle {
-    display: flex;
-    align-items: center;
-    background-color: var(--bg-primary);
+  .chart-view-toggle {
+    display: inline-flex;
+    gap: 2px;
+    margin: 0;
     padding: 3px;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--bg-surface-border);
+    border: 1px solid var(--bg-surface-border-strong);
+    border-radius: var(--radius-full);
+    background-color: var(--bg-surface);
+    min-inline-size: 0;
   }
 
-  .toggle-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.75rem;
-    border-radius: var(--radius-sm);
-    border: none;
+  .chart-view-toggle button {
+    height: calc(var(--control-size-md) - 6px);
+    padding: 0 var(--space-md);
+    border: 0;
+    border-radius: var(--radius-full);
     background: transparent;
     color: var(--text-secondary);
-    font-size: var(--font-size-xs);
-    font-weight: 700;
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+    white-space: nowrap;
     cursor: pointer;
-    transition: all 0.15s ease;
   }
 
-  .toggle-btn:hover {
-    color: var(--text-primary);
-  }
-
-  .toggle-btn.active {
-    background-color: var(--bg-surface);
-    color: var(--accent-primary);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .toolbar-btn {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-    padding: 0.45rem 0.85rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--bg-surface-border);
-    background-color: var(--bg-surface);
-    color: var(--text-secondary);
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .toolbar-btn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-  }
-
-  .toolbar-btn.active-toggle {
-    background-color: var(--accent-light);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+  .chart-view-toggle button[aria-pressed='true'] {
+    background-color: var(--accent-solid);
+    color: var(--color-white);
   }
 
   /* Paper Stamp Legend Key */
@@ -164,6 +101,9 @@
   }
 
   .legend-badge.stamp-light_green_baby_1 {
+    width: auto;
+    min-width: 24px;
+    padding: 0 var(--space-xs);
     background-color: var(--stamp-light-green);
     color: var(--stamp-light-green-text);
   }
@@ -174,7 +114,7 @@
   }
 
   .legend-badge.stamp-light_green_baby_1 .num {
-    font-size: var(--font-size-4xs);
+    font-size: var(--font-size-2xs);
     font-weight: 900;
   }
 
@@ -194,282 +134,155 @@
     color: var(--text-secondary);
   }
 
-  /* Paper Theme Chart Row Container */
-  .chart-row-container.paper-theme {
+  /* One card for each cycle */
+  .chart-row-container {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 12px 12px;
     background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-xl);
-    padding: 1rem 1.15rem;
+    border-radius: var(--radius-lg);
     box-shadow: var(--shadow-sm);
-    position: relative;
-    transition:
-      box-shadow 0.2s ease,
-      border-color 0.2s ease;
   }
 
-  .chart-row-container.paper-theme:hover {
-    box-shadow: var(--shadow-md);
-    border-color: var(--bg-surface-border-strong);
-  }
-
-  .cycle-header-left {
+  /* The cycle, the dates, the length and the Peak Day, on one line */
+  .cycle-line {
     display: flex;
     align-items: center;
-    gap: 0.75rem;
-    flex-wrap: wrap;
+    gap: 6px;
+    min-height: 20px;
+    overflow: hidden;
+    white-space: nowrap;
+    font-size: var(--font-size-sm);
+    color: var(--text-secondary);
   }
 
-  .cycle-title-badge {
-    font-size: var(--font-size-md);
-    font-weight: 800;
-    color: var(--accent-primary);
-    background-color: var(--accent-light);
-    padding: 0.35rem 0.85rem;
-    border-radius: var(--radius-sm);
-  }
-
-  .cycle-date-range {
+  .cycle-line-title {
+    margin: 0;
     font-size: var(--font-size-md);
     font-weight: 700;
     color: var(--text-primary);
   }
 
-  .cycle-length-pill {
-    font-size: var(--font-size-xs);
+  .cycle-line-peak {
     font-weight: 700;
-    color: var(--text-muted);
-    background-color: var(--bg-primary);
-    padding: 0.25rem 0.6rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--bg-surface-border);
-  }
-
-  .cycle-peak-pill {
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    font-size: var(--font-size-xs);
-    font-weight: 800;
-    color: var(--color-warning-text);
-    background-color: var(--color-warning-surface);
-    padding: 0.25rem 0.65rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--color-warning-border);
+    color: var(--color-peak-text);
   }
 
   .cycle-helper-hint {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
+    margin: 0;
     font-size: var(--font-size-sm);
     color: var(--text-muted);
-    font-weight: 500;
   }
 
-  .hint-icon {
-    color: var(--accent-primary);
-  }
-
-  .cycle-header-actions {
+  /* The jump and scroll buttons act on all the rows: 36 px (ADR 0011) */
+  .cycle-controls {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
+    gap: var(--space-xs);
   }
 
-  .nav-icon-btn {
-    font-size: var(--font-size-xs);
-    font-weight: 700;
-    padding: 0.3rem 0.65rem;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--bg-surface-border);
-    background-color: var(--bg-surface);
-    color: var(--text-secondary);
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.3rem;
-    transition: all 0.15s ease;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .nav-icon-btn:hover {
-    background-color: var(--bg-primary);
-    color: var(--accent-primary);
-    border-color: var(--accent-primary);
-  }
-
-  .nav-icon-btn.peak-btn {
-    color: var(--color-warning-text);
-    border-color: var(--color-warning-border);
-    background-color: var(--color-warning-surface);
-  }
-
-  .scroll-arrows {
-    display: flex;
-    align-items: center;
-    gap: 3px;
-  }
-
-  .scroll-btn {
-    width: 28px;
-    height: 28px;
-    border-radius: var(--radius-sm);
-    border: 1px solid var(--bg-surface-border);
-    background-color: var(--bg-surface);
-    color: var(--text-secondary);
-    display: flex;
+  .chart-jump-btn {
+    display: inline-flex;
     align-items: center;
     justify-content: center;
+    height: var(--control-size-md);
+    min-width: var(--control-size-md);
+    padding: 0 var(--space-sm);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-sm);
+    background-color: var(--bg-surface);
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
     cursor: pointer;
-    transition: all 0.15s ease;
   }
 
-  .scroll-btn:hover {
-    background-color: var(--accent-solid);
-    color: var(--color-white);
+  .chart-jump-btn:hover {
     border-color: var(--accent-primary);
+    color: var(--accent-primary);
   }
 
-  /* Phase Bar Timeline Above Cells - Full Width Cycle Overview Strip */
-  .cycle-phase-bar-wrapper {
-    width: 100%;
-    margin-top: 0.75rem;
-    margin-bottom: 0.6rem;
-    padding: 0 2px;
+  .chart-jump-btn.peak-btn {
+    color: var(--color-peak-text);
   }
 
+  /* The phase bar: one segment for each day, which does not scroll */
   .cycle-phase-bar {
     display: flex;
-    width: 100%;
-    height: 8px;
-    border-radius: var(--radius-2xs);
-    overflow: hidden;
-    background-color: var(--bg-primary);
-    gap: 1px;
+    gap: 2px;
+    height: 6px;
+    flex: none;
   }
 
   .phase-segment {
     flex: 1;
-    height: 100%;
-    position: relative;
-    transition: opacity 0.15s ease;
-  }
-
-  .phase-segment:hover {
-    opacity: 0.85;
+    border-radius: var(--radius-full);
   }
 
   .phase-menses {
-    background: linear-gradient(135deg, var(--stamp-red-light) 0%, var(--stamp-red) 100%);
+    background-color: var(--stamp-red);
   }
 
-  .phase-infertile,
   .phase-follicular,
-  .phase-luteal {
-    background: linear-gradient(
-      135deg,
-      var(--stamp-dark-green-light) 0%,
-      var(--stamp-dark-green) 100%
-    );
-  }
-
-  .phase-fertile {
-    background-color: var(--stamp-white);
-    border: 1px solid var(--stamp-white-border);
-  }
-
   .phase-peak {
-    background-color: var(--color-warning);
-    box-shadow: var(--shadow-warning-glow);
+    background-color: var(--color-info);
   }
 
   .phase-post-peak {
-    background: linear-gradient(
-      135deg,
-      var(--stamp-light-green-light) 0%,
-      var(--stamp-light-green) 100%
-    );
+    background-color: var(--stamp-light-green);
+  }
+
+  .phase-luteal {
+    background-color: var(--stamp-dark-green);
   }
 
   .phase-unknown {
     background-color: var(--bg-surface-border);
-    opacity: 0.35;
   }
 
-  .phase-peak-dot {
-    position: absolute;
-    top: -10px;
-    left: 50%;
-    transform: translateX(-50%);
-    font-size: var(--font-size-4xs);
-    font-weight: 900;
-    color: var(--color-warning-text);
-  }
-
-  /* Paper Grid Strip Container */
+  /* The day cards. All the rows share one scroll position. */
   .chart-row-scroll {
     overflow-x: auto;
     -webkit-overflow-scrolling: touch;
-    padding-top: 4px;
-    padding-bottom: 0.6rem;
-    scroll-snap-type: x mandatory;
+    overscroll-behavior-x: contain;
+    padding: 3px 2px 6px;
     scrollbar-width: thin;
     scrollbar-color: var(--bg-surface-border-strong) transparent;
   }
 
-  .chart-row-scroll::-webkit-scrollbar {
-    height: 6px;
-  }
-
-  .chart-row-scroll::-webkit-scrollbar-thumb {
-    background-color: var(--bg-surface-border-strong);
-    border-radius: var(--radius-2xs);
-  }
-
-  .chart-row-strip.paper-grid-strip {
+  .chart-row-strip {
     display: inline-flex;
-    gap: 6px;
-    min-width: 100%;
+    gap: 4px;
   }
 
-  /* Authentic Paper Cell Styling */
   .chart-cell.paper-cell {
-    width: 56px;
-    height: 156px;
-    min-height: 156px;
-    max-height: 156px;
-    background-color: var(--bg-primary);
-    background-image: linear-gradient(to bottom, var(--chart-grid-line) 1px, transparent 1px);
-    background-size: 100% 20px;
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-md);
-    padding: 6px 3px;
+    position: relative;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
+    gap: 2px;
+    width: 44px;
+    min-width: 44px;
+    height: 116px;
+    padding: 5px 0 3px;
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-xs);
+    background-color: var(--bg-surface);
+    color: inherit;
+    line-height: 1;
     cursor: pointer;
-    scroll-snap-align: start;
     touch-action: manipulation;
-    position: relative;
-    transition:
-      transform 0.18s cubic-bezier(0.16, 1, 0.3, 1),
-      border-color 0.18s ease,
-      box-shadow 0.18s ease;
     user-select: none;
   }
 
-  .chart-cell.paper-cell:hover {
-    transform: translateY(-4px);
-    border-color: var(--accent-primary);
-    box-shadow:
-      var(--shadow-md),
-      0 0 0 1px var(--accent-primary);
-    z-index: 10;
+  .chart-cell.paper-cell > * {
+    flex-shrink: 0;
   }
 
-  .chart-cell.paper-cell:active {
-    transform: translateY(-1px) scale(0.97);
+  .chart-cell.paper-cell:hover {
+    border-color: var(--accent-primary);
   }
 
   .chart-cell.paper-cell:focus-visible {
@@ -477,136 +290,90 @@
     outline-offset: 2px;
   }
 
-  /* Each cell is a native button: keep the text style of the chart */
-  button.chart-cell {
-    color: inherit;
-    text-align: inherit;
-    line-height: inherit;
-  }
-
   .chart-cell.peak-cell {
-    border-color: var(--color-warning) !important;
-    box-shadow:
-      0 0 0 2px var(--color-warning-ring),
-      var(--shadow-sm);
+    box-shadow: 0 0 0 2px var(--color-warning-ring);
   }
 
   .chart-cell.paper-cell.is-today {
-    border: 2px solid var(--accent-primary) !important;
+    border: 2px solid var(--accent-primary);
     background-color: var(--accent-soft);
-    box-shadow:
-      0 0 10px var(--accent-glow),
-      var(--shadow-sm);
-    z-index: 5;
-  }
-
-  .cell-today-pill {
-    font-size: var(--font-size-4xs);
-    font-weight: 800;
-    text-transform: uppercase;
-    background-color: var(--accent-solid);
-    color: var(--color-white);
-    padding: 1px 4px;
-    border-radius: var(--radius-2xs);
-    letter-spacing: 0.3px;
-    line-height: 1;
-    margin-bottom: 2px;
-    box-shadow: var(--shadow-xs);
   }
 
   .cell-header {
-    height: 38px;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
-    line-height: 1.1;
-    width: 100%;
-    flex-shrink: 0;
+    gap: 2px;
   }
 
   .cell-day-num {
-    font-size: var(--font-size-xs);
-    font-weight: 800;
+    font-size: var(--font-size-sm);
+    font-weight: 700;
     color: var(--text-primary);
   }
 
-  .cell-day-name {
-    font-size: var(--font-size-4xs);
-    font-weight: 700;
-    color: var(--text-muted);
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
-  }
-
+  .cell-day-name,
   .cell-date {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     color: var(--text-muted);
-    font-weight: 500;
   }
 
-  .cell-stamp-wrapper {
-    height: 52px;
+  .chart-cell .stamp-badge-container {
+    height: auto;
+  }
+
+  .chart-cell .stamp-sm .stamp-badge {
+    width: 32px;
+    height: 32px;
+    margin: 2px 0;
+  }
+
+  /* A code breaks only between its tokens, on two lines or less */
+  .cell-code {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    margin: 2px 0;
-    width: 100%;
-    flex-shrink: 0;
+    max-width: 42px;
+    max-height: calc(2 * 1.1em);
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    line-height: 1.1;
+    color: var(--text-secondary);
   }
 
-  .cell-code {
-    height: 28px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-size: var(--font-size-3xs);
-    font-weight: 800;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    text-align: center;
-    word-break: break-all;
-    line-height: 1.1;
-    color: var(--text-primary);
-    background-color: var(--bg-surface);
-    padding: 1px 3px;
-    border-radius: var(--radius-2xs);
-    border: 1px solid var(--bg-surface-border);
-    width: 100%;
-    flex-shrink: 0;
+  .cell-code-token {
+    max-width: 100%;
     overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
   }
 
   .cell-footer-indicators {
-    height: 20px;
     display: flex;
     align-items: center;
-    justify-content: center;
     gap: 2px;
-    width: 100%;
-    flex-shrink: 0;
+    min-height: 11px;
     margin-top: auto;
   }
 
   .cell-symptom-tag {
-    font-size: var(--font-size-4xs);
-    font-weight: 800;
+    font-size: var(--font-size-2xs);
+    font-weight: 700;
     color: var(--color-warning-text);
     background-color: var(--color-warning-surface);
-    padding: 0 4px;
     border-radius: var(--radius-2xs);
   }
 
   .cell-notes-icon {
-    color: var(--accent-primary);
     display: flex;
-    align-items: center;
+    color: var(--accent-primary);
   }
 
   .empty-cell.paper-cell {
     border-style: dashed;
     border-color: var(--bg-surface-border-strong);
-    background-image: none;
+    background-color: transparent;
   }
 
   .empty-cell.paper-cell:hover {
@@ -614,28 +381,42 @@
     background-color: var(--accent-light);
   }
 
-  .cell-placeholder {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 3px;
-    margin-top: auto;
-    margin-bottom: auto;
-  }
-
-  .add-icon {
+  .empty-cell .add-icon {
+    margin-top: 10px;
     color: var(--text-muted);
-    transition: color 0.15s ease;
   }
 
-  .empty-cell.paper-cell:hover .add-icon {
-    color: var(--accent-primary);
+  /* Strip view: the cycle day and the stamp only, 34 x 62 px */
+  .view-compact .chart-cell.paper-cell {
+    width: 34px;
+    min-width: 34px;
+    height: auto;
+    padding-bottom: 8px;
   }
 
-  .add-label {
-    font-size: var(--font-size-4xs);
-    font-weight: 800;
-    color: var(--accent-primary);
+  .view-compact .chart-cell .stamp-sm .stamp-badge {
+    width: 28px;
+    height: 28px;
+  }
+
+  .view-compact .empty-cell .add-icon {
+    margin-top: 6px;
+  }
+
+  .chart-footer-actions {
+    display: flex;
+    gap: var(--space-sm);
+  }
+
+  .chart-footer-actions .btn {
+    flex: 1;
+  }
+
+  @media (min-width: 1024px) {
+    .chart-footer-actions .btn {
+      flex: none;
+      min-width: 160px;
+    }
   }
 
   /* Hover Tooltip Popover */
@@ -733,89 +514,15 @@
   .popover-footer {
     margin-top: 0.45rem;
     text-align: center;
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     font-weight: 800;
     color: var(--accent-primary);
     text-transform: uppercase;
     letter-spacing: 0.04em;
   }
 
-  /* Responsive Media Queries */
+  /* On a phone, the popover of a day shows above the bottom bar */
   @media (max-width: 640px) {
-    .strip-subtitle-badge {
-      font-size: var(--font-size-2xs);
-    }
-
-    .view-mode-toggle .toggle-btn,
-    .toolbar-btn {
-      padding: 0.35rem 0.55rem;
-      font-size: var(--font-size-xs);
-    }
-
-    .chart-row-container.paper-theme {
-      padding: 0.75rem;
-    }
-
-    .cycle-title-badge {
-      font-size: var(--font-size-sm);
-      padding: 0.25rem 0.6rem;
-    }
-
-    .cycle-date-range {
-      font-size: var(--font-size-xs);
-    }
-
-    .cycle-length-pill,
-    .cycle-peak-pill {
-      font-size: var(--font-size-2xs);
-      padding: 0.2rem 0.5rem;
-    }
-
-    .cycle-header-actions {
-      margin-top: 0.4rem;
-      width: 100%;
-      justify-content: space-between;
-    }
-
-    .chart-cell.paper-cell {
-      width: 50px;
-      height: 148px;
-      min-height: 148px;
-      max-height: 148px;
-      padding: 5px 2px;
-    }
-
-    .cell-header {
-      height: 36px;
-    }
-
-    .cell-day-num {
-      font-size: var(--font-size-2xs);
-    }
-
-    .cell-day-name {
-      font-size: var(--font-size-4xs);
-    }
-
-    .cell-stamp-wrapper {
-      height: 48px;
-    }
-
-    .stamp-sm .stamp-badge {
-      width: 28px;
-      height: 28px;
-    }
-
-    .cell-code {
-      height: 26px;
-      font-size: var(--font-size-4xs);
-      padding: 1px 2px;
-    }
-
-    .cell-footer-indicators {
-      height: 18px;
-    }
-
     .cell-hover-popover {
       position: fixed;
       bottom: calc(var(--mobile-nav-space) + var(--space-sm));
