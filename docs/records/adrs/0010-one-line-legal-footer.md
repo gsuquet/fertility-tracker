@@ -21,7 +21,7 @@ In the browser, the legal and medical card (329 px) is the first item under the 
 
 ## Decision
 
-The browser shows one line under the last card: the copyright, a **Legal** link and the version. The full trademark and medical notice is in Settings, About, and in the welcome guide.
+The browser shows one line under the last card: the copyright, a **Legal** link and the version. The full trademark and medical notice is in Settings, About, and in the welcome guide. The reason is that the notice then stays one tap away and takes no space from the chart.
 
 ### Consequences
 

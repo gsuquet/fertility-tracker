@@ -24,16 +24,16 @@ The Today page shows the 30 code buttons of the five groups at the same time, an
 
 ## Decision
 
-The form shows one row for each group. A tap opens the chips of one group, with the code over a short name. The form never fills in the data of the day before. **Copy yesterday** is an explicit action in the observation actions menu, with **Delete observation**.
+The form shows one row for each group. A tap opens the chips of one group, with the code over a short name. The form never fills in the data of the day before. **Copy yesterday** is an explicit action in the observation actions menu, with **Delete observation**. The reason is that the full form then fits one screen, and a reflex save cannot copy a code of the day before.
 
 A day with no observation shows a dashed empty stamp and the text "No observation yet". It shows no fertility text, and the word "Infertile" never shows without a code.
 
 ### Consequences
 
-- Good: the form fits one screen, and the stamp stays in view.
+- Good: the form fits one screen when all the groups are closed, and the stamp stays in view.
 - Good: a reflex save cannot copy a code that moves the Peak Day.
 - Good: an empty day cannot look like an infertile day.
-- Bad: a group that changes needs one more tap. A dry day takes 5 taps (3 now).
+- Bad: a group that changes needs one more tap. A dry day takes 5 taps (3 now). A day with fertile mucus takes 8 taps (5 now).
 
 ### Confirmation
 
@@ -43,7 +43,7 @@ The tests of step 2 of RFC 0002 check that the form opens empty and that **Copy 
 
 ### One row for each group
 
-- Good: one screen, and one tap only for a group that changes.
+- Good: one screen, and no tap for a group that does not change.
 - Bad: one more tap for each group that changes.
 
 ### A form in steps

@@ -21,7 +21,7 @@ On a phone, the chart shows about 6 days under 330 px of controls. On a desktop,
 
 ## Decision
 
-The chart controls use one row. The phone day cards are 44 × 116 px. The desktop columns are 44 px, so 28 days fit at 1440 px and 35 days fit from 1600 px. A code breaks only between its tokens. All the rows share one scroll position.
+The chart controls use one row. The phone day cards are 44 × 116 px. The desktop columns are 44 px, so 28 days fit at 1440 px and 35 days fit from 1600 px. A code breaks only between its tokens. All the rows share one scroll position. The reason is that 35 narrow columns cut a code of 6 characters in the middle of a token.
 
 ### Consequences
 

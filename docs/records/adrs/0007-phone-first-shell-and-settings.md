@@ -22,14 +22,14 @@ The phone has actions in four places: the header, the bottom bar, the menu sheet
 
 ## Decision
 
-The project uses one navigation: a bottom bar on a phone and tabs on a desktop. Each page has one top bar with the cycle picker and the settings gear. All the settings are on one Settings page. **Share chart** on the chart replaces the print part of the export dialog.
+The project uses one navigation: a bottom bar on a phone and tabs on a desktop. Each page has one top bar with the cycle picker and the settings gear. All the settings are in one Settings place: a page on a phone and a dialog of 560 px on a desktop. **Share chart** on the chart replaces the print part of the export dialog. The reason is that each action then has one place, and a destructive action is never next to **Save** or **Restore**.
 
 ### Consequences
 
 - Good: each action has one place, and the destructive actions are at the end of Settings.
 - Good: the desktop top bar has two rows from 1024 px to 1359 px, so the page does not scroll to the side.
 - Bad: a person who knows the current layout must learn the new places of the export and the settings.
-- Bad: six e2e specs that select the navigation change.
+- Bad: the e2e tests, the ARIA snapshots and the screenshots change many times.
 
 ### Confirmation
 

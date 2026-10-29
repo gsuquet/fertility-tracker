@@ -11,7 +11,7 @@ The screens use text of 8 to 10 px, controls smaller than 44 px and a red filled
 ## Decision drivers
 
 - A person must read each text and tap each daily control on a phone.
-- The rules must be tokens, so that a test can check them.
+- The sizes must come from tokens.
 - A destructive action must not look like the main action.
 
 ## Options
@@ -24,20 +24,23 @@ The screens use text of 8 to 10 px, controls smaller than 44 px and a red filled
 The design system gets these rules:
 
 - Screen text is 11 px or more on a phone and 12 px or more on a desktop. Chart and calendar cells use 11 px. The tokens `--font-size-3xs` and `--font-size-4xs` are for print only.
-- A daily control is 44 px. A secondary icon is 36 px. Other controls are 32 px or more.
+- A daily control is 44 px or more. A secondary icon is 36 px. Other controls are 32 px or more, with 8 px between them.
+- The top bar and the bottom bar use `--bg-surface`, not `--glass-bg`.
 - Each screen has one filled accent button, plus the + button of the phone navigation. A danger action is red text or a red outline.
+
+The motion, the type scale, the card levels and the French size reference are in the section Design system rules of RFC 0002. The reason for the rules is that a person must read each text and tap each daily control on a phone.
 
 The new tokens are `--bg-hero`, `--stamp-empty`, `--control-size-lg`, `--control-size-md`, `--control-size-sm` and `--row-height`.
 
 ### Consequences
 
-- Good: the text and control sizes come from tokens that a test can check.
+- Good: the text and control sizes come from shared tokens.
 - Good: the main action of each screen is clear.
 - Bad: the stamp marks grow from 10 px to 11 px, so the stamps are fuller.
 
 ### Confirmation
 
-The token contrast test checks the two new colors. The accessibility tests of RFC 0002 check the text and control sizes.
+The token contrast test checks the two new colors. A manual review of each step checks the text and control sizes on the screenshots, as ADR 0005 requires for criterion 2.5.8. Step 10 of RFC 0002 adds a phone project and a test on real phones.
 
 ## Advantages and disadvantages of the options
 
@@ -55,4 +58,5 @@ The token contrast test checks the two new colors. The accessibility tests of RF
 
 - [RFC 0002: Phone-first redesign of the screens](../rfcs/0002-phone-first-redesign.md), section Design system rules
 - [ADR 0002: CSS in cascade layers with a shared design system](0002-css-maintainability-design-system.md)
+- [ADR 0005: Accessibility level of the screens](0005-accessibility-level.md)
 - [Issue #115](https://github.com/gsuquet/fertility-tracker/issues/115) and [pull request #116](https://github.com/gsuquet/fertility-tracker/pull/116)
