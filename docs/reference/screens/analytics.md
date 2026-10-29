@@ -12,7 +12,7 @@ This page gives the rules for the **Cycle Analytics** page.
 | Practitioner Clinical Summary    | Average mucus score, Peak Day, luteal phase health and intercourse count.                                                                                                                   |
 | Creighton Mucus Score guide      | A short explanation of the score.                                                                                                                                                           |
 - Before the Peak Day, the page shows "in progress" after the follicular value.
-- Luteal phase health is "Normal" from 9 to 17 days. Above 0 and below 9 days, or above 17 days, it is "Short/Extended". The value of all cycles is an average and can have decimals. At 0 days, it is "Pending Peak Day".
+- The labels of luteal phase health are in [Cycle and phase rules](../cycle-and-phase-rules.md#luteal-phase-health).
 - Without observations, the page shows an empty state with `id="analytics-panel"`.
 
 ## Accessibility

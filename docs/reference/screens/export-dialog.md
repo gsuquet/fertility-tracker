@@ -31,8 +31,12 @@ Each opening starts in **Single Cycle** mode, with the cycle of the cycle picker
 
 - It opens over the export dialog. All its text comes from the dictionary (`confirmDialog.*`, `actions.cancel`).
 - `Escape`, **Cancel** and a click on the backdrop cancel it. They do not close the export dialog.
-- **Load Demo Cycle**, **Restore Data** and **Clear Data / Reset** open it when observations exist.
-- Without observations, **Load Demo Cycle** and **Restore Data** act immediately, and **Clear Data / Reset** is disabled.
+- These buttons open it:
+
+| Condition          | Result                                                                                        |
+| ------------------ | --------------------------------------------------------------------------------------------- |
+| Observations exist | **Load Demo Cycle**, **Restore Data** and **Clear Data / Reset** open the confirmation.       |
+| **Else**           | **Load Demo Cycle** and **Restore Data** act immediately. **Clear Data / Reset** is disabled. |
 - The message for **Clear Data / Reset** says that a copy stays on the device until the user selects **Delete the copy**.
 
 Before a backup changes existing observations, the dialog shows a preview from `summarizeObservations()`. The preview gives the number of observations in the file and the first and last date. If the file has no observations, the preview says so.
