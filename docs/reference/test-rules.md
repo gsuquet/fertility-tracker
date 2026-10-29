@@ -2,34 +2,37 @@
 
 This page lists the test rules, the test layers and the test helpers. For the reasons, read [Testing strategy](../explanation/testing-strategy.md).
 
+The project uses test-driven development (TDD). Write a test that fails before each change of behavior. Then write the minimum code that makes it pass. Biome and the strict TypeScript compiler do the static analysis.
+
 ## Rules
 
-| Rule                                                                         | Enforced by                     |
-| ---------------------------------------------------------------------------- | ------------------------------- |
-| Write the test before the code.                                              | Review                          |
-| Keep 100% coverage for statements, branches, functions and lines.            | `vite.config.ts` thresholds, CI |
-| Do not add coverage ignore comments.                                         | Review                          |
-| Remove code that no test can reach.                                          | Coverage report                 |
-| Find elements by role and accessible name, not by CSS class.                 | Review                          |
-| Get the expected text from the locale files, for example `en.actions.save`.  | Review                          |
-| Do not write user-visible text in a `.tsx` file. Put it in the locale files. | `noHardcodedText.test.ts`       |
-| Set the date with `vi.setSystemTime()`. Use fake timers for delays.          | Review                          |
-| Give each test a name that tells the behavior.                               | Review                          |
+| Rule                                                                                                                   | Enforced by                     |
+| ---------------------------------------------------------------------------------------------------------------------- | ------------------------------- |
+| Write the test before the code.                                                                                        | Review                          |
+| Keep 100% coverage for statements, branches, functions and lines.                                                      | `vite.config.ts` thresholds, CI |
+| Do not add coverage ignore comments.                                                                                   | Review                          |
+| Remove code that no test can reach, for example guards for values that the types do not permit.                        | Coverage report                 |
+| Find elements by role and accessible name, not by CSS class.                                                           | Review                          |
+| Get the expected text from the locale files, for example `en.actions.save`.                                            | Review                          |
+| Do not write user-visible text in a `.tsx` file. Put it in the locale files.                                           | `noHardcodedText.test.ts`       |
+| Set the date with `vi.setSystemTime()`. Use fake timers for delays.                                                    | Review                          |
+| Give each test a name that tells the behavior.                                                                         | Review                          |
+| Keep all the `a11y` rules of the Biome recommended preset. Do not add an override that disables an accessibility rule. | `biome.json`, review            |
 
 ## Test layers
 
-| Layer       | Location                                  | Tool                  | Content                                                                         |
-| ----------- | ----------------------------------------- | --------------------- | ------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Vitest                | Pure functions: code parser, stamp rules, Peak Day, cycles, phases, validation. |
-| Utilities   | `src/utils/__tests__/`                    | Vitest                | Dates, export file names, safe storage.                                         |
-| Hooks       | `src/hooks/__tests__/`                    | `renderHook`          | Form state that more than one component uses.                                   |
-| Contexts    | `src/context/__tests__/`                  | `renderHook`          | Saved data, language and theme.                                                 |
-| Components  | `src/components/**/__tests__/`            | React Testing Library | Rendered output and user actions.                                               |
-| Application | `src/__tests__/`                          | React Testing Library | Flows across many components, for example print.                                |
-| Styles      | `src/styles/__tests__/`                   | Vitest                | CSS rules for problems that the tests cannot see, for example dark mode colors. |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Vitest                | Service worker cache strategies and the service worker registration.            |
-| Tools       | `scripts/**/__tests__/`                   | Vitest                | The docs checker and the service worker build plugin.                           |
-| End-to-end  | `e2e/`                                    | Playwright and axe    | Main flows and accessibility in Chromium, against the production build.         |
+| Layer       | Location                                  | Tool                  | Content                                                                                                                                     |
+| ----------- | ----------------------------------------- | --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Domain      | `src/domain/__tests__/`                   | Vitest                | Pure functions: code parser, stamps, Peak Day, cycles, phases, validation, demo data, form values, mucus score, sheet drag and swipe rules. |
+| Utilities   | `src/utils/__tests__/`                    | Vitest                | Dates, export file names, safe `localStorage` access and storage keys.                                                                      |
+| Hooks       | `src/hooks/__tests__/`                    | `renderHook`          | `useObservationForm`, `useToast`, `useHistoryLayer`, `useSheetDrag` and `useDaySwipe`.                                                      |
+| Contexts    | `src/context/__tests__/`                  | `renderHook`          | Saved data, cycle selection, language and theme.                                                                                            |
+| Components  | `src/components/**/__tests__/`            | React Testing Library | Rendered output and user actions. Tests find elements by role and accessible name.                                                          |
+| Application | `src/__tests__/`                          | React Testing Library | Flows across components: welcome guide, print, entry point and error boundary.                                                              |
+| Styles      | `src/styles/__tests__/`                   | Vitest                | CSS rules that jsdom cannot show, for example theme colors and phone layout.                                                                |
+| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Vitest                | Service worker cache rules and the service worker registration.                                                                             |
+| Tools       | `scripts/**/__tests__/`                   | Vitest                | The documentation check, the commit message check and the service worker build plugin.                                                      |
+| End-to-end  | `e2e/`                                    | Playwright and axe    | Playwright flows and axe checks in Chromium, on the production build.                                                                       |
 
 ## Coverage scope
 
@@ -54,22 +57,22 @@ Options of `renderWithProviders`:
 | `observations`    | `[...]` | Starts with saved data.                 |
 | `selectedCycleId` | `'all'` | Selects a cycle after the first render. |
 
-The setup file `src/setupTests.ts` clears `localStorage` after each test.
+The setup file `src/setupTests.ts` clears `localStorage` after each test. jsdom has no `HTMLDialogElement.showModal()` or `close()`. Thus, `src/setupTests.ts` adds two small versions that set and remove the `open` attribute.
 
 ## End-to-end tests
 
 Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage report does not include them. The settings are in `playwright.config.ts`.
 
-| Item                | Value                                                                                  |
-| ------------------- | -------------------------------------------------------------------------------------- |
-| Browser             | Chromium                                                                               |
-| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                |
-| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.   |
-| Type check          | `e2e/tsconfig.json`.`npm run typecheck` checks it.                                     |
-| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`.                                   |
-| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed. |
-| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                     |
-| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                          |
+| Item                | Value                                                                                       |
+| ------------------- | ------------------------------------------------------------------------------------------- |
+| Browser             | Chromium                                                                                    |
+| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                     |
+| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.        |
+| Type check          | `npm run typecheck` checks the files with `e2e/tsconfig.json`.                              |
+| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`, on each page and on the export dialog. |
+| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed.      |
+| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                          |
+| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                               |
 
 | Test file                    | Flows                                                                                                                                                                                                                                       |
 | ---------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -86,6 +89,29 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/haptics.spec.ts`        | On a phone, a save and the Peak Day button vibrate. After the menu turns the vibrations off, nothing vibrates, also after a reload.                                                                                                         |
 | `e2e/chartScroll.spec.ts`    | At 390 and 1440 pixels, the chart opens with the cell of today in view, also after a reload and a page change.                                                                                                                              |
 
+Each flow in this table must have an end-to-end test.
+
+| Flow | Expected result                                                                                                                                                                                                                                                          |
+| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| 1    | The first visit shows the welcome guide. `Escape` closes it.                                                                                                                                                                                                             |
+| 2    | An observation from the **Today** page stays after a reload.                                                                                                                                                                                                             |
+| 3    | Backup, reset (with **Delete all data** and the undo message), new observation, restore with preview and **Replace** bring back the backup.                                                                                                                              |
+| 4    | After **Load Demo Cycle**, the chart, calendar and analytics pages show the demo data.                                                                                                                                                                                   |
+| 5    | A manual Peak Day moves the Peak Day and the count of three. Without it, the calculated Peak Day comes back, also after a reload.                                                                                                                                        |
+| 6    | Saved data that is not JSON shows the recovery message, and the recovery key keeps the text. **Delete the copy** removes both.                                                                                                                                           |
+| 7    | A saved list with one record that is not valid shows the other observations and the recovery message for 1 record.                                                                                                                                                       |
+| 8    | When `localStorage.setItem` fails for the observations, the save warning shows. **Back up now** opens the export dialog.                                                                                                                                                 |
+| 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                                                                                                                                        |
+| 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, the title becomes **Log Observation**, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
+| 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
+| 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
+| 13   | On a phone with touch, a swipe to the left on **Today** opens the next day. A swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                       |
+| 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
+| 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
+| 16   | In the installed app, after **Show a dot on the app icon**, the dot shows while today has no observation. A save removes it, and the choice stays after a reload.                                                                                                        |
+| 17   | On a phone with touch, a swipe down on the phone menu, the cycle menu and the export dialog closes them. A swipe up on them does not scroll the page. When the phone menu opens, it slides up from the bottom of the screen.                                             |
+| 18   | On a phone with touch, a swipe to the right on the calendar opens the previous month. A swipe to the left opens the next month. In the current month, a swipe to the left does not change the month.                                                                     |
+
 | Helper                           | File              | Use                                                                                     |
 | -------------------------------- | ----------------- | --------------------------------------------------------------------------------------- |
 | `openApp(page)`                  | `e2e/fixtures.ts` | Opens the application on a fixed date, without the welcome guide.                       |
@@ -94,7 +120,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `labelPattern(template, values)` | `e2e/fixtures.ts` | Makes a pattern from a locale template. A placeholder without a value matches all text. |
 | `escapeRegExp(text)`             | `e2e/fixtures.ts` | Escapes the special characters of a regular expression in a text.                       |
 
-`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. When a correction is merged, remove its pairs from the list.
+`KNOWN_VIOLATIONS` in `e2e/accessibility.spec.ts` lists the axe violations of each screen today, as pairs of a rule id and a target. A pair that is not in the list makes the test fail. A listed pair that does not occur also makes the test fail. All the pairs are `color-contrast` (issue #49, see also #34 and #35). When a correction is merged, remove its pairs from the list. Thus, the list becomes shorter with each correction.
 
 ## Related documents
 

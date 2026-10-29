@@ -55,8 +55,6 @@ This document is the full specification of the application. Change it before you
    - [7.3 Text contrast](#73-text-contrast)
 8. [Tests and quality](#8-tests-and-quality)
 9. [Deployment and CI](#9-deployment-and-ci)
-   - [9.1 Offline use and installation](#91-offline-use-and-installation)
-   - [9.2 Security headers](#92-security-headers)
 10. [Privacy, trademarks and medical limits](#10-privacy-trademarks-and-medical-limits)
 
 ## 1. Summary
@@ -140,7 +138,7 @@ The main chunk has only the code of the first screen. The other parts load with 
 - After the first render, when the browser is idle, the application imports the four lazy chunks, except `InstallGuideModal`. Only Safari on iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
 - A failed preload has no effect. The part tries again when the user opens it.
 - Each lazy dialog has its own `ErrorBoundary` in dialog mode (section 5.11). A failure does not block the other dialogs, and the next opening tries again.
-- The service worker keeps all the lazy chunks (section 9.1). Thus, each lazy part also opens offline.
+- The service worker keeps all the lazy chunks ([Offline use and installation](docs/reference/deployment.md#offline-use-and-installation)). Thus, each lazy part also opens offline.
 
 ## 3. Domain rules
 
@@ -712,7 +710,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - When the page changes while a layer entry is current, the application first goes back to the entry of the page. Then it adds the entry of the new page and the entries of the layers that stay open.
 - At the start after a reload with layers open, the current entry has `ftLayerDepth` above 0. The application goes back to the entry of the page with `history.go()`. Thus, the next **Back** does not find an old layer entry.
 - Else, it sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**.
-- The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([9.1](#91-offline-use-and-installation)).
+- The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([Offline use and installation](docs/reference/deployment.md#offline-use-and-installation)).
 
 ### 5.13 Install and update
 
@@ -757,7 +755,7 @@ The steps are a numbered list (`<ol>`).
 
 #### Update
 
-The service worker of a new version waits ([9.1](#91-offline-use-and-installation)). The active worker gives the app shell from its own cache. Thus, the page always runs the version of the active worker, also after a normal reload. `registerServiceWorker()` finds a waiting worker when the page already has a controller:
+The service worker of a new version waits ([Offline use and installation](docs/reference/deployment.md#offline-use-and-installation)). The active worker gives the app shell from its own cache. Thus, the page always runs the version of the active worker, also after a normal reload. `registerServiceWorker()` finds a waiting worker when the page already has a controller:
 
 - after the registration, from `registration.waiting`
 - when an installing worker gets the state `installed`
@@ -1121,223 +1119,12 @@ The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both th
 
 ## 8. Tests and quality
 
-The project uses test-driven development (TDD). Write a test that fails before each change of behavior. Then write the minimum code that makes it pass. Biome and the strict TypeScript compiler do the static analysis.
-
-- `biome.json` keeps all the `a11y` rules of the recommended preset. No override disables an accessibility rule.
-- jsdom has no `HTMLDialogElement.showModal()` or `close()`. `src/setupTests.ts` adds two small versions that set and remove the `open` attribute.
-
-### 8.1 Coverage
-
-- Coverage is 100% for statements, branches, functions and lines. `vite.config.ts` sets `coverage.thresholds: { 100: true }`. Thus, `npm run test:coverage` fails below 100%, also in CI.
-- Do not add coverage ignore comments. Remove code that no test can reach, for example guards for values that the types do not permit.
-- The report includes `src/**` and `scripts/**`. It excludes test files, `src/test/**`, `src/setupTests.ts` and `src/vite-env.d.ts`.
-
-### 8.2 Test layers
-
-| Layer       | Location                                  | Content                                                                                                             |
-| ----------- | ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------- |
-| Domain      | `src/domain/__tests__/`                   | Code parser, stamps, Peak Day, cycles, validation, demo data, form values, mucus score, sheet drag and swipe rules. |
-| Utilities   | `src/utils/__tests__/`                    | Dates, export file names, safe `localStorage` access and storage keys.                                              |
-| Hooks       | `src/hooks/__tests__/`                    | `useObservationForm`, `useToast`, `useHistoryLayer`, `useSheetDrag` and `useDaySwipe`.                              |
-| Contexts    | `src/context/__tests__/`                  | Saved data, cycle selection, language and theme.                                                                    |
-| Components  | `src/components/**/__tests__/`            | Output and user actions. Tests find elements by role and accessible name.                                           |
-| Application | `src/__tests__/`                          | Flows across components: welcome guide, print, entry point and error boundary.                                      |
-| PWA         | `src/sw/__tests__/`, `src/pwa/__tests__/` | Service worker cache rules and registration.                                                                        |
-| Styles      | `src/styles/__tests__/`                   | CSS rules that jsdom cannot show, for example theme colors and phone layout.                                        |
-| Tools       | `scripts/**/__tests__/`                   | The documentation check, the commit message check and the service worker plugin.                                    |
-| End-to-end  | `e2e/`                                    | Playwright flows and axe checks in Chromium, on the production build.                                               |
-
-The helpers are in `src/test/`:
-
-- `makeObservation({ date, ...fields })` makes a valid observation.
-- `renderWithProviders(ui, { language, observations, selectedCycleId })` renders in all providers.
-- `src/setupTests.ts` clears `localStorage` after each test.
-
-### 8.3 End-to-end tests
-
-- Playwright uses Chromium on the production build: `vite build`, then `vite preview` on port `4173`, or on the port in `PW_PORT`. `playwright.config.ts` sets this in `webServer`.
-- The time zone is UTC and the clock is `2026-10-27T12:00:00Z`. Thus, the dates are stable.
-- A local run uses a server that runs already only when `PW_REUSE=1` is set. It can use an installed Chromium through `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH`.
-- Vitest does not run the files in `e2e/`, and the coverage report does not include them. `npm run typecheck` checks them with `e2e/tsconfig.json`.
-
-| Flow | Expected result                                                                                                                                                                                                                                                          |
-| ---- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| 1    | The first visit shows the welcome guide. `Escape` closes it.                                                                                                                                                                                                             |
-| 2    | An observation from the **Today** page stays after a reload.                                                                                                                                                                                                             |
-| 3    | Backup, reset (with **Delete all data** and the undo message), new observation, restore with preview and **Replace** bring back the backup.                                                                                                                              |
-| 4    | After **Load Demo Cycle**, the chart, calendar and analytics pages show the demo data.                                                                                                                                                                                   |
-| 5    | A manual Peak Day moves the Peak Day and the count of three. Without it, the calculated Peak Day comes back, also after a reload.                                                                                                                                        |
-| 6    | Saved data that is not JSON shows the recovery message, and the recovery key keeps the text. **Delete the copy** removes both.                                                                                                                                           |
-| 7    | A saved list with one record that is not valid shows the other observations and the recovery message for 1 record.                                                                                                                                                       |
-| 8    | When `localStorage.setItem` fails for the observations, the save warning shows. **Back up now** opens the export dialog.                                                                                                                                                 |
-| 9    | After the first visit, the service worker controls the page. Offline, a reload opens the application and a new observation saves.                                                                                                                                        |
-| 10   | After **Load Demo Cycle**, the undo message is in the drawer when it opens. **Undo** brings back the empty chart, the title becomes **Log Observation**, and the focus goes to the dialog. After the drawer closes, the chart stays empty and the message does not show. |
-| 11   | On a phone, **+** opens the saved observation of today. A save with no change keeps it.                                                                                                                                                                                  |
-| 12   | On a phone, a short drag on the handle puts the sheet back. A long drag closes it, and **Back** then does not open it again.                                                                                                                                             |
-| 13   | On a phone with touch, a swipe to the left on **Today** opens the next day. A swipe to the right opens the previous day. A vertical swipe does not change the day.                                                                                                       |
-| 14   | On a computer, the arrow keys and `T` change the day, and `2` opens the chart. A key in a field stays in it. After **Use keyboard shortcuts** is off, the keys do nothing, also after a reload.                                                                          |
-| 15   | On a computer, a page on the right slides in from the right, and **Back** slides in from the left. With reduced motion, no transition starts.                                                                                                                            |
-| 16   | In the installed app, after **Show a dot on the app icon**, the dot shows while today has no observation. A save removes it, and the choice stays after a reload.                                                                                                        |
-| 17   | On a phone with touch, a swipe down on the phone menu, the cycle menu and the export dialog closes them. A swipe up on them does not scroll the page. When the phone menu opens, it slides up from the bottom of the screen.                                             |
-| 18   | On a phone with touch, a swipe to the right on the calendar opens the previous month. A swipe to the left opens the next month. In the current month, a swipe to the left does not change the month.                                                                     |
-
-`@axe-core/playwright` checks each page and the export dialog with the `wcag2a` and `wcag2aa` tags. `e2e/accessibility.spec.ts` has the list of known violations, as pairs of rule and target for each screen. All are `color-contrast` (issue #49, see also #34 and #35).
-
-The test fails on a pair that is not in the list. It also fails on a listed pair that does not occur. Thus, the list becomes shorter with each correction.
-
-### 8.4 Commands
-
-```bash
-# Install the pinned tools and the Git hooks
-mise install && mise run hooks
-
-# Run the tests one time (or in watch mode with npm run test:watch)
-npm run test
-
-# Run the tests with coverage. Fails below 100%.
-mise run coverage
-
-# Biome lint and format check. A warning is a failure.
-npm run check
-
-# Correct the lint and format findings
-npm run check:fix
-
-# Strict type check
-npm run typecheck
-
-# Check the docs: STE rules, Diátaxis structure and links
-mise run docs
-
-# Draw the PNG app icons again from public/icons/logo.svg
-mise run icons
-
-# Take the install screenshots again, with demo data
-mise run screenshots
-
-# Run the Playwright end-to-end and accessibility tests
-mise run e2e
-
-# Run all CI gates (the tasks are in .mise/tasks/)
-mise run validate
-```
-
-### 8.5 Documentation
-
-- The pages in `docs/` follow [Diátaxis](https://diataxis.fr/) strictly. Each page is a tutorial, a how-to guide, a reference page or an explanation, in the folder of that type.
-- Decision records (ADRs) are in `docs/records/adrs/`. Proposals for a large change (RFCs) are in `docs/records/rfcs/`. These records are not Diátaxis pages. `docs/README.md` is the index.
-- `README.md`, `AGENTS.md`, `SPEC.md` and `docs/` use a subset of ASD-STE100 Simplified Technical English.
-- The limits are 20 words in a procedure step, 25 words in a descriptive sentence and 6 sentences in a paragraph. Do not use contractions or the words that are not approved.
-- `scripts/docs/checkDocs.ts` checks these rules, the Diátaxis folders, the index, the steps in guides, and the relative links and anchors.
-- `mise run docs` runs the check. The `docs-check` pre-commit hook runs it in CI.
-
-Read [Documentation rules](docs/reference/documentation-rules.md), [Testing strategy](docs/explanation/testing-strategy.md), [Test rules and helpers](docs/reference/test-rules.md) and [Write a test first](docs/how-to/write-a-test-first.md).
-
-### 8.6 Commit messages
-
-- Each commit message and each pull request title follows [Conventional Commits 1.0.0](https://www.conventionalcommits.org/en/v1.0.0/): `type(scope)!: description`.
-- The types are `build`, `chore`, `ci`, `docs`, `feat`, `fix`, `perf`, `refactor`, `revert`, `style` and `test`. The scope and `!` are optional.
-- `scripts/commits/checkCommitMessage.ts` does the check. The `conventional-commit` hook runs it on each commit message. Install the hook with `mise run hooks`.
-- The `pr-title` workflow checks the pull request title in strict mode, because a squash merge uses it as the commit message. Strict mode also rejects `Merge` and `fixup!` messages.
-- A blank line must separate the header and the body.
-- Dependabot writes `build(deps)` and `ci(deps)` titles (`commit-message.prefix` in `.github/dependabot.yml`).
-- Read [Commit messages](docs/reference/commit-messages.md).
+These rules are in [Test rules and helpers](docs/reference/test-rules.md), [Commands](docs/reference/commands.md), [Documentation rules](docs/reference/documentation-rules.md) and [Commit messages](docs/reference/commit-messages.md).
 
 ## 9. Deployment and CI
 
-| Item             | Value                                                                                               |
-| ---------------- | --------------------------------------------------------------------------------------------------- |
-| Platform         | Cloudflare Pages, static site                                                                       |
-| Settings         | [wrangler.json](wrangler.json): `name` is `fertility-tracker`, `pages_build_output_dir` is `dist`   |
-| Build command    | `npm run build`, that is `npm run typecheck` (`tsc --noEmit` for `src` and `e2e`) then `vite build` |
-| Deploy command   | `npm run deploy`, that is the build then `wrangler pages deploy dist`                               |
-| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                         |
-
-The `ci` workflow runs on each pull request to `main`. It does not run on a push to `main`. Each job installs the tools from `.mise/config.toml` with `jdx/mise-action`.
-
-The `validate` job does these steps:
-
-1. Installs the dependencies with `npm ci`.
-2. Runs `npm audit signatures`.
-3. Scans the pull request commits for secrets with gitleaks.
-4. Runs `pre-commit run --all-files`: file hygiene, Biome, `tsc --noEmit` and the docs check.
-5. Runs `npm run test:coverage`.
-6. Runs `vite build`.
-
-The `e2e` job does these steps at the same time:
-
-1. Installs the dependencies with `npm ci`.
-2. Installs Chromium with `npx playwright install --with-deps chromium`.
-3. Runs `npm run test:e2e`.
-4. Keeps the Playwright report if a test fails.
-
-The `pr-title` workflow checks the pull request title with `.mise/tasks/commit-msg --strict`. It also runs when the title changes.
-
-Each workflow pins its actions to a full commit SHA, with the release tag in a comment.
-
-### 9.1 Offline use and installation
-
-**Modules:** [src/sw/serviceWorker.ts](src/sw/serviceWorker.ts), [src/sw/entry.ts](src/sw/entry.ts), [src/pwa/registerServiceWorker.ts](src/pwa/registerServiceWorker.ts), [scripts/pwa/serviceWorkerPlugin.ts](scripts/pwa/serviceWorkerPlugin.ts)
-
-The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/entry.ts` to `dist/sw.js`, with the precache list and the cache name.
-
-- The precache list has `./`, that is the application shell. The server answers `./` with `index.html`, so the list does not have `index.html` under its own name.
-- The list also has each other file of the build (all files in `assets/`, also the lazy chunks) and of `public/` (manifest and icons).
-- The list does not have source maps, `sw.js`, `_headers` or the files in `screenshots/`. Only the install dialog of the browser uses the screenshots, and the application does not need them offline.
-- The list has no font file.
-- The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
-- Thus, each build with a different output installs a new cache.
-
-| Event      | Action                                                                                                                                                                                                                                |
-| ---------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `install`  | Adds each precache URL to the new cache, with `cache: 'no-cache'`. The browser checks each file with the server, so its HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([5.13](#update)). |
-| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                                                            |
-| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                                                                     |
-| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                                                                     |
-- Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
-- Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
-- After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
-- A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([5.13](#update)).
-- Other pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
-- For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
-
-Other rules:
-
-- `src/main.tsx` calls `registerServiceWorker()` after the first render. The function registers `./sw.js` only in a production build (`import.meta.env.PROD`).
-- The registration also needs a secure context (`https:` or `localhost`) and a browser with service workers. A failure has no effect. `index.html` has no inline script.
-- [public/manifest.webmanifest](public/manifest.webmanifest) has three PNG icons: `icons/icon-192.png` (`any`), `icons/icon-512.png` (`any`) and `icons/icon-maskable-512.png` (`maskable`).
-- The manifest `id` and `scope` are `./`. Thus, the installed application keeps its identity if `start_url` changes.
-- The manifest has `lang` (`en`), `dir` (`ltr`) and `categories` (`health`, `medical`, `lifestyle`).
-- `launch_handler` has `client_mode: ["focus-existing", "auto"]`. In Chromium, a second launch shows the open window and does not reload it. Thus, a draft in the drawer stays.
-- `shortcuts` has **Log today** and **Chart**, each with `icons/icon-96.png` ([5.12](#launch-shortcuts)).
-- `screenshots` has `screenshots/phone.png` (`narrow`, 780 × 1688) and `screenshots/desktop.png` (`wide`, 1440 × 900). Android shows them in the install dialog. They show only demo data. The task `mise run screenshots` makes them again.
-- A test reads the manifest and checks that each icon and screenshot file exists.
-- `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
-- The maskable icon has its image in the 80% safe zone. `index.html` uses `icons/apple-touch-icon.png` (180 × 180 pixels) as the `apple-touch-icon` and `icons/logo.svg` as the favicon.
-- The manifest `background_color` is `--brand-tile` and `theme_color` is `--brand-ink`, from the light theme. The splash screen of Android fills the screen with `background_color` and puts the icon in the middle. With the color of the logo tile, the screen is navy from edge to edge, and the tile has no visible edge.
-- `index.html` has one `theme-color` for each color scheme: `#f8f6f1` (light) and `#13171d` (dark), the `--bg-primary` of each theme. `THEME_COLORS` in `ThemeContext` has these values. When the theme of the app changes, `ThemeContext` sets the color of that theme in each `theme-color`. A browser uses `theme-color` before the manifest `theme_color`.
-- The page code does not import `src/sw/`. Else the build puts the worker code in a shared chunk, and `sw.js` cannot import it as a classic worker script. A unit test checks this rule. `registerServiceWorker.ts` has its own copy of the `SKIP_WAITING` message, and a test checks that the two are equal.
-- The service worker keeps only application files. It never reads or keeps the observations, which stay in `localStorage`.
-
-### 9.2 Security headers
-
-**Settings:** [public/\_headers](public/_headers)
-
-- `Content-Security-Policy` has `script-src 'self'` without `'unsafe-inline'`. The built `index.html` must not have an inline script.
-- `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`. `index.html` loads no stylesheet, font or preconnect from another origin.
-- `sw.js` has `Cache-Control: no-cache, no-store, must-revalidate`. Thus, the browser always looks for a new service worker.
-- Files in `assets/` are immutable for one year.
+These rules are in [Deployment](docs/reference/deployment.md). The CI workflow is in [Commands](docs/reference/commands.md#ci-workflow).
 
 ## 10. Privacy, trademarks and medical limits
 
-### Privacy
-
-All the work occurs in the browser. All observations stay in the `localStorage` of the browser, and the application sends no health data to a server. The application loads all its files from its own origin. Thus, no other company, such as Google Fonts, gets a request when a user opens it.
-
-### Trademarks
-
-FertilityCare™ and Creighton Model FertilityCare™ System (CrMS) are trademarks of the Saint Paul VI Institute for the Study of Human Reproduction. Fertility Tracker is an independent open-source project. It is not affiliated with the Saint Paul VI Institute, FCCA or FCCI, and they do not endorse it.
-
-### Medical limits
-
-Fertility Tracker is for personal records and education only. It does not give medical advice, a diagnosis or a treatment. For clinical interpretation, consult a certified FertilityCare Practitioner or Medical Consultant.
+These rules are in [Legal and medical limits](docs/reference/legal-and-medical-limits.md).
