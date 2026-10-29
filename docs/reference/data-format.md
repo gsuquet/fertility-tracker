@@ -8,7 +8,7 @@ The application keeps all the data in `localStorage`. It sends no data to a serv
 
 ## Backup file
 
-A backup file has the format that the application writes. In version 1.18.0, it is a JSON array of observations. The file is not encrypted. The application restores a backup file in format 0 or in format 1. Read [Storage format](data-storage.md#storage-format).
+A backup file has the format that the application writes. While `WRITE_SCHEMA_VERSION` is 0, it is a JSON array of observations. The file is not encrypted. The application restores a backup file in format 0 or in format 1. Read [Storage format](data-storage.md#storage-format).
 
 In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is the same JSON. The application also restores an older file that ends with `.json`.
 

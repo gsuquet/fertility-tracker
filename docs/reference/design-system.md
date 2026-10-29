@@ -4,7 +4,7 @@ This page gives the CSS layers, the design tokens, the brand, the fonts and the 
 
 ## CSS layers
 
-**Source files:** [src/context/ThemeContext.tsx](../../src/context/ThemeContext.tsx), [src/styles/index.css](../../src/styles/index.css).
+**Source file:** [src/styles/index.css](../../src/styles/index.css)
 
 The layer order is:
 
@@ -20,6 +20,8 @@ The layer order is:
 | `views/`      | `header.css`, `cycle-picker.css`, `mobile-nav.css`, `today.css`, `chart.css`, `calendar.css`, `analytics.css`, `drawer.css`, `modals.css`, `footer.css` and `print.css`.                                           |
 | `utilities/`  | `utilities.css`: layout and text helpers, for example `.flex-center` and `.sr-only`.                                                                                                                               |
 
+The `.modal-dialog` rule in `primitives/dialogs.css` removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
+
 ## Scales
 
 | Scale   | Values                                                                                                                                                                                                                                              |
@@ -29,10 +31,11 @@ The layer order is:
 | Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
 | Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                                                                              |
 
-## Themes and dialogs
+## Themes
+
+**Source file:** [src/context/ThemeContext.tsx](../../src/context/ThemeContext.tsx)
 
 - `ThemeContext` sets `data-theme` on the `html` element. The first theme comes from `localStorage`, else from `prefers-color-scheme`.
-- The `.modal-dialog` rule removes the browser styles of the native `<dialog>`: margin, border, padding, size limits and `::backdrop`.
 
 ## Brand
 

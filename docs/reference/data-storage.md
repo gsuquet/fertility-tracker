@@ -26,11 +26,11 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_OBSERVATIONS_KEY`          | `fertility_care_observations`             | All observations                                                                                                    |
 | `STORAGE_RECOVERY_KEY`              | `fertility_care_observations_recovery`    | Copy of saved data that is not readable                                                                             |
 | `STORAGE_UNDO_KEY`                  | `fertility_care_observations_undo`        | Copy before the last replacing change                                                                               |
-| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup                                                                                        |
-| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder                                                                                   |
-| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze                                                                                     |
-| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language                                                                                                            |
-| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme                                                                                                               |
+| `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup, `YYYY-MM-DD`                                                                          |
+| `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder, `YYYY-MM-DD`                                                                     |
+| `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze, `YYYY-MM-DD`                                                                       |
+| `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                              |
+| `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                            |
 | `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | Last entry mode of the Today page                                                                                   |
 | `LAST_SEEN_VERSION_KEY`             | `fertility_tracker_last_seen_version`     | Last version that the user opened                                                                                   |
 | `STORAGE_HAS_SEEN_WELCOME_KEY`      | `fertility_tracker_has_seen_welcome`      | The user closed the welcome guide                                                                                   |
