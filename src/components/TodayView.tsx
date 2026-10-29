@@ -23,6 +23,7 @@ import { useTopDialog } from './Modal';
 import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { useToast } from '../hooks/useToast';
+import { PageTitle } from './shell/TopBar';
 import { Check, CheckCircle2 } from 'lucide-react';
 
 export const TodayView: React.FC = () => {
@@ -158,6 +159,7 @@ export const TodayView: React.FC = () => {
       ref={swipePageRef}
       {...swipeHandlers}
     >
+      <PageTitle title={t.tabs.today} />
       {/* Toast Notification */}
       {toastMessage && (
         <div className="today-toast" role="status" aria-live="polite">

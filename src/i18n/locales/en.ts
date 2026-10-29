@@ -597,7 +597,8 @@ export const en = {
     legalTitle: 'Legal & Trademark Information',
     medicalTitle: 'Medical Disclaimer',
     copyright: '© {year} Fertility Tracker • Open Source Software',
-    userGuide: 'User Guide',
+    shortCopyright: '© {year} Fertility Tracker',
+    legal: 'Legal',
   },
   appBadge: {
     title: 'App icon badge',

@@ -1,4 +1,5 @@
 import type React from 'react';
+import { PageTitle } from './shell/TopBar';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
@@ -32,6 +33,7 @@ export const CycleAnalyticsView: React.FC = () => {
         role="tabpanel"
         aria-labelledby="tab-analytics"
       >
+        <PageTitle title={t.tabs.analytics} phoneTitle={t.mobileTabs.analytics} />
         <Activity size={48} className="icon-muted" />
         <h3>{t.analytics.emptyTitle}</h3>
         <p>{t.analytics.emptyText}</p>
@@ -76,6 +78,7 @@ export const CycleAnalyticsView: React.FC = () => {
       role="tabpanel"
       aria-labelledby="tab-analytics"
     >
+      <PageTitle title={t.tabs.analytics} phoneTitle={t.mobileTabs.analytics} />
       {/* Interactive MCS Explanation Guide Card */}
       <div className="analytics-card mcs-guide-card full-width">
         <button

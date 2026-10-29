@@ -56,13 +56,10 @@ describe('App install offer', () => {
     saveObservations(3);
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: en.install.headerLabel }));
-    fireEvent.click(
-      within(screen.getByRole('contentinfo')).getByRole('button', { name: en.install.menuEntry })
-    );
     fireEvent.click(within(openMenu()).getByText(en.install.menuEntry));
     expect(screen.queryByRole('dialog', { name: en.menu.mobileMenuLabel })).toBeNull();
     fireEvent.click(screen.getByRole('button', { name: en.install.bannerInstall }));
-    expect(install.promptInstall).toHaveBeenCalledTimes(4);
+    expect(install.promptInstall).toHaveBeenCalledTimes(3);
   });
 
   it('opens the install guide on iOS', async () => {

@@ -11,8 +11,9 @@
     background-color: var(--bg-primary);
   }
 
+  /* The footer line comes right under the last card (RFC 0002) */
   .main-content {
-    flex: 1;
+    flex: none;
     padding: 1.25rem 1.5rem;
     padding-left: max(1.5rem, env(safe-area-inset-left, 0px));
     padding-right: max(1.5rem, env(safe-area-inset-right, 0px));
@@ -23,6 +24,11 @@
   }
 
   @media (max-width: 640px) {
+    /* The body keeps space for the bottom bar, so a short page does not scroll */
+    .app-layout {
+      min-height: calc(100dvh - var(--mobile-nav-space) - var(--space-sm));
+    }
+
     .main-content {
       padding: 1rem 0.75rem;
       padding-left: max(0.75rem, env(safe-area-inset-left, 0px));

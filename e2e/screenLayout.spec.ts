@@ -54,6 +54,8 @@ const openTab = async (page: Page, size: Size, tab: Tab) => {
     await page.getByRole('tab', { name: en.tabs[tab] }).click();
   }
   await expect(page.getByRole('tabpanel', { name: en.tabs[tab] })).toBeVisible();
+  // The screenshot waits for the end of the page slide
+  await page.waitForFunction(() => !document.documentElement.dataset.pageTransition);
 };
 
 /** Waits for the end of the slide of a dialog or a sheet. */
@@ -98,32 +100,29 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
     return settled(page.getByRole('dialog'));
   },
   'version-dialog': async page => {
-    await page
-      .getByRole('contentinfo')
-      .getByRole('button', { name: en.versionTracker.title })
-      .click();
-    const dialog = await settled(page.getByRole('dialog', { name: en.versionTracker.title }));
-    // The release notes change at each release, so the snapshot shows the other tab
-    await dialog.getByRole('tab', { name: en.versionTracker.tabSystemInfo }).click();
-    return dialog;
+    // Legal opens the system tab. The release notes change at each release.
+    await page.getByRole('contentinfo').getByRole('button', { name: en.footer.legal }).click();
+    return settled(page.getByRole('dialog', { name: en.versionTracker.title }));
   },
   'error-screen': async page => {
     // The chunk of the version dialog does not load, so its error boundary shows the alert
     // The idle preload can load the chunk before the route, so the page loads again
     await page.route('**/assets/VersionModal-*.js', route => route.abort());
     await page.reload();
-    await page
-      .getByRole('contentinfo')
-      .getByRole('button', { name: en.versionTracker.title })
-      .click();
+    await page.getByRole('contentinfo').getByRole('button', { name: en.footer.legal }).click();
     return settled(page.getByRole('dialog', { name: en.errorBoundary.title }));
   },
-  'welcome-guide': async page => {
-    await page
-      .getByRole('contentinfo')
-      .getByRole('button', { name: en.welcomeModal.title })
-      .click();
-    return settled(page.getByRole('dialog'));
+  'welcome-guide': async (page, size) => {
+    if (size === 'phone') {
+      await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
+      await page
+        .getByRole('dialog', { name: en.menu.mobileMenuLabel })
+        .getByRole('button', { name: new RegExp(escapeRegExp(en.welcomeModal.title)) })
+        .click();
+    } else {
+      await page.getByRole('banner').getByRole('button', { name: en.welcomeModal.title }).click();
+    }
+    return settled(page.getByRole('dialog', { name: en.welcomeModal.title }));
   },
 };
 

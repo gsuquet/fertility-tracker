@@ -494,8 +494,9 @@
   }
 
   @media (max-width: 900px) {
+    /* minmax(0, 1fr): a wide card, such as the recent days, does not widen the page */
     .today-main-grid {
-      grid-template-columns: 1fr;
+      grid-template-columns: minmax(0, 1fr);
     }
     .today-form-card {
       order: 1;

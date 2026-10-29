@@ -1,18 +1,18 @@
 - dialog "About & Version Tracker":
   - heading "About & Version Tracker" [level=2]
-  - text: /v\d+\.\d+\.\d+ CrMS Spec v1\.1\.0/
+  - text: /v1\.\d+\.\d+ CrMS Spec v1\.1\.0/
   - button "Close"
   - tablist:
     - tab "Release Notes"
     - tab "System Information" [selected]
   - heading "System Information" [level=4]
-  - text: /App Version v\d+\.\d+\.\d+ CrMS Specification v1\.1\.0 Build Date [A-Z][a-z]+ \d+, \d+ Environment production/
+  - text: /App Version v1\.\d+\.\d+ CrMS Specification v1\.1\.0 Build Date October \d+, \d+ Environment production/
   - heading "App icon badge" [level=4]
   - checkbox "Show a dot on the app icon when today has no observation"
   - text: Show a dot on the app icon when today has no observation
   - paragraph: Works in the installed app. The dot changes only while the app is open. If you do not open the app on a day, the icon keeps the last state.
   - heading "Local Storage Footprint" [level=4]
-  - text: /Total Storage Keys \d+ Cycles Tracked 2 Observations Logged \d+ Local Storage Footprint \d+\.\d+ KB Open Source Privacy-First Software/
+  - text: /Total Storage Keys 4 Cycles Tracked 2 Observations Logged \d+ Local Storage Footprint \d+\.\d+ KB Open Source Privacy-First Software/
   - link "GitHub Repository":
     - /url: https://github.com/gsuquet/fertility-tracker
   - region "Legal and Trademark Disclaimers":

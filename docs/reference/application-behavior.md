@@ -79,7 +79,7 @@ The application offers installation one time, after it has some data. It never a
 | `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). Chrome, Firefox, Edge, Opera and Google on iOS (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`) give `null`. The in-app browsers of Facebook, Instagram and LINE also give `null`. The guide gives the steps of Safari only. | Opens the guide **Install on iPhone**.                                             |
 | `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                                                        | Nothing. No button shows.                                                          |
 - The application is installed when a display mode of [Installed application and touch](#installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
-- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it. The footer has **Install app** on each screen width.
+- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it. From 641 to 1439 pixels, the footer has **Install app**.
 - The application does not record if the user installed it.
 
 The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
@@ -151,7 +151,7 @@ The first install has no controller. Thus, it activates at once and the applicat
   - Another handler already used the key (`event.defaultPrevented`).
   - The page of the shortcut is not open. For example, `←` does nothing on the chart page.
 - The **Keyboard shortcuts** dialog lists each shortcut with its translated action, and then **Ctrl+S** and **⌘S**. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
-- These open the dialog: `?`, and the **Keyboard shortcuts** button of the footer, of the phone menu and of the **About & Version Tracker** dialog. The installed app has no footer, so the **About** dialog has the button too. When the shortcuts are off, `?` does nothing, and the buttons stay.
+- These open the dialog: `?`, and the **Keyboard shortcuts** button of the phone menu and of the **About & Version Tracker** dialog. When the shortcuts are off, `?` does nothing, and the buttons stay.
 - These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
 ## Page slide

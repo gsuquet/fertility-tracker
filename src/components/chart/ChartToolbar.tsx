@@ -3,6 +3,7 @@ import { BarChart3, Info } from 'lucide-react';
 import type { TranslationSchema } from '../../i18n';
 import type { MenuEntry } from '../MenuButton';
 import { MenuButton } from '../MenuButton';
+import { InTopBar } from '../shell/TopBar';
 
 export type ChartViewMode = '35-day' | 'compact';
 
@@ -23,7 +24,7 @@ interface ChartToolbarProps {
 
 /**
  * The one row of chart controls: **35-day** or **Strip**, and the ⋮ menu with **Phase bar** and
- * **Legend**. The page heading is for screen readers only.
+ * **Legend**. On a phone, the row is in the top bar.
  */
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   t,
@@ -50,25 +51,26 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   });
 
   return (
-    <div className="chart-strip-toolbar">
-      <h2 className="sr-only">{t.tabs.chart}</h2>
-      {controls && (
-        <fieldset className="chart-view-toggle">
-          <legend className="sr-only">{t.chartStrip.viewLabel}</legend>
-          {(['35-day', 'compact'] as const).map(mode => (
-            <button
-              key={mode}
-              type="button"
-              aria-pressed={controls.viewMode === mode}
-              onClick={() => controls.onViewModeChange(mode)}
-            >
-              {mode === '35-day' ? t.chartStrip.view35 : t.chartStrip.viewStrip}
-            </button>
-          ))}
-        </fieldset>
-      )}
-      <span className="chart-toolbar-spacer" />
-      <MenuButton label={t.chartStrip.optionsLabel} entries={entries} />
-    </div>
+    <InTopBar>
+      <div className="chart-strip-toolbar">
+        {controls && (
+          <fieldset className="chart-view-toggle">
+            <legend className="sr-only">{t.chartStrip.viewLabel}</legend>
+            {(['35-day', 'compact'] as const).map(mode => (
+              <button
+                key={mode}
+                type="button"
+                aria-pressed={controls.viewMode === mode}
+                onClick={() => controls.onViewModeChange(mode)}
+              >
+                {mode === '35-day' ? t.chartStrip.view35 : t.chartStrip.viewStrip}
+              </button>
+            ))}
+          </fieldset>
+        )}
+        <span className="chart-toolbar-spacer" />
+        <MenuButton label={t.chartStrip.optionsLabel} entries={entries} />
+      </div>
+    </InTopBar>
   );
 };

@@ -199,7 +199,15 @@ describe('Header', () => {
     const media = vi.mocked(window.matchMedia);
     const original = media.getMockImplementation();
     // A phone that prefers reduced motion: the sheet closes at the release
-    media.mockImplementation(query => ({ matches: true, media: query }) as MediaQueryList);
+    media.mockImplementation(
+      query =>
+        ({
+          matches: true,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
+    );
     // jsdom has no pointer capture
     const nativeCapture = Element.prototype.setPointerCapture;
     Element.prototype.setPointerCapture = vi.fn();

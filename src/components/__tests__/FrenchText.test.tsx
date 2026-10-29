@@ -175,13 +175,11 @@ describe('French text of the components', () => {
   });
 
   it('translates the footer', () => {
-    renderWithProviders(<Footer onOpenWelcome={() => {}} />, inFrench());
+    renderWithProviders(<Footer onOpenVersion={() => {}} onOpenLegal={() => {}} />, inFrench());
     expect(screen.getByRole('contentinfo', { name: fr.footer.label })).toBeInTheDocument();
-    expect(screen.getByText(fr.footer.legalTitle)).toBeInTheDocument();
-    expect(screen.getByText(fr.footer.medicalTitle)).toBeInTheDocument();
-    expect(screen.getByText(fr.footer.userGuide)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.footer.legal })).toBeInTheDocument();
     expect(
-      screen.getByText(formatMessage(fr.footer.copyright, { year: 2026 }))
+      screen.getByText(formatMessage(fr.footer.shortCopyright, { year: 2026 }))
     ).toBeInTheDocument();
   });
 

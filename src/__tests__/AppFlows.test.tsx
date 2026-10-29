@@ -83,15 +83,24 @@ describe('App flows', () => {
     expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
   });
 
-  it('opens the guide and the version notes from the footer', async () => {
+  it('opens the legal notice and the version notes from the footer', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);
-    fireEvent.click(within(footer()).getByRole('button', { name: en.welcomeModal.title }));
-    expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
-    fireEvent.keyDown(document.activeElement as HTMLElement, { key: 'Escape' });
+    // The footer is outside main
+    expect(screen.getByRole('main')).not.toContainElement(footer());
+    fireEvent.click(within(footer()).getByRole('button', { name: en.footer.legal }));
+    const about = await screen.findByRole('dialog', { name: en.versionTracker.title });
+    expect(
+      within(about).getByRole('tab', { name: en.versionTracker.tabSystemInfo })
+    ).toHaveAttribute('aria-selected', 'true');
+    expect(within(about).getByText(en.footer.medicalTitle)).toBeInTheDocument();
+    fireEvent.keyDown(about, { key: 'Escape' });
 
-    fireEvent.click(within(footer()).getByRole('button', { name: en.versionTracker.title }));
+    fireEvent.click(within(footer()).getByRole('button', { name: /^v\d+\.\d+\.\d+$/ }));
     const notes = await screen.findByRole('dialog', { name: en.versionTracker.title });
+    expect(
+      within(notes).getByRole('tab', { name: en.versionTracker.tabReleaseNotes })
+    ).toHaveAttribute('aria-selected', 'true');
     fireEvent.click(
       within(notes).getAllByRole('button', { name: en.versionTracker.close })[0] as HTMLElement
     );
@@ -102,7 +111,7 @@ describe('App flows', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);
     const openNotes = () => {
-      fireEvent.click(within(footer()).getByRole('button', { name: en.versionTracker.title }));
+      fireEvent.click(within(footer()).getByRole('button', { name: /^v\d+\.\d+\.\d+$/ }));
       return screen.findByRole('dialog', { name: en.versionTracker.title });
     };
     let notes = await openNotes();
@@ -116,7 +125,9 @@ describe('App flows', () => {
     fireEvent.keyDown(notes, { key: 'Escape' });
 
     const openGuide = () => {
-      fireEvent.click(within(footer()).getByRole('button', { name: en.welcomeModal.title }));
+      fireEvent.click(
+        within(screen.getByRole('banner')).getByRole('button', { name: en.welcomeModal.title })
+      );
       return screen.findByRole('dialog', { name: en.welcomeModal.title });
     };
     let guide = await openGuide();

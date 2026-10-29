@@ -58,7 +58,7 @@ On a computer, one key starts an action. A shortcut does nothing while a dialog 
 | `?`             | Opens the **Keyboard shortcuts** dialog.                   |
 | `Ctrl+S` `⌘S`   | Saves the observation form. It also works in a field.      |
 
-To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. The footer, the phone menu and the **About & Version Tracker** dialog open it too.
+To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. The phone menu and the **About & Version Tracker** dialog open it too.
 
 ## Observation form
 
@@ -134,7 +134,7 @@ The notice shows above the pages when the application cannot read the saved obse
 | --------------------------- | --------------------------------------------------------------------- |
 | Welcome guide               | At the first visit, and from the header.                              |
 | **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
-| **About & Version Tracker** | From the header.                                                      |
+| **About & Version Tracker** | From the header, and from **Legal** and the version in the footer.    |
 
 All the dialogs, the observation drawer, the mobile menu and the cycle menu use the same keyboard rules:
 
@@ -164,7 +164,7 @@ Touch and hold the app icon (or right-click it on a computer) to see the shortcu
 
 ### Install the application
 
-When the browser can install the application, the phone menu has **Install app**. The footer also has **Install app**. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
+When the browser can install the application, the phone menu has **Install app**. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
 
 | Browser                                                     | **Install** does                                                                                                 |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |

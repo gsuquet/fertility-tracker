@@ -4,6 +4,8 @@ import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
 import { CyclePicker } from './CyclePicker';
+import { PHONE_QUERY } from './shell/TopBar';
+import { useMediaQuery } from '../hooks/useMediaQuery';
 import { BrandMark } from './icons/BrandMark';
 import type { ActiveTab } from '../types/crms';
 import {
@@ -41,6 +43,8 @@ interface HeaderProps {
   onOpenShortcuts: () => void;
   /** Installs the app. Not given when the app is installed or the browser cannot install it. */
   onInstall?: (() => void) | undefined;
+  /** Receives the element of the top bar that holds the page controls on a phone */
+  onTopBarSlot?: ((slot: HTMLDivElement | null) => void) | undefined;
 }
 
 export const Header: React.FC<HeaderProps> = ({
@@ -51,12 +55,14 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenWelcome,
   onOpenShortcuts,
   onInstall,
+  onTopBarSlot,
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { setSelectedObservation } = useCycle();
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const hint = useShortcutHint();
+  const pickerFirst = useMediaQuery(PHONE_QUERY) && activeTab === 'chart';
   const hapticsOn = useHapticsEnabled();
   // On a phone, a drag down closes the menu as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(
@@ -73,7 +79,7 @@ export const Header: React.FC<HeaderProps> = ({
   const currentVersion = getAppVersion();
 
   return (
-    <header className="app-header">
+    <header className={`app-header page-${activeTab}`}>
       <button
         type="button"
         className="header-brand-btn"
@@ -85,10 +91,18 @@ export const Header: React.FC<HeaderProps> = ({
           <BrandMark />
         </div>
         <div className="brand-text">
-          <h1 className="brand-title">{t.appTitle}</h1>
+          {/* Each page has its own h1 */}
+          <span className="brand-title">{t.appTitle}</span>
           <span className="brand-subtitle">{t.subtitle}</span>
         </div>
       </button>
+
+      {/* On the phone Chart, the cycle picker comes first, in the DOM too, so the focus order and
+          the reading order are the visual order */}
+      {pickerFirst && <CyclePicker />}
+
+      {/* Phone: the date of Today, the chart controls or the page title */}
+      <div className="header-page-slot" ref={onTopBarSlot} />
 
       <div className="header-tabs" role="tablist" aria-label={t.menu.mainNavLabel}>
         <button
@@ -147,7 +161,7 @@ export const Header: React.FC<HeaderProps> = ({
 
       <div className="header-controls">
         {/* Cycle Switcher Dropdown */}
-        <CyclePicker />
+        {!pickerFirst && <CyclePicker />}
 
         {/* Desktop Direct New Entry */}
         <button

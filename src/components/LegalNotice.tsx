@@ -3,7 +3,7 @@ import { ShieldAlert, Info } from 'lucide-react';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
 
-/** The trademark and medical texts. The footer and the version dialog show them. */
+/** The trademark and medical texts. The welcome guide and the version dialog show them. */
 export const LegalDisclaimers: React.FC = () => {
   const { t } = useLanguage();
   return (

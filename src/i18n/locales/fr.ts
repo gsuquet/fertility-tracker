@@ -602,7 +602,8 @@ export const fr: TranslationSchema = {
     legalTitle: 'Informations légales et marques déposées',
     medicalTitle: 'Avertissement médical',
     copyright: '© {year} Fertility Tracker • Logiciel libre',
-    userGuide: 'Guide d’utilisation',
+    shortCopyright: '© {year} Fertility Tracker',
+    legal: 'Mentions légales',
   },
   appBadge: {
     title: 'Pastille sur l’icône',

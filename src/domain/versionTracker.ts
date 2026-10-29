@@ -44,6 +44,32 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.37.0',
+    date: '2026-10-29',
+    title: 'Clearer Bars on the Phone',
+    titleFr: 'Des barres plus claires sur le téléphone',
+    tagline: 'The top bar holds the controls of each page, and the footer is one line',
+    taglineFr:
+      'La barre du haut porte les commandes de chaque page, et le pied de page tient sur une ligne',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'On a phone, the top bar shows the date and the day buttons of Today, the chart controls, or the page title',
+      'The top bar and the bottom bar are opaque, so the page does not show through them',
+      'The bottom bar tells a screen reader which page is open, and its + button is larger',
+      'The footer is one line: Legal opens the full legal and medical notice',
+      'The welcome guide shows the legal and medical notice on its first slide',
+      'Each page has one main heading for screen readers',
+    ],
+    highlightsFr: [
+      'Sur un téléphone, la barre du haut montre la date et les boutons des jours d’Aujourd’hui, les commandes du graphique ou le titre de la page',
+      'La barre du haut et la barre du bas sont opaques : la page ne se voit plus au travers',
+      'La barre du bas indique au lecteur d’écran la page ouverte, et son bouton + est plus grand',
+      'Le pied de page tient sur une ligne : Mentions légales ouvre l’avis juridique et médical complet',
+      'Le guide de bienvenue montre l’avis juridique et médical sur sa première diapositive',
+      'Chaque page a un titre principal pour les lecteurs d’écran',
+    ],
+  },
+  {
     version: '1.36.0',
     date: '2026-10-29',
     title: 'A Wider Chart on the Desktop',

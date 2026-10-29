@@ -4,6 +4,7 @@ import { useShortcutHint } from '../../hooks/useKeyboardShortcuts';
 import type { Observation } from '../../types/crms';
 import { formatMessage } from '../../i18n';
 import { formatDateDisplay, getDaysDifference, getTodayStr } from '../../utils/dateUtils';
+import { InTopBar, useInTopBar } from '../shell/TopBar';
 import {
   Calendar as CalendarIcon,
   ChevronLeft,
@@ -52,7 +53,13 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
     }
   };
 
-  const formattedDateTitle = formatDateDisplay(selectedDate, t.locale);
+  // The top bar of a phone has the short date, for example "Tue, Oct 27"
+  const inTopBar = !!useInTopBar();
+  const formattedDateTitle = formatDateDisplay(
+    selectedDate,
+    t.locale,
+    inTopBar ? { weekday: 'short', month: 'short', day: 'numeric' } : undefined
+  );
   const shownCycleDay = currentObs?.cycleDay ?? cycleDay;
 
   /** "Yesterday", "3 days ago", "Tomorrow" or "In 2 days" for a day that is not today. */
@@ -67,44 +74,46 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
 
   return (
     <div className="today-header-card compact-date-bar">
-      <div className="compact-date-nav-controls">
-        <button
-          type="button"
-          className="icon-button date-nav-btn compact-nav-btn"
-          onClick={onPrevDay}
-          {...hint(t.todayView.prevDay, 'prevDay')}
-          aria-label={t.todayView.prevDay}
-        >
-          <ChevronLeft size={18} />
-        </button>
+      <InTopBar>
+        <div className="compact-date-nav-controls">
+          <button
+            type="button"
+            className="icon-button date-nav-btn compact-nav-btn"
+            onClick={onPrevDay}
+            {...hint(t.todayView.prevDay, 'prevDay')}
+            aria-label={t.todayView.prevDay}
+          >
+            <ChevronLeft size={18} />
+          </button>
 
-        <label className="today-picker-wrapper compact-picker-inline">
-          <CalendarIcon size={15} className="date-picker-icon" />
-          <span className="today-formatted-date-text">{formattedDateTitle}</span>
-          <input
-            type="date"
-            onClick={e => handleOpenPicker(e.currentTarget)}
-            className="today-date-picker-input compact-picker-input"
-            value={selectedDate}
-            onChange={e => {
-              if (e.target.value) {
-                onDateChange(e.target.value);
-              }
-            }}
-            aria-label={t.labels.date}
-          />
-        </label>
+          <label className="today-picker-wrapper compact-picker-inline">
+            <CalendarIcon size={15} className="date-picker-icon" />
+            <span className="today-formatted-date-text">{formattedDateTitle}</span>
+            <input
+              type="date"
+              onClick={e => handleOpenPicker(e.currentTarget)}
+              className="today-date-picker-input compact-picker-input"
+              value={selectedDate}
+              onChange={e => {
+                if (e.target.value) {
+                  onDateChange(e.target.value);
+                }
+              }}
+              aria-label={t.labels.date}
+            />
+          </label>
 
-        <button
-          type="button"
-          className="icon-button date-nav-btn compact-nav-btn"
-          onClick={onNextDay}
-          {...hint(t.todayView.nextDay, 'nextDay')}
-          aria-label={t.todayView.nextDay}
-        >
-          <ChevronRight size={18} />
-        </button>
-      </div>
+          <button
+            type="button"
+            className="icon-button date-nav-btn compact-nav-btn"
+            onClick={onNextDay}
+            {...hint(t.todayView.nextDay, 'nextDay')}
+            aria-label={t.todayView.nextDay}
+          >
+            <ChevronRight size={18} />
+          </button>
+        </div>
+      </InTopBar>
 
       <div className="compact-badge-group">
         {isToday ? (

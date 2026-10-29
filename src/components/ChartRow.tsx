@@ -12,6 +12,7 @@ import { ChartLegend } from './chart/ChartLegend';
 import { ChartBlankGrid } from './chart/ChartBlankGrid';
 import { ChartCycleRow } from './chart/ChartCycleRow';
 import { ChartDayDetail } from './chart/ChartDayDetail';
+import { PageTitle } from './shell/TopBar';
 
 /** With more than this number of cycles, the past cycles of a desktop chart show their stamps only */
 const MANY_CYCLES = 4;
@@ -220,6 +221,7 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
         role="tabpanel"
         aria-labelledby="tab-chart"
       >
+        <PageTitle title={t.tabs.chart} />
         <ChartToolbar t={t} showLegend={showLegend} onToggleLegend={toggleLegend} />
         <ChartBlankGrid t={t} onOpenDay={openEmptyDay} />
         {legend}
@@ -289,6 +291,7 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
       ref={viewRef}
       onKeyDown={moveSelection}
     >
+      <PageTitle title={t.tabs.chart} />
       <ChartToolbar
         t={t}
         showLegend={showLegend}

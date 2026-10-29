@@ -103,14 +103,8 @@ describe('App keyboard shortcuts', () => {
     expect(tab(en.tabs.chart)).not.toHaveAttribute('aria-keyshortcuts');
   });
 
-  it('opens the shortcuts dialog from the footer and from the version dialog', async () => {
+  it('opens the shortcuts dialog from the version dialog', async () => {
     render(<App />);
-    fireEvent.click(
-      within(screen.getByRole('contentinfo')).getByRole('button', { name: en.shortcuts.title })
-    );
-    const dialog = await screen.findByRole('dialog', { name: en.shortcuts.title });
-    fireEvent.click(within(dialog).getAllByRole('button', { name: en.actions.close })[0]!);
-
     fireEvent.click(
       within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
     );
