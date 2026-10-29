@@ -7,6 +7,9 @@ import { useSyncExternalStore } from 'react';
  */
 export const SKIP_WAITING_MESSAGE = 'SKIP_WAITING';
 
+/** The page asks the browser to check for a new version at most once in this time. */
+export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
+
 /** The worker of the new version that the user can apply, or null. */
 let newWorker: ServiceWorker | null = null;
 /** True after Reload, so that the page reloads when the new worker takes control. */
@@ -49,6 +52,16 @@ const watchForUpdate = (registration: ServiceWorkerRegistration) => {
     worker?.addEventListener('statechange', () => {
       if (worker.state === 'installed' && hasController()) offerWorker(worker);
     });
+  });
+  // The browser checks for a new sw.js only when it loads the page. An installed app often comes
+  // back from the background without a load, so the page asks for the check, at most once a day.
+  // The load just checked, so the first check is a day later. Offline, the check fails.
+  let lastCheck = Date.now();
+  document.addEventListener('visibilitychange', () => {
+    if (document.visibilityState !== 'visible' || Date.now() - lastCheck < UPDATE_CHECK_INTERVAL_MS)
+      return;
+    lastCheck = Date.now();
+    registration.update().catch(() => undefined);
   });
   // Only the Reload of this window reloads it. When another window applies the update, this
   // window keeps its work and its message: its Reload then only reloads.
