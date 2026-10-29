@@ -1,0 +1,212 @@
+[
+  {
+    "file": "today-phone",
+    "title": "Today, phone",
+    "caption": "A saved dry day. The day status line shows Today, the cycle day and Saved. The groups are closed, so the form, the last 7 days and Save fit in one screen. Save reads Saved and is disabled until something changes.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-dark-phone",
+    "title": "Today, phone, dark theme",
+    "caption": "The same day in the dark theme. The status card uses the proposed --bg-hero token, so it follows the surface of the theme.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-menu-phone",
+    "title": "Today, phone, observation actions",
+    "caption": "The observation actions menu of the status card. Copy yesterday is an explicit action: the form never fills in the data of the day before. Delete is the last item, in red text, away from Save.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-group-open-phone",
+    "title": "Today, phone, a group open",
+    "caption": "A fertile day before the save (the mockup puts today on October 12, cycle day 13). The Mucus group is open: each chip shows the code over a short name, and the full name of the chosen code is under the chips. Only one group is open at a time. Peak Day is not shown yet, because the app finds it from the next days.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-empty-phone",
+    "title": "Today, phone, no observation",
+    "caption": "A day with no observation: a dashed stamp, the text No observation yet and no fertility text. The word Infertile never shows without a code. Save is disabled until something changes. A switch or a note alone also enables it.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-past-day-phone",
+    "title": "Today, phone, an earlier day",
+    "caption": "An earlier day, after three taps on Previous day. The day status line gives the distance to today, the cycle day and the saved state, and a Today button goes back to the date of today in one tap.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-keyboard-phone",
+    "title": "Today, phone, keyboard open",
+    "caption": "A person types a code. The stamp and the group rows change as they type. The Save bar hides while the keyboard is open, and the field has a Done button, so the keyboard, the Save bar and the navigation never stack.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-direct-code-phone",
+    "title": "Today, phone, Direct Code Only",
+    "caption": "Direct Code Only, an option of the observation actions menu, for a person who knows the codes. The code groups hide. The two switches and the notes stay, and the field shows how the app reads the code.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "chart-phone",
+    "title": "Chart, phone, all cycles",
+    "caption": "All cycles in the 35-day view. The chart controls are in the top bar, and each cycle has a one-line header. The rows share one scroll position, so cycle day 22 of cycle 2 is above cycle day 22 of cycle 1. The page opens on the column of today. The day cards are 44 × 116 px, with the date, the stamp, the code and the symptom mark. A card cut at the left edge shows that the row scrolls.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "chart-menu-phone",
+    "title": "Chart, phone, chart options",
+    "caption": "The chart options menu: the phase bar, the legend and Share chart.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "chart-peak-phone",
+    "title": "Chart, phone, one cycle at Peak Day",
+    "caption": "Cycle 2 alone, after a tap on P. The row moves to Peak Day: the white stamps with the baby, the P mark, the Post-Peak count 1, 2, 3 and the I marks. The legend is open under the row.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "chart-strip-phone",
+    "title": "Chart, phone, strip view",
+    "caption": "The Strip view shows only the cycle day and the stamp, so 10 days fit in a row. A tap on a day opens the observation sheet with the full code. The rows stay aligned by cycle day.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "chart-empty-phone",
+    "title": "Chart, phone, no data",
+    "caption": "The chart with no observation. One card gives the stamp legend and one button to record the observation of today. It tells the person where to load the demo cycles.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "observation-sheet-phone",
+    "title": "Observation sheet, phone",
+    "caption": "A tap on a day of the chart opens the observation sheet, with the same progressive form as Today. The header gives the date and the cycle day, the observation actions and Close. Here the person turned on I - Intercourse only, which enables Save. The red icon of the current footer is gone: Delete is in the observation actions.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "share-sheet-phone",
+    "title": "Share chart, phone",
+    "caption": "Share chart replaces the print part of the current export dialog. It holds only the print, PDF and PNG actions and the choice of cycles. Backup, restore, demo and delete go to Settings.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "cycle-picker-phone",
+    "title": "Cycle picker, phone",
+    "caption": "The cycle picker in the top bar opens this sheet on every page. The calendar follows the choice too: it tints the days of the chosen cycle.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "calendar-phone",
+    "title": "Calendar, phone",
+    "caption": "One month with cells of 48 × 80 px and 11 px codes. The I, P and 1, 2, 3 marks move from the stamp to a row under the code. The first day of a cycle has a red edge and its cycle number. The days of the chosen cycle are tinted, and all the days keep full contrast. The legal text is one line under the last card.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "analytics-phone",
+    "title": "Analytics, phone (full page)",
+    "caption": "The four tiles have full labels on two lines in a 2 × 2 grid, so no label is cut. Then come the phases, the trend, the stamps and the clinical summary. The trend uses 8 px bars, so 35 days fit in the card with no scroll. The summary does not repeat the numbers of the tiles. The explanation of the score is last and closed. This frame shows the full page.",
+    "size": "phone",
+    "long": true
+  },
+  {
+    "file": "settings-phone",
+    "title": "Settings, phone (full page)",
+    "caption": "Settings holds all the actions that are not a part of the daily work: install, language, theme, vibration, badge, shortcuts, backup and restore, help, about and the data actions. It opens from the gear in the top bar and Back closes it. Delete all data is the last row, in red text. This frame shows the full page.",
+    "size": "phone",
+    "long": true
+  },
+  {
+    "file": "settings-about-phone",
+    "title": "Settings, About, phone (full page)",
+    "caption": "Settings, About: the version, the release notes, the storage data and the full legal and medical notice. The footer of the browser keeps one line with a Legal link to this page.",
+    "size": "phone",
+    "long": true
+  },
+  {
+    "file": "welcome-phone",
+    "title": "Welcome guide, phone",
+    "caption": "The first slide of the welcome guide. Explore Demo Data is on the first slide too, not only on the last one. The guide also opens from Settings, Help.",
+    "size": "phone",
+    "long": false
+  },
+  {
+    "file": "today-desktop",
+    "title": "Today, desktop 1440 px",
+    "caption": "The form on the left (640 px) and its context on the right: the status of the day, the current cycle with today marked, and the last 7 days. The date control is in the top bar from 1360 px. No statistics bar and no empty column. Delete is in More, away from Save.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "today-laptop",
+    "title": "Today, laptop 1024 px",
+    "caption": "From 1024 to 1359 px the top bar has two rows: the tabs on the first row, the date control on the second. Thus the French labels fit and the page never scrolls to the side. The context column keeps the status and the last 7 days.",
+    "size": "laptop",
+    "long": false
+  },
+  {
+    "file": "chart-desktop",
+    "title": "Chart, desktop 1440 px",
+    "caption": "The chart controls are in the top bar. The columns are 44 px, so 28 days fit at 1440 px, and days 29 to 35 scroll. From 1600 px all 35 columns fit. A code breaks only between its tokens (10KLAD over AP). Cycles align by cycle day. The day detail bar under the rows replaces the dialog of a click on a day. The legend is on.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "chart-laptop",
+    "title": "Chart, laptop 1024 px",
+    "caption": "At 1024 px the chart controls go to the second row of the top bar. About 20 columns fit. The page opens on the column of today, and the two rows share the scroll position.",
+    "size": "laptop",
+    "long": false
+  },
+  {
+    "file": "observation-panel-desktop",
+    "title": "Observation panel, desktop 1440 px",
+    "caption": "From 1024 px the observation sheet is a 480 px panel on the right, so the chart stays visible. It has the focus rules of the current sheet. Escape and Back close it.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "share-desktop",
+    "title": "Share chart, desktop 1440 px",
+    "caption": "Share in the chart controls opens this dialog. It holds only the print, PDF and PNG actions and the choice of cycles.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "calendar-desktop",
+    "title": "Calendar, desktop 1440 px",
+    "caption": "The grid is 896 px wide with cells of 120 × 96 px. A click on a day fills the day panel on the right, the same panel as the day detail of the chart. The days of the chosen cycle are tinted.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "analytics-desktop",
+    "title": "Analytics, desktop 1440 px",
+    "caption": "The four tiles on one row. They are the only statistics bar of the app: the bar leaves Today, Chart and Calendar. Under the tiles, two columns of cards, and the closed explanation of the score at the end.",
+    "size": "desk",
+    "long": false
+  },
+  {
+    "file": "settings-desktop",
+    "title": "Settings, desktop 1440 px",
+    "caption": "On a desktop, Settings is a 560 px dialog with the same groups as the phone page. The list scrolls inside the dialog.",
+    "size": "desk",
+    "long": false
+  }
+]
