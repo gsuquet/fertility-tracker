@@ -538,21 +538,23 @@ function compactCard(cycle, cd) {
   return `<button class="${cls}" aria-label="Cycle day ${cd}"><span class="n">${cd}</span>${stamp(d, 's24')}</button>`;
 }
 
-function phaseBar(cycle) {
-  const last = cycle === 2 ? 28 : 28;
+/** The phase bar, in the four phases and colors of Analytics. With `from`, the desktop grid. */
+function phaseBar({ from = 1, to = 35, colw = 0 } = {}) {
   const spans = [];
-  for (let cd = 1; cd <= 35; cd++) {
+  for (let cd = from; cd <= to; cd++) {
     let c = 'ph-e';
-    if (cd <= last) {
+    if (cd <= 28) {
       if (cd <= 4) c = 'ph-m';
-      else if (cd >= 9 && cd <= 12) c = 'ph-f';
-      else if (cd === 13) c = 'ph-p';
-      else if (cd >= 14 && cd <= 16) c = 'ph-c';
+      else if (cd <= 13) c = 'ph-f';
+      else if (cd <= 16) c = 'ph-c';
       else c = 'ph-d';
     }
     spans.push(`<span class="${c}"></span>`);
   }
-  return `<div class="phasebar" aria-hidden="true">${spans.join('')}</div>`;
+  const grid = colw
+    ? ` style="display:grid;grid-template-columns:repeat(${to - from + 1},${colw}px);margin-bottom:6px"`
+    : '';
+  return `<div class="phasebar" aria-hidden="true"${grid}>${spans.join('')}</div>`;
 }
 
 const cycleLine = (cycle, extra = '') =>
@@ -573,8 +575,8 @@ function stripRow(cycle, from, to, { offset = 0, compact = false, selected = nul
 function chartPhoneBody() {
   return `${chartBar('All cycles', 'grid')}
 <main class="page">
-<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar(2)}<div style="overflow:hidden">${stripRow(2, 21, 28, { offset: 46 })}</div></section>
-<section class="card cyclecard" aria-label="Cycle 1">${cycleLine(1)}${phaseBar(1)}<div style="overflow:hidden">${stripRow(1, 21, 28, { offset: 46 })}</div></section>
+<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar()}<div style="overflow:hidden">${stripRow(2, 21, 28, { offset: 46 })}</div></section>
+<section class="card cyclecard" aria-label="Cycle 1">${cycleLine(1)}${phaseBar()}<div style="overflow:hidden">${stripRow(1, 21, 28, { offset: 46 })}</div></section>
 <div style="display:flex;gap:8px"><button class="btn ghost" style="flex:1">${icon('share', 's18')}Share chart</button><button class="btn ghost" style="flex:1">Legend</button></div>
 ${footline}
 </main>
@@ -606,7 +608,7 @@ page('chart-peak-phone', {
   size: 'phone',
   html: `${chartBar('Cycle 2', 'grid')}
 <main class="page">
-<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar(2)}<div style="overflow:hidden">${stripRow(2, 9, 17, { offset: 47 })}</div></section>
+<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar()}<div style="overflow:hidden">${stripRow(2, 9, 17, { offset: 47 })}</div></section>
 ${legendCard}
 <div style="display:flex;gap:8px"><button class="btn ghost" style="flex:1">${icon('share', 's18')}Share chart</button><button class="btn ghost" style="flex:1">Hide legend</button></div>
 ${footline}
@@ -621,8 +623,8 @@ page('chart-strip-phone', {
   size: 'phone',
   html: `${chartBar('All cycles', 'strip')}
 <main class="page">
-<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar(2)}<div style="overflow:hidden">${stripRow(2, 18, 28, { offset: 80, compact: true })}</div></section>
-<section class="card cyclecard" aria-label="Cycle 1">${cycleLine(1)}${phaseBar(1)}<div style="overflow:hidden">${stripRow(1, 18, 28, { offset: 80, compact: true })}</div></section>
+<section class="card cyclecard" aria-label="Cycle 2">${cycleLine(2)}${jumpRow}${phaseBar()}<div style="overflow:hidden">${stripRow(2, 18, 28, { offset: 80, compact: true })}</div></section>
+<section class="card cyclecard" aria-label="Cycle 1">${cycleLine(1)}${phaseBar()}<div style="overflow:hidden">${stripRow(1, 18, 28, { offset: 80, compact: true })}</div></section>
 <div style="display:flex;gap:8px"><button class="btn ghost" style="flex:1">${icon('share', 's18')}Share chart</button><button class="btn ghost" style="flex:1">Legend</button></div>
 ${footline}
 </main>
@@ -630,7 +632,7 @@ ${bottomNav('chart')}`,
 });
 
 const emptyCard = what =>
-  `<section class="card section"><h2 class="h2">No observations yet</h2><p class="sec small">Record the observation of today to start your ${what}. Each day gets a stamp:</p><div class="legend" style="padding:0">${legendItems}</div><button class="btn primary block">${icon('plus', 's18')}Record today</button><p class="small sec">To see an example ${what}, open <a href="#settings" style="color:var(--accent-primary)">Settings</a> and load the demo cycles.</p></section>`;
+  `<section class="card section"><h2 class="h2">No observations yet</h2><p class="sec small">Record the observation of today to start your ${what}. Each day gets a stamp:</p><div class="legend" style="padding:0">${legendItems}</div><button class="btn primary block">${icon('plus', 's18')}Record today</button><p class="small sec">To see an example, open <a href="#settings" style="color:var(--accent-primary)">Settings</a> and load the demo cycles.</p></section>`;
 
 page('chart-empty-phone', {
   title: 'Chart, phone, no data',
@@ -974,7 +976,7 @@ function deskCycle(
   const ctl = controls
     ? `<span class="spacer"></span><span class="cyclecontrols"><button class="jump">1</button><button class="jump">P</button><button class="jump">${icon('today', 's16')}</button><button class="jump">${icon('left', 's18')}</button><button class="jump">${icon('right', 's18')}</button></span>`
     : '';
-  return `<section class="card cyclecard" aria-label="Cycle ${cycle}" style="padding:12px 16px 16px">${cycleLine(cycle, cycle === 2 ? `·<span>Current</span>${ctl}` : '')}${phaseBar(cycle)}<div style="overflow:hidden"><div class="cols" style="grid-template-columns:repeat(${to - from + 1},${colw}px)">${cells.join('')}</div></div></section>`;
+  return `<section class="card cyclecard" aria-label="Cycle ${cycle}" style="padding:12px 16px 16px">${cycleLine(cycle, cycle === 2 ? `·<span>Current</span>${ctl}` : '')}<div style="overflow:hidden">${phaseBar({ from, to: cycle === 1 ? Math.min(to, 28) : to, colw })}<div class="cols" style="grid-template-columns:repeat(${to - from + 1},${colw}px)">${cells.join('')}</div></div></section>`;
 }
 
 const detailBar = (date, extra = '') => {

@@ -142,18 +142,18 @@ The sheet keeps its handle, its drag to close and its focus rules. It uses the p
 
 ### Chart
 
-| Part         | Rules                                                                                                                                                                |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controls     | Phone: the cycle picker, **35-day** and **Strip**, and a menu with **Phase bar**, **Legend** and **Share chart**. Desktop: the same controls as buttons.             |
-| Cycle line   | One line: the cycle, the dates, the length and the Peak Day. Then the jump buttons (Day 1, P, Today) and the scroll arrows, each 36 px.                              |
-| Day card     | 44 × 116 px. It shows the cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code and the symptom mark.                                     |
-| Long code    | A code breaks only between its tokens, for example `10KLAD` over `AP`. A token wider than the card is cut with an ellipsis. The full code is in the accessible name. |
-| All Cycles   | All the rows share one scroll position, so the same cycle day is in the same column. The page opens on the column of today.                                          |
-| Strip view   | Cards of 34 × 62 px with the cycle day and the stamp only. About nine days fit on a phone.                                                                           |
-| Phase bar    | One bar for the full cycle (35 days) under the cycle line. It does not scroll with the cards. The chart options menu turns it on or off.                             |
-| Desktop cell | 44 px wide and 118 px high, with the same content as the phone card. A code can use two lines.                                                                       |
-| Many cycles  | Desktop: when more than 4 cycles show, each past cycle shows only its stamp row. A click opens the full row.                                                         |
-| Day detail   | Desktop only. A bar under the rows shows the selected day, with **Edit** and **Open in Today**. It replaces the dialog of a click on a day.                          |
+| Part         | Rules                                                                                                                                                                           |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Controls     | Phone: the cycle picker, **35-day** and **Strip**, and a menu with **Phase bar**, **Legend** and **Share chart**. Desktop: the same controls as buttons.                        |
+| Cycle line   | One line: the cycle, the dates, the length and the Peak Day. Then the jump buttons (Day 1, P, Today) and the scroll arrows, each 36 px.                                         |
+| Day card     | 44 × 116 px. It shows the cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code and the symptom mark.                                                |
+| Long code    | A code breaks only between its tokens, for example `10KLAD` over `AP`. A token wider than the card is cut with an ellipsis. The full code is in the accessible name.            |
+| All Cycles   | All the rows share one scroll position, so the same cycle day is in the same column. The page opens on the column of today.                                                     |
+| Strip view   | Cards of 34 × 62 px with the cycle day and the stamp only. About nine days fit on a phone.                                                                                      |
+| Phase bar    | The four phases of Analytics, in the same colors. Phone: one bar for the full cycle, which does not scroll. Desktop: one segment above each column, which scrolls with the row. |
+| Desktop cell | 44 px wide and 118 px high, with the same content as the phone card. A code can use two lines.                                                                                  |
+| Many cycles  | Desktop: when more than 4 cycles show, each past cycle shows only its stamp row. A click opens the full row.                                                                    |
+| Day detail   | Desktop only. A bar under the rows shows the selected day, with **Edit** and **Open in Today**. It replaces the dialog of a click on a day.                                     |
 
 | Condition                          | Result                                                |
 | ---------------------------------- | ----------------------------------------------------- |

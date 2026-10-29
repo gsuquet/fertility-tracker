@@ -1135,11 +1135,7 @@ svg.i.s18 {
 }
 
 .ph-f {
-  background: var(--stamp-white-border);
-}
-
-.ph-p {
-  background: var(--color-peak);
+  background: var(--color-info);
 }
 
 .ph-c {
@@ -2067,6 +2063,12 @@ svg.i.s18 {
 .desk .footline,
 .laptop .footline,
 .desk .caption-text,
-.laptop .caption-text {
+.laptop .caption-text,
+.desk .mini35 .mc,
+.laptop .mini35 .mc,
+.desk .calgrid .wd,
+.desk .trendx,
+.desk .badge-current,
+.laptop .badge-current {
   font-size: var(--font-size-xs);
 }
