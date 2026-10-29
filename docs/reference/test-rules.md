@@ -11,7 +11,7 @@ The project uses test-driven development (TDD). Write a test that fails before e
 | Write the test before the code.                                                                                        | Review                          |
 | Keep 100% coverage for statements, branches, functions and lines.                                                      | `vite.config.ts` thresholds, CI |
 | Do not add coverage ignore comments.                                                                                   | Review                          |
-| Remove code that no test can reach.                                                                                    | Coverage report                 |
+| Remove code that no test can reach, for example guards for values that the types do not permit.                        | Coverage report                 |
 | Find elements by role and accessible name, not by CSS class.                                                           | Review                          |
 | Get the expected text from the locale files, for example `en.actions.save`.                                            | Review                          |
 | Do not write user-visible text in a `.tsx` file. Put it in the locale files.                                           | `noHardcodedText.test.ts`       |
@@ -68,7 +68,7 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | Browser             | Chromium                                                                                    |
 | Application         | The production build: `vite build`, then `vite preview` on port `4173`.                     |
 | Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.        |
-| Type check          | `e2e/tsconfig.json`.`npm run typecheck` checks it.                                          |
+| Type check          | `npm run typecheck` checks the files with `e2e/tsconfig.json`.                              |
 | Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`, on each page and on the export dialog. |
 | Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed.      |
 | Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                          |

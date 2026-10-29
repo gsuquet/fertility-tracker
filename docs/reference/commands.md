@@ -72,7 +72,7 @@ The workflow `.github/workflows/ci.yml` runs on each pull request to `main`. It 
 6. Runs the tests with coverage (`npm run test:coverage`).
 7. Builds the application (`vite build`).
 
-The job `e2e` runs at the same time, on pull requests only.
+The job `e2e` runs at the same time. It does these steps:
 
 1. Installs the pinned tools with mise.
 2. Installs the dependencies with `npm ci`.
