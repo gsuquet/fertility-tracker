@@ -28,7 +28,8 @@ The project uses ARIA snapshots and screenshots, not text frames. A test compare
 These rules apply:
 
 - The screen page of each page and each dialog has an ARIA snapshot for a phone screen and one for a wide screen. The phone screen is 390 by 844 pixels. The wide screen is 1440 by 900 pixels.
-- The navigation and the statistics bar are parts of each page. Their layout is in the snapshots of the pages. The error screen has no snapshot, because the test cannot make a part fail.
+- The navigation and the statistics bar are parts of each page. Their layout is in the snapshots of the pages.
+- The snapshot of the error screen shows its dialog mode. The test stops the load of the chunk of the version dialog, then opens the dialog.
 - An end-to-end test opens each screen with the demo data and compares its accessibility tree with the snapshot, with `toMatchAriaSnapshot`. The snapshot files are in `docs/reference/screens/snapshots/`.
 - The command `mise run screenshots` also makes a screenshot of each screen in the two sizes, with the demo data. The screenshots are in `docs/reference/screens/images/`.
 - The **Layout** section of a screen page shows the two screenshots and links to the two snapshots. The page has no **Zones** section.
