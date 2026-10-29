@@ -21,7 +21,7 @@
       - listitem:
         - switch "App icon badge": App icon badge Show a dot on the app icon when today has no observation
       - listitem:
-        - switch "Keyboard shortcuts" [checked]
+        - switch "Use keyboard shortcuts" [checked]
   - region "Backup and restore":
     - heading "Backup and restore" [level=3]
     - list:

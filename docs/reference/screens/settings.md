@@ -29,7 +29,7 @@ Settings has these groups, in this sequence:
 | Group                    | Rows                                                                                                                            |
 | ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
 | Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                |
-| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Keyboard shortcuts**.                                          |
+| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                      |
 | **Backup and restore**   | **Back up now** and **Restore from a file**. Under the group, a note says that the file is plain JSON and is not encrypted.     |
 | **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                   |
 | **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right) and **Legal and medical notice**.  |
@@ -44,7 +44,7 @@ Settings has these groups, in this sequence:
 | **Theme**                     | Two radio buttons: **Light** and **Dark**.                                                                                       |
 | **Vibration**                 | A switch. It shows only when the browser has the Vibration API ([Haptic feedback](../application-behavior.md#haptic-feedback)).  |
 | **App icon badge**            | A switch. It shows only when the browser has the Badging API ([App icon badge](../application-behavior.md#app-icon-badge)).      |
-| **Keyboard shortcuts**        | A switch. It turns all the single-key shortcuts on or off ([Keyboard shortcuts](../application-behavior.md#keyboard-shortcuts)). |
+| **Use keyboard shortcuts**    | A switch. It turns all the single-key shortcuts on or off ([Keyboard shortcuts](../application-behavior.md#keyboard-shortcuts)). |
 | **Back up now**               | Downloads `fertility-tracker-backup-YYYY-MM-DD.ftbackup` at once and records the backup date. Settings stays open.               |
 | **Restore from a file**       | Opens the file picker. Then it shows a preview and replaces or merges the observations with the file.                            |
 | **Welcome guide**             | Opens the welcome guide over Settings.                                                                                           |
@@ -101,7 +101,7 @@ Settings is a lazy chunk. The application imports it when the browser is idle, a
 - Settings is a dialog of the [dialog component](../dialog-component.md), with the name "Settings". The close button has the name "Close settings".
 - Each group is a `<section>` (role `region`) with an `h3` title, and its rows are a list.
 - **Theme** is a `<fieldset>` with the legend "Theme". **Light** and **Dark** are radio buttons.
-- **Vibration**, **App icon badge** and **Keyboard shortcuts** (in **Appearance and input**) are buttons with `role="switch"` and `aria-checked`.
+- **Vibration**, **App icon badge** and **Use keyboard shortcuts** are buttons with `role="switch"` and `aria-checked`.
 - The name of each row button is only its label (`aria-labelledby`). Its detail line, for example "Last backup: Oct 20, 2026" or "Release notes, storage", is its description (`aria-describedby`).
 - The detail of **App icon badge** is "Show a dot on the app icon when today has no observation". On Apple systems, the text about the permission for notifications follows it. While the system asks for the permission, the switch is disabled.
 - **Restore from a file** is a button that opens a hidden file input. Thus, the keyboard can reach it.

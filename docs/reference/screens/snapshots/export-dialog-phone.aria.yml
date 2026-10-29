@@ -1,7 +1,7 @@
 - dialog "Share chart":
   - heading "Share chart" [level=2]
-  - button "Close export dialog"
-  - paragraph: Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.
+  - button "Close Share chart"
+  - paragraph: Print your Creighton chart strip, or save it as a PDF, for your FertilityCare Practitioner or NaPro Doctor.
   - heading "PDF Export Scope" [level=3]
   - button "Single Cycle"
   - button "Multiple Cycles"

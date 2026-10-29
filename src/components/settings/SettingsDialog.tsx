@@ -178,6 +178,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [importError, setImportError] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
+  // Read once: a later change must not open the dialog again
+  const [focusRestore] = useState(startWithRestore);
   const s = t.settings;
 
   const hasData = observations.length > 0;
@@ -277,7 +279,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       onClose={onClose}
       className="modal-overlay settings-overlay"
       panelClassName="modal-container settings-dialog"
-      {...(startWithRestore ? { initialFocusRef: restoreButtonRef } : {})}
+      {...(focusRestore ? { initialFocusRef: restoreButtonRef } : {})}
     >
       <div className="modal-header settings-header">
         <button type="button" className="icon-button settings-close" onClick={onClose}>
@@ -296,7 +298,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
               <span className="settings-row-label">{t.install.menuEntry}</span>
               <span className="settings-row-detail">{t.install.menuHint}</span>
             </span>
-            <button type="button" className="btn btn-primary btn-sm" onClick={onInstall}>
+            <button type="button" className="btn btn-secondary btn-sm" onClick={onInstall}>
               {s.install}
             </button>
           </div>
@@ -357,7 +359,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           <AppBadgeSetting />
           <SwitchRow
             icon={iconOf(Keyboard)}
-            label={s.shortcuts}
+            label={t.shortcuts.enable}
             checked={shortcutsOn}
             onChange={setShortcutsEnabled}
           />
@@ -376,9 +378,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             onClick={() => fileInputRef.current?.click()}
             buttonRef={restoreButtonRef}
           />
-          {/* No accept filter: iOS greys out a file with an extension that it does not know */}
-          <input ref={fileInputRef} type="file" onChange={handleFileUpload} hidden />
         </Group>
+        {/* No accept filter: iOS greys out a file with an extension that it does not know */}
+        <input ref={fileInputRef} type="file" onChange={handleFileUpload} hidden />
         <p className="settings-note">{t.exportModal.jsonDescription}</p>
         {importError && (
           <p className="settings-alert" role="alert">

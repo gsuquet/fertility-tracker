@@ -179,7 +179,7 @@ describe('SettingsDialog', () => {
       Reflect.deleteProperty(navigator, 'vibrate');
     }
 
-    const shortcuts = screen.getByRole('switch', { name: en.settings.shortcuts });
+    const shortcuts = screen.getByRole('switch', { name: en.shortcuts.enable });
     expect(shortcuts).toHaveAttribute('aria-checked', 'true');
     fireEvent.click(shortcuts);
     expect(shortcuts).toHaveAttribute('aria-checked', 'false');

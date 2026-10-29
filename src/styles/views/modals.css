@@ -128,19 +128,6 @@
     transform: translateY(-1px);
   }
 
-  .import-restore-section {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 0.6rem;
-  }
-
-  .import-error {
-    margin: 0;
-    color: var(--color-danger);
-    font-size: var(--font-size-md);
-    font-weight: 600;
-  }
-
   /* Export Modal PDF Configurator Styles */
   .export-modal-enhanced {
     max-width: 580px;

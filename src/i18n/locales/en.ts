@@ -121,7 +121,6 @@ export const en = {
     themeLight: 'Light',
     themeDark: 'Dark',
     vibration: 'Vibration',
-    shortcuts: 'Keyboard shortcuts',
     backup: 'Backup and restore',
     backUpNow: 'Back up now',
     lastBackup: 'Last backup: {date}',
@@ -140,10 +139,6 @@ export const en = {
   actions: {
     newEntry: 'Log Observation',
     exportPdf: 'Practitioner PDF / PNG',
-    exportJson: 'Backup Data',
-    importJson: 'Restore Data',
-    clearData: 'Clear Data / Reset',
-    loadDemo: 'Load Demo Cycle',
     save: 'Save Observation',
     cancel: 'Cancel',
     close: 'Close',
@@ -312,7 +307,7 @@ export const en = {
   exportModal: {
     title: 'Share chart',
     description:
-      'Export your Creighton chart strip to PDF or PNG for your FertilityCare Practitioner or NaPro Doctor.',
+      'Print your Creighton chart strip, or save it as a PDF, for your FertilityCare Practitioner or NaPro Doctor.',
     printPdf: 'Print / Save as PDF',
     downloadPng: 'Download High-Res PNG',
     pdfExportMode: 'PDF Export Scope',
@@ -330,7 +325,7 @@ export const en = {
       'Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private.',
     importError:
       'This file is not a valid backup. Select a backup file from Fertility Tracker (.ftbackup or .json).',
-    close: 'Close export dialog',
+    close: 'Close Share chart',
   },
   confirmDialog: {
     demoTitle: 'Replace your data with the demo?',
@@ -625,7 +620,6 @@ export const en = {
   },
   shortcuts: {
     title: 'Keyboard shortcuts',
-    menuHint: 'Keys for the pages, the days and a new observation',
     keyColumn: 'Key',
     actionColumn: 'Action',
     enable: 'Use keyboard shortcuts',

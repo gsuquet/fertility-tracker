@@ -152,7 +152,7 @@ The first install has no controller. Thus, it activates at once and the applicat
   - The page of the shortcut is not open. For example, `←` does nothing on the chart page.
 - The **Keyboard shortcuts** dialog lists each shortcut with its translated action, and then **Ctrl+S** and **⌘S**. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
 - These open the dialog: `?`, **Keyboard shortcuts** in the **Help** group of Settings, and the **Keyboard shortcuts** button of the **About & Version Tracker** dialog. When the shortcuts are off, `?` does nothing, and the buttons stay.
-- The **Keyboard shortcuts** switch in the **Appearance and input** group of Settings changes the same choice as **Use keyboard shortcuts**.
+- The **Use keyboard shortcuts** switch in the **Appearance and input** group of Settings changes the same choice as **Use keyboard shortcuts**.
 - These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
 ## Page slide

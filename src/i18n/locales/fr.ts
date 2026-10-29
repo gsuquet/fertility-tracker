@@ -123,7 +123,6 @@ export const fr: TranslationSchema = {
     themeLight: 'Clair',
     themeDark: 'Sombre',
     vibration: 'Vibration',
-    shortcuts: 'Raccourcis clavier',
     backup: 'Sauvegarde et restauration',
     backUpNow: 'Sauvegarder maintenant',
     lastBackup: 'Dernière sauvegarde : {date}',
@@ -142,10 +141,6 @@ export const fr: TranslationSchema = {
   actions: {
     newEntry: 'Saisir une observation',
     exportPdf: 'Export Praticien PDF / PNG',
-    exportJson: 'Sauvegarder les données',
-    importJson: 'Restaurer les données',
-    clearData: 'Réinitialiser',
-    loadDemo: 'Charger Cycle Démo',
     save: 'Enregistrer',
     cancel: 'Annuler',
     close: 'Fermer',
@@ -314,7 +309,7 @@ export const fr: TranslationSchema = {
   exportModal: {
     title: 'Partager le graphique',
     description:
-      'Exportez votre graphique Creighton en PDF ou PNG pour votre instructeur FertilityCare ou médecin NaPro.',
+      'Imprimez votre graphique Creighton, ou enregistrez-le en PDF, pour votre instructeur FertilityCare ou médecin NaPro.',
     printPdf: 'Imprimer / Sauvegarder en PDF',
     downloadPng: 'Télécharger en PNG',
     pdfExportMode: "Périmètre d'exportation PDF",
@@ -333,7 +328,7 @@ export const fr: TranslationSchema = {
       "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
     importError:
       "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde de Fertility Tracker (.ftbackup ou .json).",
-    close: 'Fermer la fenêtre d’export',
+    close: 'Fermer Partager le graphique',
   },
   confirmDialog: {
     demoTitle: 'Remplacer vos données par la démo ?',
@@ -630,7 +625,6 @@ export const fr: TranslationSchema = {
   },
   shortcuts: {
     title: 'Raccourcis clavier',
-    menuHint: 'Touches pour les pages, les jours et une nouvelle observation',
     keyColumn: 'Touche',
     actionColumn: 'Action',
     enable: 'Utiliser les raccourcis clavier',

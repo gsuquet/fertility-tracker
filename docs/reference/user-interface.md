@@ -59,7 +59,7 @@ On a computer, one key starts an action. A shortcut does nothing while a dialog 
 | `?`             | Opens the **Keyboard shortcuts** dialog.                   |
 | `Ctrl+S` `⌘S`   | Saves the observation form. It also works in a field.      |
 
-To turn the shortcuts off, turn off **Keyboard shortcuts** in **Settings**. Or clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. **Settings** and the **About & Version Tracker** dialog open this dialog too.
+To turn the shortcuts off, turn off **Use keyboard shortcuts** in **Settings**. Or clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. **Settings** and the **About & Version Tracker** dialog open this dialog too.
 
 ## Observation form
 
@@ -94,7 +94,7 @@ The gear (**Settings**) in the header opens Settings. On a phone, it is a full p
 | **Appearance and input** | **Theme**                    | Selects **Light** or **Dark**.                                                                                   |
 | **Appearance and input** | **Vibration**                | Turns the vibrations on or off. It shows only when the device can vibrate.                                       |
 | **Appearance and input** | **App icon badge**           | Turns the dot on the app icon on or off. It shows only when the browser can show a badge.                        |
-| **Appearance and input** | **Keyboard shortcuts**       | Turns the keyboard shortcuts on or off.                                                                          |
+| **Appearance and input** | **Use keyboard shortcuts**   | Turns the keyboard shortcuts on or off.                                                                          |
 | **Backup and restore**   | **Back up now**              | Downloads all observations in a `.ftbackup` file at once. The file is plain JSON. It shows the last backup date. |
 | **Backup and restore**   | **Restore from a file**      | Replaces or merges the observations with a `.ftbackup` or `.json` backup file. Asks first if observations exist. |
 | **Help**                 | **Welcome guide**            | Opens the welcome guide.                                                                                         |
