@@ -83,10 +83,10 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 
 - **Download unreadable data** saves the original text as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`.
 
-| Condition                | Result                                                                                    |
-| ------------------------ | ----------------------------------------------------------------------------------------- |
-| `recoveryKept` is `true` | The second button is **Delete the copy**. The message tells that a copy is kept.          |
-| **Else**                 | The second button is **Close**. The message tells that the next change replaces the data. |
+| Condition                | Result                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `recoveryKept` is `true` | The second button is **Delete the copy**. The message says that a copy is kept.          |
+| **Else**                 | The second button is **Close**. The message says that the next change replaces the data. |
 
 **Delete the copy** opens a confirmation (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`). Only its confirm button calls `dismissRecovery()`.
 
