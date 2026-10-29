@@ -18,7 +18,7 @@ Examples: `M`, `0AD`, `10KLX3 I AP`, `L 6CX1`.
 
 In **Direct Code Entry**, the parser accepts lowercase letters and extra spaces. A space before the frequency is optional. For example, `10KLX3`, `10KL X3`, `0AD` and `0 AD` are correct. The parser ignores letters that are not codes. The parser gives the same fields back from each code string that the application writes.
 
-An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow and `-L` as the appearance code for lubricative.
+An appearance code without a stretch code can be the same as a bleeding code, for example `L`. The application writes a dash before it, for example `-L`. The parser reads `L` alone as light flow. It reads `-B` and `-L` as the appearance codes for brown and lubricative.
 
 The cells of the **Paper Chart** and the print layout show the symptoms in a tag below the code. They do not show the symptoms in the code.
 

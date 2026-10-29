@@ -4,12 +4,14 @@ This page gives the rules that put days into cycles and calculate the phases. Th
 
 ## Start of a cycle
 
-The first observation always starts a cycle. For each subsequent day, the application uses the first rule that applies:
+The first observation always starts a cycle. For each subsequent day, the first row that matches applies:
 
-1. If you answered **Yes, Start New Cycle** for the day (`isCycleStart` is `true`), the day starts a new cycle.
-2. If you answered **No, Continue Current Cycle** for the day (`isCycleStart` is `false`), the day stays in the current cycle. An example is spotting between cycles.
-3. A day with `H`, `M`, `L` or `VL` starts a new cycle after a day without bleeding or with `B`.
-4. In all other conditions, the day stays in the current cycle.
+| Condition                                                                            | Result                                                                   |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ |
+| You answered **Yes, Start New Cycle** for the day (`isCycleStart` is `true`).        | The day starts a new cycle.                                              |
+| You answered **No, Continue Current Cycle** for the day (`isCycleStart` is `false`). | The day stays in the current cycle, for example spotting between cycles. |
+| The day has `H`, `M`, `L` or `VL`, and the previous day has no bleeding or has `B`.  | The day starts a new cycle.                                              |
+| Else                                                                                 | The day stays in the current cycle.                                      |
 
 ## Cycle start question
 
@@ -17,7 +19,7 @@ The form asks "Is this bleeding day the start of a new cycle?" when `needsCycleS
 
 - The day has a bleeding code: `H`, `M`, `L`, `VL` or `B`.
 - The previous observation has no bleeding, or there is no previous observation.
-- The user did not answer for this day before (`isCycleStart` is not set).
+- You did not answer for this day before (`isCycleStart` is not set).
 
 ## Cycle identifiers
 
