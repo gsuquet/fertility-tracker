@@ -511,7 +511,7 @@ svg.i.s18 {
   padding: 8px 16px 16px;
   display: flex;
   flex-direction: column;
-  gap: 12px;
+  gap: 10px;
 }
 
 .phone.long .page {
@@ -802,7 +802,7 @@ svg.i.s18 {
 .week {
   display: flex;
   justify-content: space-between;
-  padding: 8px 12px;
+  padding: 6px 12px;
   flex-shrink: 0;
 }
 
@@ -1118,7 +1118,7 @@ svg.i.s18 {
   display: flex;
   gap: 2px;
   height: 6px;
-  flex: 1;
+  flex: none;
 }
 
 .phasebar span {
@@ -1797,7 +1797,7 @@ svg.i.s18 {
   border-radius: var(--radius-2xs);
   border: 1px solid var(--bg-surface-border);
   background: var(--bg-surface);
-  min-height: 104px;
+  min-height: 118px;
   min-width: 0;
 }
 
@@ -2053,4 +2053,20 @@ svg.i.s18 {
 .codefield .value.ph {
   font-family: var(--font-family);
   font-size: var(--font-size-md);
+}
+
+.legend div {
+  white-space: nowrap;
+}
+
+/* Desktop: screen text is 12 px or more, except in chart and calendar cells */
+.desk .chip small,
+.laptop .chip small,
+.desk .kbd,
+.laptop .kbd,
+.desk .footline,
+.laptop .footline,
+.desk .caption-text,
+.laptop .caption-text {
+  font-size: var(--font-size-xs);
 }

@@ -617,7 +617,7 @@ ${bottomNav('chart')}`,
 page('chart-strip-phone', {
   title: 'Chart, phone, strip view',
   caption:
-    'The Strip view shows only the cycle day and the stamp, so 10 days fit in a row. A tap on a day opens the observation sheet with the full code. The rows stay aligned by cycle day.',
+    'The Strip view shows only the cycle day and the stamp, so about 9 days fit in a row. A tap on a day opens the observation sheet with the full code. The rows stay aligned by cycle day.',
   size: 'phone',
   html: `${chartBar('All cycles', 'strip')}
 <main class="page">
@@ -629,6 +629,9 @@ ${footline}
 ${bottomNav('chart')}`,
 });
 
+const emptyCard = what =>
+  `<section class="card section"><h2 class="h2">No observations yet</h2><p class="sec small">Record the observation of today to start your ${what}. Each day gets a stamp:</p><div class="legend" style="padding:0">${legendItems}</div><button class="btn primary block">${icon('plus', 's18')}Record today</button><p class="small sec">To see an example ${what}, open <a href="#settings" style="color:var(--accent-primary)">Settings</a> and load the demo cycles.</p></section>`;
+
 page('chart-empty-phone', {
   title: 'Chart, phone, no data',
   caption:
@@ -636,7 +639,7 @@ page('chart-empty-phone', {
   size: 'phone',
   html: `${chartBar('All cycles', 'grid')}
 <main class="page">
-<section class="card section"><h2 class="h2">No observations yet</h2><p class="sec small">Record the observation of today to start your chart. Each day gets a stamp:</p><div class="legend" style="padding:0">${legendItems}</div><button class="btn primary block">${icon('plus', 's18')}Record today</button><p class="small sec">To see an example chart, open <a href="#settings" style="color:var(--accent-primary)">Settings</a> and load the demo cycles.</p></section>
+${emptyCard('chart')}
 ${footline}
 </main>
 ${bottomNav('chart')}`,
@@ -956,7 +959,7 @@ function deskCell(cycle, cd, { selected = null } = {}) {
   ]
     .filter(Boolean)
     .join(' ');
-  return `<button class="${cls}" aria-label="Cycle day ${cd}, ${long(date)}, code ${fullCode(d)}"><span class="n">${cd}</span><span class="w">${weekday(date)}</span>${stamp(d)}<span class="c"><span>${d.main}</span>${d.sym ? `<span class="sym">${d.sym}</span>` : ''}</span></button>`;
+  return `<button class="${cls}" aria-label="Cycle day ${cd}, ${long(date)}, code ${fullCode(d)}"><span class="n">${cd}</span><span class="w">${weekday(date)}</span><span class="w">${mmdd(date)}</span>${stamp(d)}<span class="c"><span>${d.main}</span>${d.sym ? `<span class="sym">${d.sym}</span>` : ''}</span></button>`;
 }
 
 function deskCycle(
@@ -1078,12 +1081,55 @@ ${footline}
 page('settings-desktop', {
   title: 'Settings, desktop 1440 px',
   caption:
-    'On a desktop, Settings is a 560 px dialog with the same groups as the phone page. The list scrolls inside the dialog.',
+    'On a desktop, Settings is a 560 px dialog with the same groups as the phone page. The list scrolls inside the dialog. The frame shows it scrolled to the end, with the Data group last.',
   size: 'desk',
   html: `${deskTop('today', `${cyclePill('Cycle 2')}${dateCtl(TODAY)}`)}
 <main class="dcontent"><div class="dinner grid-today">${todayDeskBody()}<div class="col">${deskStatus(dayOf(TODAY))}${last7(TODAY)}</div></div></main><div class="scrim"></div>
 <section class="dialog" role="dialog" aria-label="Settings" style="width:560px;height:780px"><div class="dh"><h2>Settings</h2><button class="icon-btn" aria-label="Close">${icon('x')}</button></div>
-<div class="db" style="gap:8px;background:var(--bg-primary)">${settingsList}</div></section>`,
+<div class="db" style="gap:8px;background:var(--bg-primary);justify-content:flex-end">${settingsList}</div></section>`,
+});
+
+page('calendar-empty-phone', {
+  title: 'Calendar, phone, no data',
+  caption:
+    'The calendar with no observation keeps the month grid, so the person can still find a date. The same card as on the chart is under the grid.',
+  size: 'phone',
+  long: true,
+  html: `${titleBar('Calendar', 'All cycles')}
+<main class="page">
+${monthNav}
+<div class="calgrid">${['Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat', 'Sun'].map(w => `<span class="wd">${w}</span>`).join('')}${Array.from(
+    { length: 42 },
+    (_, k) => {
+      const date = addDays('2026-09-28', k);
+      const cls = [
+        'cell',
+        date.slice(5, 7) === '10' ? '' : 'other',
+        date > TODAY ? 'future' : '',
+        date === TODAY ? 'today' : '',
+      ]
+        .filter(Boolean)
+        .join(' ');
+      return `<button class="${cls}" aria-label="${long(date)}"><span class="dn">${toDate(date).getUTCDate()}</span></button>`;
+    }
+  ).join('')}</div>
+${emptyCard('calendar')}
+${footline}
+</main>
+${bottomNav('calendar')}`,
+});
+
+page('analytics-empty-phone', {
+  title: 'Analytics, phone, no data',
+  caption:
+    'Analytics with no observation shows only the card of the chart and the calendar. No tile shows a zero or a dash.',
+  size: 'phone',
+  html: `${titleBar('Analytics', 'All cycles')}
+<main class="page">
+${emptyCard('analytics')}
+${footline}
+</main>
+${bottomNav('analytics')}`,
 });
 
 // ---------------------------------------------------------------------------------------------

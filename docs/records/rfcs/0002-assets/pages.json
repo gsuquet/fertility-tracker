@@ -79,7 +79,7 @@
   {
     "file": "chart-strip-phone",
     "title": "Chart, phone, strip view",
-    "caption": "The Strip view shows only the cycle day and the stamp, so 10 days fit in a row. A tap on a day opens the observation sheet with the full code. The rows stay aligned by cycle day.",
+    "caption": "The Strip view shows only the cycle day and the stamp, so about 9 days fit in a row. A tap on a day opens the observation sheet with the full code. The rows stay aligned by cycle day.",
     "size": "phone",
     "long": false
   },
@@ -205,8 +205,22 @@
   {
     "file": "settings-desktop",
     "title": "Settings, desktop 1440 px",
-    "caption": "On a desktop, Settings is a 560 px dialog with the same groups as the phone page. The list scrolls inside the dialog.",
+    "caption": "On a desktop, Settings is a 560 px dialog with the same groups as the phone page. The list scrolls inside the dialog. The frame shows it scrolled to the end, with the Data group last.",
     "size": "desk",
+    "long": false
+  },
+  {
+    "file": "calendar-empty-phone",
+    "title": "Calendar, phone, no data",
+    "caption": "The calendar with no observation keeps the month grid, so the person can still find a date. The same card as on the chart is under the grid.",
+    "size": "phone",
+    "long": true
+  },
+  {
+    "file": "analytics-empty-phone",
+    "title": "Analytics, phone, no data",
+    "caption": "Analytics with no observation shows only the card of the chart and the calendar. No tile shows a zero or a dash.",
+    "size": "phone",
     "long": false
   }
 ]

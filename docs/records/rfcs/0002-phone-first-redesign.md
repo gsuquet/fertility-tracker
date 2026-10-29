@@ -3,7 +3,7 @@
 - **Start date:** 2026-10-29
 - **Status:** Proposed
 - **Author:** Gabriel
-- **Pull request:** To come
+- **Pull request:** [#116](https://github.com/gsuquet/fertility-tracker/pull/116)
 - **Issue:** [#115](https://github.com/gsuquet/fertility-tracker/issues/115)
 
 ## Summary
@@ -36,7 +36,7 @@ The UX audit of 2026-10-29 tested version 1.32.0 on a phone of 390 × 844 px and
 | F17    | A phone page has no level 1 heading. The footer landmark is in `<main>`.                                     | Low      | Both        |
 | F18    | In the dark theme, the status panel is lighter than its card. The edges of the stamps need a contrast check. | Low      | Phone       |
 
-The full audit, with the screenshots, the measurements and an independent review, is in the [UX audit report](https://claude.ai/artifact/WLhcteX7LQbpMs3wDnkDvh).
+Issue [#115](https://github.com/gsuquet/fertility-tracker/issues/115) gives the full list of problems and the steps of the work. The full audit, with the screenshots and the measurements, is in the project folder of the maintainer.
 
 ## Guide-level explanation
 
@@ -105,17 +105,17 @@ The cycle picker is in the top bar of each page. The calendar follows it. The st
 
 ### Today
 
-| Part         | Rules                                                                                                                                                          |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Day status   | A line with **Today** or the number of days ago, the cycle day, and **Saved** or **Not saved**. On an earlier day, a **Today** button is at the right.         |
-| Status card  | The stamp (40 px), the code (22 px) and one line of fertility text. The **Observation actions** menu (⋮) is at the right.                                      |
-| Code field   | The direct code field. A change in the field changes the rows. A change in the rows changes the field.                                                         |
-| Group rows   | One row of 48 px for each group: Bleeding, Mucus, Appearance, Frequency, Symptoms. The row shows the code and its name, and cuts a long name with an ellipsis. |
-| Open group   | A tap opens the chips of the group under the row and closes the other groups. Each chip is 48 px high, with the code over a short name.                        |
-| Switches     | **I - Intercourse**, **Designate Peak Day (P)** and **Notes** are rows of the same list.                                                                       |
-| Last 7 days  | Seven stamps with the day numbers. A tap opens that day. The strip fits the width and does not scroll.                                                         |
-| Save         | 48 px, above the bottom bar. It is enabled after any change, also a switch or a note alone. It shows **Saved** and is disabled when there is no change.        |
-| Actions menu | **Copy yesterday**, **Direct Code Only** and **Delete observation**, in red text, as the last item.                                                            |
+| Part         | Rules                                                                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Day status   | A line with **Today** or the number of days ago, the cycle day, and **Saved** or **Not saved**. On an earlier day, a **Today** button is at the right.               |
+| Status card  | The stamp (40 px), the code (22 px) and one or two lines of fertility text. The **Observation actions** menu (⋮) is at the right.                                    |
+| Code field   | The direct code field. A change in the field changes the rows. A change in the rows changes the field.                                                               |
+| Group rows   | One row of 48 px for each group: Bleeding, Mucus, Appearance, Frequency, Symptoms. The row shows the code and its name, and cuts a long name with an ellipsis.       |
+| Open group   | A tap opens the chips of the group under the row and closes the other groups. Each chip is 48 px high, with the code over a short name.                              |
+| Switches     | **I - Intercourse**, **Designate Peak Day (P)** and **Notes** are rows of the same list.                                                                             |
+| Last 7 days  | Phone: seven stamps that end on today, with the day numbers. A tap opens that day. The strip does not scroll. Desktop: a list of the 7 days before the selected day. |
+| Save         | 48 px, above the bottom bar. It is enabled after any change, also a switch or a note alone. It shows **Saved** and is disabled when there is no change.              |
+| Actions menu | **Copy yesterday**, **Direct Code Only** and **Delete observation**, in red text, as the last item.                                                                  |
 
 These rules also apply:
 
@@ -142,15 +142,18 @@ The sheet keeps its handle, its drag to close and its focus rules. It uses the p
 
 ### Chart
 
-| Part       | Rules                                                                                                                                                                |
-| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Controls   | Phone: the cycle picker, **35-day** and **Strip**, and a menu with **Phase bar**, **Legend** and **Share chart**. Desktop: the same controls as buttons.             |
-| Cycle line | One line: the cycle, the dates, the length and the Peak Day. Then the jump buttons (Day 1, P, Today) and the scroll arrows, each 36 px.                              |
-| Day card   | 44 × 116 px. It shows the cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code and the symptom mark.                                     |
-| Long code  | A code breaks only between its tokens, for example `10KLAD` over `AP`. A token wider than the card is cut with an ellipsis. The full code is in the accessible name. |
-| All Cycles | All the rows share one scroll position, so the same cycle day is in the same column. The page opens on the column of today.                                          |
-| Strip view | Cards of 34 × 62 px with the cycle day and the stamp only. Ten days fit on a phone.                                                                                  |
-| Day detail | Desktop only. A bar under the rows shows the selected day, with **Edit** and **Open in Today**. It replaces the dialog of a click on a day.                          |
+| Part         | Rules                                                                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Controls     | Phone: the cycle picker, **35-day** and **Strip**, and a menu with **Phase bar**, **Legend** and **Share chart**. Desktop: the same controls as buttons.             |
+| Cycle line   | One line: the cycle, the dates, the length and the Peak Day. Then the jump buttons (Day 1, P, Today) and the scroll arrows, each 36 px.                              |
+| Day card     | 44 × 116 px. It shows the cycle day (13 px), the weekday and the date (11 px), the stamp (32 px), the code and the symptom mark.                                     |
+| Long code    | A code breaks only between its tokens, for example `10KLAD` over `AP`. A token wider than the card is cut with an ellipsis. The full code is in the accessible name. |
+| All Cycles   | All the rows share one scroll position, so the same cycle day is in the same column. The page opens on the column of today.                                          |
+| Strip view   | Cards of 34 × 62 px with the cycle day and the stamp only. About nine days fit on a phone.                                                                           |
+| Phase bar    | One bar for the full cycle (35 days) under the cycle line. It does not scroll with the cards. The chart options menu turns it on or off.                             |
+| Desktop cell | 44 px wide and 118 px high, with the same content as the phone card. A code can use two lines.                                                                       |
+| Many cycles  | Desktop: when more than 4 cycles show, each past cycle shows only its stamp row. A click opens the full row.                                                         |
+| Day detail   | Desktop only. A bar under the rows shows the selected day, with **Edit** and **Open in Today**. It replaces the dialog of a click on a day.                          |
 
 | Condition                          | Result                                                |
 | ---------------------------------- | ----------------------------------------------------- |
@@ -163,6 +166,10 @@ The maintainer selected the 44 px columns on 2026-10-29.
 
 ![Chart at Peak Day on a phone](0002-assets/images/chart-peak-phone.png)
 
+### Pages with no data
+
+When there is no observation, Chart, Calendar and Analytics show one card. The card gives the stamp legend, a **Record today** button and a link to the demo cycles in Settings. The calendar keeps its month grid above the card, so that the person can find a date. Analytics shows no tile.
+
 ### Share chart
 
 **Share chart** replaces the print part of the current export dialog. It shows the list of cycles, **Download PNG** and **Print or PDF**. On a phone it is a sheet. On a desktop it is a dialog of 480 px. Backup, restore, demo and reset go to Settings.
@@ -170,10 +177,10 @@ The maintainer selected the 44 px columns on 2026-10-29.
 ### Calendar
 
 - On a phone, the cells are 48 × 80 px and the code is 11 px.
-- The I, P and 1, 2, 3 marks move from the stamp to a row under the code.
+- The I, P and 1, 2, 3 marks move from the stamp to a row of 12 px under the code.
 - The first day of a cycle has a red edge and the mark C and the cycle number, for example C2.
 - The days of the selected cycle have a tint. All the days keep full contrast.
-- On a desktop, the grid is 896 px wide with cells of 120 × 96 px. A day panel on the right shows the selected day.
+- On a desktop, the grid is 896 px wide with cells of 120 × 96 px. A day panel in the rest of the width (about 470 px at 1440 px) shows the selected day.
 
 ![Calendar on a phone](0002-assets/images/calendar-phone.png)
 
@@ -205,19 +212,19 @@ The welcome guide keeps its four slides. **Explore Demo Data** is on the first s
 
 ### Design system rules
 
-| Rule          | Value                                                                                                                                           |
-| ------------- | ----------------------------------------------------------------------------------------------------------------------------------------------- |
-| Screen text   | 11 px (`--font-size-2xs`) or more on a phone, 12 px or more on a desktop. `--font-size-3xs` and `--font-size-4xs` are for print only.           |
-| Stamp marks   | The I, P and count marks on a stamp change from 10 px to 11 px.                                                                                 |
-| Code text     | `--font-mono`, 12 px in forms and lists, 11 px in chart and calendar cells.                                                                     |
-| Type scale    | 22, 16, 14, 13, 12 and 11 px.                                                                                                                   |
-| Touch targets | 44 px for each control used each day. 36 px for secondary icons. 32 px or more for the other controls, with 8 px between them.                  |
-| Spacing       | A grid of 4 px. A page margin of 16 px on a phone and 24 px on a desktop. Rows of 48 px.                                                        |
-| Cards         | Two levels or less: the page and one card.                                                                                                      |
-| Bars          | The top bar and the bottom bar use `--bg-surface`, not `--glass-bg`.                                                                            |
-| Buttons       | One filled accent button on each screen. A danger action is red text or a red outline. It is never a filled red button next to the main button. |
-| Motion        | A group opens and closes in 160 ms. The animation stops when `prefers-reduced-motion` is on.                                                    |
-| Language      | The French text is the size reference. Each label has a rule to wrap or to cut.                                                                 |
+| Rule          | Value                                                                                                                                                                                      |
+| ------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Screen text   | 11 px (`--font-size-2xs`) or more on a phone, 12 px or more on a desktop, but 11 px in chart and calendar cells. `--font-size-3xs` and `--font-size-4xs` are for print only.               |
+| Stamp marks   | The I, P and count marks on a stamp change from 10 px to 11 px.                                                                                                                            |
+| Code text     | `--font-mono`, 12 px in forms and lists, 11 px in chart and calendar cells.                                                                                                                |
+| Type scale    | 22, 16, 14, 13, 12 and 11 px.                                                                                                                                                              |
+| Touch targets | 44 px for each control used each day. 36 px for secondary icons. 32 px or more for the other controls, with 8 px between them.                                                             |
+| Spacing       | A grid of 4 px. A page margin of 16 px on a phone and 24 px on a desktop. Rows of 48 px.                                                                                                   |
+| Cards         | Two levels or less: the page and one card.                                                                                                                                                 |
+| Bars          | The top bar and the bottom bar use `--bg-surface`, not `--glass-bg`.                                                                                                                       |
+| Buttons       | One filled accent button on each screen, plus the + button of the phone navigation. A danger action is red text or a red outline. It is never a filled red button next to the main button. |
+| Motion        | A group opens and closes in 160 ms. The animation stops when `prefers-reduced-motion` is on.                                                                                               |
+| Language      | The French text is the size reference. Each label has a rule to wrap or to cut.                                                                                                            |
 
 These are the new tokens. The token contrast test must check the two new colors.
 
@@ -257,8 +264,8 @@ node docs/records/rfcs/0002-assets/capture.mjs
 | Chart             | [All cycles](0002-assets/chart-phone.html), [Peak Day and legend](0002-assets/chart-peak-phone.html), [Strip view](0002-assets/chart-strip-phone.html), [chart menu](0002-assets/chart-menu-phone.html), [no data](0002-assets/chart-empty-phone.html)                                                                                                                                                                                 | [1440 px](0002-assets/chart-desktop.html), [1024 px](0002-assets/chart-laptop.html) |
 | Share chart       | [Sheet](0002-assets/share-sheet-phone.html)                                                                                                                                                                                                                                                                                                                                                                                            | [Dialog](0002-assets/share-desktop.html)                                            |
 | Cycle picker      | [Sheet](0002-assets/cycle-picker-phone.html)                                                                                                                                                                                                                                                                                                                                                                                           | The same menu as now                                                                |
-| Calendar          | [Month](0002-assets/calendar-phone.html)                                                                                                                                                                                                                                                                                                                                                                                               | [Month and day panel](0002-assets/calendar-desktop.html)                            |
-| Analytics         | [Full page](0002-assets/analytics-phone.html)                                                                                                                                                                                                                                                                                                                                                                                          | [1440 px](0002-assets/analytics-desktop.html)                                       |
+| Calendar          | [Month](0002-assets/calendar-phone.html), [no data](0002-assets/calendar-empty-phone.html)                                                                                                                                                                                                                                                                                                                                             | [Month and day panel](0002-assets/calendar-desktop.html)                            |
+| Analytics         | [Full page](0002-assets/analytics-phone.html), [no data](0002-assets/analytics-empty-phone.html)                                                                                                                                                                                                                                                                                                                                       | [1440 px](0002-assets/analytics-desktop.html)                                       |
 | Settings          | [Full page](0002-assets/settings-phone.html), [About](0002-assets/settings-about-phone.html)                                                                                                                                                                                                                                                                                                                                           | [Dialog](0002-assets/settings-desktop.html)                                         |
 | Welcome guide     | [First slide](0002-assets/welcome-phone.html)                                                                                                                                                                                                                                                                                                                                                                                          | The same dialog as now                                                              |
 
@@ -289,7 +296,7 @@ Each step is one pull request, or a small set. Each step follows `AGENTS.md`.
 
 ## Drawbacks
 
-- A group needs one more tap. A dry day takes 5 taps (3 now). A day with fertile mucus takes 8 taps (5 now). The code field stays for a fast entry.
+- A group needs one more tap. A dry day takes 5 taps (3 now). A day with fertile mucus takes 8 taps (5 now). The code field stays for fast input of a code.
 - The work changes all the screens, so the e2e tests, the ARIA snapshots and the screenshots change many times.
 - A person who knows the current layout must learn the new places of the export and the settings.
 
