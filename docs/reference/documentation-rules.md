@@ -78,6 +78,19 @@ These rules come from ASD-STE100 Simplified Technical English.
 
 The docs check counts code in backticks as one word. It ignores code blocks and headings. It reads the text of each table cell. Use code format only for code, values and examples of words. Do not put a prose word in code format to pass the check.
 
+## Rules with a condition
+
+A reference rule with two results or more uses a table with the columns **Condition** and **Result**. A rule with one implicit result for the other cases also has two results.
+
+- The rows apply in sequence. The first row with a true condition gives the result.
+- The last row is **Else**.
+- Each value has a number and a unit. Do not use words such as "slowly" or "fast".
+- Each row gives one test.
+- A rule with one condition and one result, and no other case, stays a sentence.
+- A list of events, for example the triggers of an update, stays a list.
+
+The source of this rule is [ADR 0004](../records/adrs/0004-specification-in-reference-pages.md).
+
 ## Words that are not approved
 
 | Do not use               | Use                   |

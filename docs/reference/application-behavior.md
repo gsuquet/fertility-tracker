@@ -57,11 +57,10 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - When the page changes while a layer entry is current, the application first goes back to the entry of the page. Then it adds the entry of the new page and the entries of the layers that stay open.
 - At the start, the application reads the current entry:
 
-| Condition                                             | Result                                                                                                                                       |
-| ----------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------- |
-| `ftLayerDepth` is above 0 (a reload with layers open) | The application goes back to the entry of the page with `history.go()`. Thus, the next **Back** does not find an old layer entry.            |
-| **Else**                                              | The application sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. |
-- An empty hash stays empty on **Today**.
+| Condition                                             | Result                                                                                                                                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ftLayerDepth` is above 0 (a reload with layers open) | The application goes back to the entry of the page with `history.go()`. Thus, the next **Back** does not find an old layer entry.                                                    |
+| **Else**                                              | The application sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**. |
 - The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([Offline use and installation](deployment.md#offline-use-and-installation)).
 
 ## Install and update
