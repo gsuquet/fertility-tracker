@@ -42,7 +42,7 @@
       - button "4 - Shiny without lubrication"
       - button "6 - Slightly stretchy (~0.5cm)"
       - button "8 - Moderately stretchy (1-2cm)"
-      - button /\d+ - Very stretchy \(2\.5cm\+\)/
+      - button "10 - Very stretchy (2.5cm+)"
       - button "10DL - Damp with lubrication"
       - button "10SL - Shiny with lubrication"
       - button "10WL - Wet with lubrication"
