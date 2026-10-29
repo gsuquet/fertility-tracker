@@ -5,11 +5,25 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import type { Cycle, Observation } from '../types/crms';
 import { getDaysDifference, getTodayStr } from '../utils/dateUtils';
+import { DESKTOP_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { ChartToolbar } from './chart/ChartToolbar';
 import type { ChartViewMode } from './chart/ChartToolbar';
 import { ChartLegend } from './chart/ChartLegend';
 import { ChartBlankGrid } from './chart/ChartBlankGrid';
 import { ChartCycleRow } from './chart/ChartCycleRow';
+import { ChartDayDetail } from './chart/ChartDayDetail';
+
+/** With more than this number of cycles, the past cycles of a desktop chart show their stamps only */
+const MANY_CYCLES = 4;
+
+/** The cycle of a date: the last cycle that starts on or before it. ISO dates sort as text. */
+const cycleOf = (cycles: Cycle[], date: string) =>
+  cycles
+    .filter(c => c.startDate <= date)
+    .reduce<Cycle | undefined>(
+      (last, c) => (last && last.startDate > c.startDate ? last : c),
+      undefined
+    );
 
 /** The slots of each row: every day up to a whole week, and 35 at least */
 const slotCount = (cycles: Cycle[]) => {
@@ -24,9 +38,20 @@ const centerLeft = (strip: HTMLElement, cell: Element) => {
   return offset - (strip.clientWidth - box.width) / 2;
 };
 
-export const ChartRow: React.FC = () => {
+interface ChartRowProps {
+  /** Opens the Today page. Today shows the date of the selected observation. */
+  onOpenToday?: () => void;
+}
+
+export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
   const { cycles, selectedCycleId, setSelectedObservation, setIsDrawerOpen } = useCycle();
   const { t } = useLanguage();
+  // On a desktop, a click selects a day for the detail bar. On a phone, it opens the sheet.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  // The date of the selected day. The cards of all the rows with this date show the selection.
+  const [selection, setSelection] = useState<string | null>(null);
+  // The past cycles that show all their days although the chart has many cycles
+  const [expanded, setExpanded] = useState<ReadonlySet<string>>(new Set());
 
   // View preferences
   const [viewMode, setViewMode] = useState<ChartViewMode>('35-day');
@@ -64,17 +89,17 @@ export const ChartRow: React.FC = () => {
   const filteredCycles =
     selectedCycleId === 'all' ? cycles : cycles.filter(c => c.id === selectedCycleId);
   const totalSlots = slotCount(filteredCycles);
-  // Today belongs to the last cycle that starts on or before it. ISO dates sort as text.
-  const todayCycle = cycles
-    .filter(c => c.startDate <= todayStr)
-    .reduce<Cycle | undefined>(
-      (last, c) => (last && last.startDate > c.startDate ? last : c),
-      undefined
-    );
+  const todayCycle = cycleOf(cycles, todayStr);
   const todayShown =
     !!todayCycle &&
     filteredCycles.includes(todayCycle) &&
     getDaysDifference(todayCycle.startDate, todayStr) < totalSlots;
+  // A date has a card when it is in the slots of a row that shows
+  const hasCard = (date: string) =>
+    filteredCycles.some(c => {
+      const index = getDaysDifference(c.startDate, date);
+      return index >= 0 && index < totalSlots;
+    });
   const peakCycleId = filteredCycles.find(c => c.observations.some(o => o.isPeakDay))?.id;
 
   // The chart opens with today in the middle of the rows, or at the end of the rows when the
@@ -90,7 +115,7 @@ export const ChartRow: React.FC = () => {
       left = (all[0] as HTMLElement).scrollWidth;
     }
     for (const strip of all) setLeft(strip, left);
-  }, [viewMode, selectedCycleId, cycles.length]);
+  }, [viewMode, selectedCycleId, cycles.length, isDesktop]);
 
   // The jumps scroll the strip that holds the target, and the sync moves the other strips. A jump
   // button shows only when its cell exists.
@@ -113,17 +138,62 @@ export const ChartRow: React.FC = () => {
     setIsDrawerOpen(true);
   };
 
-  // Opens a draft observation for an empty day slot
-  const openEmptyDay = (date: string, dayNum: number) => {
-    openObservation({
-      id: '',
-      date,
-      cycleDay: dayNum,
-      stamp: 'DARK_GREEN',
-      codeString: '0AD',
-      intercourse: false,
-      symptoms: [],
-    });
+  // A draft observation for an empty day slot
+  const draftDay = (date: string, dayNum: number): Observation => ({
+    id: '',
+    date,
+    cycleDay: dayNum,
+    stamp: 'DARK_GREEN',
+    codeString: '0AD',
+    intercourse: false,
+    symptoms: [],
+  });
+  const openEmptyDay = (date: string, dayNum: number) => openObservation(draftDay(date, dayNum));
+
+  // The selected day, else today. A selection with no card in the rows that show does not count.
+  const shown = selection && hasCard(selection) ? selection : todayShown ? todayStr : null;
+  // The saved observation of the date, in any cycle. A card after the end of a cycle can show a
+  // date of the next cycle.
+  const detailObs = shown
+    ? cycles.flatMap(c => c.observations).find(o => o.date === shown)
+    : undefined;
+  // The cycle of the day: the cycle of its observation, else the cycle that holds the date
+  const detailCycle = shown
+    ? ((detailObs
+        ? cycles.find(c => c.observations.includes(detailObs))
+        : cycleOf(cycles, shown)) as Cycle)
+    : undefined;
+  // The saved observation of the day, else a draft for the sheet and for Today
+  const detailDay = shown
+    ? (detailObs ?? draftDay(shown, getDaysDifference((detailCycle as Cycle).startDate, shown) + 1))
+    : undefined;
+  // On a desktop, a click selects the day. A click or Enter on the selected day opens the sheet.
+  // An arrow key only moves the selection: it does not open the day that it lands on
+  const moving = useRef(false);
+  const selectDay = (date: string) => {
+    if (date === shown && detailDay && !moving.current) openObservation(detailDay);
+    else setSelection(date);
+  };
+
+  // On a desktop, the arrow keys move the selection: left and right in the row, up and down to
+  // the same cycle day of the next row. The focus moves with it, so the card scrolls into view.
+  const moveSelection = (e: React.KeyboardEvent) => {
+    const card = (e.target as HTMLElement).closest('.chart-row-scroll .chart-cell');
+    const step = { ArrowLeft: [0, -1], ArrowRight: [0, 1], ArrowUp: [-1, 0], ArrowDown: [1, 0] }[
+      e.key
+    ];
+    if (!isDesktop || !card || !step || e.altKey || e.ctrlKey || e.metaKey || e.shiftKey) return;
+    const rows = strips().map(strip => [...strip.querySelectorAll<HTMLElement>('.chart-cell')]);
+    const row = rows.findIndex(cards => cards.includes(card as HTMLElement));
+    const col = (rows[row] as HTMLElement[]).indexOf(card as HTMLElement);
+    const [dRow, dCol] = step as [number, number];
+    const next = rows[row + dRow]?.[col + dCol];
+    if (!next) return;
+    e.preventDefault();
+    next.focus();
+    moving.current = true;
+    next.click();
+    moving.current = false;
   };
 
   const legend = (
@@ -217,6 +287,7 @@ export const ChartRow: React.FC = () => {
       role="tabpanel"
       aria-labelledby="tab-chart"
       ref={viewRef}
+      onKeyDown={moveSelection}
     >
       <ChartToolbar
         t={t}
@@ -230,22 +301,54 @@ export const ChartRow: React.FC = () => {
         }}
       />
 
-      {filteredCycles.map((cycle, index) => (
-        <ChartCycleRow
-          key={cycle.id}
-          cycle={cycle}
-          cycleNum={cycles.length - cycles.indexOf(cycle)}
-          totalSlots={totalSlots}
-          viewMode={viewMode}
-          showPhaseBar={showPhaseBar}
-          todayStr={cycle === todayCycle ? todayStr : undefined}
-          controls={index === 0 ? controls : undefined}
-          onStripScroll={syncScroll}
+      {filteredCycles.map((cycle, index) => {
+        // On a desktop with many cycles, each past cycle shows only its stamps until it opens
+        const collapsible = isDesktop && filteredCycles.length > MANY_CYCLES && index > 0;
+        const toggle = () => {
+          const next = new Set(expanded);
+          if (!next.delete(cycle.id)) next.add(cycle.id);
+          setExpanded(next);
+        };
+        return (
+          <ChartCycleRow
+            key={cycle.id}
+            cycle={cycle}
+            cycleNum={cycles.length - cycles.indexOf(cycle)}
+            totalSlots={totalSlots}
+            viewMode={viewMode}
+            showPhaseBar={showPhaseBar}
+            todayStr={cycle === todayCycle ? todayStr : undefined}
+            controls={index === 0 ? controls : undefined}
+            selectedDate={isDesktop ? shown : undefined}
+            collapsed={collapsible && !expanded.has(cycle.id)}
+            onToggleCollapsed={collapsible ? toggle : undefined}
+            onStripScroll={syncScroll}
+            t={t}
+            onOpenObservation={isDesktop ? obs => selectDay(obs.date) : openObservation}
+            onOpenDay={isDesktop ? date => selectDay(date) : openEmptyDay}
+          />
+        );
+      })}
+
+      {/* The bar stays in the page with no day, so that its live region reads the first selection */}
+      {isDesktop && (
+        <ChartDayDetail
+          day={
+            detailDay && {
+              date: detailDay.date,
+              cycleNum: cycles.length - cycles.indexOf(detailCycle as Cycle),
+              dayNum: detailDay.cycleDay,
+              obs: detailObs,
+            }
+          }
           t={t}
-          onOpenObservation={openObservation}
-          onOpenDay={openEmptyDay}
+          onEdit={() => openObservation(detailDay as Observation)}
+          onOpenInToday={() => {
+            setSelectedObservation(detailDay as Observation);
+            onOpenToday?.();
+          }}
         />
-      ))}
+      )}
 
       {legend}
     </div>

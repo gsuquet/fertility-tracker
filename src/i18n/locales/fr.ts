@@ -288,6 +288,13 @@ export const fr: TranslationSchema = {
     jumpToToday: "Aller à aujourd'hui",
     peakShort: 'P jour {day}',
     cycleDays: '{count} jours',
+    detailLabel: 'Jour sélectionné',
+    detailDay: '{date} · Cycle {cycle}, jour {day}',
+    editDay: 'Modifier',
+    openInToday: "Ouvrir dans Aujourd'hui",
+    showRow: 'Afficher tous les jours du cycle {number}',
+    hideRow: 'Afficher seulement les tampons du cycle {number}',
+    dayNoCode: 'Aucun code de saignement, de glaire ou de fréquence.',
   },
   exportModal: {
     title: 'Export Praticien & Sauvegarde',

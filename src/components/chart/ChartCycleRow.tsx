@@ -19,6 +19,15 @@ interface ChartCycleRowProps {
   todayStr: string | undefined;
   /** The jump and scroll buttons, on the first row only */
   controls?: React.ReactNode;
+  /**
+   * On a desktop, the date of the selected day, or null. Undefined on a phone, where a click
+   * opens the observation sheet.
+   */
+  selectedDate?: string | null | undefined;
+  /** A past cycle of a desktop chart with more than 4 cycles: true while it shows the stamps only */
+  collapsed?: boolean | undefined;
+  /** Opens or closes the full row of a past cycle. Only a row that can collapse has it. */
+  onToggleCollapsed?: (() => void) | undefined;
   /** Moves the strips of the other rows with this one */
   onStripScroll: (e: React.UIEvent<HTMLDivElement>) => void;
   t: TranslationSchema;
@@ -39,6 +48,9 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   showPhaseBar,
   todayStr,
   controls,
+  selectedDate,
+  collapsed,
+  onToggleCollapsed,
   onStripScroll,
   t,
   onOpenObservation,
@@ -49,31 +61,57 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   const lengthDays = (cycle.observations.at(-1) as Observation).cycleDay;
   const peakDayNum = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
   const title = `${t.chartStrip.cycleBadge} ${cycleNum}`;
+  // A collapsed row keeps the columns of its view, with the content of the Strip view
+  const cellMode: ChartViewMode = collapsed ? 'compact' : viewMode;
+  const isSelected = (date: string) =>
+    selectedDate === undefined ? undefined : selectedDate === date;
 
   return (
-    <section className={`chart-row-container view-${viewMode}`} aria-label={title}>
-      <div className="cycle-line">
-        <h3 className="cycle-line-title">{title}</h3>
-        <span className="cycle-line-dates">
-          {shortDate(cycle.startDate, t.locale)} – {shortDate(getCycleEndDate(cycle), t.locale)}
-        </span>
-        <span aria-hidden="true">·</span>
-        <span>{formatMessage(t.chartStrip.cycleDays, { count: lengthDays })}</span>
-        {peakDayNum && (
-          <>
-            <span aria-hidden="true">·</span>
-            <span className="cycle-line-peak">
-              {formatMessage(t.chartStrip.peakShort, { day: peakDayNum })}
-            </span>
-          </>
-        )}
+    <section
+      className={`chart-row-container view-${viewMode} ${collapsed ? 'is-collapsed' : ''}`}
+      aria-label={title}
+    >
+      <div className="cycle-head">
+        <div className="cycle-line">
+          <h3 className="cycle-line-title">
+            {onToggleCollapsed ? (
+              <button
+                type="button"
+                className="cycle-line-toggle"
+                aria-expanded={!collapsed}
+                title={formatMessage(collapsed ? t.chartStrip.showRow : t.chartStrip.hideRow, {
+                  number: cycleNum,
+                })}
+                onClick={onToggleCollapsed}
+              >
+                {title}
+              </button>
+            ) : (
+              title
+            )}
+          </h3>
+          <span className="cycle-line-dates">
+            {shortDate(cycle.startDate, t.locale)} – {shortDate(getCycleEndDate(cycle), t.locale)}
+          </span>
+          <span aria-hidden="true">·</span>
+          <span>{formatMessage(t.chartStrip.cycleDays, { count: lengthDays })}</span>
+          {peakDayNum && (
+            <>
+              <span aria-hidden="true">·</span>
+              <span className="cycle-line-peak">
+                {formatMessage(t.chartStrip.peakShort, { day: peakDayNum })}
+              </span>
+            </>
+          )}
+        </div>
+        {controls}
       </div>
 
-      {controls}
-
-      {showPhaseBar && <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />}
-
       <div className="chart-row-scroll" onScroll={onStripScroll}>
+        {/* Phone: one bar over the card, which does not scroll. Desktop: one segment for each column. */}
+        {showPhaseBar && !collapsed && (
+          <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />
+        )}
         <div className="chart-row-strip">
           {Array.from({ length: totalSlots }, (_, idx) => {
             const dayNum = idx + 1;
@@ -85,7 +123,8 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
                 key={dayNum}
                 obs={obs}
                 isToday={isToday}
-                viewMode={viewMode}
+                viewMode={cellMode}
+                selected={isSelected(dateStr)}
                 onOpen={onOpenObservation}
               />
             ) : (
@@ -94,8 +133,14 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
                 dayNum={dayNum}
                 dateStr={dateStr}
                 isToday={isToday}
-                viewMode={viewMode}
-                labelTemplate={t.chartStrip.emptyCellLabel}
+                viewMode={cellMode}
+                selected={isSelected(dateStr)}
+                labelTemplate={
+                  // On a desktop, a click selects the empty day and does not add an observation
+                  selectedDate === undefined
+                    ? t.chartStrip.emptyCellLabel
+                    : t.chartStrip.blankCellLabel
+                }
                 onOpen={onOpenDay}
               />
             );

@@ -44,6 +44,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.36.0',
+    date: '2026-10-29',
+    title: 'A Wider Chart on the Desktop',
+    titleFr: 'Un graphique plus large sur ordinateur',
+    tagline: 'Four weeks fit on a desktop screen, and a bar under the rows shows the selected day',
+    taglineFr:
+      'Quatre semaines tiennent sur un écran d’ordinateur, et une barre sous les lignes montre le jour choisi',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'On a computer, the gap between the day columns is smaller, so 28 days fit at 1440 pixels',
+      'A click selects a day. The bar under the rows shows it, with Edit and Open in Today. A second click opens the day',
+      'The arrow keys move the selection along a row and between the cycles',
+      'Each phase segment is above its day',
+      'With more than 4 cycles, the past cycles show only their stamps. A click on the cycle title opens the full row',
+    ],
+    highlightsFr: [
+      'Sur un ordinateur, l’espace entre les colonnes des jours est plus petit : 28 jours tiennent à 1440 pixels',
+      'Un clic choisit un jour. La barre sous les lignes le montre, avec Modifier et Ouvrir dans Aujourd’hui. Un deuxième clic ouvre le jour',
+      'Les flèches du clavier déplacent le choix dans une ligne et entre les cycles',
+      'Chaque segment de phase est au-dessus de son jour',
+      'Avec plus de 4 cycles, les cycles passés montrent seulement leurs tampons. Un clic sur le titre du cycle ouvre la ligne complète',
+    ],
+  },
+  {
     version: '1.35.0',
     date: '2026-10-29',
     title: 'A Chart That Fits a Phone',

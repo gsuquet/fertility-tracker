@@ -1,13 +1,32 @@
 import { act, fireEvent, render, screen, within } from '@testing-library/react';
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { App } from '../App';
-import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
+import { STORAGE_HAS_SEEN_WELCOME_KEY, STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
+import { DESKTOP_QUERY } from '../hooks/useMediaQuery';
+import { makeObservation } from '../test/factories';
+import { addDays, getTodayStr } from '../utils/dateUtils';
 import { en } from '../i18n';
 
 const footer = () => screen.getByRole('contentinfo');
 
+/** The desktop width for the next render. It goes back to a phone after each test. */
+let desktop = false;
+
 describe('App flows', () => {
+  beforeEach(() => {
+    vi.mocked(window.matchMedia).mockImplementation(
+      query =>
+        ({
+          matches: desktop && query === DESKTOP_QUERY,
+          media: query,
+          addEventListener: vi.fn(),
+          removeEventListener: vi.fn(),
+        }) as unknown as MediaQueryList
+    );
+  });
+
   afterEach(() => {
+    desktop = false;
     vi.useRealTimers();
     vi.restoreAllMocks();
   });
@@ -26,6 +45,33 @@ describe('App flows', () => {
 
     render(<App />);
     expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
+  it('opens the selected day of the desktop chart in Today, and the Today tab on today', async () => {
+    const yesterday = addDays(getTodayStr(), -1);
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem(
+      STORAGE_OBSERVATIONS_KEY,
+      JSON.stringify([
+        makeObservation({ date: yesterday, bleeding: 'H', codeString: 'H' }),
+        makeObservation({ date: getTodayStr(), bleeding: 'H', codeString: 'H' }),
+      ])
+    );
+    desktop = true;
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.chart }));
+    fireEvent.click(
+      await screen.findByRole('button', { name: new RegExp(`^Cycle Day 1, Date ${yesterday}`) })
+    );
+    const detail = screen.getByRole('region', { name: en.chartStrip.detailLabel });
+    fireEvent.click(within(detail).getByRole('button', { name: en.chartStrip.openInToday }));
+    expect(await screen.findByText(en.todayView.yesterday, { exact: true })).toBeInTheDocument();
+
+    // The Today tab opens on today again, after a visit to the chart
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.chart }));
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.today }));
+    await screen.findByRole('tabpanel', { name: en.tabs.today });
+    expect(screen.queryByText(en.todayView.yesterday, { exact: true })).toBeNull();
   });
 
   it('opens the guide from the header', async () => {

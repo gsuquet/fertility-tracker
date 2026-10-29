@@ -1,8 +1,8 @@
 import type React from 'react';
 import { useLanguage } from '../../context/LanguageContext';
-import { formatMessage } from '../../i18n';
 import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
+import { fertilityGuidance } from './fertilityGuidance';
 import { Info, Sparkles } from 'lucide-react';
 
 interface TodayFertilityGuidanceProps {
@@ -29,20 +29,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
 }) => {
   const { t } = useLanguage();
 
-  const getFertilityGuidance = () => {
-    switch (stamp) {
-      case 'RED':
-        return t.todayView.guidance.red;
-      case 'WHITE_BABY':
-        return t.todayView.guidance.whiteBaby;
-      case 'LIGHT_GREEN_BABY_1':
-      case 'LIGHT_GREEN_BABY_2':
-      case 'LIGHT_GREEN_BABY_3':
-        return formatMessage(t.todayView.guidance.postPeak, { day: stamp.slice(-1) });
-      default:
-        return t.todayView.guidance.dry;
-    }
-  };
+  const getFertilityGuidance = () => fertilityGuidance(stamp, t);
 
   if (variant !== 'card') {
     // The banner of Today shows only on a phone. The banner of the sheet shows at each width.

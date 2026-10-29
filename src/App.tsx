@@ -196,7 +196,11 @@ const MainApp: React.FC = () => {
   const openShortcuts = () => setIsShortcutsOpen(true);
 
   // The keyboard shortcuts of all the pages. TodayView adds those of the days.
-  useShortcut('today', () => setActiveTab('today'));
+  // Today opens on today, not on a day that the chart opened before
+  useShortcut('today', () => {
+    setSelectedObservation(null);
+    setActiveTab('today');
+  });
   useShortcut('chart', () => setActiveTab('chart'));
   useShortcut('calendar', () => setActiveTab('calendar'));
   useShortcut('analytics', () => setActiveTab('analytics'));
@@ -256,7 +260,7 @@ const MainApp: React.FC = () => {
           <ErrorBoundary key={activeTab}>
             <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
               {activeTab === 'today' && <TodayView />}
-              {activeTab === 'chart' && <ChartRow />}
+              {activeTab === 'chart' && <ChartRow onOpenToday={() => setActiveTab('today')} />}
               {activeTab === 'calendar' && <CalendarGrid />}
               {activeTab === 'analytics' && (
                 <>

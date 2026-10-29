@@ -71,10 +71,10 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
         .getByRole('button', { name: en.mobileTabs.log })
         .click();
     } else {
-      // On a wide screen, the drawer opens from a day of the chart or the calendar
+      // On a wide screen, today is selected in the chart, so a click on it opens the drawer
       await openTab(page, size, 'chart');
-      await page
-        .getByRole('tabpanel', { name: en.tabs.chart })
+      const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
+      await chart
         .getByRole('button', {
           name: labelPattern(en.chartStrip.filledCellLabel, {
             date: TODAY,

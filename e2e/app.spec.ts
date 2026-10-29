@@ -188,12 +188,14 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
+    await chart.getByRole('button', { name: en.chartStrip.editDay }).click();
     await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
     await expect(peakStat(17, '2026-10-16')).toBeVisible();
     await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
 
+    // The day is still selected, so a click opens the drawer
     await cell('2026-10-16', 'DARK_GREEN').click();
     await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
@@ -222,6 +224,8 @@ test.describe('Fertility Tracker in a browser', () => {
         name: labelPattern(en.chartStrip.filledCellLabel, { date: '2026-10-12' }),
       })
       .click();
+    // On a desktop, a click selects the day, and Edit opens the drawer
+    await chart.getByRole('button', { name: en.chartStrip.editDay }).click();
     // The title follows the saved data of the date, so it changes after Undo
     const drawer = page.getByRole('dialog', {
       name: new RegExp(`${en.drawer.editTitle}|${en.actions.newEntry}`),

@@ -64,6 +64,7 @@ export const Header: React.FC<HeaderProps> = ({
     isMoreMenuOpen
   );
 
+  // Today opens on today, not on a day that the chart opened before
   const handleNewEntry = () => {
     setSelectedObservation(null);
     setActiveTab('today');
@@ -76,7 +77,7 @@ export const Header: React.FC<HeaderProps> = ({
       <button
         type="button"
         className="header-brand-btn"
-        onClick={() => setActiveTab('today')}
+        onClick={handleNewEntry}
         title={t.menu.homeLabel}
         aria-label={t.menu.homeLabel}
       >
@@ -97,7 +98,7 @@ export const Header: React.FC<HeaderProps> = ({
           aria-controls="today-panel"
           id="tab-today"
           className={`tab-btn ${activeTab === 'today' ? 'active' : ''}`}
-          onClick={() => setActiveTab('today')}
+          onClick={handleNewEntry}
           {...hint(t.tabs.today, 'today')}
         >
           <CalendarDays size={18} />
