@@ -15,7 +15,7 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 
 In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens the export dialog ([Install and update](../application-behavior.md#install-and-update)).
 
-The guide has **Previous**, **Next** and **Skip** buttons and step dots. The guide is in English and in French.
+Each opening starts on slide 1. The guide has **Previous**, **Next** and **Skip** buttons and step dots. The guide is in English and in French.
 
 ## Accessibility
 

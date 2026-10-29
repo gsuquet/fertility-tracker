@@ -12,6 +12,8 @@ This page gives the rules for the export dialog: print, backup, restore, demo da
 | Load Demo Cycle     | Replaces all observations with the demo data.                                         |
 | Clear Data / Reset  | Deletes all observations.                                                             |
 
+Each opening starts in **Single Cycle** mode, with the cycle of the cycle picker.
+
 `getExportFilename()` makes file names with only lowercase letters, digits and dashes. There is no PNG export.
 
 ### Backup file
@@ -43,6 +45,8 @@ Before a backup changes existing observations, the dialog shows a preview from `
 During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
 
 ### Print
+
+The print view is a lazy chunk. The rules of its load are in [Code splitting and lazy loading](../technology.md#code-splitting-and-lazy-loading).
 
 1. The dialog names the selection: `cycle-N`, `selected-cycles` or `all-cycles`.
 2. The application sets the document title to the file name, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD`.
