@@ -60,7 +60,7 @@ The main chunk has only the code of the first screen. The other parts load with 
 | `CycleAnalyticsView`, `ExportModal`, `VersionModal`, `WelcomeModal`, `InstallGuideModal` | Lazy chunks. `App.tsx` renders a dialog only while it is open.                          |
 | `VERSION_HISTORY`                                                                        | Only in the `VersionModal` chunk. The main chunk gets the version from `appVersion.ts`. |
 | `PrintExportView`                                                                        | A lazy chunk that the application renders from the start.                               |
-- Each opening of a dialog starts a new dialog. The version dialog opens on **Release Notes**, and the welcome guide opens on step 1. The export dialog opens in **Single Cycle** mode with the cycle of the cycle picker.
+- `App.tsx` mounts a dialog again at each opening. Thus, each opening starts a new dialog.
 - A unit test follows the static imports from `main.tsx`. It fails if they reach `versionTracker.ts` or a lazy component.
 - **Print / Save as PDF** calls `window.print()` only after the print view chunk loads and renders the selected cycles. A click before that waits for the chunk.
 - The browser print command (**Ctrl+P**) does not wait. Before the print view chunk loads, it prints an empty page.

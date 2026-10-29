@@ -5,6 +5,7 @@ This page gives the rules for the **About & Version Tracker** dialog.
 ## Behavior
 
 - The info button in the header, the **About & Version Tracker** item of the phone menu and the version button in the footer open the dialog.
+- Each opening starts on the **Release Notes** tab.
 - The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.
 - The **System Information** tab shows the version, the CrMS version, the build date and the environment. It also has the repository link.
 - The tab also shows the storage statistics: the number of storage keys, cycles and observations, and the size in KB.
