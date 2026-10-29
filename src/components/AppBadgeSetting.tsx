@@ -11,8 +11,9 @@ import {
 } from '../pwa/appBadge';
 
 /**
- * The switch of the app icon badge (SPEC 5.16). It shows only when the browser has the Badging
- * API. On Apple systems, it tells why the system asks for the permission for notifications.
+ * The switch of the app icon badge (docs/reference/application-behavior.md). It shows only when the
+ * browser has the Badging API. On Apple systems, it tells why the system asks for the permission for
+ * notifications.
  */
 export const AppBadgeSetting: React.FC = () => {
   const { t } = useLanguage();

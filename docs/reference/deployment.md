@@ -25,16 +25,16 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 - The cache name is `fertility-tracker-<version>-<hash>`. The hash is the first 8 hexadecimal characters of a SHA-256 of the names and contents of the files.
 - Thus, each build with a different output installs a new cache.
 
-| Event      | Action                                                                                                                                                                                                                                               |
-| ---------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `install`  | Adds each precache URL to the new cache, with `cache: 'no-cache'`. The browser checks each file with the server, so its HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([Update](../../SPEC.md#update)). |
-| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                                                                           |
-| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                                                                                    |
-| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                                                                                    |
+| Event      | Action                                                                                                                                                                                                                                                         |
+| ---------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `install`  | Adds each precache URL to the new cache, with `cache: 'no-cache'`. The browser checks each file with the server, so its HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([Update](application-behavior.md#update)). |
+| `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                                                                                     |
+| `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                                                                                              |
+| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                                                                                              |
 - Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
-- A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([Update](../../SPEC.md#update)).
+- A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([Update](application-behavior.md#update)).
 - Other pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
 - For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
 
@@ -46,7 +46,7 @@ Other rules:
 - The manifest `id` and `scope` are `./`. Thus, the installed application keeps its identity if `start_url` changes.
 - The manifest has `lang` (`en`), `dir` (`ltr`) and `categories` (`health`, `medical`, `lifestyle`).
 - `launch_handler` has `client_mode: ["focus-existing", "auto"]`. In Chromium, a second launch shows the open window and does not reload it. Thus, a draft in the drawer stays.
-- `shortcuts` has **Log today** and **Chart**, each with `icons/icon-96.png` ([Launch shortcuts](../../SPEC.md#launch-shortcuts)).
+- `shortcuts` has **Log today** and **Chart**, each with `icons/icon-96.png` ([Launch shortcuts](application-behavior.md#launch-shortcuts)).
 - `screenshots` has `screenshots/phone.png` (`narrow`, 780 × 1688) and `screenshots/desktop.png` (`wide`, 1440 × 900). Android shows them in the install dialog. They show only demo data. The task `mise run screenshots` makes them again.
 - A test reads the manifest and checks that each icon and screenshot file exists.
 - `index.html` has `apple-mobile-web-app-title` (`Fertility Tracker`) and `apple-mobile-web-app-status-bar-style` (`default`). Thus, iOS shows the short name under the icon and the content stays under the status bar.
