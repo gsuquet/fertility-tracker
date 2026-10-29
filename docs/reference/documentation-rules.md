@@ -49,6 +49,16 @@ A decision record (ADR) goes in `records/adrs/`. It records one decision, its co
 3. Tables or lists, in the same sequence as the subject.
 4. **Related documents**: links.
 
+### Screen page
+
+A page in `reference/screens/` has one screen or dialog. It has the reference template and these sections:
+
+1. **Layout**: the screenshots of a phone screen and a wide screen, and links to their ARIA snapshots. A part of each page, for example the navigation, links to the **Layout** section of a page. It has no screenshot of its own. Read [ADR 0006](../records/adrs/0006-screen-layout-snapshots-and-screenshots.md).
+2. **Behavior**: the rules of the screen, for example gestures, keys and messages.
+3. **Accessibility**: roles, names and focus rules. Each screen must meet WCAG 2.2 level AA.
+4. **Implementation**: the source files of the screen.
+5. **Related documents**: links. Always link to `reference/application-behavior.md`. Link to `reference/dialog-component.md` when the screen opens a dialog.
+
 ### Explanation
 
 1. Title: the subject. Use a noun.

@@ -101,3 +101,4 @@ Records are not Diátaxis pages. An RFC proposes a large change before the work 
 - [ADR 0003: Records for proposals and decisions](records/adrs/0003-records-for-proposals-and-decisions.md)
 - [ADR 0004: Specification in reference pages](records/adrs/0004-specification-in-reference-pages.md)
 - [ADR 0005: Accessibility level of the screens](records/adrs/0005-accessibility-level.md)
+- [ADR 0006: Screen layout in ARIA snapshots and screenshots](records/adrs/0006-screen-layout-snapshots-and-screenshots.md)
