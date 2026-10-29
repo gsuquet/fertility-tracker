@@ -72,4 +72,4 @@
     - text: /© \d+ Fertility Tracker • Open Source Software/
     - button "Welcome to Fertility Tracker": User Guide
     - button "Keyboard shortcuts"
-    - button "About & Version Tracker": /v1\.\d+\.\d+/
+    - button "About & Version Tracker": /v\d+\.\d+\.\d+/
