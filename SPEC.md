@@ -31,7 +31,7 @@ Find the file or the folder that you change. Then change its page first.
 | `src/types/crms.ts`                                                                                      | [Data format](docs/reference/data-format.md)                           |
 | `src/context/`, `src/utils/storage.ts`, `src/utils/storageKeys.ts`                                       | [Data storage](docs/reference/data-storage.md)                         |
 | `src/i18n/`                                                                                              | [Languages](docs/reference/languages.md)                               |
-| `src/styles/`                                                                                            | [Design system](docs/reference/design-system.md)                       |
+| `src/styles/`, `src/components/icons/`, `src/components/StampBadge.tsx`                                  | [Design system](docs/reference/design-system.md)                       |
 | `src/components/Modal.tsx`                                                                               | [Dialog component](docs/reference/dialog-component.md)                 |
 | `src/components/Header.tsx`, `Footer.tsx`, `MobileNav.tsx`, `CyclePicker.tsx`                            | [Navigation](docs/reference/screens/navigation.md)                     |
 | `src/components/CycleStatsHeader.tsx`                                                                    | [Statistics bar](docs/reference/screens/statistics-bar.md)             |
@@ -46,11 +46,13 @@ Find the file or the folder that you change. Then change its page first.
 | `src/components/ErrorBoundary.tsx`                                                                       | [Error screen](docs/reference/screens/error-screen.md)                 |
 | `src/components/LegalNotice.tsx`                                                                         | [Legal and medical limits](docs/reference/legal-and-medical-limits.md) |
 | `src/App.tsx`, `src/hooks/`, `src/pwa/` and the other files in `src/components/` and `src/utils/`        | [Application behavior](docs/reference/application-behavior.md)         |
-| `src/sw/`, `public/`, `wrangler.json`                                                                    | [Deployment](docs/reference/deployment.md)                             |
-| `package.json`, `vite.config.ts`, `src/main.tsx`                                                         | [Technology](docs/reference/technology.md)                             |
-| `e2e/` and the `__tests__` folders                                                                       | [Test rules and helpers](docs/reference/test-rules.md)                 |
+| `src/sw/`, `public/`, `index.html`, `scripts/pwa/`, `wrangler.json`                                      | [Deployment](docs/reference/deployment.md)                             |
+| `package.json`, `vite.config.ts`, `src/main.tsx`, `src/vite-env.d.ts`                                    | [Technology](docs/reference/technology.md)                             |
+| `tsconfig.json`, `biome.json`, `.node-version`, `.npmrc`, `.mise/config.toml`, `.pre-commit-config.yaml` | [Technology](docs/reference/technology.md)                             |
+| `e2e/`, `playwright.config.ts`, `src/test/`, `src/setupTests.ts` and the `__tests__` folders             | [Test rules and helpers](docs/reference/test-rules.md)                 |
 | `.mise/tasks/`, `.github/workflows/`                                                                     | [Commands](docs/reference/commands.md)                                 |
-| `docs/`, `README.md`, `AGENTS.md`, `SPEC.md`                                                             | [Documentation rules](docs/reference/documentation-rules.md)           |
+| `scripts/commits/`, `.github/dependabot.yml`                                                             | [Commit messages](docs/reference/commit-messages.md)                   |
+| `docs/`, `scripts/docs/`, `README.md`, `AGENTS.md`, `SPEC.md`                                            | [Documentation rules](docs/reference/documentation-rules.md)           |
 
 When a page does not give a rule, read [Project structure](docs/reference/project-structure.md) and [Architecture](docs/explanation/architecture.md).
 

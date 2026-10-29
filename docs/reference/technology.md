@@ -35,7 +35,7 @@ Each runtime, tool, dependency, pre-commit hook and CI action has an exact pinne
 - `package.json` declares `engines`, `devEngines` and `packageManager`.
 - `.mise/config.toml` and `.mise/mise.lock` pin the tools with checksums.
 
-The table gives the place of each version. It does not copy the numbers, because Dependabot changes them each week.
+The table gives the place of each version. It does not copy the numbers, because the numbers change often. For example, Dependabot changes the npm packages each week.
 
 | Layer              | Technology                                        | Version and settings                                                                         |
 | ------------------ | ------------------------------------------------- | -------------------------------------------------------------------------------------------- |
