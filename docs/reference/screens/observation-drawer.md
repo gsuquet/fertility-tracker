@@ -6,9 +6,12 @@ This page gives the rules for the observation drawer, the bottom sheets and the 
 
 - The drawer has the same fields as the Today form: date, direct code, the code buttons, intercourse, peak and notes.
 - The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
-  - When the date has an observation, the title is **Edit Observation**, the fields show the saved values and **Delete** shows.
-  - When the date has no observation, the title is **Log Observation** and the form is empty.
-  - Thus, a save with no change never replaces a saved day with an empty observation.
+
+| Condition                   | Result                                                                                 |
+| --------------------------- | -------------------------------------------------------------------------------------- |
+| The date has an observation | The title is **Edit Observation**. The fields show the saved values. **Delete** shows. |
+| **Else**                    | The title is **Log Observation**. The form is empty.                                   |
+- Thus, a save with no change never replaces a saved day with an empty observation.
 - A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
 - The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
 - The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
@@ -30,10 +33,13 @@ The rules below apply to all these sheets. The body is the part that scrolls. It
 - One gesture moves the sheet at a time. A touch of the body does not move or end a drag of the handle. During the slide down, the sheet ignores taps.
 - A close in another way during the slide, for example with `Escape` or **Back**, stops the slide timer. Thus, the timer cannot close a drawer that opens again.
 - The backdrop becomes lighter in proportion to the drag.
-- At the release, [sheetDrag.ts](../../../src/domain/sheetDrag.ts) decides:
-  - The sheet closes when the drag is more than 25% of the sheet height.
-  - The sheet also closes after a fast flick down: at least 0.5 pixels per millisecond over at least 24 pixels. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
-  - Else the sheet goes back to its position.
+- At the release, [sheetDrag.ts](../../../src/domain/sheetDrag.ts) decides. The speed comes from the moves of the last 100 milliseconds. Thus, a pause before the release is not a flick.
+
+| Condition                                                                   | Result                               |
+| --------------------------------------------------------------------------- | ------------------------------------ |
+| The drag is more than 25% of the sheet height                               | The sheet closes.                    |
+| A flick down of at least 0.5 pixels per millisecond over at least 24 pixels | The sheet closes.                    |
+| **Else**                                                                    | The sheet goes back to its position. |
 - A close by drag does the same as the close button (for the confirmation dialog and **New Cycle Start?**: the cancel). The draft is not kept, and the history entry of the sheet goes ([Back button and address](../application-behavior.md#back-button-and-address)).
 - The sheet slides down in 200 milliseconds, then closes. With `prefers-reduced-motion: reduce`, the sheet has no animation: it opens and closes at once.
 

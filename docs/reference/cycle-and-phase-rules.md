@@ -46,17 +46,22 @@ The oldest cycle is cycle 1. The cycle picker and the paper chart show the newes
 
 The **All Cycles** view shows the average of each value per cycle.
 
-- The length and menses averages use all the cycles.
-- The follicular and luteal averages use only the cycles that have a Peak Day.
-- If no cycle has a Peak Day, the follicular and luteal averages use all the cycles.
+The length and menses averages use all the cycles. The follicular and luteal averages use these cycles:
+
+| Condition                        | Result                                |
+| -------------------------------- | ------------------------------------- |
+| One cycle or more has a Peak Day | Only the cycles that have a Peak Day. |
+| **Else**                         | All the cycles.                       |
 
 ## Luteal phase health
 
-| Luteal phase                      | Label                       |
-| --------------------------------- | --------------------------- |
-| 9 to 17 days                      | Normal (9-17 days)          |
-| 1 to 8 days, or more than 17 days | Short/Extended luteal phase |
-| 0 days                            | Pending Peak Day            |
+The value of all cycles is an average and can have decimals.
+
+| Condition                      | Result                      |
+| ------------------------------ | --------------------------- |
+| Luteal phase from 9 to 17 days | Normal (9-17 days)          |
+| Luteal phase more than 0 days  | Short/Extended luteal phase |
+| **Else**                       | Pending Peak Day            |
 
 ## Mucus score
 

@@ -55,8 +55,12 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - Each entry of the application has `state.ftLayerDepth`: the number of layers that were open. The application compares it to the open layers after each change, in a microtask.
 - Thus, React `StrictMode` does not add two entries. When a layer closes and another opens at the same time, they share one entry. For example, the phone menu opens the export dialog.
 - When the page changes while a layer entry is current, the application first goes back to the entry of the page. Then it adds the entry of the new page and the entries of the layers that stay open.
-- At the start after a reload with layers open, the current entry has `ftLayerDepth` above 0. The application goes back to the entry of the page with `history.go()`. Thus, the next **Back** does not find an old layer entry.
-- Else, it sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**.
+- At the start, the application reads the current entry:
+
+| Condition                                             | Result                                                                                                                                                                               |
+| ----------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ftLayerDepth` is above 0 (a reload with layers open) | The application goes back to the entry of the page with `history.go()`. Thus, the next **Back** does not find an old layer entry.                                                    |
+| **Else**                                              | The application sets `ftLayerDepth` to 0 with `history.replaceState`. When the hash does not show the first page, it also replaces the hash. An empty hash stays empty on **Today**. |
 - The browser does not send the hash to the server. Thus, the service worker gives the application shell offline also for an address with a hash ([Offline use and installation](deployment.md#offline-use-and-installation)).
 
 ## Install and update
@@ -169,7 +173,13 @@ The first install has no controller. Thus, it activates at once and the applicat
 
 **Source files:** [src/pwa/appBadge.ts](../../src/pwa/appBadge.ts), [src/components/AppBadgeSetting.tsx](../../src/components/AppBadgeSetting.tsx)
 
-- When the badge is on, the icon of the installed app shows a dot while today has no observation. The dot goes when an observation of today is saved. Demo data does not count as an observation.
+- The badge has these states. Demo data does not count as an observation.
+
+| Condition                | Result                                     |
+| ------------------------ | ------------------------------------------ |
+| The badge is off         | The application removes the dot.           |
+| Today has no observation | The icon of the installed app shows a dot. |
+| **Else**                 | The application removes the dot.           |
 - The dot is `navigator.setAppBadge()` with no number. It never shows a number or data of the cycle. `navigator.clearAppBadge()` removes it.
 - The badge is off by default. The checkbox **Show a dot on the app icon when today has no observation** turns it on or off. It is in the **System Information** tab of the **About & Version Tracker** dialog. The application saves the choice in `fertility_tracker_badge_on`.
 - The checkbox shows only when the browser has the Badging API. Its hint tells that the dot changes only while the app is open.
@@ -181,7 +191,6 @@ The first install has no controller. Thus, it activates at once and the applicat
   - After each change of the observations, for example a save, a delete or a restore.
   - When the date changes while the app is open. The application looks for a new date each minute, not with a timer to midnight. A timer stops while the computer sleeps, and the time zone can change.
   - When the app shows again (`visibilitychange`).
-- When the badge is off, the application removes the dot.
 - All the calls do nothing when the browser has no Badging API or the app is not installed. A refused call does nothing too.
 - Without a server, the dot changes only while the app runs. If the user does not open the app on a day, the icon keeps the state of the last update.
 

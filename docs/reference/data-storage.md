@@ -82,8 +82,13 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 `StorageRecoveryNotice` shows an alert above the pages while `recoveryData` is set.
 
 - **Download unreadable data** saves the original text as `fertility-tracker-data-recovery-YYYY-MM-DD.txt`.
-- When `recoveryKept` is `true`, the message says that a copy is kept. The second button is **Delete the copy**. It opens a confirmation (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`), and only its confirm button calls `dismissRecovery()`.
-- When `recoveryKept` is `false`, the message says that the next change replaces the data. The second button is **Close**.
+
+| Condition                | Result                                                                                   |
+| ------------------------ | ---------------------------------------------------------------------------------------- |
+| `recoveryKept` is `true` | The second button is **Delete the copy**. The message says that a copy is kept.          |
+| **Else**                 | The second button is **Close**. The message says that the next change replaces the data. |
+
+**Delete the copy** opens a confirmation (`confirmDialog.recoveryTitle`, `recoveryMessage`, `recoveryConfirm`). Only its confirm button calls `dismissRecovery()`.
 
 ## Save failure and persistent storage
 
