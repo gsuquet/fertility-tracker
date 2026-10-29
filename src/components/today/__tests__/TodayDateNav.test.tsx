@@ -24,15 +24,30 @@ const renderNav = (
 const dateInput = () => screen.getByDisplayValue('2026-09-02') as HTMLInputElement;
 
 describe('TodayDateNav', () => {
-  it('shows the today badge and the not-logged status', () => {
+  it('shows the today badge and the not-saved status', () => {
     renderNav();
     expect(screen.getByText('Today')).toBeInTheDocument();
+    expect(screen.getByText('Not saved')).toBeInTheDocument();
     expect(screen.queryByText(/Day \d/)).toBeNull();
   });
 
-  it('shows the cycle day and the logged status for an observation', () => {
+  it('shows the cycle day and the saved status for an observation', () => {
     renderNav({ currentObs: makeObservation({ date: '2026-09-02', cycleDay: 5 }) });
     expect(screen.getByText('Day 5')).toBeInTheDocument();
+    expect(screen.getByText('Saved')).toBeInTheDocument();
+  });
+
+  it('shows the cycle day of a day with no observation', () => {
+    renderNav({ cycleDay: 12 });
+    expect(screen.getByText('Day 12')).toBeInTheDocument();
+    expect(screen.getByText('Not saved')).toBeInTheDocument();
+  });
+
+  it('shows Jump to Today on an earlier day', () => {
+    const { onGoToToday } = renderNav({ isToday: false });
+    expect(screen.queryByText('Today')).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: /Jump to Today/ }));
+    expect(onGoToToday).toHaveBeenCalledOnce();
   });
 
   it('formats the date in French', () => {

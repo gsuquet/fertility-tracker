@@ -43,4 +43,11 @@ describe('StampBadge Component', () => {
     renderWithProviders(<StampBadge stamp="WHITE_BABY" isPeakDay={true} />);
     expect(screen.getByText('P')).toBeInTheDocument();
   });
+
+  it('draws the empty stamp of a day with no code instead of the stamp color', () => {
+    const { container } = renderWithProviders(<StampBadge stamp="WHITE_BABY" isEmpty />);
+    expect(container.querySelector('.stamp-empty')).toBeInTheDocument();
+    expect(container.querySelector('.stamp-white_baby')).toBeNull();
+    expect(container.querySelector('.baby-svg')).toBeNull();
+  });
 });

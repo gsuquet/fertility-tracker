@@ -20,6 +20,8 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   variant,
 }) => {
   const { t } = useLanguage();
+  // A day with no code is not a dry day: no stamp color and no fertility text
+  const isEmpty = !currentCode;
 
   const getFertilityGuidance = () => {
     switch (stamp) {
@@ -40,13 +42,23 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
     return (
       <div className="today-top-status-banner mobile-only-stamp-banner">
         <div className="status-stamp-hero">
-          <StampBadge stamp={stamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
+          <StampBadge
+            stamp={stamp}
+            isPeakDay={isManualPeak}
+            intercourse={intercourse}
+            size="lg"
+            isEmpty={isEmpty}
+          />
           <div className="status-hero-info">
-            <div className="status-code-display">{currentCode || '---'}</div>
-            <div className="status-hero-guidance">
-              <Info size={15} className="guidance-icon" />
-              <span>{getFertilityGuidance()}</span>
+            <div className={isEmpty ? 'stamp-empty-text' : 'status-code-display'}>
+              {currentCode || t.todayView.noObservation}
             </div>
+            {!isEmpty && (
+              <div className="status-hero-guidance">
+                <Info size={15} className="guidance-icon" />
+                <span>{getFertilityGuidance()}</span>
+              </div>
+            )}
           </div>
         </div>
       </div>
@@ -61,14 +73,24 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
       </div>
 
       <div className="status-stamp-wrapper">
-        <StampBadge stamp={stamp} isPeakDay={isManualPeak} intercourse={intercourse} size="lg" />
-        <div className="status-code-text">{currentCode || '---'}</div>
+        <StampBadge
+          stamp={stamp}
+          isPeakDay={isManualPeak}
+          intercourse={intercourse}
+          size="lg"
+          isEmpty={isEmpty}
+        />
+        <div className={isEmpty ? 'stamp-empty-text' : 'status-code-text'}>
+          {currentCode || t.todayView.noObservation}
+        </div>
       </div>
 
-      <div className="status-guidance-box">
-        <Info size={16} className="guidance-icon" />
-        <p>{getFertilityGuidance()}</p>
-      </div>
+      {!isEmpty && (
+        <div className="status-guidance-box">
+          <Info size={16} className="guidance-icon" />
+          <p>{getFertilityGuidance()}</p>
+        </div>
+      )}
     </div>
   );
 };

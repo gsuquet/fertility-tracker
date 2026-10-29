@@ -114,6 +114,8 @@ describe('design token contrast (WCAG 2 AA)', () => {
       ['--stamp-white-border', '--bg-surface'],
       ['--stamp-white-border', '--bg-primary'],
       ['--stamp-light-green-border', '--bg-surface'],
+      ['--stamp-empty', '--bg-surface'],
+      ['--stamp-empty', '--bg-primary'],
       ['--stamp-light-green-border', '--bg-primary'],
     ])('stamp edge %s on %s reaches 3:1', (edge, surface) => {
       expect(contrast(color(edge), color(surface))).toBeGreaterThanOrEqual(AA_NON_TEXT);
@@ -232,6 +234,11 @@ describe('contrast-safe token usage', () => {
     const escaped = selector.replace(/[.]/g, '\\.');
     const rule = new RegExp(`${escaped}\\s*\\{([^}]*)\\}`).exec(badges);
     expect(rule?.[1]).toMatch(new RegExp(`border:\\s*[\\d.]+px solid var\\(${token}\\)`));
+  });
+
+  it('draws the edge of the empty stamp with a dashed --stamp-empty line', () => {
+    const rule = /\.stamp-empty\s*\{([^}]*)\}/.exec(readCss('primitives/badges.css'));
+    expect(rule?.[1]).toMatch(/border:\s*[\d.]+px dashed var\(--stamp-empty\)/);
   });
 
   it('gives the dry and fertile trend bars the dry stamp green and the accent', () => {

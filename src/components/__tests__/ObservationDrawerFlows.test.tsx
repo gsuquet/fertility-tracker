@@ -86,7 +86,8 @@ describe('ObservationDrawer flows', () => {
 
   it('logs a new observation for today with every selector', () => {
     renderDrawer(null);
-    expect(within(drawer()).getByText('---')).toBeInTheDocument();
+    expect(within(drawer()).getByText(en.todayView.noObservation)).toBeInTheDocument();
+    expect(drawer().querySelector('.stamp-empty')).toBeInTheDocument();
     press(en.codes.stretch['10']);
     press(en.codes.modifiers.K);
     press(en.codes.frequency.X3);

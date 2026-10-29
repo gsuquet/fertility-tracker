@@ -14,6 +14,10 @@ This page gives the rules that set the stamp of each day and the Peak Day of eac
 | `LIGHT_GREEN_BABY_3` | Light green with a baby, 3 | Third day of the count of three                            |
 | `YELLOW`             | Yellow                     | Shown in the welcome guide only. No rule gives this stamp. |
 
+## Day with no code
+
+A saved observation with no code, for example a day with only notes, keeps the stamp of the rules below in the data. The screens and the printed chart show the empty stamp for this day: a dashed square with `--stamp-empty`. Thus, a day with no code does not look like a dry day.
+
 ## Stamp of one day
 
 The first row that matches applies. Read [Observation codes](observation-codes.md) for the fertile codes.

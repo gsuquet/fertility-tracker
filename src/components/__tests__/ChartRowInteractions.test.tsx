@@ -110,6 +110,7 @@ describe('ChartRow interactions', () => {
     const today = screen.getByRole('button', { current: 'date' });
     expect(today).toHaveAccessibleName(/Code None, Today$/);
     expect(within(today).getByText('---')).toBeInTheDocument();
+    expect(today.querySelector('.stamp-empty')).toBeInTheDocument();
     expect(
       within(today).getByTitle(`${en.chartStrip.notesTooltip}: notes only`)
     ).toBeInTheDocument();

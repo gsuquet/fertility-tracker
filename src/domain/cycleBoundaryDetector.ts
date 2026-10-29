@@ -1,5 +1,6 @@
 import { BLEEDING_CODES, MENSES_BLEEDING_CODES, isCodeIn } from '../types/crms';
 import type { Observation, Cycle } from '../types/crms';
+import { getDaysDifference } from '../utils/dateUtils';
 import { processCycleObservations } from './peakDetector';
 
 /**
@@ -91,4 +92,18 @@ export function groupObservationsIntoCycles(observations: Observation[]): Cycle[
 /** Returns the date of the last observation of a cycle, or its start date when it is empty. */
 export function getCycleEndDate(cycle: Cycle): string {
   return cycle.observations.at(-1)?.date ?? cycle.startDate;
+}
+
+/**
+ * Returns the cycle day of a date from the start of the last cycle that starts on or before it,
+ * or undefined for a date before the first cycle. The date does not need an observation.
+ */
+export function getCycleDayOn(cycles: Cycle[], date: string): number | undefined {
+  // ISO dates sort as text
+  const lastStart = cycles
+    .map(c => c.startDate)
+    .filter(start => start <= date)
+    .sort()
+    .at(-1);
+  return lastStart ? getDaysDifference(lastStart, date) + 1 : undefined;
 }

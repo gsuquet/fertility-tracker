@@ -18,6 +18,8 @@ interface TodayDateNavProps {
   selectedDate: string;
   isToday: boolean;
   currentObs?: Observation | undefined;
+  /** The cycle day of a date with no observation. */
+  cycleDay?: number | undefined;
   onPrevDay: () => void;
   onNextDay: () => void;
   onGoToToday: () => void;
@@ -28,6 +30,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   selectedDate,
   isToday,
   currentObs,
+  cycleDay,
   onPrevDay,
   onNextDay,
   onGoToToday,
@@ -50,6 +53,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   };
 
   const formattedDateTitle = formatDateDisplay(selectedDate, t.locale);
+  const shownCycleDay = currentObs?.cycleDay ?? cycleDay;
 
   return (
     <div className="today-header-card compact-date-bar">
@@ -101,7 +105,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
         ) : (
           <button
             type="button"
-            className="btn btn-xs btn-outline"
+            className="btn btn-xs btn-outline jump-today-btn"
             onClick={onGoToToday}
             {...hint(t.todayView.goToToday, 'goToToday')}
           >
@@ -109,9 +113,9 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
             {t.todayView.goToToday}
           </button>
         )}
-        {currentObs?.cycleDay && (
+        {shownCycleDay && (
           <span className="badge badge-secondary badge-sm">
-            {formatMessage(t.common.dayNumber, { day: currentObs.cycleDay })}
+            {formatMessage(t.common.dayNumber, { day: shownCycleDay })}
           </span>
         )}
         {currentObs ? (

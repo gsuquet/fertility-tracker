@@ -2,6 +2,7 @@ import type React from 'react';
 import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
+import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
 import { hasFieldChanges, needsCycleStartChoice } from '../domain/observationForm';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { useShortcut } from '../hooks/useKeyboardShortcuts';
@@ -23,6 +24,7 @@ type EntryMode = 'direct' | 'detailed';
 export const TodayView: React.FC = () => {
   const {
     observations,
+    cycles,
     saveObservation,
     deleteObservation,
     selectedObservation,
@@ -141,6 +143,7 @@ export const TodayView: React.FC = () => {
         selectedDate={selectedDate}
         isToday={isToday}
         currentObs={currentObs}
+        cycleDay={getCycleDayOn(cycles, selectedDate)}
         onPrevDay={handlePrevDay}
         onNextDay={handleNextDay}
         onGoToToday={handleGoToToday}

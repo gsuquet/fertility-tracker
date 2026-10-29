@@ -44,6 +44,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.33.0',
+    date: '2026-10-29',
+    title: 'An Empty Day Looks Empty',
+    titleFr: 'Un jour vide a l’air vide',
+    tagline: 'A day with no observation no longer looks like a dry, infertile day',
+    taglineFr: 'Un jour sans observation ne ressemble plus à un jour sec et infertile',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A day with no code shows a dashed empty stamp and "No observation yet", with no fertility text',
+      'A saved day with only notes shows the empty stamp on the chart, the calendar and the printed chart',
+      'On a phone, the date bar shows Today or Jump to Today, the cycle day, and Saved or Not saved',
+      'The previous and next day buttons are larger and easier to tap',
+    ],
+    highlightsFr: [
+      'Un jour sans code montre un tampon vide en pointillés et « Pas encore d’observation », sans texte de fertilité',
+      'Un jour enregistré avec seulement des notes montre le tampon vide sur le graphique, le calendrier et le graphique imprimé',
+      'Sur un téléphone, la barre de date montre Aujourd’hui ou Aller à aujourd’hui, le jour du cycle, et Enregistrée ou Non enregistrée',
+      'Les boutons du jour précédent et du jour suivant sont plus grands et plus faciles à toucher',
+    ],
+  },
+  {
     version: '1.32.0',
     date: '2026-10-28',
     title: 'The Chart Opens on Today',

@@ -54,6 +54,7 @@ export const TodayHistoryList: React.FC<TodayHistoryListProps> = ({
                     isPeakDay={obs.isPeakDay || obs.isManualPeak}
                     intercourse={obs.intercourse}
                     size="sm"
+                    isEmpty={!obs.codeString}
                   />
                 )}
               </div>

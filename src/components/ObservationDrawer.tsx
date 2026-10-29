@@ -143,11 +143,14 @@ export const ObservationDrawer: React.FC = () => {
               isPeakDay={fields.isManualPeak}
               intercourse={intercourse}
               size="lg"
+              isEmpty={!form.currentCode}
             />
           </div>
           <div className="preview-details">
             <span className="preview-label">{t.labels.stampPreview}</span>
-            <div className="preview-code-display">{form.currentCode || '---'}</div>
+            <div className={form.currentCode ? 'preview-code-display' : 'stamp-empty-text'}>
+              {form.currentCode || t.todayView.noObservation}
+            </div>
           </div>
         </div>
 

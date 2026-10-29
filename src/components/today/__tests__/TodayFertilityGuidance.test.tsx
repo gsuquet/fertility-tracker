@@ -26,14 +26,20 @@ describe('TodayFertilityGuidance', () => {
     ['DARK_GREEN', en.todayView.guidance.dry],
     ['YELLOW', en.todayView.guidance.dry],
   ] as const)('gives the guidance for a %s stamp', (stamp, text) => {
-    renderGuidance(stamp, 'card');
+    renderGuidance(stamp, 'card', '0AD');
     expect(screen.getByText(text)).toBeInTheDocument();
   });
 
-  it.each(['banner', 'card'] as const)('shows a placeholder code in the %s', variant => {
-    renderGuidance('DARK_GREEN', variant);
-    expect(screen.getByText('---')).toBeInTheDocument();
-  });
+  it.each(['banner', 'card'] as const)(
+    'shows the empty stamp and no guidance for a day with no code in the %s',
+    variant => {
+      const { container } = renderGuidance('DARK_GREEN', variant);
+      expect(screen.getByText(en.todayView.noObservation)).toBeInTheDocument();
+      expect(screen.queryByText(en.todayView.guidance.dry)).toBeNull();
+      expect(screen.queryByText(/Infertile/)).toBeNull();
+      expect(container.querySelector('.stamp-empty')).toBeInTheDocument();
+    }
+  );
 
   it.each(['banner', 'card'] as const)('shows the current code in the %s', variant => {
     renderGuidance('DARK_GREEN', variant, '0AD');

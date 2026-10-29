@@ -92,6 +92,14 @@ describe('TodayView flows', () => {
     expect(vi.getTimerCount()).toBe(0);
   });
 
+  it('shows the empty stamp and the cycle day of a day with no observation', () => {
+    const { container } = renderToday([makeObservation({ date: '2026-09-10', bleeding: 'H' })]);
+    expect(screen.getByText('Day 6')).toBeInTheDocument();
+    expect(screen.getAllByText(en.todayView.noObservation).length).toBeGreaterThan(0);
+    expect(screen.queryByText(en.todayView.guidance.dry)).toBeNull();
+    expect(container.querySelector('.status-stamp-hero .stamp-empty')).toBeInTheDocument();
+  });
+
   it('loads a saved observation and shows it as saved', () => {
     renderToday([makeObservation({ date: TODAY, stretch: '0', frequency: 'AD' })]);
     expect(screen.getByLabelText(en.labels.directInput)).toHaveValue('0AD');

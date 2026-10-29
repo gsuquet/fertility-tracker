@@ -160,6 +160,7 @@ export const CalendarGrid: React.FC = () => {
                       isPeakDay={obs.isPeakDay}
                       intercourse={obs.intercourse}
                       size="sm"
+                      isEmpty={!obs.codeString}
                     />
                   </div>
                   <span className="calendar-code">{obs.codeString}</span>

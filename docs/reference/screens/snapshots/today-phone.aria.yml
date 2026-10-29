@@ -8,7 +8,7 @@
     - text: /Tuesday, October \d+, \d+/
     - textbox "Date": /\d+-\d+-\d+/
     - button "Next Day"
-    - text: 0AD Dry / Infertile day based on observations. Continue standard daily monitoring.
+    - text: /Today Day \d+ Saved 0AD Dry \/ Infertile day based on observations\. Continue standard daily monitoring\./
     - heading "Recent 5-Day Observation History" [level=3]
     - button /Fri, \d+\/\d+ 0AD/
     - button /Sat, \d+\/\d+ 0AD/

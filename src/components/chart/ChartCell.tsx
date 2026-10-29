@@ -68,6 +68,7 @@ export const ChartFilledCell: React.FC<ChartFilledCellProps> = ({ obs, isToday, 
           isPeakDay={obs.isPeakDay}
           intercourse={obs.intercourse}
           size="sm"
+          isEmpty={!obs.codeString}
         />
       </div>
 

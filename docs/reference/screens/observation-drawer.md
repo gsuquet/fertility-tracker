@@ -27,7 +27,7 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 - Thus, a save with no change never replaces a saved day with an empty observation.
 - A change of the date input loads the observation of the new date. When the new date has no observation, a form with no change becomes empty. Thus, the values of a saved day are not copied to another day. A changed form keeps the draft.
 - The saved data can change while the drawer is open, for example with **Undo**. Then the title and **Delete** follow the saved data of the date. A form with no change shows the new saved values. A changed form keeps the draft.
-- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save.
+- The direct code and the buttons stay synchronized. The stamp preview shows the stamp and the code before the save. With no code, it shows the empty stamp and "No observation yet" ([Day with no code](today.md#day-with-no-code)).
 - On a phone, the footer buttons become smaller to fit. The delete button shows only its icon.
 
 ### Drag down to close
