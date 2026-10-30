@@ -100,6 +100,18 @@ describe('design token contrast (WCAG 2 AA)', () => {
       }
     );
 
+    it.each([
+      '--text-primary',
+      '--text-secondary',
+      '--color-intercourse-text',
+      '--color-peak-text',
+      '--color-success-text',
+      '--color-danger-text',
+    ])('%s on the calendar cycle tint reaches 4.5:1', text => {
+      const tint = over(color('--calendar-cycle-tint'), color('--bg-surface'));
+      expect(contrast(color(text), tint)).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+    });
+
     it.each(['--bg-primary', '--bg-surface'])(
       '--accent-primary on --accent-light over %s reaches 4.5:1',
       surface => {

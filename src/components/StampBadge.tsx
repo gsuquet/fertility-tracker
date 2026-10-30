@@ -10,6 +10,8 @@ interface StampBadgeProps {
   size?: 'sm' | 'md' | 'lg' | undefined;
   /** A day with no code: a dashed empty square instead of the stamp. */
   isEmpty?: boolean | undefined;
+  /** False: no Post-Peak number on the baby. The calendar shows the marks under the code. */
+  showCount?: boolean | undefined;
 }
 
 export const StampBadge: React.FC<StampBadgeProps> = ({
@@ -18,17 +20,20 @@ export const StampBadge: React.FC<StampBadgeProps> = ({
   intercourse = false,
   size = 'md',
   isEmpty = false,
+  showCount = true,
 }) => {
   const { t } = useLanguage();
   const isLightGreen = !isEmpty && stamp.startsWith('LIGHT_GREEN');
   const stampClass = isEmpty ? 'stamp-empty' : `stamp-${stamp.toLowerCase()}`;
-  const postPeakNumber = stamp.endsWith('1')
-    ? '1'
-    : stamp.endsWith('2')
-      ? '2'
-      : stamp.endsWith('3')
-        ? '3'
-        : null;
+  const postPeakNumber = !showCount
+    ? null
+    : stamp.endsWith('1')
+      ? '1'
+      : stamp.endsWith('2')
+        ? '2'
+        : stamp.endsWith('3')
+          ? '3'
+          : null;
 
   return (
     <div className={`stamp-badge-container stamp-${size}`}>

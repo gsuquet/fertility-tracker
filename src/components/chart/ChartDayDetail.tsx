@@ -7,10 +7,17 @@ import { hasObservationCode, showsEmptyStamp } from '../../domain/stampCalculato
 import { StampBadge } from '../StampBadge';
 import { fertilityGuidance } from '../today/fertilityGuidance';
 
+const DETAIL_DATE: Intl.DateTimeFormatOptions = {
+  weekday: 'short',
+  month: 'short',
+  day: 'numeric',
+};
+
 interface DetailDay {
   date: string;
-  cycleNum: number;
-  dayNum: number;
+  /** The cycle and the cycle day. A date before the first cycle has none. */
+  cycleNum: number | undefined;
+  dayNum: number | undefined;
   /** The saved observation of the day, if any */
   obs: Observation | undefined;
 }
@@ -21,17 +28,23 @@ interface ChartDayDetailProps {
   t: TranslationSchema;
   onEdit: () => void;
   onOpenInToday: () => void;
+  /** The calendar adds Open in Chart. The chart has no such button. */
+  onOpenInChart?: (() => void) | undefined;
+  /** A bar under the chart rows, or a panel beside the calendar grid */
+  variant?: 'bar' | 'panel' | undefined;
 }
 
 /**
- * The bar under the rows of the desktop chart: the selected day, with Edit and Open in Today.
- * It replaces the observation sheet that a click opens on a phone.
+ * The selected day of the desktop chart and calendar, with Edit and Open in Today. It replaces
+ * the observation sheet that a click opens on a phone.
  */
 export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
   day,
   t,
   onEdit,
   onOpenInToday,
+  onOpenInChart,
+  variant = 'bar',
 }) => {
   const obs = day?.obs;
   const hasCode = !!obs && hasObservationCode(obs);
@@ -46,7 +59,7 @@ export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
   // The live region keeps its place in the tree, so that it reads the first selection too
   return (
     <section
-      className={`chart-day-detail ${day ? '' : 'is-empty'}`}
+      className={`chart-day-detail is-${variant} ${day ? '' : 'is-empty'}`}
       aria-label={day ? t.chartStrip.detailLabel : undefined}
     >
       {day && (
@@ -64,15 +77,13 @@ export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
           <>
             <p>
               <strong>
-                {formatMessage(t.chartStrip.detailDay, {
-                  date: formatDateDisplay(day.date, t.locale, {
-                    weekday: 'short',
-                    month: 'short',
-                    day: 'numeric',
-                  }),
-                  cycle: day.cycleNum,
-                  day: day.dayNum,
-                })}
+                {day.cycleNum === undefined || day.dayNum === undefined
+                  ? formatDateDisplay(day.date, t.locale, DETAIL_DATE)
+                  : formatMessage(t.chartStrip.detailDay, {
+                      date: formatDateDisplay(day.date, t.locale, DETAIL_DATE),
+                      cycle: day.cycleNum,
+                      day: day.dayNum,
+                    })}
               </strong>
               {hasCode && (
                 <>
@@ -88,14 +99,19 @@ export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
         )}
       </div>
       {day && (
-        <>
+        <div className="chart-day-detail-actions">
           <button type="button" className="btn btn-secondary" onClick={onEdit}>
             {t.chartStrip.editDay}
           </button>
+          {onOpenInChart && (
+            <button type="button" className="btn btn-secondary" onClick={onOpenInChart}>
+              {t.chartStrip.openInChart}
+            </button>
+          )}
           <button type="button" className="btn btn-secondary" onClick={onOpenInToday}>
             {t.chartStrip.openInToday}
           </button>
-        </>
+        </div>
       )}
     </section>
   );

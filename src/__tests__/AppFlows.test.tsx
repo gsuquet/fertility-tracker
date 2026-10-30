@@ -75,6 +75,25 @@ describe('App flows', () => {
     expect(screen.queryByText(en.todayView.yesterday, { exact: true })).toBeNull();
   });
 
+  it('opens the selected day of the desktop calendar in the chart and in Today', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem(
+      STORAGE_OBSERVATIONS_KEY,
+      JSON.stringify([makeObservation({ date: getTodayStr(), bleeding: 'H', codeString: 'H' })])
+    );
+    desktop = true;
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.calendar }));
+    const panel = await screen.findByRole('region', { name: en.chartStrip.detailLabel });
+    fireEvent.click(within(panel).getByRole('button', { name: en.chartStrip.openInChart }));
+    expect(await screen.findByRole('tabpanel', { name: en.tabs.chart })).toBeInTheDocument();
+
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.calendar }));
+    const again = await screen.findByRole('region', { name: en.chartStrip.detailLabel });
+    fireEvent.click(within(again).getByRole('button', { name: en.chartStrip.openInToday }));
+    expect(await screen.findByRole('tabpanel', { name: en.tabs.today })).toBeInTheDocument();
+  });
+
   it('opens the guide from the header', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);

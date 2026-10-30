@@ -54,7 +54,9 @@ describe('CalendarGrid navigation and selection', () => {
 
   it('opens the drawer with the saved observation of a day', () => {
     renderCalendar();
-    fireEvent.click(screen.getByRole('button', { name: 'Date 2026-09-10, Observation 0' }));
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Date 2026-09-10, Observation 0, first day of cycle 1' })
+    );
     expect(screen.getByTestId('drawer')).toHaveTextContent('2026-09-10 0');
   });
 

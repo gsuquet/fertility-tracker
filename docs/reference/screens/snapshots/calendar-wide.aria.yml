@@ -46,28 +46,38 @@
     - button /Date \d+-\d+-\d+, Observation 0AD/: 7 0AD
     - button /Date \d+-\d+-\d+, Observation 2CX2/: 8 2CX2
     - button /Date \d+-\d+-\d+, Observation 2CX2/: 9 2CX2
-    - button /Date \d+-\d+-\d+, Observation 6C\/KX3 I/: /\d+ I 6C\/KX3 I/
+    - button /Date \d+-\d+-\d+, Observation 6C\/KX3, intercourse/: /\d+ 6C\/KX3/
     - button /Date \d+-\d+-\d+, Observation 8KX3/: /\d+ 8KX3/
-    - button /Date \d+-\d+-\d+, Observation 10KLAD AP/: /\d+ P 10KLAD AP/
-    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 1 0AD/
-    - button /Date \d+-\d+-\d+, Observation 0AD I/: /\d+ 2 I 0AD I/
-    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 3 0AD/
+    - button /Date \d+-\d+-\d+, Observation 10KLAD, Peak Day/: /\d+ 10KLAD/
+    - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 1/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 2, intercourse/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 3/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
-    - button /Date \d+-\d+-\d+, Observation 0AD I/: /\d+ I 0AD I/
+    - button /Date \d+-\d+-\d+, Observation 0AD, intercourse/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
-    - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD/ [pressed]: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, No observation/ [disabled]
     - button /Date \d+-\d+-\d+, No observation/ [disabled]
     - button /Date \d+-\d+-\d+, No observation/ [disabled]
     - button /Date \d+-\d+-\d+, No observation/ [disabled]
+    - paragraph: "Tinted days: cycle 2. A red edge and C2 mark the first day of a cycle. Under each code: I, P and the Post-Peak count."
+    - region "Selected day":
+      - paragraph:
+        - strong: /Tue, Oct \d+ · Cycle 2, day \d+/
+        - text: · 0AD
+      - paragraph: Dry day. Infertile under the CrMS rules.
+      - paragraph: Saved
+      - button "Edit"
+      - button "Open in Chart"
+      - button "Open in Today"
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/
   - button "Legal"

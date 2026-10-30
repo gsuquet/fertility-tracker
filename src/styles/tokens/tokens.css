@@ -43,6 +43,8 @@
     --phase-before-peak: #1f3a5f;
     --phase-before-peak-text: #ffffff;
     --accent-light: #e6ecf4;
+    /* The days of the selected cycle in the calendar, behind marks of 4.5:1 */
+    --calendar-cycle-tint: #e6ecf4;
     --accent-glow: rgba(31, 58, 95, 0.15);
     --accent-soft: rgba(31, 58, 95, 0.07);
 
@@ -165,6 +167,7 @@
     --phase-before-peak: #8fb3dd;
     --phase-before-peak-text: #10233a;
     --accent-light: rgba(169, 193, 224, 0.16);
+    --calendar-cycle-tint: rgba(169, 193, 224, 0.08);
     --accent-glow: rgba(169, 193, 224, 0.25);
     --accent-soft: rgba(169, 193, 224, 0.08);
 

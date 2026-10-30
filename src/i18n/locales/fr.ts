@@ -312,6 +312,7 @@ export const fr: TranslationSchema = {
     detailDay: '{date} · Cycle {cycle}, jour {day}',
     editDay: 'Modifier',
     openInToday: "Ouvrir dans Aujourd'hui",
+    openInChart: 'Ouvrir dans le graphique',
     showRow: 'Afficher tous les jours du cycle {number}',
     hideRow: 'Afficher seulement les tampons du cycle {number}',
     dayNoCode: 'Aucun code de saignement, de glaire ou de fréquence.',
@@ -594,7 +595,15 @@ export const fr: TranslationSchema = {
     observationStatus: 'Observation {code}',
     noObservation: 'Aucune observation',
     clickToAdd: 'Cliquez pour ajouter une observation',
-    add: 'Ajouter',
+    cycleStartMark: 'C{number}',
+    cycleStart: 'premier jour du cycle {number}',
+    peakDay: 'Jour Sommet',
+    intercourse: 'rapport',
+    countDay: 'jour {number} du compte Post-Sommet',
+    legendCycle:
+      'Jours teintés : cycle {number}. Un bord rouge et C{number} marquent le premier jour d’un cycle. Sous chaque code : I, P et le compte Post-Sommet.',
+    legendAll:
+      'Un bord rouge et C avec le numéro du cycle marquent le premier jour d’un cycle. Sous chaque code : I, P et le compte Post-Sommet.',
   },
   cyclePicker: {
     menuTitle: 'Filtrer l’affichage des cycles',

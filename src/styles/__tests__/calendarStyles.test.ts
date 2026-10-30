@@ -29,17 +29,22 @@ describe('calendar styles', () => {
     }
   );
 
-  it('lets the observation code wrap on mobile instead of cutting it', () => {
-    const [mobileCode] = declarationsOf(mobileBlock(calendar), '.calendar-code');
-    expect(mobileCode).not.toMatch(/white-space:\s*nowrap/);
-    expect(mobileCode).not.toMatch(/text-overflow:\s*ellipsis/);
-    expect(mobileCode).toMatch(/overflow-wrap:\s*anywhere/);
+  // The phone rules are the base rules, and no width cuts the code or fixes the height
+  it('lets the observation code wrap instead of cutting it', () => {
+    for (const code of declarationsOf(calendar, '.calendar-code')) {
+      expect(code).not.toMatch(/white-space:\s*nowrap/);
+      expect(code).not.toMatch(/text-overflow:\s*ellipsis/);
+    }
+    const [base] = declarationsOf(calendar, '.calendar-code');
+    expect(base).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
-  it('lets a mobile day cell grow to fit its content', () => {
-    const [mobileDay] = declarationsOf(mobileBlock(calendar), '.calendar-day');
-    expect(mobileDay).not.toMatch(/(^|\s)height:\s*\d/);
-    expect(mobileDay).toMatch(/min-height:/);
+  it('lets a day cell grow to fit its content, from 80 px on a phone', () => {
+    for (const cell of declarationsOf(calendar, '.calendar-day')) {
+      expect(cell).not.toMatch(/(^|\s)height:\s*\d/);
+    }
+    const [base] = declarationsOf(calendar, '.calendar-day');
+    expect(base).toMatch(/min-height:\s*80px/);
   });
 });
 

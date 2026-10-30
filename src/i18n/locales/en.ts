@@ -308,6 +308,7 @@ export const en = {
     detailDay: '{date} · Cycle {cycle}, day {day}',
     editDay: 'Edit',
     openInToday: 'Open in Today',
+    openInChart: 'Open in Chart',
     showRow: 'Show all the days of cycle {number}',
     hideRow: 'Show only the stamps of cycle {number}',
     dayNoCode: 'No bleeding, mucus or frequency code.',
@@ -588,7 +589,15 @@ export const en = {
     observationStatus: 'Observation {code}',
     noObservation: 'No observation',
     clickToAdd: 'Click to add observation',
-    add: 'Add',
+    cycleStartMark: 'C{number}',
+    cycleStart: 'first day of cycle {number}',
+    peakDay: 'Peak Day',
+    intercourse: 'intercourse',
+    countDay: 'Post-Peak day {number}',
+    legendCycle:
+      'Tinted days: cycle {number}. A red edge and C{number} mark the first day of a cycle. Under each code: I, P and the Post-Peak count.',
+    legendAll:
+      'A red edge and C with the cycle number mark the first day of a cycle. Under each code: I, P and the Post-Peak count.',
   },
   cyclePicker: {
     menuTitle: 'Filter Cycle View',
