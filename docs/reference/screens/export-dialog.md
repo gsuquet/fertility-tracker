@@ -70,7 +70,8 @@ The print layout:
 - Each cell shows the cycle day, the date (`common.monthDay`), the stamp, the Peak Day mark (P), the intercourse mark (I) and the code. The image does not show the symptoms and the notes of the print. A long code gets narrower to fit its cell.
 - The image always uses the colors of the light theme on a white background, as the print does.
 - The image has two pixels for each CSS pixel. A row of 35 days is 3176 pixels wide.
-- A very tall image has fewer pixels, so that the canvas stays under 16 million pixels, the limit of Safari. The scale is never less than one pixel for each CSS pixel.
+- For a very tall image, the scale goes down to keep the canvas under 16 million pixels, the limit of Safari. The scale is never less than one pixel for each CSS pixel.
+- A selection of about 70 cycles or more is too large for Safari even at this scale. Then the browser cannot make the image, and the application shows the error message.
 - The length of a cycle is the cycle day of its last observation (`cycleLength()`), as on the chart. The image, the dialog and the print use it.
 - The file name is the print file name with `.png`, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD.png`.
 - After the download, the application shows **Chart image downloaded.** If the browser cannot make the image, it shows an error message, and the user can use **Print or PDF**.
