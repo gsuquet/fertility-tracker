@@ -36,11 +36,11 @@ From 641 pixels, the header has the logo, the page tabs, the cycle picker, the c
 - Below 1360 pixels, the cycle picker shows its short label, for example **Cycle 2**, as on a phone. A longer label ends in an ellipsis. Thus, the bar is never wider than the screen.
 - The tabs show the short names: **Today**, **Chart**, **Calendar** and **Analytics**. The name of each tab for a screen reader is the full name, for example **Paper Chart Strip**. The full name contains the short name, in English and in French.
 - **Log** has the tooltip **Log Observation (N)**. Its name is **Log**, as the **+** button of the phone.
-- The controls of the bar are in the reading order in the DOM too. On 2 rows, the controls of the page come after the gear.
+- The controls of the bar are in the reading order in the DOM too. On 2 rows, the controls of the page come after the gear. The element of the page controls keeps its place in the DOM. Thus, the focus and an open menu stay when the window crosses 1360 pixels.
 - The bar has the same side margins as the page: 24 pixels, and the content is 1392 pixels wide or less.
 - On Today, the day status (**Today**, the cycle day and **Saved**) stays in the page, as one line above the form.
-- In the installed application with the window controls overlay, row 1 is the title bar ([Application behavior](../application-behavior.md#title-bar)).
-- The test `e2e/topBar.spec.ts` checks the bar in French at 1024, 1359, 1360 and 1440 pixels. It checks the side scroll, the height of the rows and the order of the controls.
+- In the installed application with the window controls overlay, row 1 is the title bar ([Application behavior](../application-behavior.md#title-bar)). The rows under it do not move the window. The header does not center its content in this mode, because the window controls set its side padding.
+- The test `e2e/topBar.spec.ts` checks the bar in French at 800, 1024, 1359, 1360 and 1440 pixels. It checks the side scroll, the height of the rows and the order of the controls.
 
 ### Top bar on a phone
 
@@ -54,7 +54,7 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 | Analytics | The title **Analytics**, the cycle picker and the gear.                                                                                                 |
 - On Chart, the cycle picker is first in the DOM too. Thus, the focus order and the reading order are the same as the visual order. The picker has no icon there, so its label fits in French at 360 pixels. On a narrower phone, the label ends in an ellipsis.
 - The controls of the bar have 8 pixels between them.
-- When the screen goes across 640 or 1360 pixels, the controls of the page move in the bar. React then draws them again, so a control in the move loses the focus, and an open chart menu closes.
+- When the screen goes across 640 pixels, the controls of the page move in the bar. React then draws them again, so a control in the move loses the focus, and an open chart menu closes.
 - The top bar and the bottom bar use `--bg-surface`, with no blur. Thus, the page does not show through them.
 - The gear (**Settings**) is the last control of the top bar. It opens [Settings](settings.md).
 

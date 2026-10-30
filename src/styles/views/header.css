@@ -160,13 +160,29 @@
     min-width: 0;
   }
 
-  .header-page-slot:empty {
-    display: none;
+  /* Calendar and Analytics have no page controls: their row closes. A phone shows a title there. */
+  @media (min-width: 641px) {
+    .header-page-slot:empty {
+      display: none;
+    }
   }
 
-  /* One row: the cycle picker and the controls after it go to the right */
+  /* One row: the cycle picker and the controls after it go to the right. The picker shrinks
+     first, and a long label ends in an ellipsis, so the bar is never wider than the screen. */
   .app-header > .cycle-picker-container {
+    flex-shrink: 1;
+    min-width: 0;
     margin-left: auto;
+  }
+
+  .app-header > .cycle-picker-container .cycle-selector-btn {
+    max-width: 100%;
+  }
+
+  .app-header > .cycle-picker-container .cycle-selector-text {
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
   }
 
   /* From 641 px to 1359 px, the page controls are on a second row of 44 px. Thus, the French
@@ -282,7 +298,7 @@
       flex: 1;
     }
 
-    /* The phone title is in the slot: the slot is never empty on a phone */
+    /* The slot fills the bar, also while a lazy page loads, so the gear stays at the right */
     .app-header > .cycle-picker-container {
       margin-left: 0;
     }
@@ -436,11 +452,18 @@
       top: calc(env(titlebar-area-y, 0px) + env(titlebar-area-height, 0px));
     }
 
-    /* The first row is the title bar. The second row of the page controls is under it. */
+    /* The first row is the title bar. The second row of the page controls is under it: it does
+       not move the window, and it is not under the window controls. */
     @media (min-width: 641px) and (max-width: 1359px) {
       .app-header {
         height: auto;
         grid-template-rows: max(60px, env(titlebar-area-height, 0px)) auto;
+      }
+
+      .header-page-slot {
+        -webkit-app-region: no-drag;
+        app-region: no-drag;
+        margin-right: calc(env(titlebar-area-x, 0px) + env(titlebar-area-width, 100vw) - 100vw);
       }
     }
 

@@ -109,9 +109,6 @@ export const en = {
   menu: {
     homeLabel: 'Creighton FertilityCare System Home',
     mainNavLabel: 'Main Navigation Views',
-    languageTitle: 'Switch Language / Changer de langue',
-    languageLabel: 'Switch Language',
-    themeToggleLabel: 'Toggle Dark/Light Mode',
   },
   settings: {
     title: 'Settings',
@@ -141,7 +138,6 @@ export const en = {
   },
   actions: {
     newEntry: 'Log Observation',
-    exportPdf: 'Practitioner PDF / PNG',
     save: 'Save Observation',
     cancel: 'Cancel',
     close: 'Close',

@@ -64,6 +64,34 @@ export const Header: React.FC<HeaderProps> = ({
   // The page controls: the date of Today, the chart controls or the phone page title
   const slot = <div className="header-page-slot" ref={onTopBarSlot} />;
 
+  const controls = (
+    <div className="header-controls">
+      {!pickerFirst && <CyclePicker />}
+
+      {/* **Log**, as the + button of the phone. The tooltip has the full name and the key N. */}
+      <button
+        type="button"
+        className="btn btn-primary new-entry-btn desktop-only-action"
+        onClick={handleNewEntry}
+        {...hint(t.actions.newEntry, 'newEntry')}
+      >
+        <Plus size={18} aria-hidden="true" />
+        <span>{t.mobileTabs.log}</span>
+      </button>
+
+      {/* Settings: the gear of the top bar, on each screen width (RFC 0002) */}
+      <button
+        type="button"
+        className="icon-button settings-btn"
+        onClick={onOpenSettings}
+        title={t.settings.open}
+        aria-label={t.settings.open}
+      >
+        <Settings size={18} />
+      </button>
+    </div>
+  );
+
   return (
     <header className={`app-header page-${activeTab}`}>
       <button
@@ -106,35 +134,14 @@ export const Header: React.FC<HeaderProps> = ({
 
       {pickerFirst && <CyclePicker />}
 
-      {!slotLast && slot}
+      {/* The slot keeps its place in the DOM at each width, so the page controls keep the focus
+          and the open menu when the window crosses 1360 px. On two rows, Log and the gear come
+          before it, as on the screen. */}
+      {slotLast && controls}
 
-      <div className="header-controls">
-        {!pickerFirst && <CyclePicker />}
+      {slot}
 
-        {/* **Log**, as the + button of the phone. The tooltip has the full name and the key N. */}
-        <button
-          type="button"
-          className="btn btn-primary new-entry-btn desktop-only-action"
-          onClick={handleNewEntry}
-          {...hint(t.actions.newEntry, 'newEntry')}
-        >
-          <Plus size={18} aria-hidden="true" />
-          <span>{t.mobileTabs.log}</span>
-        </button>
-
-        {/* Settings: the gear of the top bar, on each screen width (RFC 0002) */}
-        <button
-          type="button"
-          className="icon-button settings-btn"
-          onClick={onOpenSettings}
-          title={t.settings.open}
-          aria-label={t.settings.open}
-        >
-          <Settings size={18} />
-        </button>
-      </div>
-
-      {slotLast && slot}
+      {!slotLast && controls}
     </header>
   );
 };

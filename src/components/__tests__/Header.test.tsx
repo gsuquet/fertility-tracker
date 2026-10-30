@@ -1,4 +1,4 @@
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
@@ -83,17 +83,14 @@ describe('Header', () => {
     expect(screen.queryByText('Creighton Model System (CrMS)')).toBeNull();
   });
 
-  it('has no icon buttons other than the gear (RFC 0002)', () => {
+  it('has no buttons other than the brand, Log and the gear (RFC 0002)', () => {
     renderHeader();
-    for (const name of [
-      'Practitioner PDF / PNG',
-      'Welcome to Fertility Tracker',
-      'About & Version Tracker',
-      'Switch Language',
-      'Toggle Dark/Light Mode',
-    ]) {
-      expect(screen.queryByRole('button', { name })).toBeNull();
-    }
+    // The tabs have the role tab. With no cycles, the cycle picker does not show.
+    expect(
+      within(screen.getByRole('banner'))
+        .getAllByRole('button')
+        .map(button => button.getAttribute('aria-label') ?? button.textContent)
+    ).toEqual(['Creighton FertilityCare System Home', 'Log', 'Settings']);
   });
 
   it('opens Settings from the gear, on each screen width', () => {

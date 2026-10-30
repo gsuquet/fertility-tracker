@@ -111,9 +111,6 @@ export const fr: TranslationSchema = {
   menu: {
     homeLabel: 'Accueil Creighton FertilityCare System',
     mainNavLabel: 'Vues de navigation principales',
-    languageTitle: 'Changer de langue / Switch Language',
-    languageLabel: 'Changer de langue',
-    themeToggleLabel: 'Basculer entre mode sombre et clair',
   },
   settings: {
     title: 'Réglages',
@@ -143,7 +140,6 @@ export const fr: TranslationSchema = {
   },
   actions: {
     newEntry: 'Saisir une observation',
-    exportPdf: 'Export Praticien PDF / PNG',
     save: 'Enregistrer',
     cancel: 'Annuler',
     close: 'Fermer',

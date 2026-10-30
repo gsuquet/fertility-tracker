@@ -218,7 +218,7 @@ const MainApp: React.FC = () => {
   useShortcut('calendar', () => setActiveTab('calendar'));
   useShortcut('analytics', () => setActiveTab('analytics'));
   useShortcut('help', openShortcuts);
-  // As the Log Observation button of the header
+  // As the Log button of the header
   useShortcut('newEntry', () => {
     setSelectedObservation(null);
     setActiveTab('today');
