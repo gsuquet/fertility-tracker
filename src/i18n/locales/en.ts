@@ -306,21 +306,15 @@ export const en = {
   },
   exportModal: {
     title: 'Share chart',
-    description:
-      'Print your Creighton chart strip, or save it as a PDF, for your FertilityCare Practitioner or NaPro Doctor.',
-    printPdf: 'Print / Save as PDF',
-    downloadPng: 'Download High-Res PNG',
-    pdfExportMode: 'PDF Export Scope',
-    singleCycle: 'Single Cycle',
-    multipleCycles: 'Multiple Cycles',
-    selectCycle: 'Select Cycle',
-    selectCycles: 'Select Cycles to Export',
-    selectAll: 'Select All',
-    deselectAll: 'Deselect All',
-    oldestToNewestNote: 'Exported in landscape mode (35-day grid) from oldest to newest.',
+    cycles: 'Cycles',
+    printPdf: 'Print or PDF',
+    downloadPng: 'Download PNG',
+    oldestToNewestNote:
+      'Landscape pages with the 35-day grid, from the oldest cycle to the newest.',
     exportSuccess: 'PDF report generated successfully!',
     printError: 'The print view did not load. Reload the page to try again.',
-    pdfDescription: 'Creates a landscape PDF with a 35-day grid.',
+    pngSuccess: 'Chart image downloaded.',
+    pngError: 'The chart image could not be made. Use Print or PDF instead.',
     jsonDescription:
       'Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private.',
     importError:

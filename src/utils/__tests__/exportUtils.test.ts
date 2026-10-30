@@ -30,4 +30,13 @@ describe('exportUtils', () => {
     expect(getExportFilename('pdf')).toMatch(/^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}$/);
     expect(getExportFilename('pdf', '***')).toMatch(/^fertility-tracker-chart-export-/);
   });
+
+  it('gives the PNG file the print file name with .png', () => {
+    expect(getExportFilename('png', 'cycle-2')).toBe(
+      `fertility-tracker-chart-cycle-2-${getTodayStr()}.png`
+    );
+    expect(getExportFilename('png')).toMatch(
+      /^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}\.png$/
+    );
+  });
 });

@@ -67,7 +67,7 @@ The first screen needs only a part of the code. Thus, the main JavaScript file c
 - The **Cycle Analytics** page loads when you open it.
 - Each dialog loads when you open it for the first time. The application shows a dialog only while it is open.
 - The release notes are in `versionTracker.ts`, and only the **About & Version Tracker** dialog imports this file. The header and the footer get the version from `appVersion.ts`, which is a small file.
-- The print view loads when the application starts. The **Print / Save as PDF** button starts the print only after the print view has loaded. The browser print command (Ctrl+P) does not wait.
+- The print view loads when the application starts. The **Print or PDF** button starts the print only after the print view has loaded. The browser print command (Ctrl+P) does not wait.
 
 When the browser is idle after the first render, the application also loads the chunks of the page and the dialogs. Thus, the first screen is fast, and a dialog opens without a network later. This is important after a new deploy: the new service worker deletes the old files, and an old tab cannot get them again.
 

@@ -11,8 +11,9 @@ export const BACKUP_EXTENSION = 'ftbackup';
  * - backup: 'fertility-tracker-backup-2026-07-31.ftbackup'
  * - pdf single cycle: 'fertility-tracker-chart-cycle-1-2026-07-31'
  * - pdf all cycles: 'fertility-tracker-chart-all-cycles-2026-07-31'
+ * - png single cycle: 'fertility-tracker-chart-cycle-1-2026-07-31.png'
  */
-export function getExportFilename(type: 'backup' | 'pdf', detail?: string): string {
+export function getExportFilename(type: 'backup' | 'pdf' | 'png', detail?: string): string {
   const dateStr = getTodayStr();
 
   if (type === 'backup') {
@@ -26,11 +27,20 @@ export function getExportFilename(type: 'backup' | 'pdf', detail?: string): stri
         .replace(/^-+|-+$/g, '')
     : '';
 
-  if (cleanDetail) {
-    return `fertility-tracker-chart-${cleanDetail}-${dateStr}`;
-  }
+  // The browser adds .pdf to the print file name
+  const extension = type === 'png' ? '.png' : '';
+  return `fertility-tracker-chart-${cleanDetail || 'export'}-${dateStr}${extension}`;
+}
 
-  return `fertility-tracker-chart-export-${dateStr}`;
+/** Downloads a file that the app made, with the given file name */
+export function downloadBlob(blob: Blob, fileName: string): void {
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement('a');
+  link.href = url;
+  link.download = fileName;
+  link.click();
+  // Safari can cancel the download when the address goes at once
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /**
@@ -38,10 +48,5 @@ export function getExportFilename(type: 'backup' | 'pdf', detail?: string): stri
  * neutral: with `application/json`, a browser can add `.json` after `.ftbackup`.
  */
 export function downloadBackupFile(json: string): void {
-  const url = URL.createObjectURL(new Blob([json], { type: 'application/octet-stream' }));
-  const link = document.createElement('a');
-  link.href = url;
-  link.download = getExportFilename('backup');
-  link.click();
-  URL.revokeObjectURL(url);
+  downloadBlob(new Blob([json], { type: 'application/octet-stream' }), getExportFilename('backup'));
 }

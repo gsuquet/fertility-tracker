@@ -110,11 +110,12 @@ If the file is not a valid backup, Settings shows an error. The observations do 
 
 **Share chart** in the **Chart options** menu (`⋮`) of the chart page opens this dialog. On a wide screen, the export button of the header opens it too.
 
-| Button                  | Action                                 |
-| ----------------------- | -------------------------------------- |
-| **Single Cycle**        | Prints one cycle.                      |
-| **Multiple Cycles**     | Prints the selected cycles.            |
-| **Print / Save as PDF** | Opens the print dialog of the browser. |
+Select the cycles in **Cycles**. Each opening selects the cycle of the cycle picker, or the newest cycle.
+
+| Button           | Action                                                         |
+| ---------------- | -------------------------------------------------------------- |
+| **Download PNG** | Downloads an image of the selected cycles.                     |
+| **Print or PDF** | Opens the print dialog of the browser for the selected cycles. |
 
 ## Confirmation dialog
 

@@ -382,7 +382,10 @@ describe('French text of the components', () => {
   });
 
   it('translates the close button of the export dialog', () => {
-    renderWithProviders(<ExportModal onClose={() => {}} onPreparePrint={() => {}} />, inFrench());
+    renderWithProviders(
+      <ExportModal onClose={() => {}} onPreparePrint={() => {}} onImageDone={() => {}} />,
+      inFrench()
+    );
     expect(screen.getByRole('button', { name: fr.exportModal.close })).toBeInTheDocument();
   });
   it('writes each print legend label once, in both languages', () => {

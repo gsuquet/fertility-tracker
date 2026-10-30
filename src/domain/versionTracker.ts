@@ -44,6 +44,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.39.0',
+    date: '2026-10-30',
+    title: 'Share Your Chart as an Image',
+    titleFr: 'Partagez votre graphique en image',
+    tagline: 'Share chart downloads a PNG image of your chart, or prints it',
+    taglineFr: 'Partager le graphique télécharge une image PNG de votre graphique, ou l’imprime',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Download PNG makes a sharp image of the selected cycles, with the 35-day grid and the legend',
+      'Share chart lists your cycles with their dates. Select one or more cycles with the check boxes',
+      'Share chart starts on the cycle that the chart shows',
+      'On a phone, Share chart is a sheet, and its two buttons stay at the bottom',
+    ],
+    highlightsFr: [
+      'Télécharger en PNG crée une image nette des cycles choisis, avec la grille de 35 jours et la légende',
+      'Partager le graphique liste vos cycles avec leurs dates. Choisissez un ou plusieurs cycles avec les cases à cocher',
+      'Partager le graphique commence sur le cycle que montre le graphique',
+      'Sur un téléphone, Partager le graphique est une feuille, et ses deux boutons restent en bas',
+    ],
+  },
+  {
     version: '1.38.0',
     date: '2026-10-29',
     title: 'All the Settings in One Place',

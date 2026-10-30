@@ -6,6 +6,7 @@ import { DESKTOP_QUERY } from '../hooks/useMediaQuery';
 import { makeObservation } from '../test/factories';
 import { addDays, getTodayStr } from '../utils/dateUtils';
 import { en } from '../i18n';
+import * as chartImage from '../utils/chartImage';
 
 const footer = () => screen.getByRole('contentinfo');
 
@@ -145,6 +146,27 @@ describe('App flows', () => {
     fireEvent.click(await screen.findByRole('button', { name: en.chartStrip.optionsLabel }));
     fireEvent.click(screen.getByRole('menuitem', { name: en.chartStrip.shareChart }));
     expect(await screen.findByRole('dialog', { name: en.exportModal.title })).toBeInTheDocument();
+  });
+
+  it('tells the user when the chart image is downloaded, or when it fails', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    const download = vi
+      .spyOn(chartImage, 'downloadChartPng')
+      .mockResolvedValueOnce(true)
+      .mockResolvedValueOnce(false);
+    render(<App />);
+    const downloadPng = async () => {
+      fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+      const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
+      fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.downloadPng }));
+    };
+    await downloadPng();
+    expect(await screen.findByRole('status')).toHaveTextContent(en.exportModal.pngSuccess);
+    await downloadPng();
+    await vi.waitFor(() =>
+      expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.pngError)
+    );
+    expect(download).toHaveBeenCalledTimes(2);
   });
 
   it('opens the help and the about dialogs over Settings', async () => {

@@ -40,7 +40,7 @@ Find the file or the folder that you change. Then change its page first.
 | `src/components/CalendarGrid.tsx`                                                                                                    | [Monthly Calendar page](docs/reference/screens/calendar.md)            |
 | `src/components/CycleAnalyticsView.tsx`                                                                                              | [Cycle Analytics page](docs/reference/screens/analytics.md)            |
 | `src/components/ObservationDrawer.tsx`, `src/components/observation/`                                                                | [Observation drawer](docs/reference/screens/observation-drawer.md)     |
-| `src/components/ExportModal.tsx`, `PrintExportView.tsx`, `src/utils/exportUtils.ts`                                                  | [Export dialog](docs/reference/screens/export-dialog.md)               |
+| `src/components/ExportModal.tsx`, `PrintExportView.tsx`, `src/utils/exportUtils.ts`, `chartImage.ts`, `printCycles.ts`               | [Export dialog](docs/reference/screens/export-dialog.md)               |
 | `src/components/settings/`, `ConfirmDialog.tsx`, `AppBadgeSetting.tsx`, `src/hooks/useBackUpNow.ts`, `src/styles/views/settings.css` | [Settings](docs/reference/screens/settings.md)                         |
 | `src/components/VersionModal.tsx`                                                                                                    | [Version dialog](docs/reference/screens/version-dialog.md)             |
 | `src/components/WelcomeModal.tsx`                                                                                                    | [Welcome guide](docs/reference/screens/welcome-guide.md)               |

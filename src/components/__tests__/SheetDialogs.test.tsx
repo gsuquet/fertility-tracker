@@ -12,7 +12,10 @@ import { renderWithProviders } from '../../test/render';
 
 /** Each dialog that is a bottom sheet on a phone, with the function that its close calls. */
 const dialogs: [string, (onClose: () => void) => React.ReactElement][] = [
-  ['export', onClose => <ExportModal onClose={onClose} onPreparePrint={vi.fn()} />],
+  [
+    'export',
+    onClose => <ExportModal onClose={onClose} onPreparePrint={vi.fn()} onImageDone={vi.fn()} />,
+  ],
   ['version', onClose => <VersionModal onClose={onClose} />],
   ['welcome guide', onClose => <WelcomeModal onClose={onClose} />],
   [

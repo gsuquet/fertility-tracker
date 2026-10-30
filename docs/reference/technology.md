@@ -64,9 +64,9 @@ The main chunk has only the code of the first screen. The other parts load with 
 | `PrintExportView`                                                                                                                    | A lazy chunk that the application renders from the start.                               |
 - `App.tsx` mounts a dialog again at each opening. Thus, each opening starts a new dialog.
 - A unit test follows the static imports from `main.tsx`. It fails if they reach `versionTracker.ts` or a lazy component.
-- **Print / Save as PDF** calls `window.print()` only after the print view chunk loads and renders the selected cycles. A click before that waits for the chunk.
+- **Print or PDF** calls `window.print()` only after the print view chunk loads and renders the selected cycles. A click before that waits for the chunk.
 - The browser print command (**Ctrl+P**) does not wait. Before the print view chunk loads, it prints an empty page.
-- If the print view chunk does not load, **Print / Save as PDF** does not print and does not show the success message. It shows the error `exportModal.printError`.
+- If the print view chunk does not load, **Print or PDF** does not print and does not show the success message. It shows the error `exportModal.printError`.
 - Each dialog and the print view has its own `React.Suspense`. Thus, a dialog that loads does not hide the print view.
 - While a page or a dialog loads, a hidden `role="status"` element announces `common.loading`. A dialog shows nothing visible while it loads. The page fallback keeps a minimum height, so the footer does not move.
 - After the first render, when the browser is idle, the application imports all the lazy chunks, except `InstallGuideModal`. Only Safari on iOS uses the install guide, so it does not load before it opens. It uses `requestIdleCallback` with a 2-second `timeout`, or `setTimeout` in a browser without it.
