@@ -98,24 +98,16 @@
     margin: 0;
   }
 
-  /* The actions stay under the list, out of its scroll */
-  .share-footer {
-    display: flex;
-    flex-shrink: 0;
-    justify-content: flex-end;
-    gap: var(--space-sm);
-    padding: var(--space-md) 1.35rem;
-    border-top: 1px solid var(--bg-surface-border);
-  }
-
+  /* The actions are in the dialog footer, under the list and out of its scroll */
   .share-footer .btn {
     min-height: var(--control-size-lg);
     gap: var(--space-sm);
   }
 
   @media (max-width: 640px) {
-    .share-footer {
-      padding: 0.85rem var(--space-md) max(var(--space-md), env(safe-area-inset-bottom, 0px));
+    /* On a phone, the sheet uses the full width */
+    .share-dialog {
+      max-width: 100vw;
     }
 
     .share-footer .btn {

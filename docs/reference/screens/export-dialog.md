@@ -30,7 +30,7 @@ These buttons open the dialog:
 - Each row shows the cycle number, the first and the last date, and the number of days. The newest cycle has the tag **Current**.
 - Each opening selects one cycle: the cycle of the cycle picker. With **All cycles** in the cycle picker, it selects the newest cycle.
 - With no cycle selected, **Download PNG** and **Print or PDF** are disabled.
-- Without cycles, the list is empty, and the two actions export one empty cycle that starts today.
+- Without cycles, the dialog has no list. The two actions export one empty cycle that starts today.
 
 | Action           | Result                                                                           |
 | ---------------- | -------------------------------------------------------------------------------- |
@@ -66,10 +66,12 @@ The print layout:
 
 `downloadChartPng()` draws the image on a canvas. It does not use the print view.
 
-- The image has the content of the print: the title, the export date, one 35-day grid for each cycle and the legend. The cycles go from the oldest to the newest.
-- Each cell shows the cycle day, the date (`common.monthDay`), the stamp, the Peak Day mark (P), the intercourse mark (I) and the code.
+- The image has the title, the export date, one 35-day grid for each cycle and the legend of the print. The cycles go from the oldest to the newest.
+- Each cell shows the cycle day, the date (`common.monthDay`), the stamp, the Peak Day mark (P), the intercourse mark (I) and the code. The image does not show the symptoms and the notes of the print. A long code gets narrower to fit its cell.
 - The image always uses the colors of the light theme on a white background, as the print does.
 - The image has two pixels for each CSS pixel. A row of 35 days is 3176 pixels wide.
+- A very tall image has fewer pixels, so that the canvas stays under 16 million pixels, the limit of Safari. The scale is never less than one pixel for each CSS pixel.
+- The length of a cycle is the cycle day of its last observation (`cycleLength()`), as on the chart. The image, the dialog and the print use it.
 - The file name is the print file name with `.png`, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD.png`.
 - After the download, the application shows **Chart image downloaded.** If the browser cannot make the image, it shows an error message, and the user can use **Print or PDF**.
 

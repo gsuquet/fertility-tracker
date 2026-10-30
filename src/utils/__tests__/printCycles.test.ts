@@ -1,7 +1,14 @@
 import { describe, expect, it } from 'vitest';
 import { makeObservation } from '../../test/factories';
 import type { Cycle } from '../../types/crms';
-import { printCode, printRows, printStartDate, selectPrintCycles } from '../printCycles';
+import {
+  cycleLength,
+  printCode,
+  printRows,
+  printStartDate,
+  selectPrintCycles,
+  shortDate,
+} from '../printCycles';
 
 const cycle = (id: string, startDate: string, days = 1): Cycle => ({
   id,
@@ -82,5 +89,25 @@ describe('printStartDate and printCode', () => {
   it('removes the spaces and the AP, RAP and LAP marks', () => {
     expect(printCode('10KL AD AP')).toBe('10KLAD');
     expect(printCode('6C X1 RAP LAP')).toBe('6CX1');
+  });
+});
+
+describe('cycleLength and shortDate', () => {
+  it('gives the cycle day of the last observation, also with missing days', () => {
+    const gap: Cycle = {
+      id: 'g',
+      startDate: '2026-09-01',
+      observations: [
+        makeObservation({ date: '2026-09-01', cycleDay: 1 }),
+        makeObservation({ date: '2026-09-05', cycleDay: 5 }),
+      ],
+    };
+    expect(cycleLength(gap)).toBe(5);
+    expect(cycleLength({ id: 'e', startDate: '2026-10-01', observations: [] })).toBe(0);
+  });
+
+  it('writes the short date in the language', () => {
+    expect(shortDate('2026-09-30', 'en-US')).toBe('Sep 30');
+    expect(shortDate('2026-09-30', 'fr-FR')).toBe('30 sept.');
   });
 });

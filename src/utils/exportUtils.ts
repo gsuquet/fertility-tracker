@@ -39,7 +39,8 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   link.href = url;
   link.download = fileName;
   link.click();
-  URL.revokeObjectURL(url);
+  // Safari can cancel the download when the address goes at once
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
 /**

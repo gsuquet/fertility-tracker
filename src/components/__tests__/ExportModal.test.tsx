@@ -1,3 +1,4 @@
+import type React from 'react';
 import { screen, fireEvent, within } from '@testing-library/react';
 import { afterEach, describe, it, expect, vi } from 'vitest';
 import { ExportModal } from '../ExportModal';
@@ -6,6 +7,7 @@ import { makeObservation } from '../../test/factories';
 import { en, fr } from '../../i18n';
 import type { Observation } from '../../types/crms';
 import * as chartImage from '../../utils/chartImage';
+import { useCycle } from '../../context/CycleContext';
 
 // Three short cycles, newest first in the app: 2026-09-11, 2026-09-06, 2026-09-01
 const threeCycles = ['2026-09-01', '2026-09-06', '2026-09-11'].flatMap(start => {
@@ -29,6 +31,10 @@ const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('butto
 const print = () => click(en.exportModal.printPdf);
 const checkbox = (cycleNum: number) =>
   screen.getByRole('checkbox', { name: `${en.chartStrip.cycleBadge} ${cycleNum}` });
+
+/** The app opens the dialog after the cycle picker has its cycle */
+const OpenWhenSelected = (props: React.ComponentProps<typeof ExportModal>) =>
+  useCycle().selectedCycleId === 'cycle_2026-09-06' ? <ExportModal {...props} /> : null;
 
 describe('ExportModal', () => {
   afterEach(() => {
@@ -59,7 +65,11 @@ describe('ExportModal', () => {
   });
 
   it('starts from the cycle selected in the app', () => {
-    const props = renderModal(threeCycles, 'cycle_2026-09-06');
+    const props = { onClose: vi.fn(), onPreparePrint: vi.fn(), onImageDone: vi.fn() };
+    renderWithProviders(<OpenWhenSelected {...props} />, {
+      observations: threeCycles,
+      selectedCycleId: 'cycle_2026-09-06',
+    });
     expect(checkbox(2)).toBeChecked();
     expect(checkbox(3)).not.toBeChecked();
     print();
@@ -94,11 +104,14 @@ describe('ExportModal', () => {
     expect(checkbox(3)).not.toBeChecked();
     expect(screen.getByRole('button', { name: en.exportModal.printPdf })).toBeDisabled();
     expect(screen.getByRole('button', { name: en.exportModal.downloadPng })).toBeDisabled();
+    fireEvent.click(checkbox(1));
+    expect(screen.getByRole('button', { name: en.exportModal.printPdf })).toBeEnabled();
+    expect(screen.getByRole('button', { name: en.exportModal.downloadPng })).toBeEnabled();
   });
 
   it('exports one empty cycle when there is no data', () => {
     const props = renderModal();
-    expect(screen.queryAllByRole('checkbox')).toHaveLength(0);
+    expect(screen.queryByRole('group', { name: en.exportModal.cycles })).toBeNull();
     print();
     expect(props.onPreparePrint).toHaveBeenCalledWith(['all'], 'all-cycles');
   });

@@ -1,15 +1,14 @@
 import type React from 'react';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { X, Printer, ImageDown } from 'lucide-react';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
-import type { Observation } from '../types/crms';
 import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
-import { formatDateDisplay, getTodayStr } from '../utils/dateUtils';
-import { selectPrintCycles } from '../utils/printCycles';
+import { getTodayStr } from '../utils/dateUtils';
+import { cycleLength, selectPrintCycles, shortDate } from '../utils/printCycles';
 import { downloadChartPng } from '../utils/chartImage';
 
 interface ExportModalProps {
@@ -19,10 +18,6 @@ interface ExportModalProps {
   /** Receives true after the PNG download, or false when the browser cannot make the image. */
   onImageDone: (downloaded: boolean) => void;
 }
-
-/** The short date of a cycle row, for example "Sep 30" */
-const shortDate = (date: string, locale: string) =>
-  formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
 
 /**
  * Share chart: the choice of cycles, Download PNG and Print or PDF (RFC 0002). Backup, restore,
@@ -40,11 +35,10 @@ export const ExportModal: React.FC<ExportModalProps> = ({
 
   // The app mounts the dialog each time it opens, so each opening starts from the cycle of the
   // cycle picker, or from the newest cycle with All cycles
-  const [selectedIds, setSelectedIds] = useState<string[]>([]);
-  useEffect(() => {
+  const [selectedIds, setSelectedIds] = useState<string[]>(() => {
     const picked = cycles.find(c => c.id === selectedCycleId) ?? cycles[0];
-    setSelectedIds(picked ? [picked.id] : []);
-  }, [cycles, selectedCycleId]);
+    return picked ? [picked.id] : [];
+  });
 
   const toggle = (cycleId: string) =>
     setSelectedIds(prev =>
@@ -100,14 +94,13 @@ export const ExportModal: React.FC<ExportModalProps> = ({
       </div>
 
       <div className="modal-body share-body" ref={bodyRef}>
-        <fieldset className="share-cycles">
-          <legend className="share-cycles-title">{t.exportModal.cycles}</legend>
-          {cycles.length > 0 && (
+        {cycles.length > 0 && (
+          <fieldset className="share-cycles">
+            <legend className="share-cycles-title">{t.exportModal.cycles}</legend>
             <ul className="share-cycle-list">
               {cycles.map((cycle, index) => {
                 const checked = selectedIds.includes(cycle.id);
-                // A cycle always has an observation: the first day
-                const lengthDays = (cycle.observations.at(-1) as Observation).cycleDay;
+                const lengthDays = cycleLength(cycle);
                 // The name is the cycle number. The tag and the dates are the description.
                 const id = `share-cycle-${cycle.id}`;
                 return (
@@ -142,12 +135,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
                 );
               })}
             </ul>
-          )}
-        </fieldset>
+          </fieldset>
+        )}
         <p className="share-note">{t.exportModal.oldestToNewestNote}</p>
       </div>
 
-      <div className="share-footer">
+      <div className="modal-footer share-footer">
         <button
           type="button"
           className="btn btn-secondary"

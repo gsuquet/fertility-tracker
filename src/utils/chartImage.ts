@@ -3,10 +3,9 @@ import { formatMessage } from '../i18n';
 import type { StampType } from '../types/crms';
 import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
 import { showsEmptyStamp } from '../domain/stampCalculator';
-import { formatDateDisplay } from './dateUtils';
 import { downloadBlob, getExportFilename } from './exportUtils';
 import type { PrintCycle } from './printCycles';
-import { PRINT_ROW_DAYS, printCode, printRows } from './printCycles';
+import { PRINT_ROW_DAYS, cycleLength, printCode, printRows, shortDate } from './printCycles';
 
 /**
  * The colors of the image: the light theme values of `tokens.css`. The image is always on white
@@ -131,10 +130,6 @@ function stampOps(x: number, y: number, size: number, marks: StampMarks): DrawOp
   return ops;
 }
 
-/** The short date of the cycle line, for example "Sep 30" */
-const shortDate = (date: string, locale: string) =>
-  formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
-
 /**
  * The drawing of the chart image: the title, one 35-day grid for each cycle, from the oldest to
  * the newest, and the legend. It has the content of the print.
@@ -183,7 +178,7 @@ export function layoutChartImage(
     const titleFont = font(15, 800);
     text(PAD, y + 16, title, titleFont);
     const end = getCycleEndDate(cycle);
-    const days = cycle.observations.at(-1)?.cycleDay ?? 0;
+    const days = cycleLength(cycle);
     const details = `${shortDate(cycle.startDate, t.locale)} – ${shortDate(end, t.locale)} · ${formatMessage(t.chartStrip.cycleDays, { count: days })}`;
     const detailsX = PAD + measure(title, titleFont) + 10;
     text(detailsX, y + 16, details, font(13), IMAGE_COLORS.muted);
@@ -294,6 +289,8 @@ function roundedPath(
   ctx.closePath();
 }
 
+const inset = (op: { radius: number }) => (op.radius > 0 ? 1 : 0);
+
 /** Draws the layout on a canvas, with `scale` canvas pixels for each CSS pixel */
 export function paintChartImage(
   ctx: CanvasRenderingContext2D,
@@ -307,7 +304,8 @@ export function paintChartImage(
   for (const op of layout.ops) {
     switch (op.kind) {
       case 'rect':
-        roundedPath(ctx, op.x + 0.5, op.y + 0.5, op.w - 1, op.h - 1, op.radius);
+        // A grid cell is not inset, so two cells share the line between them
+        roundedPath(ctx, op.x + 0.5, op.y + 0.5, op.w - inset(op), op.h - inset(op), op.radius);
         if (op.fill) {
           ctx.fillStyle = op.fill;
           ctx.fill();
@@ -322,7 +320,9 @@ export function paintChartImage(
         ctx.font = op.font;
         ctx.fillStyle = op.color;
         ctx.textAlign = op.align;
-        ctx.fillText(op.text, op.x, op.y, op.maxWidth);
+        // Some browsers draw nothing for an undefined maximum width
+        if (op.maxWidth === undefined) ctx.fillText(op.text, op.x, op.y);
+        else ctx.fillText(op.text, op.x, op.y, op.maxWidth);
         break;
       case 'circle':
         ctx.beginPath();
@@ -346,9 +346,12 @@ export function paintChartImage(
   }
 }
 
-/** The scale of the canvas: two pixels for each CSS pixel, less for a very tall image */
+/**
+ * The scale of the canvas: two pixels for each CSS pixel, less for a very tall image, so that the
+ * canvas stays under the limit of Safari. It is never less than one pixel for each CSS pixel.
+ */
 export const imageScale = (layout: ChartImageLayout) =>
-  Math.min(IMAGE_SCALE, Math.sqrt(MAX_CANVAS_PIXELS / (layout.width * layout.height)));
+  Math.max(1, Math.min(IMAGE_SCALE, Math.sqrt(MAX_CANVAS_PIXELS / (layout.width * layout.height))));
 
 /**
  * Draws the cycles on a canvas and downloads the PNG file. It returns false when the browser

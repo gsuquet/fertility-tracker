@@ -241,7 +241,9 @@ describe('SettingsDialog', () => {
     // With application/json, a browser can add .json after .ftbackup
     expect(blob.type).toBe('application/octet-stream');
     expect(JSON.parse(await blob.text())).toHaveLength(6);
-    expect(revokeObjectURL).toHaveBeenCalledWith('blob:backup');
+    await vi.waitFor(() => expect(revokeObjectURL).toHaveBeenCalledWith('blob:backup'), {
+      timeout: 2000,
+    });
     expect(localStorage.getItem(STORAGE_LAST_BACKUP_KEY)).toBe(getTodayStr());
     expect(props.onClose).not.toHaveBeenCalled();
     expect(screen.queryByText(en.settings.noBackup)).toBeNull();

@@ -3,7 +3,13 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
 import { getTodayStr } from '../utils/dateUtils';
-import { printCode, printRows, printStartDate, selectPrintCycles } from '../utils/printCycles';
+import {
+  cycleLength,
+  printCode,
+  printRows,
+  printStartDate,
+  selectPrintCycles,
+} from '../utils/printCycles';
 import { formatMessage } from '../i18n';
 import { Target } from 'lucide-react';
 import { BabyIcon } from './icons/BabyIcon';
@@ -44,7 +50,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
         {sortedCycles.map(({ cycle, number: cycleNum }) => {
           const startDate = printStartDate(cycle);
           const endDate = cycle.observations[cycle.observations.length - 1]?.date || startDate;
-          const daysCount = cycle.observations.length;
+          const daysCount = cycleLength(cycle);
           const peakDayNum = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
           const rowChunks = printRows(cycle);
 

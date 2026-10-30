@@ -1,5 +1,5 @@
 import type { Cycle, Observation } from '../types/crms';
-import { addDays } from './dateUtils';
+import { addDays, formatDateDisplay } from './dateUtils';
 
 /** The days of one row of the paper chart */
 export const PRINT_ROW_DAYS = 35;
@@ -56,6 +56,13 @@ export function printRows(cycle: Cycle): PrintSlot[][] {
   }
   return rows;
 }
+
+/** The length of a cycle in days: the cycle day of its last observation, as on the chart */
+export const cycleLength = (cycle: Cycle) => cycle.observations.at(-1)?.cycleDay ?? 0;
+
+/** The short date of a cycle line, for example "Sep 30" */
+export const shortDate = (date: string, locale: string) =>
+  formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
 
 /** The code of a print cell: no spaces, and no AP, RAP or LAP, which the cell shows apart */
 export const printCode = (codeString: string) =>

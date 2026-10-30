@@ -227,6 +227,16 @@ describe('paintChartImage', () => {
         { kind: 'rect', x: 0, y: 0, w: 10, h: 10, radius: 2, stroke: '#222', dashed: true },
         { kind: 'rect', x: 0, y: 0, w: 10, h: 10, radius: 0, stroke: '#333' },
         { kind: 'text', x: 5, y: 5, text: 'Hi', font: '12px a', color: '#444', align: 'center' },
+        {
+          kind: 'text',
+          x: 5,
+          y: 5,
+          text: '10KLAD',
+          font: '12px a',
+          color: '#444',
+          align: 'center',
+          maxWidth: 40,
+        },
         { kind: 'circle', x: 5, y: 5, r: 3, fill: '#555' },
         { kind: 'baby', x: 0, y: 0, size: 20, color: '#666' },
       ],
@@ -236,7 +246,13 @@ describe('paintChartImage', () => {
     expect(ctx.calls[1]).toBe('fillRect(0,0,100,50)');
     expect(ctx.calls).toContain('setLineDash(3,2)');
     expect(ctx.calls).toContain('setLineDash()');
-    expect(ctx.calls).toContain('fillText(Hi,5,5,)');
+    // No maximum width argument when the step has none
+    expect(ctx.calls).toContain('fillText(Hi,5,5)');
+    expect(ctx.calls).toContain('fillText(10KLAD,5,5,40)');
+    // A grid cell is not inset; a stamp is inset by one pixel
+    expect(ctx.calls).toContain('moveTo(0.5,0.5)');
+    expect(ctx.calls.filter(call => call.startsWith('arcTo(10.5,0.5,10.5,10.5'))).toHaveLength(1);
+    expect(ctx.calls.filter(call => call.startsWith('arcTo(9.5,0.5,9.5,9.5'))).toHaveLength(2);
     expect(ctx.calls.filter(call => call.startsWith('stroke('))).toHaveLength(2);
     expect(ctx.calls.filter(call => call.startsWith('ellipse('))).toHaveLength(1);
     expect(ctx.fillStyle).toBe('#666');
@@ -251,12 +267,16 @@ describe('imageScale', () => {
     const scale = imageScale(tall);
     expect(scale).toBeLessThan(IMAGE_SCALE);
     expect(tall.width * scale * tall.height * scale).toBeCloseTo(MAX_CANVAS_PIXELS, -2);
+    // Never less than one pixel for each CSS pixel, so the text stays sharp
+    expect(imageScale({ width: IMAGE_WIDTH, height: 100_000, ops: [] })).toBe(1);
   });
 });
 
 describe('downloadChartPng', () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
   });
 
   const cycles = () => selectPrintCycles([cycle], ['all'], getTodayStr());
@@ -284,13 +304,16 @@ describe('downloadChartPng', () => {
       downloaded = this.download;
     });
 
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
     await expect(downloadChartPng(cycles(), en, 'cycle-1')).resolves.toBe(true);
     expect(downloaded).toBe(`fertility-tracker-chart-cycle-1-${getTodayStr()}.png`);
     expect(size[0]).toBe(IMAGE_WIDTH * IMAGE_SCALE);
     expect(size[1]).toBeGreaterThan(0);
     expect(ctx.calls).toContain(`scale(${IMAGE_SCALE},${IMAGE_SCALE})`);
+    // Safari can cancel the download when the address goes at once
+    expect(revokeUrl).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1000);
     expect(revokeUrl).toHaveBeenCalledWith('blob:chart');
-    vi.unstubAllGlobals();
   });
 
   it('returns false when the browser has no 2D canvas', async () => {
