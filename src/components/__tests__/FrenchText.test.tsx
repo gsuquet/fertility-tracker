@@ -74,7 +74,6 @@ describe('French text of the components', () => {
         status: fr.calendar.noObservation,
       }),
     });
-    expect(within(day).getByText(fr.calendar.add)).toBeInTheDocument();
     expect(within(day).getByTitle(fr.calendar.clickToAdd)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: fr.calendar.prevMonth }));
@@ -90,7 +89,7 @@ describe('French text of the components', () => {
       screen.getByRole('button', {
         name: formatMessage(fr.calendar.dayLabel, {
           date: '2026-09-02',
-          status: formatMessage(fr.calendar.observationStatus, { code: '0' }),
+          status: `${formatMessage(fr.calendar.observationStatus, { code: '0' })}, ${formatMessage(fr.calendar.cycleStart, { number: 1 })}`,
         }),
       })
     ).toBeInTheDocument();

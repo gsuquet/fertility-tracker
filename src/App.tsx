@@ -281,7 +281,12 @@ const MainApp: React.FC = () => {
                     onShare={() => setIsExportModalOpen(true)}
                   />
                 )}
-                {activeTab === 'calendar' && <CalendarGrid />}
+                {activeTab === 'calendar' && (
+                  <CalendarGrid
+                    onOpenToday={() => setActiveTab('today')}
+                    onOpenChart={() => setActiveTab('chart')}
+                  />
+                )}
                 {activeTab === 'analytics' && (
                   <>
                     <CycleAnalyticsView />

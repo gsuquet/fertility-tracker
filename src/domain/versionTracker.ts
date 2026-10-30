@@ -44,6 +44,31 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.41.0',
+    date: '2026-10-30',
+    title: 'A Calendar That Shows Your Cycles',
+    titleFr: 'Un calendrier qui montre vos cycles',
+    tagline:
+      'The first day of each cycle, the marks under the code and the days of the selected cycle',
+    taglineFr:
+      'Le premier jour de chaque cycle, les marques sous le code et les jours du cycle choisi',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The first day of a cycle has a red edge and the mark C with the cycle number, for example C2',
+      'The I, P and 1, 2, 3 marks are in a row under the code, so the stamp is easier to read',
+      'The calendar follows the cycle picker: the days of the selected cycle have a tint, and a past cycle opens on its first month',
+      'On a phone, the cells are taller and the code is larger',
+      'On a desktop, a click selects a day, and a panel shows it with Edit, Open in Chart and Open in Today',
+    ],
+    highlightsFr: [
+      'Le premier jour d’un cycle a un bord rouge et la marque C avec le numéro du cycle, par exemple C2',
+      'Les marques I, P et 1, 2, 3 sont sur une ligne sous le code, et le timbre est plus facile à lire',
+      'Le calendrier suit le choix du cycle : les jours du cycle choisi sont teintés, et un cycle passé s’ouvre sur son premier mois',
+      'Sur un téléphone, les cases sont plus hautes et le code est plus grand',
+      'Sur un ordinateur, un clic choisit un jour, et un panneau le montre avec Modifier, Ouvrir dans le graphique et Ouvrir dans Aujourd’hui',
+    ],
+  },
+  {
     version: '1.40.0',
     date: '2026-10-30',
     title: 'Analytics That Fit Your Phone',

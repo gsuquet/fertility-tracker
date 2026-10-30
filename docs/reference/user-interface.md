@@ -8,7 +8,7 @@ This page lists the pages, buttons and dialogs of the application. The names are
 | --------------------- | ------------- | -------------------------------------------------------------------------- |
 | **Today**             | **Today**     | The observation form for one date, the status card and the last five days. |
 | **Paper Chart Strip** | **Chart**     | One row for each cycle, in the format of the Creighton paper chart.        |
-| **Monthly Calendar**  | **Calendar**  | One month, with the stamp and the code of each day.                        |
+| **Monthly Calendar**  | **Calendar**  | One month, with the stamp, the code and the marks of each day.             |
 | **Cycle Analytics**   | **Analytics** | Phase lengths, the mucus score, the stamp counts and a clinical summary.   |
 
 On a screen of 640 pixels or less, the page buttons are at the bottom of the screen.

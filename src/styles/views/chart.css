@@ -299,6 +299,18 @@
     border: 0;
   }
 
+  /* The calendar panel: the stamp, the text and the buttons in one column */
+  .chart-day-detail.is-panel {
+    flex-direction: column;
+    align-items: flex-start;
+  }
+
+  .chart-day-detail-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--space-sm);
+  }
+
   .chart-day-detail .stamp-badge-container {
     width: auto;
     height: auto;

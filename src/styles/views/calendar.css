@@ -1,31 +1,55 @@
 /* ==========================================================================
-   Monthly Calendar Grid View
+   Monthly Calendar Grid View (RFC 0002)
    Layer: views
    ========================================================================== */
 
 @layer views {
   .calendar-view {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-xl);
-    padding: 1.5rem;
-    box-shadow: var(--shadow-sm);
     box-sizing: border-box;
     width: 100%;
-    overflow: hidden;
     /* A horizontal swipe changes the month (useDaySwipe.ts). The browser keeps the vertical scroll. */
     touch-action: pan-y pinch-zoom;
+  }
+
+  /* Desktop: the grid of 896 px at the left, the day panel in the rest of the width */
+  @media (min-width: 1024px) {
+    .calendar-view {
+      display: grid;
+      grid-template-columns: minmax(0, 896px) minmax(300px, 1fr);
+      gap: var(--space-md);
+      align-items: start;
+    }
+  }
+
+  .calendar-month {
+    min-width: 0;
+    overflow: hidden;
   }
 
   .calendar-header {
     display: flex;
     align-items: center;
     justify-content: space-between;
-    margin-bottom: 1.25rem;
+    margin-bottom: var(--space-sm);
+  }
+
+  .calendar-header .icon-button {
+    width: var(--control-size-lg);
+    height: var(--control-size-lg);
+    border-color: transparent;
+    background: none;
+    box-shadow: none;
+  }
+
+  .calendar-header .icon-button:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .calendar-month-title {
-    font-size: var(--font-size-xl);
+    margin: 0;
+    font-size: var(--font-size-lg);
     font-weight: 800;
     letter-spacing: -0.01em;
     color: var(--text-primary);
@@ -34,221 +58,193 @@
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: 8px;
+    gap: var(--space-xs);
     width: 100%;
     box-sizing: border-box;
   }
 
   .calendar-weekday-header {
-    text-align: center;
+    padding-bottom: var(--space-xs);
+    color: var(--text-secondary);
     font-size: var(--font-size-sm);
-    font-weight: 800;
-    color: var(--text-muted);
-    padding-bottom: 8px;
-    text-transform: uppercase;
-    letter-spacing: 0.05em;
+    font-weight: 700;
+    text-align: center;
   }
 
-  /* Default desktop display for weekday headers: show SUN, MON, etc., hide S, M, T */
+  /* Phone: the short weekday names. From 640 px: Mon, Tue, … */
   .calendar-weekday-header .weekday-full {
-    display: inline;
-  }
-
-  .calendar-weekday-header .weekday-short {
     display: none;
   }
 
-  .calendar-day {
-    min-height: 112px;
-    height: 112px;
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
-    border: 1px solid var(--bg-surface-border);
-    border-radius: var(--radius-md);
-    padding: 8px 6px;
-    cursor: pointer;
-    transition: all 0.18s ease;
-    display: flex;
-    flex-direction: column;
-    justify-content: space-between;
-    align-items: stretch;
-    position: relative;
-    min-width: 0;
-    overflow: hidden;
-    box-sizing: border-box;
+  @media (min-width: 640px) {
+    .calendar-weekday-header .weekday-full {
+      display: inline;
+    }
+
+    .calendar-weekday-header .weekday-short {
+      display: none;
+    }
   }
 
-  .calendar-day:hover:not(.future-day) {
+  /* A cell: the day, the stamp, the code and the row of marks. 80 px high on a phone. */
+  .calendar-day {
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    box-sizing: border-box;
+    min-width: 0;
+    min-height: 80px;
+    padding: 4px 2px;
+    overflow: hidden;
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-surface);
+    color: var(--text-primary);
+    font: inherit;
+    cursor: pointer;
+    transition: border-color 0.18s ease;
+  }
+
+  .calendar-day.empty {
+    border-color: transparent;
+    background: none;
+  }
+
+  .calendar-day:hover:not(:disabled) {
     border-color: var(--accent-primary);
-    box-shadow: var(--shadow-md);
-    transform: translateY(-2px);
+  }
+
+  .calendar-day.future-day {
+    border-style: dashed;
+    background: none;
+    cursor: default;
+  }
+
+  /* The days of the selected cycle: a tint behind text of full contrast */
+  .calendar-day.in-cycle {
+    background-color: var(--accent-light);
+  }
+
+  /* The first day of a cycle: a red edge, and C with the cycle number in the marks */
+  .calendar-day.is-cycle-start {
+    border-left: 3px solid var(--stamp-red);
   }
 
   .calendar-day.is-today {
-    border: 2px solid var(--accent-primary) !important;
-    background-color: var(--accent-soft);
-    box-shadow:
-      0 0 0 2px var(--accent-glow),
-      var(--shadow-sm);
-    position: relative;
-    z-index: 2;
+    border: 2px solid var(--accent-primary);
+  }
+
+  .calendar-day.is-cycle-start.is-today {
+    border-left: 3px solid var(--stamp-red);
+  }
+
+  /* Desktop: the day that the panel shows */
+  .calendar-day.is-selected {
+    box-shadow: inset 0 0 0 2px var(--accent-primary);
   }
 
   .calendar-day-num {
+    color: var(--text-primary);
     font-size: var(--font-size-sm);
     font-weight: 800;
-    color: var(--text-primary);
-    line-height: 1;
+    line-height: 18px;
   }
 
   .calendar-day.is-today .calendar-day-num {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
     min-width: 22px;
-    height: 22px;
     padding: 0 4px;
     border-radius: var(--radius-full);
     background-color: var(--accent-solid);
     color: var(--color-white);
-    font-weight: 800;
-    box-shadow: var(--shadow-xs);
   }
 
   .calendar-day-content {
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: flex-start;
-    height: 100%;
-    gap: 3px;
+    gap: 2px;
     width: 100%;
   }
 
-  .calendar-stamp-wrapper {
-    height: 50px;
-    min-height: 50px;
-    max-height: 50px;
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-start;
-    width: 100%;
-  }
-
+  /* The code is never cut. It goes onto more lines and the cell becomes taller. */
   .calendar-code {
-    font-size: var(--font-size-3xs);
-    font-weight: 800;
-    font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
-    color: var(--text-secondary);
-    text-align: center;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
     max-width: 100%;
-    margin-top: auto;
+    color: var(--text-secondary);
+    font-family: var(--font-mono);
+    font-size: var(--font-size-2xs);
+    font-weight: 700;
+    line-height: 1.15;
+    text-align: center;
+    overflow-wrap: anywhere;
   }
 
   .calendar-add-slot {
-    flex: 1;
     display: flex;
+    flex: 1;
     align-items: center;
     justify-content: center;
-    width: 100%;
+    color: var(--text-muted);
   }
 
-  .calendar-add-pill {
+  .calendar-day:hover .calendar-add-slot {
+    color: var(--accent-primary);
+  }
+
+  /* The I, P and 1, 2, 3 marks, and the first day of a cycle: one row of 12 px under the code */
+  .calendar-marks {
     display: flex;
-    align-items: center;
     justify-content: center;
     gap: 3px;
-    padding: 4px 8px;
-    border-radius: var(--radius-sm);
-    border: 1px dashed var(--bg-surface-border-strong);
-    background-color: var(--bg-surface);
-    color: var(--text-muted);
+    min-height: 12px;
+    margin-top: auto;
     font-size: var(--font-size-2xs);
-    font-weight: 700;
-    transition: all 0.18s ease;
+    font-weight: 800;
+    line-height: 12px;
   }
 
-  .calendar-day:hover .calendar-add-pill {
-    border-color: var(--accent-primary);
-    border-style: solid;
-    color: var(--accent-primary);
-    background-color: var(--accent-light);
-    transform: scale(1.04);
+  .mark-intercourse {
+    color: var(--color-intercourse-text);
   }
 
-  /* Responsive Media Queries */
-  @media (max-width: 640px) {
-    .calendar-view {
-      padding: 0.85rem;
-      overflow: hidden;
-    }
+  .mark-peak {
+    color: var(--color-peak-text);
+  }
 
-    .calendar-month-title {
-      font-size: var(--font-size-base);
-    }
+  .mark-count {
+    color: var(--color-success-text);
+  }
 
-    .calendar-weekday-header .weekday-full {
-      display: none;
-    }
+  .mark-cycle-start {
+    color: var(--color-danger-text);
+  }
 
-    .calendar-weekday-header .weekday-short {
-      display: inline;
-      font-size: var(--font-size-2xs);
-      font-weight: 800;
-    }
+  .calendar-legend {
+    margin: var(--space-sm) 0 0;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
 
+  /* Desktop: cells of about 120 × 96 px and a larger code */
+  @media (min-width: 1024px) {
     .calendar-grid {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
-      gap: 4px;
-      width: 100%;
+      gap: 6px;
     }
 
-    /* The cell grows so that a long code wraps instead of being cut */
     .calendar-day {
-      min-height: 76px;
-      height: auto;
-      padding: 4px 3px;
-      min-width: 0;
-      overflow: hidden;
-    }
-
-    .calendar-day-num {
-      font-size: var(--font-size-2xs);
-    }
-
-    .calendar-stamp-wrapper {
-      height: 36px;
-      min-height: 36px;
-      max-height: 36px;
+      min-height: 96px;
+      padding: 6px 4px;
     }
 
     .calendar-code {
-      font-size: var(--font-size-4xs);
-      line-height: 1.15;
-      max-width: 100%;
-      overflow: visible;
-      text-overflow: clip;
-      white-space: normal;
-      overflow-wrap: anywhere;
+      font-size: var(--font-size-xs);
     }
 
-    .calendar-add-slot {
-      width: 100%;
-      min-width: 0;
-    }
-
-    .calendar-add-pill {
-      padding: 3px 4px;
-      gap: 0;
-      max-width: 100%;
-    }
-
-    .calendar-add-pill .add-text {
-      display: none;
+    /* The panel stays in view while the page scrolls */
+    .calendar-view .chart-day-detail.is-panel {
+      position: sticky;
+      top: var(--space-md);
     }
   }
 }
