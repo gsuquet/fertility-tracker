@@ -56,7 +56,7 @@
     - heading "Clinical summary" [level=2]
     - term: Average mucus score
     - definition: "1.1"
-    - term: Luteal phase
+    - term: Luteal phase of ended cycles
     - definition: Cycle in progress
     - heading "What is the Creighton Mucus Score?" [level=2]:
       - button "What is the Creighton Mucus Score?"

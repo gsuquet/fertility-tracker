@@ -83,9 +83,6 @@ const whiteTextFills = [
   '--color-success-solid',
   '--color-intercourse',
   '--color-peak',
-  // The segments of the Analytics phase bar
-  '--stamp-red',
-  '--stamp-dark-green',
 ];
 
 describe('design token contrast (WCAG 2 AA)', () => {
@@ -126,6 +123,7 @@ describe('design token contrast (WCAG 2 AA)', () => {
       ['--stamp-white-border', '--bg-hero'],
       ['--stamp-light-green-border', '--bg-hero'],
       ['--stamp-light-green-border', '--bg-primary'],
+      ['--phase-before-peak', '--bg-surface'],
     ])('stamp edge %s on %s reaches 3:1', (edge, surface) => {
       expect(contrast(color(edge), color(surface))).toBeGreaterThanOrEqual(AA_NON_TEXT);
     });
@@ -133,6 +131,7 @@ describe('design token contrast (WCAG 2 AA)', () => {
     it.each([
       ['--stamp-yellow-text', '--color-warning'],
       ['--stamp-light-green-text', '--stamp-light-green'],
+      ['--phase-before-peak-text', '--phase-before-peak'],
       ['--color-white', '--stamp-red'],
       ['--color-white', '--stamp-dark-green'],
     ])('stamp text %s on %s reaches 4.5:1', (text, fill) => {

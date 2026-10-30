@@ -239,7 +239,7 @@ export const en = {
     mcsGuideText:
       'The Mucus Cycle Score (MCS) is a clinical metric developed by Dr. Thomas Hilgers (Pope Paul VI Institute). It evaluates cervical mucus quality on a 0 to 10 scale (Dry=0, Damp=2, Stretchy=6..8, Very Stretchy/Clear/Lubricative=10). NaPro physicians benchmark scores >= 9.0 for optimal fertility potential.',
     avgMucusScore: 'Average mucus score',
-    lutealHealth: 'Luteal phase',
+    lutealHealth: 'Luteal phase of ended cycles',
     normalLuteal: 'Normal (9 to 17 days)',
     abnormalLuteal: 'Short or long luteal phase',
     pendingPeak: 'Pending Peak Day',

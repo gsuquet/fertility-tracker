@@ -242,7 +242,7 @@ export const fr: TranslationSchema = {
     mcsGuideText:
       'Le Score de Glaire (MCS) est une métrique clinique développée par le Dr Thomas Hilgers (Institut Pape Paul VI). Il évalue la qualité de la glaire cervicale de 0 à 10 (Sec=0, Humide=2, Élastique=6..8, Très Élastique/Transparent/Lubrifiant=10). Les médecins NaPro recommandent un score >= 9.0 pour une fertilité optimale.',
     avgMucusScore: 'Score moyen de glaire',
-    lutealHealth: 'Phase lutéale',
+    lutealHealth: 'Phase lutéale des cycles terminés',
     normalLuteal: 'Normale (9 à 17 jours)',
     abnormalLuteal: 'Phase lutéale courte ou longue',
     pendingPeak: 'Jour Sommet en attente',

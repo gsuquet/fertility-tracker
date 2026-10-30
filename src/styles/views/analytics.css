@@ -142,7 +142,8 @@
   }
 
   .phase-part-before-peak {
-    background-color: var(--accent-solid);
+    background-color: var(--phase-before-peak);
+    color: var(--phase-before-peak-text);
   }
 
   .phase-part-count {

@@ -60,7 +60,7 @@ The bar uses the four phases of Analytics ([Cycle and phase rules](../cycle-and-
 | Phase                                 | Color                 |
 | ------------------------------------- | --------------------- |
 | Menses, before the Peak Day           | `--stamp-red`         |
-| Before Peak Day, up to the Peak Day   | `--accent-solid`      |
+| Before Peak Day, up to the Peak Day   | `--phase-before-peak` |
 | Post-Peak count: days 1 to 3 after it | `--stamp-light-green` |
 | After the count                       | `--stamp-dark-green`  |
 | No observation                        | `--bg-surface-border` |
