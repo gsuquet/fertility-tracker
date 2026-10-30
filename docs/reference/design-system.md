@@ -52,7 +52,6 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 | `--accent-solid`                     | `#1f3a5f`            | `#34659e`                   | Fills behind white text                                                     |
 | `--phase-before-peak`                | `#1f3a5f`            | `#8fb3dd`                   | Before Peak Day on the phase bars, with `--phase-before-peak-text`          |
 | `--calendar-cycle-tint`              | `#e6ecf4`            | `rgba(169, 193, 224, 0.08)` | The days of the selected cycle in the calendar. The marks keep 4.5:1 on it. |
-
 - The logo is a sprout on an ink tile. [BrandMark.tsx](../../src/components/icons/BrandMark.tsx) draws it in the header. The `fill` attributes have the light colors. The classes in `header.css` give the colors of each theme. [public/icons/logo.svg](../../public/icons/logo.svg) is the same drawing for the favicon. The task `mise run icons` draws the PNG icons from this file.
 - [BabyIcon.tsx](../../src/components/icons/BabyIcon.tsx) is the only drawing of the baby of the white and light green stamps: a round head with a curl and a swaddled body. The stamps, the chart legend and the print legend use it. The CSS sets its size: 18 pixels in a stamp, 12 pixels in the chart legend and 10 pixels in the print legend.
 
