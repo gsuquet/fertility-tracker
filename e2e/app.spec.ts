@@ -164,12 +164,10 @@ test.describe('Fertility Tracker in a browser', () => {
 
     await page.getByRole('tab', { name: en.tabs.analytics }).click();
     const analytics = page.getByRole('tabpanel', { name: en.tabs.analytics });
-    await expect(
-      analytics.getByRole('heading', { name: new RegExp(`^${en.analytics.phasesTitle}`) })
-    ).toBeVisible();
+    await expect(analytics.getByRole('heading', { name: en.analytics.phasesTitle })).toBeVisible();
     await expect(analytics).toContainText(en.analytics.normalLuteal);
-    await expect(analytics).toContainText(
-      formatMessage(en.common.cycleDayDate, { day: 13, date: '2026-10-12' })
+    await expect(page.getByRole('list', { name: en.stats.label })).toContainText(
+      `${en.stats.peakDay}CD 13Oct 12`
     );
   });
 
@@ -178,12 +176,16 @@ test.describe('Fertility Tracker in a browser', () => {
     await loadDemoData(page);
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
+    // The Peak Day tile: its label, CD and the cycle day, then the short date
     const peakStat = (day: number, date: string) =>
-      page.getByTitle(
-        new RegExp(
-          `^${escapeRegExp(en.stats.peakDay)}\\W+${escapeRegExp(formatMessage(en.common.cycleDayDate, { day, date }))}$`
-        )
-      );
+      page
+        .getByRole('list', { name: en.stats.label })
+        .getByRole('listitem')
+        .filter({
+          hasText: new RegExp(
+            `^${escapeRegExp(en.stats.peakDay)}CD ${day}${escapeRegExp(formatDateDisplay(date, 'en-US', { month: 'short', day: 'numeric' }))}$`
+          ),
+        });
     const cell = (date: string, stamp: string) =>
       chart.getByRole('button', {
         name: labelPattern(en.chartStrip.filledCellLabel, { date, stamp }),

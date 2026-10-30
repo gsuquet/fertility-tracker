@@ -72,6 +72,8 @@ const textTokens = [
   '--color-intercourse-text',
   '--color-peak-text',
   '--color-danger-text',
+  '--color-success-text',
+  '--color-warning-text',
 ];
 const whiteTextFills = [
   '--accent-solid',

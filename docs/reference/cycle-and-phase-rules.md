@@ -37,12 +37,12 @@ The oldest cycle is cycle 1. The cycle picker and the paper chart show the newes
 
 ## Phases of one cycle
 
-| Value      | Rule                                                                                     |
-| ---------- | ---------------------------------------------------------------------------------------- |
-| Length     | The cycle day of the last observation.                                                   |
-| Menses     | The number of days with the `RED` stamp.                                                 |
-| Follicular | Cycle day 1 to the Peak Day. Before the Peak Day: all days so far, marked "in progress". |
-| Luteal     | The days after the Peak Day. Before the Peak Day: 0.                                     |
+| Value      | Rule                                                               |
+| ---------- | ------------------------------------------------------------------ |
+| Length     | The cycle day of the last observation.                             |
+| Menses     | The number of days with the `RED` stamp.                           |
+| Follicular | Cycle day 1 to the Peak Day. Before the Peak Day: all days so far. |
+| Luteal     | The days after the Peak Day. Before the Peak Day: 0.               |
 
 ## Phases of all cycles
 
@@ -55,15 +55,28 @@ The length and menses averages use all the cycles. The follicular and luteal ave
 | One cycle or more has a Peak Day | Only the cycles that have a Peak Day. |
 | **Else**                         | All the cycles.                       |
 
+## Phase bar of Analytics
+
+The **Cycle phases** bar of the **Cycle Analytics** page uses four phases. The phase bar of the chart uses the same phases. The source is `dayPhase()` and `getPhaseSegments()` in `src/domain/cyclePhases.ts`.
+
+| Phase           | Days                                                                    |
+| --------------- | ----------------------------------------------------------------------- |
+| Menses          | The days up to the Peak Day with the `RED` stamp or a bleeding code.    |
+| Before Peak Day | The other days up to the Peak Day, and the Peak Day.                    |
+| Post-Peak count | The 3 days after the Peak Day. A cycle without a Peak Day has no count. |
+| After the count | The days after the count.                                               |
+
+A day without an observation is in no phase. The **All Cycles** view shows the average of each phase per cycle (`averageSegments()`).
+
 ## Luteal phase health
 
 The value of all cycles is an average and can have decimals.
 
-| Condition                      | Result                      |
-| ------------------------------ | --------------------------- |
-| Luteal phase from 9 to 17 days | Normal (9-17 days)          |
-| Luteal phase more than 0 days  | Short/Extended luteal phase |
-| **Else**                       | Pending Peak Day            |
+| Condition                      | Result                     |
+| ------------------------------ | -------------------------- |
+| Luteal phase from 9 to 17 days | Normal (9 to 17 days)      |
+| Luteal phase more than 0 days  | Short or long luteal phase |
+| **Else**                       | Pending Peak Day           |
 
 ## Mucus score
 

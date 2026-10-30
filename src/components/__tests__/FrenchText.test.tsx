@@ -103,22 +103,23 @@ describe('French text of the components', () => {
 
   it('translates the analytics of one cycle', () => {
     renderWithProviders(<CycleAnalyticsView />, inFrench(demo()));
-    expect(screen.getByText(fr.analytics.stampRed)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.stampDarkGreen)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.stampWhite)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.stampLightGreen)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.mensesDays)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.dryDays)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.fertileDays)).toBeInTheDocument();
-    expect(screen.getByText(fr.analytics.postPeakDays)).toBeInTheDocument();
+    for (const label of [
+      fr.analytics.stampBleeding,
+      fr.analytics.stampDry,
+      fr.analytics.stampFertile,
+      fr.analytics.phaseBeforePeak,
+      fr.analytics.phaseAfterCount,
+    ]) {
+      expect(screen.getByText(label)).toBeInTheDocument();
+    }
+    // The legend of the phases and the stamps both name the count
+    expect(screen.getAllByText(fr.analytics.stampCount)).toHaveLength(2);
+    expect(screen.getByRole('heading', { name: fr.analytics.phasesTitle })).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: fr.analytics.stampsTitle })).toBeInTheDocument();
+    expect(screen.getByText(fr.analytics.trendDescription)).toBeInTheDocument();
     expect(
-      screen.getByRole('heading', {
-        name: `${fr.analytics.phasesTitle} ${formatMessage(fr.analytics.cycleInTitle, { number: 2 })}`,
-      })
+      screen.getByRole('img', { name: /^Règles : 4 jours, Avant le Jour Sommet : 9 jours/ })
     ).toBeInTheDocument();
-    expect(screen.getAllByText(/^JC\d+$/).length).toBeGreaterThan(0);
-    expect(screen.getByText(/au total$/)).toBeInTheDocument();
-    expect(screen.getByText(/^JC \d+ \(\d{4}-\d{2}-\d{2}\)$/)).toBeInTheDocument();
 
     fireEvent.click(screen.getByRole('button', { name: fr.analytics.mcsGuideTitle }));
     expect(screen.getByText(fr.analytics.mcsDry)).toBeInTheDocument();
@@ -129,11 +130,7 @@ describe('French text of the components', () => {
   it('translates the analytics of all the cycles', () => {
     const observations = demo();
     renderWithProviders(<CycleAnalyticsView />, inFrench(observations, 'all'));
-    expect(
-      screen.getByRole('heading', {
-        name: `${fr.analytics.phasesTitle} ${fr.analytics.allCyclesCombined}`,
-      })
-    ).toBeInTheDocument();
+    expect(screen.getByRole('heading', { name: fr.analytics.stampsTitleAll })).toBeInTheDocument();
     expect(
       screen.getByText(
         formatMessage(fr.analytics.cycleStarted, { number: 1, date: observations[0]!.date })
@@ -337,8 +334,11 @@ describe('French text of the components', () => {
 
   it('translates the stats header', () => {
     renderWithProviders(<CycleStatsHeader />, inFrench(demo(), 'all'));
-    expect(screen.getAllByText(/^\d+\.\d jours \(moy\.\)$/).length).toBe(2);
-    expect(screen.getByText(/^JC \d+ \(/)).toBeInTheDocument();
+    expect(screen.getByRole('list', { name: fr.stats.label })).toBeInTheDocument();
+    expect(screen.getByText(fr.stats.peakDay)).toBeInTheDocument();
+    expect(screen.getByText('JC 13')).toBeInTheDocument();
+    expect(screen.getAllByText('Moyenne de 2 cycles')).toHaveLength(2);
+    expect(screen.getByText(fr.stats.inAllCycles)).toBeInTheDocument();
   });
 
   it('translates the version dialog pills and tagline', () => {

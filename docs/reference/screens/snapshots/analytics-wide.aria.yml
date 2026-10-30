@@ -14,37 +14,51 @@
   - button "Toggle Dark/Light Mode"
   - button "Settings"
 - main:
-  - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
+  - list "Cycle statistics":
+    - listitem:
+      - text: Cycle length
+      - strong: /\d+/
+      - text: /days Sep \d+ – Oct \d+/
+    - listitem:
+      - text: Peak Day
+      - strong: /CD \d+/
+      - text: /Oct \d+/
+    - listitem:
+      - text: Luteal phase
+      - strong: /\d+/
+      - text: days After Peak Day
+    - listitem:
+      - text: Intercourse
+      - strong: "3"
+      - text: days In this cycle
   - tabpanel "Cycle Analytics":
     - heading "Cycle Analytics" [level=1]
-    - button "What is the Creighton Mucus Score (MCS)?"
-    - heading "Cycle Phases Breakdown (Cycle 2)" [level=3]
-    - text: Menses Phase
-    - strong: 4 days
-    - text: Follicular Phase (up to Peak P)
-    - strong: /\d+ days/
-    - text: Luteal Phase (Post-Peak P)
-    - strong: /\d+ days/
-    - heading "Mucus & Stamp Score Distribution" [level=3]
-    - text: Red Menses Bleeding
-    - strong: /4 days \(\d+%\)/
-    - text: Dark Green Infertile Dry Days
-    - strong: /\d+ days \(\d+%\)/
-    - text: White 👶 Fertile Mucus Days
-    - strong: /3 days \(\d+%\)/
-    - text: Light Green 👶 Post-Peak Count (1-2-3)
-    - strong: 3 days
-    - heading /Creighton Mucus Score Trend \(0 to \d+\)/ [level=3]
-    - region /Creighton Mucus Score Trend \(0 to \d+\)/: /CD1 CD2 CD3 CD4 CD5 CD6 CD7 CD8 2 CD9 2 CD10 6 CD11 \d+ CD12 \d+ CD13 CD14 CD15 CD16 CD17 CD18 CD19 CD20 CD21 CD22 CD23 CD24 CD25 CD26 CD27 CD28/
-    - heading "Practitioner Clinical Summary (CrMS / NaPro)" [level=3]
-    - strong: "Average Mucus Score:"
-    - text: /1\.1 \/ \d+/
-    - strong: "Peak Day (P):"
-    - text: /CD \d+ \(\d+-\d+-\d+\)/
-    - strong: "Luteal Phase Health:"
-    - text: /Normal \(9-\d+ days\)/
-    - strong: "Intercourse Frequency:"
-    - text: 3 total
+    - heading "Cycle phases" [level=3]
+    - 'img /Menses: 4 days, Before Peak Day: 9 days, Post-Peak count: 3 days, After the count: \d+ days/': /4 9 3 \d+/
+    - heading "Mucus score trend" [level=3]
+    - paragraph: /Score from 0 to \d+ for each cycle day\. The pink bar is Peak Day\./
+    - region "Mucus score trend"
+    - heading "Stamps in this cycle" [level=3]
+    - list:
+      - listitem:
+        - text: Bleeding
+        - strong: "4"
+      - listitem:
+        - text: Dry
+        - strong: /\d+/
+      - listitem:
+        - text: Fertile mucus
+        - strong: "3"
+      - listitem:
+        - text: Post-Peak count
+        - strong: "3"
+    - heading "Clinical summary" [level=3]
+    - term: Average mucus score
+    - definition: "1.1"
+    - term: Luteal phase
+    - definition: /Normal \(9 to \d+ days\)/
+    - heading "What is the Creighton Mucus Score?" [level=3]:
+      - button "What is the Creighton Mucus Score?"
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/
   - button "Legal"

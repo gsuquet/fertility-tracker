@@ -2,9 +2,37 @@ import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
+import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
 import { formatMessage } from '../i18n';
-import { Calendar, Flame, Heart, Activity } from 'lucide-react';
+import { shortDate } from '../utils/printCycles';
 
+interface StatTileProps {
+  label: string;
+  value: string;
+  /** The unit after the value, for example "days" */
+  unit?: string | undefined;
+  detail: string;
+}
+
+/** One tile: the label, the value with its unit, and one line of detail */
+const StatTile: React.FC<StatTileProps> = ({ label, value, unit, detail }) => (
+  <li className="stat-card">
+    <span className="stat-label">{label}</span>
+    <span className="stat-value">
+      <strong>{value}</strong>
+      {unit && <span className="stat-unit"> {unit}</span>}
+    </span>
+    <span className="stat-detail">{detail}</span>
+  </li>
+);
+
+/** A whole number as it is, else one decimal */
+const formatDays = (days: number) => (Number.isInteger(days) ? String(days) : days.toFixed(1));
+
+/**
+ * The four tiles of the selected cycle, or the averages of all cycles: the cycle length, the Peak
+ * Day, the luteal phase and the intercourse days (RFC 0002).
+ */
 export const CycleStatsHeader: React.FC = () => {
   const { observations, cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
@@ -13,99 +41,72 @@ export const CycleStatsHeader: React.FC = () => {
 
   // 'all' matches no cycle, so it shows the averages
   const selectedCycle = cycles.find(c => c.id === selectedCycleId);
+  const days = t.stats.days;
+  const none = '---';
 
-  let cycleLengthText = '';
-  let peakDayText = '---';
-  let lutealPhaseText: string;
-  let intercourseCount = 0;
+  let length: StatTileProps;
+  let luteal: StatTileProps;
+  let intercourse: StatTileProps;
+  // Cycles are ordered newest first, so in all cycles the first peak is the latest one
+  const peak = selectedCycle
+    ? getCyclePhases(selectedCycle).peak
+    : cycles.map(c => getCyclePhases(c).peak).find(Boolean);
 
   if (selectedCycle) {
-    const { peak, lutealDays } = getCyclePhases(selectedCycle);
-    cycleLengthText = `${selectedCycle.observations.length} ${t.stats.days}`;
-    peakDayText = peak
-      ? formatMessage(t.common.cycleDayDate, { day: peak.cycleDay, date: peak.date })
-      : '---';
-    lutealPhaseText = `${lutealDays} ${t.stats.days}`;
-    intercourseCount = selectedCycle.observations.filter(o => o.intercourse).length;
+    const phases = getCyclePhases(selectedCycle);
+    length = {
+      label: t.stats.cycleLength,
+      value: String(phases.lengthDays),
+      unit: days,
+      detail: `${shortDate(selectedCycle.startDate, t.locale)} – ${shortDate(getCycleEndDate(selectedCycle), t.locale)}`,
+    };
+    luteal = {
+      label: t.stats.lutealPhase,
+      value: peak ? String(phases.lutealDays) : none,
+      unit: peak ? days : undefined,
+      detail: t.stats.afterPeak,
+    };
+    intercourse = {
+      label: t.stats.intercourseCount,
+      value: String(selectedCycle.observations.filter(o => o.intercourse).length),
+      unit: days,
+      detail: t.stats.inThisCycle,
+    };
   } else {
-    // All Cycles view
-    cycleLengthText = formatMessage(t.stats.averageDays, {
-      value: (observations.length / cycles.length).toFixed(1),
-    });
-
-    // Cycles are ordered newest first, so the first peak is the latest one
-    const latestPeak = cycles.map(c => getCyclePhases(c).peak).find(Boolean);
-    if (latestPeak) {
-      peakDayText = formatMessage(t.common.cycleDayDate, {
-        day: latestPeak.cycleDay,
-        date: latestPeak.date,
-      });
-      const { lutealDays } = averagePhases(cycles);
-      lutealPhaseText = formatMessage(t.stats.averageDays, { value: lutealDays.toFixed(1) });
-    } else {
-      lutealPhaseText = `0 ${t.stats.days}`;
-    }
-
-    intercourseCount = observations.filter(o => o.intercourse).length;
+    const average = averagePhases(cycles);
+    const averageOf = formatMessage(t.stats.averageOf, { count: cycles.length });
+    length = {
+      label: t.stats.cycleLength,
+      value: formatDays(average.lengthDays),
+      unit: days,
+      detail: averageOf,
+    };
+    luteal = {
+      label: t.stats.lutealPhase,
+      value: peak ? formatDays(average.lutealDays) : none,
+      unit: peak ? days : undefined,
+      detail: peak
+        ? formatMessage(t.stats.averageOf, { count: average.cyclesWithPeak })
+        : t.stats.afterPeak,
+    };
+    intercourse = {
+      label: t.stats.intercourseCount,
+      value: String(observations.filter(o => o.intercourse).length),
+      unit: days,
+      detail: t.stats.inAllCycles,
+    };
   }
 
   return (
-    <div className="stats-dashboard">
-      <div className="stat-card" title={`${t.stats.cycleLength}: ${cycleLengthText}`}>
-        <div className="stat-icon icon-indigo">
-          <Calendar size={20} />
-        </div>
-        <div className="stat-content">
-          <span className="stat-label" title={t.stats.cycleLength}>
-            {t.stats.cycleLength}
-          </span>
-          <span className="stat-value" title={cycleLengthText}>
-            {cycleLengthText}
-          </span>
-        </div>
-      </div>
-
-      <div className="stat-card" title={`${t.stats.peakDay}: ${peakDayText}`}>
-        <div className="stat-icon icon-rose">
-          <Flame size={20} />
-        </div>
-        <div className="stat-content">
-          <span className="stat-label" title={t.stats.peakDay}>
-            {t.stats.peakDay}
-          </span>
-          <span className="stat-value" title={peakDayText}>
-            {peakDayText}
-          </span>
-        </div>
-      </div>
-
-      <div className="stat-card" title={`${t.stats.lutealPhase}: ${lutealPhaseText}`}>
-        <div className="stat-icon icon-emerald">
-          <Activity size={20} />
-        </div>
-        <div className="stat-content">
-          <span className="stat-label" title={t.stats.lutealPhase}>
-            {t.stats.lutealPhase}
-          </span>
-          <span className="stat-value" title={lutealPhaseText}>
-            {lutealPhaseText}
-          </span>
-        </div>
-      </div>
-
-      <div className="stat-card" title={`${t.stats.intercourseCount}: ${intercourseCount}`}>
-        <div className="stat-icon icon-amber">
-          <Heart size={20} />
-        </div>
-        <div className="stat-content">
-          <span className="stat-label" title={t.stats.intercourseCount}>
-            {t.stats.intercourseCount}
-          </span>
-          <span className="stat-value" title={String(intercourseCount)}>
-            {intercourseCount}
-          </span>
-        </div>
-      </div>
-    </div>
+    <ul className="stats-dashboard" aria-label={t.stats.label}>
+      <StatTile {...length} />
+      <StatTile
+        label={t.stats.peakDay}
+        value={peak ? formatMessage(t.stats.peakValue, { day: peak.cycleDay }) : none}
+        detail={peak ? shortDate(peak.date, t.locale) : t.stats.notYet}
+      />
+      <StatTile {...luteal} />
+      <StatTile {...intercourse} />
+    </ul>
   );
 };

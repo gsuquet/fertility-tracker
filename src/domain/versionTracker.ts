@@ -44,6 +44,30 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.40.0',
+    date: '2026-10-30',
+    title: 'Analytics That Fit Your Phone',
+    titleFr: 'Des analyses qui tiennent sur votre téléphone',
+    tagline: 'Full labels on the tiles, one bar for the cycle phases, and a trend that fits',
+    taglineFr:
+      'Des libellés complets sur les tuiles, une barre pour les phases du cycle et une tendance qui tient',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The four tiles show their full label, the value and one line of detail, such as the dates of the cycle',
+      'Cycle phases is one bar: menses, before the Peak Day, the Post-Peak count and after the count',
+      'The mucus score trend fits 35 days on a phone, with day numbers under the bars',
+      'Stamps in this cycle shows the number of days of each stamp',
+      'The clinical summary no longer repeats the numbers of the tiles, and the explanation of the score is at the end',
+    ],
+    highlightsFr: [
+      'Les quatre tuiles montrent leur libellé complet, la valeur et une ligne de détail, comme les dates du cycle',
+      'Les phases du cycle tiennent dans une barre : règles, avant le Jour Sommet, le compte Post-Sommet et après le compte',
+      'La tendance du score de glaire montre 35 jours sur un téléphone, avec les numéros des jours sous les barres',
+      'Timbres de ce cycle montre le nombre de jours de chaque timbre',
+      'Le résumé clinique ne répète plus les chiffres des tuiles, et l’explication du score est à la fin',
+    ],
+  },
+  {
     version: '1.39.0',
     date: '2026-10-30',
     title: 'Share Your Chart as an Image',

@@ -1,385 +1,420 @@
 /* ==========================================================================
-   Cycle Analytics View & Stats Dashboard
+   Cycle Analytics View & Stats Dashboard (RFC 0002)
    Layer: views
    ========================================================================== */
 
 @layer views {
-  /* Stats Dashboard */
+  /* The four tiles: 2 × 2 on a phone, 4 × 1 on a wider screen */
   .stats-dashboard {
     display: grid;
     grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 1rem;
-    margin-bottom: 1.25rem;
+    gap: var(--space-sm);
     width: 100%;
+    margin: 0 0 var(--space-md);
+    padding: 0;
+    list-style: none;
   }
 
   @media (min-width: 768px) {
     .stats-dashboard {
       grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: var(--space-md);
     }
   }
 
   .stat-card {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+    padding: 0.75rem var(--space-md);
     background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-xl);
-    padding: 1rem 1.15rem;
-    display: flex;
-    align-items: center;
-    gap: 0.9rem;
-    box-shadow: var(--shadow-sm);
-    transition:
-      transform 0.18s ease,
-      box-shadow 0.18s ease;
-    min-width: 0;
-    width: 100%;
   }
 
-  .stat-card:hover {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow-md);
-  }
-
-  .stat-icon {
-    width: 44px;
-    height: 44px;
-    border-radius: var(--radius-md);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    flex-shrink: 0;
-    box-shadow: var(--shadow-sm);
-  }
-
-  .icon-indigo {
-    background: var(--accent-light);
-    color: var(--accent-primary);
-  }
-  .icon-rose {
-    background: var(--color-danger-surface);
-    color: var(--stamp-red);
-  }
-  .icon-emerald {
-    background: var(--color-success-surface);
-    color: var(--color-success);
-  }
-  .icon-amber {
-    background: var(--color-warning-surface);
-    color: var(--color-warning);
-  }
-
-  .stat-content {
-    display: flex;
-    flex-direction: column;
-    overflow: hidden;
-    min-width: 0;
-    flex: 1;
-  }
-
+  /* The label is complete, on two lines when it needs them */
   .stat-label {
-    font-size: var(--font-size-2xs);
-    font-weight: 700;
-    color: var(--text-muted);
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    text-transform: uppercase;
-    letter-spacing: 0.02em;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
   }
 
-  .stat-value {
-    font-size: var(--font-size-lg);
+  .stat-value strong {
+    font-size: var(--font-size-xl);
     font-weight: 800;
     letter-spacing: -0.01em;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
+  }
+
+  .stat-unit {
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+    font-weight: 600;
+  }
+
+  .stat-detail {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
   }
 
   /* Cycle Analytics View */
   .analytics-view {
     display: flex;
     flex-direction: column;
-    gap: 1.25rem;
+    gap: var(--space-md);
     max-width: 100%;
     overflow-x: hidden;
   }
 
+  /* One column on a phone. On a wider screen: phases and trend at the left, stamps and summary
+     at the right, the explanation under them. */
   .analytics-grid {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 1.25rem;
-    max-width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: var(--space-md);
+    align-items: start;
   }
 
   @media (min-width: 768px) {
     .analytics-grid {
-      grid-template-columns: repeat(2, 1fr);
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      /* The tall cards span two rows, so a short card leaves no gap under it */
+      grid-template-areas:
+        'phases stamps'
+        'trend stamps'
+        'trend clinical'
+        'guide guide';
+    }
+
+    .analytics-phases {
+      grid-area: phases;
+    }
+
+    .analytics-trend {
+      grid-area: trend;
+    }
+
+    .analytics-stamps {
+      grid-area: stamps;
+    }
+
+    .analytics-clinical {
+      grid-area: clinical;
+    }
+
+    .mcs-guide-card {
+      grid-area: guide;
     }
   }
 
   .analytics-card {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    min-width: 0;
+    padding: var(--space-md);
     background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-xl);
-    padding: 1.35rem;
-    box-shadow: var(--shadow-sm);
-    max-width: 100%;
-    overflow: hidden;
-    transition: box-shadow 0.18s ease;
   }
 
-  .analytics-card:hover {
-    box-shadow: var(--shadow-md);
-  }
-
-  .analytics-card.full-width {
-    grid-column: 1 / -1;
-  }
-
-  /* MCS Guide Card */
-  .mcs-guide-card {
-    background-color: var(--bg-surface);
-    border: 1px solid var(--accent-light);
-  }
-
-  .mcs-guide-header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    background: none;
-    border: none;
-    color: var(--text-primary);
-    font-family: inherit;
-    font-weight: 800;
-    font-size: var(--font-size-base);
-    cursor: pointer;
-    padding: 0;
-  }
-
-  .mcs-guide-title {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-  }
-
-  .mcs-guide-body {
-    margin-top: 0.95rem;
-    font-size: var(--font-size-md);
-    color: var(--text-secondary);
-    border-top: 1px solid var(--bg-surface-border);
-    padding-top: 0.95rem;
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
-  }
-
-  .mcs-scale-grid {
-    display: grid;
-    grid-template-columns: repeat(2, 1fr);
-    gap: 0.65rem;
-  }
-
-  @media (min-width: 640px) {
-    .mcs-scale-grid {
-      grid-template-columns: repeat(3, 1fr);
-    }
-  }
-
-  .scale-item {
-    background-color: var(--bg-primary);
-    padding: 0.5rem 0.75rem;
-    border-radius: var(--radius-md);
-    font-size: var(--font-size-xs);
-    border: 1px solid var(--bg-surface-border);
-    box-shadow: var(--shadow-sm);
-  }
-
-  .card-header {
-    display: flex;
-    align-items: center;
-    gap: 0.6rem;
-    margin-bottom: 1.15rem;
-  }
-
-  .card-header h3 {
+  .analytics-card h3 {
+    margin: 0;
     font-size: var(--font-size-base);
     font-weight: 800;
     letter-spacing: -0.01em;
   }
 
-  .phase-metrics {
-    display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
+  .analytics-note {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
   }
 
-  .phase-row {
+  /* Cycle phases: one bar with the days of each phase, as on the chart phase bar */
+  .phase-stack {
     display: flex;
-    justify-content: space-between;
-    font-size: var(--font-size-md);
-  }
-
-  .phase-bar-wrapper {
-    height: 9px;
-    background-color: var(--bg-primary);
-    border-radius: var(--radius-full);
+    gap: 2px;
+    height: 28px;
+    border-radius: var(--radius-sm);
     overflow: hidden;
-    box-shadow: var(--shadow-inset);
   }
 
-  .phase-bar {
-    height: 100%;
-    border-radius: var(--radius-full);
-    transition: width 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+  .phase-part {
+    display: flex;
+    flex-basis: 0;
+    align-items: center;
+    justify-content: center;
+    min-width: 22px;
+    color: var(--color-white);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
   }
 
-  .bar-menses {
+  .phase-part-menses {
     background-color: var(--stamp-red);
   }
-  .bar-follicular {
-    background-color: var(--color-info);
-  }
-  .bar-luteal {
-    background-color: var(--color-success);
+
+  .phase-part-before-peak {
+    background-color: var(--accent-solid);
   }
 
-  .stamp-distribution {
+  .phase-part-count {
+    background-color: var(--stamp-light-green);
+    color: var(--stamp-light-green-text);
+  }
+
+  .phase-part-after-count {
+    background-color: var(--stamp-dark-green);
+  }
+
+  .phase-legend {
     display: flex;
-    flex-direction: column;
-    gap: 0.85rem;
+    flex-wrap: wrap;
+    gap: var(--space-xs) var(--space-md);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
   }
 
-  .dist-item {
+  .phase-legend li {
     display: flex;
     align-items: center;
-    gap: 0.85rem;
+    gap: 6px;
   }
 
-  .dist-badge {
-    padding: 0.3rem 0.65rem;
-    border-radius: var(--radius-sm);
-    font-size: var(--font-size-xs);
-    font-weight: 800;
-    min-width: 95px;
-    text-align: center;
-    flex-shrink: 0;
-    box-shadow: var(--shadow-sm);
+  .phase-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: var(--radius-2xs);
   }
 
-  .dist-info {
-    display: flex;
-    flex-direction: column;
-    font-size: var(--font-size-sm);
-    overflow: hidden;
-  }
-
+  /* Mucus score trend: 8 pixel bars with a 1 pixel gap, so 35 days fit on a phone */
   .mucus-trend-wrapper {
-    overflow-x: auto;
-    -webkit-overflow-scrolling: touch;
-    width: 100%;
-    max-width: 100%;
-    padding-bottom: 0.6rem;
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-md);
+    max-width: 100%;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    -webkit-overflow-scrolling: touch;
   }
 
   .cycle-trend-group {
     display: flex;
     flex-direction: column;
-    gap: 0.5rem;
-    width: 100%;
+    gap: var(--space-xs);
   }
 
   .cycle-trend-group-title {
+    color: var(--text-secondary);
     font-size: var(--font-size-xs);
     font-weight: 700;
-    color: var(--accent-primary);
-    text-transform: uppercase;
-    letter-spacing: 0.04em;
-    padding-bottom: 0.25rem;
-    border-bottom: 1px dashed var(--bg-surface-border);
   }
 
   .mucus-trend-chart {
     display: flex;
-    align-items: flex-end;
-    gap: 8px;
-    height: 180px;
-    min-width: 100%;
-    padding: 1.15rem 0 0.6rem 0;
-    border-bottom: 1px solid var(--bg-surface-border);
+    gap: 1px;
+    height: 140px;
+    padding-bottom: 18px;
   }
 
   .trend-bar-col {
+    position: relative;
     display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: flex-end;
-    height: 100%;
-    flex: 1;
-    min-width: 26px;
-  }
-
-  .trend-bar-value {
-    font-size: var(--font-size-3xs);
-    font-weight: 800;
-    margin-bottom: 3px;
+    flex: 0 0 8px;
+    align-items: flex-end;
+    border-bottom: 1px solid var(--bg-surface-border);
   }
 
   .trend-bar {
     width: 100%;
+    min-height: 2px;
     border-radius: var(--radius-2xs) var(--radius-2xs) 0 0;
-    transition: height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
-    box-shadow: var(--shadow-sm);
   }
 
   .bar-dry {
     background-color: var(--stamp-dark-green);
   }
+
   .bar-fertile {
     background-color: var(--accent-solid);
   }
+
   .bar-peak {
     background-color: var(--color-peak-bar);
-    box-shadow: var(--shadow-peak-bar-glow);
   }
 
+  /* The axis names day 1 and each fifth day, under its bar */
   .trend-bar-label {
-    font-size: var(--font-size-3xs);
+    position: absolute;
+    top: calc(100% + 3px);
+    left: 50%;
+    transform: translateX(-50%);
     color: var(--text-muted);
-    font-weight: 600;
-    margin-top: 5px;
+    font-size: var(--font-size-2xs);
+    white-space: nowrap;
   }
 
-  .clinical-summary {
+  /* Stamps: one bar for each kind of stamp */
+  .stamp-counts {
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .stamp-count {
     display: grid;
-    grid-template-columns: repeat(1, 1fr);
-    gap: 0.85rem;
+    grid-template-columns: 8.5rem minmax(0, 1fr) 2.5rem;
+    align-items: center;
+    gap: var(--space-md);
+    font-size: var(--font-size-md);
   }
 
-  @media (min-width: 640px) {
-    .clinical-summary {
-      grid-template-columns: repeat(2, 1fr);
-    }
+  .stamp-count-track {
+    height: 8px;
+    border-radius: var(--radius-full);
+    background-color: var(--bg-surface-border);
+    overflow: hidden;
+  }
+
+  .stamp-count-bar {
+    display: block;
+    height: 100%;
+    border-radius: var(--radius-full);
+  }
+
+  .stamp-count-red {
+    background-color: var(--stamp-red);
+  }
+
+  .stamp-count-dry {
+    background-color: var(--stamp-dark-green);
+  }
+
+  .stamp-count-fertile {
+    background-color: var(--stamp-white-border);
+  }
+
+  .stamp-count-count {
+    background-color: var(--stamp-light-green);
+  }
+
+  .stamp-count-value {
+    text-align: right;
+  }
+
+  /* Clinical summary: one row for each value */
+  .clinical-summary {
+    margin: 0;
   }
 
   .summary-item {
-    background-color: var(--bg-primary);
-    padding: 0.85rem;
-    border-radius: var(--radius-md);
+    display: flex;
+    justify-content: space-between;
+    gap: var(--space-md);
+    padding: 0.6rem 0;
     font-size: var(--font-size-md);
+  }
+
+  .summary-item + .summary-item {
+    border-top: 1px solid var(--bg-surface-border);
+  }
+
+  .summary-item dd {
+    margin: 0;
+    font-weight: 700;
+    text-align: right;
+  }
+
+  .summary-item dd.is-normal {
+    color: var(--color-success-text);
+  }
+
+  .summary-item dd.is-abnormal {
+    color: var(--color-warning-text);
+  }
+
+  /* The explanation of the mucus score: closed at the start, at the end of the page */
+  .mcs-guide-heading {
+    margin: 0;
+  }
+
+  .mcs-guide-header {
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    width: 100%;
+    min-height: var(--control-size-lg);
+    padding: 0;
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    font: inherit;
+    font-weight: 800;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .mcs-guide-header span {
+    flex: 1;
+  }
+
+  .mcs-guide-header[aria-expanded='true'] .mcs-guide-chevron {
+    transform: rotate(180deg);
+  }
+
+  .mcs-guide-body {
+    display: flex;
+    flex-direction: column;
+    gap: 0.85rem;
+    padding-top: 0.85rem;
+    border-top: 1px solid var(--bg-surface-border);
+    color: var(--text-secondary);
+    font-size: var(--font-size-md);
+  }
+
+  .mcs-guide-body p {
+    margin: 0;
+  }
+
+  .mcs-scale-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: var(--space-sm);
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  @media (min-width: 640px) {
+    .mcs-scale-grid {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+  }
+
+  .scale-item {
+    padding: 0.5rem 0.75rem;
     border: 1px solid var(--bg-surface-border);
-    box-shadow: var(--shadow-sm);
+    border-radius: var(--radius-md);
+    background-color: var(--bg-primary);
+    font-size: var(--font-size-sm);
   }
 
   .analytics-empty-state {
-    text-align: center;
     padding: 3.5rem 1.5rem;
+    text-align: center;
     background-color: var(--bg-surface);
-    border-radius: var(--radius-xl);
     border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-xl);
+  }
+
+  .icon-muted {
+    color: var(--text-muted);
   }
 }

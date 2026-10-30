@@ -14,7 +14,23 @@
   - button "Toggle Dark/Light Mode"
   - button "Settings"
 - main:
-  - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
+  - list "Cycle statistics":
+    - listitem:
+      - text: Cycle length
+      - strong: /\d+/
+      - text: /days Sep \d+ – Oct \d+/
+    - listitem:
+      - text: Peak Day
+      - strong: /CD \d+/
+      - text: /Oct \d+/
+    - listitem:
+      - text: Luteal phase
+      - strong: /\d+/
+      - text: days After Peak Day
+    - listitem:
+      - text: Intercourse
+      - strong: "3"
+      - text: days In this cycle
   - tabpanel "Monthly Calendar":
     - heading "Monthly Calendar" [level=1]
     - button "Previous month"

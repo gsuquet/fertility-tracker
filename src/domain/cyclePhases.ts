@@ -53,3 +53,52 @@ export function averagePhases(cycles: Cycle[]): AveragePhases {
     cyclesWithPeak: withPeak.length,
   };
 }
+
+/** The phase of a day with an observation. The Peak Day ends the time before the Peak Day. */
+export type DayPhase = 'menses' | 'follicular' | 'peak' | 'post-peak' | 'luteal';
+
+/**
+ * The phase of a day: menses, then the days up to the Peak Day, then the 3 days of the count, then
+ * the days after the count. A cycle with no Peak Day has no count.
+ */
+export function dayPhase(obs: Observation, peakDay: number | undefined): DayPhase {
+  if (obs.cycleDay === peakDay) return 'peak';
+  const afterPeak = peakDay !== undefined && obs.cycleDay > peakDay;
+  if (!afterPeak) return obs.stamp === 'RED' || obs.bleeding ? 'menses' : 'follicular';
+  return obs.cycleDay - (peakDay as number) <= 3 ? 'post-peak' : 'luteal';
+}
+
+/** The days of a cycle in each of the four phases of Analytics and of the chart phase bar */
+export interface PhaseSegments {
+  mensesDays: number;
+  /** The days before the Peak Day, after the menses, and the Peak Day */
+  beforePeakDays: number;
+  /** The days of the Post-Peak count: 3 or less */
+  countDays: number;
+  /** The days after the count */
+  afterCountDays: number;
+}
+
+/** Counts the observations of a cycle in each phase */
+export function getPhaseSegments(cycle: Cycle): PhaseSegments {
+  const peakDay = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
+  const phases = cycle.observations.map(o => dayPhase(o, peakDay));
+  const count = (...names: DayPhase[]) => phases.filter(p => names.includes(p)).length;
+  return {
+    mensesDays: count('menses'),
+    beforePeakDays: count('follicular', 'peak'),
+    countDays: count('post-peak'),
+    afterCountDays: count('luteal'),
+  };
+}
+
+/** The average of the phase segments of the cycles */
+export function averageSegments(cycles: Cycle[]): PhaseSegments {
+  const segments = cycles.map(getPhaseSegments);
+  return {
+    mensesDays: average(segments.map(s => s.mensesDays)),
+    beforePeakDays: average(segments.map(s => s.beforePeakDays)),
+    countDays: average(segments.map(s => s.countDays)),
+    afterCountDays: average(segments.map(s => s.afterCountDays)),
+  };
+}

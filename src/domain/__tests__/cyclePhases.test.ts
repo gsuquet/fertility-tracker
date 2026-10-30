@@ -1,5 +1,11 @@
 import { describe, it, expect } from 'vitest';
-import { averagePhases, getCyclePhases } from '../cyclePhases';
+import {
+  averagePhases,
+  averageSegments,
+  dayPhase,
+  getCyclePhases,
+  getPhaseSegments,
+} from '../cyclePhases';
 import { groupObservationsIntoCycles } from '../cycleBoundaryDetector';
 import { buildDemoObservations } from '../demoData';
 import { makeObservation } from '../../test/factories';
@@ -101,6 +107,66 @@ describe('averagePhases', () => {
       follicularDays: 0,
       lutealDays: 0,
       cyclesWithPeak: 0,
+    });
+  });
+});
+
+describe('dayPhase', () => {
+  const day = (cycleDay: number, extra = {}) =>
+    makeObservation({ date: '2026-09-01', cycleDay, ...extra });
+
+  it('gives menses, the time before the Peak Day, the Peak Day, the count and after the count', () => {
+    expect(dayPhase(day(1, { stamp: 'RED' }), 10)).toBe('menses');
+    expect(dayPhase(day(2, { bleeding: 'VL', stamp: 'DARK_GREEN' }), 10)).toBe('menses');
+    expect(dayPhase(day(5), 10)).toBe('follicular');
+    expect(dayPhase(day(10), 10)).toBe('peak');
+    expect(dayPhase(day(13), 10)).toBe('post-peak');
+    expect(dayPhase(day(14, { stamp: 'RED' }), 10)).toBe('luteal');
+  });
+
+  it('has no count without a Peak Day', () => {
+    expect(dayPhase(day(20), undefined)).toBe('follicular');
+  });
+});
+
+describe('getPhaseSegments and averageSegments', () => {
+  it('counts the observations of each phase, with the Peak Day before the count', () => {
+    expect(getPhaseSegments(withPeak)).toEqual({
+      mensesDays: 2,
+      beforePeakDays: 3,
+      countDays: 2,
+      afterCountDays: 0,
+    });
+    expect(getPhaseSegments(beforePeak)).toEqual({
+      mensesDays: 2,
+      beforePeakDays: 2,
+      countDays: 0,
+      afterCountDays: 0,
+    });
+  });
+
+  it('gives the four phases of the demo cycle', () => {
+    const [demo] = groupObservationsIntoCycles(buildDemoObservations('2026-09-30'));
+    expect(getPhaseSegments(demo as Cycle)).toEqual({
+      mensesDays: 4,
+      beforePeakDays: 9,
+      countDays: 3,
+      afterCountDays: 12,
+    });
+  });
+
+  it('averages the segments of the cycles, and gives 0 without cycles', () => {
+    expect(averageSegments([withPeak, beforePeak])).toEqual({
+      mensesDays: 2,
+      beforePeakDays: 2.5,
+      countDays: 1,
+      afterCountDays: 0,
+    });
+    expect(averageSegments([])).toEqual({
+      mensesDays: 0,
+      beforePeakDays: 0,
+      countDays: 0,
+      afterCountDays: 0,
     });
   });
 });
