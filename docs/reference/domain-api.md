@@ -126,6 +126,7 @@ The main JavaScript file imports this file. It must not import `versionTracker.t
 | --------------------------- | ------------------------------------------------------------------ | -------------------------------------------------------------------------------- |
 | `getAppVersion`             | `() => string`                                                     | The version from `package.json`.                                                 |
 | `getBuildDate`              | `() => string`                                                     | The build time, in ISO format.                                                   |
+| `getCommitHash`             | `() => string \| null`                                             | The short commit hash of the build, or `null` when the build does not know it.   |
 | `checkAndRecordVersionSeen` | `() => { isNewVersion: boolean; previousVersion: string \| null }` | Compares the version with the last version seen, then saves the current version. |
 
 ## Related documents

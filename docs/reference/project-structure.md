@@ -17,7 +17,8 @@ fertility-tracker/
 ├── scripts/
 │   ├── commits/                 # Commit message checker and its tests
 │   ├── docs/                    # Docs checker and its tests
-│   └── pwa/                     # Vite plugin that builds sw.js with the precache list
+│   ├── pwa/                     # Vite plugin that builds sw.js with the precache list
+│   └── version/                 # Commit hash of the build, for vite.config.ts
 ├── src/
 │   ├── __tests__/               # Application flow tests
 │   ├── components/              # React components
@@ -70,7 +71,7 @@ fertility-tracker/
 | `keyboardShortcuts.ts`     | The shortcut of a key, and when a key stays with the page. |
 | `demoData.ts`              | Demo data: two 28-day cycles.                              |
 | `versionTracker.ts`        | Release notes, version and storage statistics.             |
-| `appVersion.ts`            | Version, build date and last version seen.                 |
+| `appVersion.ts`            | Version, build date, commit hash and last version seen.    |
 
 ## Components
 

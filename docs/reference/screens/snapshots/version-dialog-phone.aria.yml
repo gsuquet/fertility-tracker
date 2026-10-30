@@ -6,7 +6,7 @@
     - tab "Release Notes"
     - tab "System Information" [selected]
   - heading "System Information" [level=4]
-  - text: /App Version v\d+\.\d+\.\d+ CrMS Specification v1\.1\.0 Build Date October \d+, \d+ Environment production/
+  - text: /App Version v\d+\.\d+\.\d+( \([0-9a-f]{7}\))? CrMS Specification v1\.1\.0 Build Date \w+ \d+, \d+ Environment production/
   - heading "Local Storage Footprint" [level=4]
   - text: /Total Storage Keys 4 Cycles Tracked 2 Observations Logged \d+ Local Storage Footprint \d+\.\d+ KB Open Source Privacy-First Software/
   - link "GitHub Repository":

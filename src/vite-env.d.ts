@@ -2,6 +2,7 @@
 
 declare const __APP_VERSION__: string;
 declare const __BUILD_DATE__: string;
+declare const __COMMIT_HASH__: string | null;
 
 // Injected into the service worker bundle by scripts/pwa/serviceWorkerPlugin.ts
 declare const __SW_CACHE_NAME__: string;

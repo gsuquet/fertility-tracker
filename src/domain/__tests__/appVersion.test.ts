@@ -1,6 +1,12 @@
 import { describe, it, expect, beforeEach, afterEach, vi } from 'vitest';
 import pkg from '../../../package.json';
-import { getAppVersion, getBuildDate, checkAndRecordVersionSeen } from '../appVersion';
+import { resolveCommitHash } from '../../../scripts/version/commitHash';
+import {
+  getAppVersion,
+  getBuildDate,
+  getCommitHash,
+  checkAndRecordVersionSeen,
+} from '../appVersion';
 import { LAST_SEEN_VERSION_KEY } from '../../utils/storageKeys';
 
 describe('appVersion', () => {
@@ -15,6 +21,10 @@ describe('appVersion', () => {
   it('returns the package.json version and an ISO build date', () => {
     expect(getAppVersion()).toBe(pkg.version);
     expect(new Date(getBuildDate()).toISOString()).toBe(getBuildDate());
+  });
+
+  it('returns the short commit hash of the build', () => {
+    expect(getCommitHash()).toBe(resolveCommitHash(process.env));
   });
 
   it('correctly tracks and updates last seen version in localStorage', () => {
