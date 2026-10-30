@@ -24,13 +24,13 @@ The `.modal-dialog` rule in `primitives/dialogs.css` removes the browser styles 
 
 ## Scales
 
-| Scale   | Values                                                                                                                                                                                                                                              |
-| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Control | `--control-size-sm` 32px: the other controls, for example the footer links. `--control-size-md` 36px: the ⋮ button. `--control-size-lg` 44px: the minimum size of a control used each day. `--row-height` 48px: a form row and a chip               |
-| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                              |
-| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                         |
-| Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem` |
-| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                                                                              |
+| Scale   | Values                                                                                                                                                                                                                                                                                              |
+| ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Control | `--control-size-sm` 32px: the other controls, for example the footer links. `--control-size-md` 36px: the ⋮ button. `--control-size-lg` 44px: the minimum size of a control used each day. `--row-height` 48px: a form row and a chip                                                               |
+| Spacing | `--space-2xs` 2px, `--space-xs` 4px, `--space-sm` 8px, `--space-md` 16px, `--space-lg` 24px, `--space-xl` 32px, `--space-2xl` 48px, `--space-3xl` 64px                                                                                                                                              |
+| Z-index | `--z-base` 1, `--z-raised` 10, `--z-sticky` 100, `--z-header` 200, `--z-mobile-nav` 300, `--z-drawer` 500, `--z-modal-backdrop` 900, `--z-modal` 1000, `--z-popover` 1100, `--z-toast` 1200                                                                                                         |
+| Type    | `--font-size-4xs` 9px, `--font-size-3xs` 10px, `--font-size-2xs` 11px, `--font-size-xs` 12px, `--font-size-sm` 13px, `--font-size-md` 14px, `--font-size-base` 16px, `--font-size-lg` 18px, `--font-size-xl` 22px, `--font-size-2xl` 28px, in `rem`. The I, P and 1, 2, 3 marks of a stamp are 11px |
+| Radius  | `--radius-2xs` 4px, `--radius-xs` 6px, `--radius-sm` 10px, `--radius-md` 14px, `--radius-lg` 18px, `--radius-xl` 24px, `--radius-full`                                                                                                                                                              |
 
 ## Themes
 

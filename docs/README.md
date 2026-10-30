@@ -37,6 +37,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Release a new version](how-to/release-a-new-version.md)
 - [Deploy to Cloudflare Pages](how-to/deploy-to-cloudflare.md)
 - [Write documentation](how-to/write-documentation.md)
+- [Check the layout on real devices](how-to/check-the-layout-on-real-devices.md)
 
 ## Reference
 
@@ -74,6 +75,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Project structure](reference/project-structure.md)
 - [Languages](reference/languages.md)
 - [Design system](reference/design-system.md)
+- [Layout checks](reference/layout-checks.md)
 - [Commands](reference/commands.md)
 - [Test rules and helpers](reference/test-rules.md)
 - [Documentation rules](reference/documentation-rules.md)

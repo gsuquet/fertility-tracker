@@ -6,25 +6,25 @@ This page lists the commands of the project. Run the commands in the project fol
 
 The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 
-| Command                | Action                                                                                                         |
-| ---------------------- | -------------------------------------------------------------------------------------------------------------- |
-| `mise install`         | Installs the pinned tools: Node.js, npm, pre-commit and gitleaks.                                              |
-| `mise run install`     | Installs the dependencies from `package-lock.json` (`npm ci`).                                                 |
-| `mise run hooks`       | Installs the Git pre-commit and commit-msg hooks.                                                              |
-| `mise run commit-msg`  | Checks a commit message. Read [Commit messages](commit-messages.md).                                           |
-| `mise run dev`         | Starts the development server on port `5173`.                                                                  |
-| `mise run test`        | Runs the tests one time.                                                                                       |
-| `mise run coverage`    | Runs the tests with coverage. Fails below 100%.                                                                |
-| `mise run check`       | Runs the Biome linter and the format check.                                                                    |
-| `mise run docs`        | Checks the docs: writing rules, Diátaxis structure and links.                                                  |
-| `mise run e2e`         | Runs the Playwright end-to-end and accessibility tests.                                                        |
-| `mise run icons`       | Draws the PNG app icons from `public/icons/logo.svg`.                                                          |
-| `mise run screenshots` | Builds the application. Takes the install screenshots and the screenshots of the screen pages, with demo data. |
-| `mise run build`       | Runs the type check and builds the application in `dist`.                                                      |
-| `mise run preview`     | Serves `dist` on port `4173`.                                                                                  |
-| `mise run pages:dev`   | Serves `dist` with Wrangler, as Cloudflare Pages does.                                                         |
-| `mise run deploy`      | Builds the application and deploys it to Cloudflare Pages.                                                     |
-| `mise run validate`    | Runs all the CI quality gates.                                                                                 |
+| Command                | Action                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `mise install`         | Installs the pinned tools: Node.js, npm, pre-commit and gitleaks.                                                                                       |
+| `mise run install`     | Installs the dependencies from `package-lock.json` (`npm ci`).                                                                                          |
+| `mise run hooks`       | Installs the Git pre-commit and commit-msg hooks.                                                                                                       |
+| `mise run commit-msg`  | Checks a commit message. Read [Commit messages](commit-messages.md).                                                                                    |
+| `mise run dev`         | Starts the development server on port `5173`.                                                                                                           |
+| `mise run test`        | Runs the tests one time.                                                                                                                                |
+| `mise run coverage`    | Runs the tests with coverage. Fails below 100%.                                                                                                         |
+| `mise run check`       | Runs the Biome linter and the format check.                                                                                                             |
+| `mise run docs`        | Checks the docs: writing rules, Diátaxis structure and links.                                                                                           |
+| `mise run e2e`         | Runs the Playwright end-to-end and accessibility tests.                                                                                                 |
+| `mise run icons`       | Draws the PNG app icons from `public/icons/logo.svg`.                                                                                                   |
+| `mise run screenshots` | Builds the application. Takes the install screenshots, the screenshots of the screen pages and the [layout captures](layout-checks.md), with demo data. |
+| `mise run build`       | Runs the type check and builds the application in `dist`.                                                                                               |
+| `mise run preview`     | Serves `dist` on port `4173`.                                                                                                                           |
+| `mise run pages:dev`   | Serves `dist` with Wrangler, as Cloudflare Pages does.                                                                                                  |
+| `mise run deploy`      | Builds the application and deploys it to Cloudflare Pages.                                                                                              |
+| `mise run validate`    | Runs all the CI quality gates.                                                                                                                          |
 
 ## npm scripts
 

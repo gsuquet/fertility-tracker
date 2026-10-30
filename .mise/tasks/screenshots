@@ -54,5 +54,5 @@ for (const shot of shots) {
 await browser.close();
 "
 
-# The screenshots of the screen pages (ADR 0006), from the same steps as the snapshot test
-SCREENSHOTS=1 PW_PORT="$PORT" PW_REUSE=1 npx --no-install playwright test e2e/screenLayout.spec.ts
+# The screenshots of the screen pages (ADR 0006) and the layout captures of RFC 0002
+SCREENSHOTS=1 PW_PORT="$PORT" PW_REUSE=1 npx --no-install playwright test e2e/screenLayout.spec.ts e2e/layoutCaptures.spec.ts

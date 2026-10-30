@@ -25,8 +25,21 @@ export default defineConfig({
   projects: [
     {
       name: 'chromium',
+      testIgnore: 'phoneLayout.spec.ts',
       use: {
         ...devices['Desktop Chrome'],
+        ...(executablePath ? { launchOptions: { executablePath } } : {}),
+      },
+    },
+    // RFC 0002: the rules of the phone layout, on a phone of 390 × 844 px
+    {
+      name: 'phone',
+      testMatch: 'phoneLayout.spec.ts',
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 390, height: 844 },
+        isMobile: true,
+        hasTouch: true,
         ...(executablePath ? { launchOptions: { executablePath } } : {}),
       },
     },
