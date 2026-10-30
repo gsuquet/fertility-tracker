@@ -2,6 +2,8 @@
 
 Use this procedure for each change to the application code. The repository rules in `AGENTS.md` require it.
 
+The Dependabot pull requests do not change the version. The next release of the application includes their updates.
+
 ## Procedure
 
 1. Before you change the code, write the change in its reference page. [SPEC.md](../../SPEC.md) gives the page of each source file.

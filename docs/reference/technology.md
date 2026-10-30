@@ -51,7 +51,7 @@ The table gives the place of each version. It does not copy the numbers, because
 | Unit tests         | Vitest, React Testing Library, V8 coverage, jsdom | `package.json`                                                                               |
 | End-to-end tests   | Playwright and axe                                | `package.json`                                                                               |
 | Deployment         | Cloudflare Pages                                  | `wrangler` in `package.json`, and `compatibility_date` in `wrangler.json`                    |
-| Dependency updates | Dependabot                                        | Weekly grouped updates for npm and GitHub Actions                                            |
+| Dependency updates | Dependabot                                        | Weekly updates. Patch and minor updates merge automatically when CI passes                   |
 
 ## Code splitting and lazy loading
 
