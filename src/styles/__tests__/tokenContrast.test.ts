@@ -363,7 +363,9 @@ describe('contrast-safe token usage', () => {
     );
     expect(rule?.[1]).toMatch(new RegExp(`(^|\\s)color:\\s*var\\(--color-${state}-text\\)`));
     expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(--color-${state}-surface\\)`));
-    expect(rule?.[1]).toMatch(new RegExp(`border-color:\\s*var\\(--color-${state}-border\\)`));
+    expect(rule?.[1]).toMatch(
+      new RegExp(`box-shadow:\\s*inset 0 0 0 1px var\\(--color-${state}-border\\)`)
+    );
   });
 
   it('colors the Saved button of Today with the success tokens, over an opaque surface', () => {
