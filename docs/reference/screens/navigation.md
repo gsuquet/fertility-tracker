@@ -33,6 +33,7 @@ From 641 pixels, the header has the logo, the page tabs, the cycle picker, the c
 | 1024 to 1359 pixels  | Row 1 (60 pixels): the logo, the tabs, the cycle picker, **Log** and the gear. Row 2 (44 pixels): the controls of the page. Calendar and Analytics have no row 2. |
 | 641 to 1023 pixels   | Row 1: the logo, the cycle picker, **Log** and the gear. Row 2: the tabs. Row 3: the controls of the page.                                                        |
 - Below 1200 pixels, the logo shows without the name **Fertility Tracker**. Thus, the French tabs fit at 1024 pixels.
+- Below 1360 pixels, the cycle picker shows its short label, for example **Cycle 2**, as on a phone. A longer label ends in an ellipsis. Thus, the bar is never wider than the screen.
 - The tabs show the short names: **Today**, **Chart**, **Calendar** and **Analytics**. The name of each tab for a screen reader is the full name, for example **Paper Chart Strip**. The full name contains the short name, in English and in French.
 - **Log** has the tooltip **Log Observation (N)**. Its name is **Log**, as the **+** button of the phone.
 - The controls of the bar are in the reading order in the DOM too. On 2 rows, the controls of the page come after the gear.

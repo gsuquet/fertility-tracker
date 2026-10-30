@@ -174,7 +174,7 @@
   @media (min-width: 641px) and (max-width: 1359px) {
     .app-header {
       display: grid;
-      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto auto minmax(0, 1fr) minmax(0, max-content) auto;
       grid-template-rows: 60px auto;
       grid-template-areas:
         'brand tabs . picker controls'
@@ -193,7 +193,25 @@
 
     .app-header > .cycle-picker-container {
       grid-area: picker;
+      min-width: 0;
       margin-left: 0;
+    }
+
+    /* The short label of the picker, for example "Cycle 2", as on a phone. A long label ends in
+       an ellipsis, so the bar never gets wider than the screen. */
+    .app-header > .cycle-picker-container .cycle-selector-btn {
+      max-width: 100%;
+    }
+
+    .app-header > .cycle-picker-container .cycle-selector-text.desktop-text {
+      display: none;
+    }
+
+    .app-header > .cycle-picker-container .cycle-selector-text.mobile-text {
+      display: inline;
+      min-width: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
 
     .app-header > .header-controls {
@@ -220,7 +238,7 @@
   /* From 641 px to 1023 px, the tabs also get their own row */
   @media (min-width: 641px) and (max-width: 1023px) {
     .app-header {
-      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-columns: auto minmax(0, 1fr) minmax(0, max-content) auto;
       grid-template-rows: 60px auto auto;
       grid-template-areas:
         'brand . picker controls'
