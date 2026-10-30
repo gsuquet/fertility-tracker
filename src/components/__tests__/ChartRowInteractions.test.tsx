@@ -185,30 +185,55 @@ describe('ChartRow interactions', () => {
     expect(within(notesOnly).getByText('---', { selector: '.popover-val' })).toBeInTheDocument();
   });
 
-  it('labels each phase on the timeline', () => {
+  it('gives each day of the stamp bar its code', () => {
     renderChart(rich);
-    for (const title of [
-      `Day 1: ${en.chartStrip.phaseMenses}`,
-      `Day 2: ${en.chartStrip.phaseMenses}`,
-      `Day 3: ${en.chartStrip.phasePeak}`,
-      `Day 4: ${en.chartStrip.phasePostPeak}`,
-      'Day 5',
-    ]) {
+    for (const title of ['Day 1: H', 'Day 2: B 2', 'Day 4: 0', 'Day 5', 'Day 6: None']) {
       expect(screen.getByTitle(title)).toBeInTheDocument();
     }
     fireEvent.click(screen.getByRole('button', { name: en.chartStrip.optionsLabel }));
-    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.chartStrip.phaseBar }));
+    fireEvent.click(screen.getByRole('menuitemcheckbox', { name: en.chartStrip.stampBar }));
     expect(screen.queryByTitle('Day 5')).toBeNull();
   });
 
-  it('gives the phases of Analytics to the days of the timeline', () => {
-    renderChart(buildDemoObservations('2026-09-15'));
-    const [current] = screen.getAllByRole('region');
-    const title = (day: number) =>
-      (current as HTMLElement).querySelectorAll('.phase-segment')[day - 1]?.getAttribute('title');
-    expect(title(1)).toBe(`Day 1: ${en.chartStrip.phaseMenses}`);
-    expect(title(8)).toBe(`Day 8: ${en.chartStrip.phaseFollicular}`);
-    expect(title(20)).toBe(`Day 20: ${en.chartStrip.phaseLuteal}`);
+  it('gives each segment of the stamp bar the stamp of its day card', () => {
+    renderChart([...buildDemoObservations('2026-09-15'), ...rich.slice(4)]);
+    const [current] = screen.getAllByRole('region') as [HTMLElement];
+    const segments = [...current.querySelectorAll('.stamp-segment')];
+    const cards = [...current.querySelectorAll('.chart-cell')];
+    expect(segments).toHaveLength(cards.length);
+    const seen = new Set<string>();
+    cards.forEach((card, idx) => {
+      const badge = card.querySelector('.stamp-badge');
+      const stamp = !badge
+        ? 'none'
+        : badge.classList.contains('stamp-empty')
+          ? 'empty'
+          : (
+              [...badge.classList].find(
+                c => c.startsWith('stamp-') && !['stamp-badge', 'stamp-peak'].includes(c)
+              ) ?? ''
+            ).slice('stamp-'.length);
+      seen.add(stamp);
+      expect(segments[idx]).toHaveClass(`segment-${stamp}`);
+    });
+    // The Peak Day has the ring of its card, and its title says so
+    const peak = current.querySelectorAll('.segment-peak');
+    expect(peak).toHaveLength(1);
+    expect(peak[0]?.getAttribute('title')).toMatch(
+      new RegExp(`${en.chartStrip.phasePeak.replace(/[()]/g, '\\$&')}$`)
+    );
+    expect(cards[[...segments].indexOf(peak[0] as Element)]).toHaveClass('peak-cell');
+    // The demo cycle has each kind of stamp, a day with no code and a day to come
+    expect([...seen].sort()).toEqual([
+      'dark_green',
+      'empty',
+      'light_green_baby_1',
+      'light_green_baby_2',
+      'light_green_baby_3',
+      'none',
+      'red',
+      'white_baby',
+    ]);
   });
 
   it('shows the controls on the first cycle only', () => {

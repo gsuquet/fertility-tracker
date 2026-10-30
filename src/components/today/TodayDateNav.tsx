@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useShortcutHint } from '../../hooks/useKeyboardShortcuts';
 import type { Observation } from '../../types/crms';
@@ -39,6 +40,14 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
 }) => {
   const { t } = useLanguage();
   const hint = useShortcutHint();
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+
+  // On today, the next-day button is disabled. A disabled button loses the focus, so the focus goes
+  // to the previous-day button.
+  useEffect(() => {
+    if (isToday && document.activeElement === nextRef.current) prevRef.current?.focus();
+  }, [isToday]);
 
   // The wrapper is a label, so a click anywhere on it reaches the date input
   const handleOpenPicker = (inputEl: HTMLInputElement) => {
@@ -62,14 +71,12 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   );
   const shownCycleDay = currentObs?.cycleDay ?? cycleDay;
 
-  /** "Yesterday", "3 days ago", "Tomorrow" or "In 2 days" for a day that is not today. */
+  /** "Yesterday" or "3 days ago" for a day before today. The page never shows a later day. */
   const relativeDay = () => {
     const daysAgo = getDaysDifference(selectedDate, getTodayStr());
-    if (daysAgo === 1) return t.todayView.yesterday;
-    if (daysAgo === -1) return t.todayView.tomorrow;
-    return daysAgo > 0
-      ? formatMessage(t.todayView.daysAgo, { count: daysAgo })
-      : formatMessage(t.todayView.daysAhead, { count: -daysAgo });
+    return daysAgo === 1
+      ? t.todayView.yesterday
+      : formatMessage(t.todayView.daysAgo, { count: daysAgo });
   };
 
   return (
@@ -77,6 +84,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
       <InTopBar>
         <div className="compact-date-nav-controls">
           <button
+            ref={prevRef}
             type="button"
             className="icon-button date-nav-btn compact-nav-btn"
             onClick={onPrevDay}
@@ -94,6 +102,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
               onClick={e => handleOpenPicker(e.currentTarget)}
               className="today-date-picker-input compact-picker-input"
               value={selectedDate}
+              max={getTodayStr()}
               onChange={e => {
                 if (e.target.value) {
                   onDateChange(e.target.value);
@@ -104,9 +113,11 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           </label>
 
           <button
+            ref={nextRef}
             type="button"
             className="icon-button date-nav-btn compact-nav-btn"
             onClick={onNextDay}
+            disabled={isToday}
             {...hint(t.todayView.nextDay, 'nextDay')}
             aria-label={t.todayView.nextDay}
           >

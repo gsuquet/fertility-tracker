@@ -44,6 +44,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.45.1',
+    date: '2026-10-30',
+    title: 'Phone Corrections',
+    titleFr: 'Corrections sur téléphone',
+    tagline: 'Today, the chart and the calendar behave better on a phone',
+    taglineFr: 'Aujourd’hui, le graphique et le calendrier fonctionnent mieux sur téléphone',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Today stops at the current day: you cannot open a day that has not come yet',
+      'The day status of Today keeps the same height when Jump to Today shows',
+      'A tapped button no longer keeps its highlight on a touch screen',
+      'The color bar of the chart shows the stamp of each day, in the colors of the stamps',
+      'In the calendar, a code of 7 characters, for example 10CKLX1, stays on one line',
+    ],
+    highlightsFr: [
+      'Aujourd’hui s’arrête au jour actuel : vous ne pouvez pas ouvrir un jour à venir',
+      'L’état du jour d’Aujourd’hui garde la même hauteur quand Aller à aujourd’hui s’affiche',
+      'Un bouton touché ne reste plus en surbrillance sur un écran tactile',
+      'La barre de couleur du graphique montre le timbre de chaque jour, dans les couleurs des timbres',
+      'Dans le calendrier, un code de 7 caractères, par exemple 10CKLX1, reste sur une ligne',
+    ],
+  },
+  {
     version: '1.45.0',
     date: '2026-10-30',
     title: 'A Simpler Header on a Computer',

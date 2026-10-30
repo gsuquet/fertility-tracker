@@ -29,10 +29,16 @@
     white-space: nowrap;
   }
 
-  .cycle-selector-btn:hover,
   .cycle-selector-btn.active {
     border-color: var(--accent-primary);
     color: var(--accent-primary);
+  }
+
+  @media (hover: hover) {
+    .cycle-selector-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
   }
 
   .cycle-selector-icon {
@@ -134,8 +140,10 @@
     width: 100%;
   }
 
-  .cycle-option-item:hover {
-    background-color: var(--bg-primary);
+  @media (hover: hover) {
+    .cycle-option-item:hover {
+      background-color: var(--bg-primary);
+    }
   }
 
   .cycle-option-item.selected {

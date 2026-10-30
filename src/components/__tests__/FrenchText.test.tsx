@@ -263,19 +263,12 @@ describe('French text of the components', () => {
 
     fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.optionsLabel }));
     expect(
-      screen.getByRole('menuitemcheckbox', { name: fr.chartStrip.phaseBar })
+      screen.getByRole('menuitemcheckbox', { name: fr.chartStrip.stampBar })
     ).toBeInTheDocument();
     fireEvent.keyDown(screen.getByRole('menu'), { key: 'Escape' });
     expect(screen.queryByRole('menu')).toBeNull();
     expect(
-      screen.getAllByTitle(
-        formatMessage(fr.chartStrip.dayPhase, { day: 1, phase: fr.chartStrip.phaseMenses })
-      ).length
-    ).toBeGreaterThan(0);
-    expect(
-      screen.getAllByTitle(
-        formatMessage(fr.chartStrip.dayPhase, { day: 8, phase: fr.chartStrip.phaseFollicular })
-      ).length
+      screen.getAllByTitle(formatMessage(fr.chartStrip.dayCode, { day: 1, code: 'H' })).length
     ).toBeGreaterThan(0);
 
     fireEvent.click(screen.getByRole('button', { name: fr.chartStrip.showLegend }));

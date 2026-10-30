@@ -1,5 +1,6 @@
-import { describe, it, expect } from 'vitest';
+import { describe, it, expect, vi } from 'vitest';
 import {
+  notAfterToday,
   getTodayStr,
   addDays,
   formatDateDisplay,
@@ -104,6 +105,20 @@ describe('dateUtils', () => {
     it('returns 0 from getDaysDifference when a date is not valid', () => {
       expect(getDaysDifference('2026-07-01', 'xx')).toBe(0);
       expect(getDaysDifference('xx', '2026-07-01')).toBe(0);
+    });
+  });
+
+  describe('notAfterToday', () => {
+    it('keeps a date up to today and gives today for a later date', () => {
+      vi.useFakeTimers({ toFake: ['Date'] });
+      vi.setSystemTime(new Date(2026, 8, 15, 12));
+      try {
+        expect(notAfterToday('2026-09-14')).toBe('2026-09-14');
+        expect(notAfterToday('2026-09-15')).toBe('2026-09-15');
+        expect(notAfterToday('2026-09-16')).toBe('2026-09-15');
+      } finally {
+        vi.useRealTimers();
+      }
     });
   });
 });

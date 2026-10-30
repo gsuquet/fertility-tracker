@@ -103,16 +103,20 @@ export function useDaySwipe(
   const finish = (direction: SwipeDirection | null) => {
     const timing = `${SWIPE_SLIDE_DURATION}ms ease-out`;
     if (!animate()) {
-      if (direction) onSwipeRef.current(direction);
+      if (direction && canSwipeRef.current(direction)) onSwipeRef.current(direction);
       return;
     }
-    if (!direction) {
+    // A second swipe during the slide first applies the day change of the first one. Then
+    // `canSwipe` decides on the new day.
+    if (direction && pending.current) {
+      clearTimeout(timer.current);
+      onSwipeRef.current(pending.current);
+      pending.current = null;
+    }
+    if (!direction || !canSwipeRef.current(direction)) {
       place('', '', timing);
       return;
     }
-    // A second swipe during the slide first applies the day change of the first one
-    clearTimeout(timer.current);
-    if (pending.current) onSwipeRef.current(pending.current);
     pending.current = direction;
     // Slide out in the swipe direction, change the day, then slide in from the other side
     const out = direction === 'next' ? `-${SLIDE_OFFSET}` : SLIDE_OFFSET;
@@ -143,7 +147,7 @@ export function useDaySwipe(
     // A button under the finger must not get a click from a swipe. A tap that only moved a
     // little is not a swipe, so its click stays.
     if (direction) clickBlockedUntil.current = performance.now() + CLICK_AFTER_SWIPE;
-    finish(direction && canSwipeRef.current(direction) ? direction : null);
+    finish(direction);
   };
 
   const handlers: DaySwipeHandlers = {

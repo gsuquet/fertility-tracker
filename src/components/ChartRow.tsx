@@ -58,7 +58,7 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday, onShare }) => {
 
   // View preferences
   const [viewMode, setViewMode] = useState<ChartViewMode>('35-day');
-  const [showPhaseBar, setShowPhaseBar] = useState(true);
+  const [showStampBar, setShowStampBar] = useState(true);
   const [showLegend, setShowLegend] = useState(false);
   const toggleLegend = () => setShowLegend(!showLegend);
 
@@ -307,8 +307,8 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday, onShare }) => {
         controls={{
           viewMode,
           onViewModeChange: setViewMode,
-          showPhaseBar,
-          onTogglePhaseBar: () => setShowPhaseBar(!showPhaseBar),
+          showStampBar,
+          onToggleStampBar: () => setShowStampBar(!showStampBar),
         }}
       />
 
@@ -327,7 +327,7 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday, onShare }) => {
             cycleNum={cycles.length - cycles.indexOf(cycle)}
             totalSlots={totalSlots}
             viewMode={viewMode}
-            showPhaseBar={showPhaseBar}
+            showStampBar={showStampBar}
             todayStr={cycle === todayCycle ? todayStr : undefined}
             controls={index === 0 ? controls : undefined}
             selectedDate={isDesktop ? shown : undefined}

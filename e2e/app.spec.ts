@@ -43,10 +43,12 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.reload();
 
     await expect(directCode(page)).toHaveValue('10KLX3');
-    // The next day lists the saved day first in the last days of the desktop
-    await page.getByRole('button', { name: en.todayView.nextDay }).click();
-    const lastDays = page.getByRole('region', { name: /^Last \d days$/ });
-    await expect(lastDays.getByRole('button').first()).toHaveText(/10KLX3/);
+    // Today is the last day: a later date shows today
+    await expect(page.getByRole('button', { name: en.todayView.nextDay })).toBeDisabled();
+    const date = page.getByRole('textbox', { name: en.labels.date });
+    await date.fill('2026-10-28');
+    await expect(date).toHaveValue(TODAY);
+    await expect(directCode(page)).toHaveValue('10KLX3');
   });
 
   test('restores the observations from a .ftbackup file', async ({ page }) => {

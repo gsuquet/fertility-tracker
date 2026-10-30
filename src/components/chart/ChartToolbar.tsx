@@ -10,8 +10,8 @@ export type ChartViewMode = '35-day' | 'compact';
 interface ChartViewControls {
   viewMode: ChartViewMode;
   onViewModeChange: (mode: ChartViewMode) => void;
-  showPhaseBar: boolean;
-  onTogglePhaseBar: () => void;
+  showStampBar: boolean;
+  onToggleStampBar: () => void;
 }
 
 interface ChartToolbarProps {
@@ -25,7 +25,7 @@ interface ChartToolbarProps {
 }
 
 /**
- * The one row of chart controls: **35-day** or **Strip**, and the ⋮ menu with **Phase bar** and
+ * The one row of chart controls: **35-day** or **Strip**, and the ⋮ menu with **Stamp bar** and
  * **Legend**, then **Share chart**. On a phone, the row is in the top bar.
  */
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
@@ -39,10 +39,10 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   if (controls) {
     entries.push({
       kind: 'check',
-      label: t.chartStrip.phaseBar,
+      label: t.chartStrip.stampBar,
       icon: <BarChart3 size={18} />,
-      checked: controls.showPhaseBar,
-      onSelect: controls.onTogglePhaseBar,
+      checked: controls.showStampBar,
+      onSelect: controls.onToggleStampBar,
     });
   }
   entries.push({

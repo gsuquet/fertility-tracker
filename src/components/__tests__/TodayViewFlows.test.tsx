@@ -24,6 +24,12 @@ const Probe = () => {
       >
         select external
       </button>
+      <button
+        type="button"
+        onClick={() => setSelectedObservation(makeObservation({ date: '2026-09-20' }))}
+      >
+        select future
+      </button>
     </>
   );
 };
@@ -112,10 +118,37 @@ describe('TodayView flows', () => {
     expect(screen.queryByText(/Infertile/)).toBeNull();
   });
 
-  it('shows no cycle day after today', () => {
-    renderToday([makeObservation({ date: '2026-09-10', bleeding: 'H' })]);
-    fireEvent.click(screen.getByRole('button', { name: en.todayView.nextDay }));
-    expect(screen.queryByText(/^Day \d+$/)).toBeNull();
+  it('moves the focus to the previous day when the next day becomes disabled', () => {
+    renderToday();
+    const prev = screen.getByRole('button', { name: en.todayView.prevDay });
+    const next = screen.getByRole('button', { name: en.todayView.nextDay });
+    fireEvent.click(prev);
+    next.focus();
+    fireEvent.click(next);
+    expect(next).toBeDisabled();
+    expect(document.activeElement).toBe(prev);
+    // A click on Jump to Today does not move the focus to the arrows
+    fireEvent.click(prev);
+    const jump = screen.getByRole('button', { name: en.todayView.goToToday });
+    jump.focus();
+    fireEvent.click(jump);
+    expect(document.activeElement).not.toBe(prev);
+  });
+
+  it('never goes after today', () => {
+    renderToday();
+    const date = screen.getByLabelText(en.labels.date);
+    expect(date).toHaveAttribute('max', TODAY);
+    expect(screen.getByRole('button', { name: en.todayView.nextDay })).toBeDisabled();
+    fireEvent.keyDown(window, { key: 'ArrowRight' });
+    expect(date).toHaveValue(TODAY);
+    fireEvent.change(date, { target: { value: '2026-09-18' } });
+    expect(date).toHaveValue(TODAY);
+    fireEvent.click(screen.getByRole('button', { name: 'select future' }));
+    expect(date).toHaveValue(TODAY);
+    fireEvent.change(date, { target: { value: '2026-09-12' } });
+    expect(date).toHaveValue('2026-09-12');
+    expect(screen.getByRole('button', { name: en.todayView.nextDay })).toBeEnabled();
   });
 
   it('loads a saved observation and shows it as saved', () => {
@@ -250,13 +283,10 @@ describe('TodayView flows', () => {
   it.each([
     [-1, en.todayView.yesterday],
     [-3, formatMessage(en.todayView.daysAgo, { count: 3 })],
-    [1, en.todayView.tomorrow],
-    [2, formatMessage(en.todayView.daysAhead, { count: 2 })],
   ])('names a day %i days from today', (offset, label) => {
     renderToday();
-    const button = en.todayView[offset < 0 ? 'prevDay' : 'nextDay'];
-    for (let i = 0; i < Math.abs(offset); i++)
-      fireEvent.click(screen.getByRole('button', { name: button }));
+    for (let i = 0; i < -offset; i++)
+      fireEvent.click(screen.getByRole('button', { name: en.todayView.prevDay }));
     expect(screen.getByText(label, { selector: '.badge' })).toBeInTheDocument();
   });
 });

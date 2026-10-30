@@ -61,10 +61,11 @@
     color: var(--text-primary);
   }
 
+  /* On a phone, a gap of 2 px and no side padding give the code the width of 7 characters */
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
-    gap: var(--space-xs);
+    gap: var(--space-2xs);
     width: 100%;
     box-sizing: border-box;
   }
@@ -102,7 +103,7 @@
     box-sizing: border-box;
     min-width: 0;
     min-height: 80px;
-    padding: 4px 2px;
+    padding: 4px 0;
     overflow: hidden;
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-md);
@@ -118,8 +119,10 @@
     background: none;
   }
 
-  .calendar-day:hover:not(:disabled) {
-    border-color: var(--accent-primary);
+  @media (hover: hover) {
+    .calendar-day:hover:not(:disabled) {
+      border-color: var(--accent-primary);
+    }
   }
 
   .calendar-day.future-day {
@@ -174,13 +177,17 @@
     width: 100%;
   }
 
-  /* The code is never cut. It goes onto more lines and the cell becomes taller. */
+  /*
+   * The code stays on one line up to 7 characters on a phone of 360 px, for example 10CKLX1. A
+   * longer code is never cut: it goes onto more lines and the cell becomes taller.
+   */
   .calendar-code {
     max-width: 100%;
     color: var(--text-secondary);
     font-family: var(--font-mono);
     font-size: var(--font-size-2xs);
     font-weight: 700;
+    letter-spacing: -0.05em;
     line-height: 1.15;
     text-align: center;
     overflow-wrap: anywhere;
@@ -194,8 +201,10 @@
     color: var(--text-muted);
   }
 
-  .calendar-day:hover .calendar-add-slot {
-    color: var(--accent-primary);
+  @media (hover: hover) {
+    .calendar-day:hover .calendar-add-slot {
+      color: var(--accent-primary);
+    }
   }
 
   /* The I, P and 1, 2, 3 marks, and the first day of a cycle: one row of 12 px under the code */

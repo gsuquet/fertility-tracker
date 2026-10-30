@@ -15,16 +15,16 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-| Part                                                                           | Content                                                                                                                                                                                                                                                     |
-| ------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)             | One row: **35-day** and **Strip**, and the ⋮ menu (**Chart options**) with the **Phase bar** and **Legend** check items. After a line, the menu has **Share chart**, which opens the [export dialog](export-dialog.md). An empty chart shows only the menu. |
-| [ChartCycleRow.tsx](../../../src/components/chart/ChartCycleRow.tsx)           | One card for each cycle: the cycle line, the phase bar and one row of day cards. The first card also has the controls.                                                                                                                                      |
-| [ChartPhaseTimeline.tsx](../../../src/components/chart/ChartPhaseTimeline.tsx) | The phase bar: one segment for each day, 6 px high. On a phone, it covers the width of the card and does not scroll. On a desktop, each segment is above its column.                                                                                        |
-| [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)                   | A day card with an observation, or an empty day card. Each card is a native `<button type="button">`.                                                                                                                                                       |
-| [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx)     | Details of a day card: code, bleeding, stretch, modifiers, intercourse and notes.                                                                                                                                                                           |
-| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)         | A 35-day grid before the first observation, from today. Each card opens a new observation.                                                                                                                                                                  |
-| [ChartDayDetail.tsx](../../../src/components/chart/ChartDayDetail.tsx)         | Desktop only. The bar under the rows with the selected day, **Edit** and **Open in Today**. The calendar shows it as a panel, with **Open in Chart** too.                                                                                                   |
-| [ChartLegend.tsx](../../../src/components/chart/ChartLegend.tsx)               | The stamp legend, under the rows. The **Legend** button under the rows and the menu item show it.                                                                                                                                                           |
+| Part                                                                       | Content                                                                                                                                                                                                                                                     |
+| -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)         | One row: **35-day** and **Strip**, and the ⋮ menu (**Chart options**) with the **Stamp bar** and **Legend** check items. After a line, the menu has **Share chart**, which opens the [export dialog](export-dialog.md). An empty chart shows only the menu. |
+| [ChartCycleRow.tsx](../../../src/components/chart/ChartCycleRow.tsx)       | One card for each cycle: the cycle line, the stamp bar and one row of day cards. The first card also has the controls.                                                                                                                                      |
+| [ChartStampBar.tsx](../../../src/components/chart/ChartStampBar.tsx)       | The stamp bar: one segment for each day, 6 px high. On a phone, it covers the width of the card and does not scroll. On a desktop, each segment is above its column.                                                                                        |
+| [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)               | A day card with an observation, or an empty day card. Each card is a native `<button type="button">`.                                                                                                                                                       |
+| [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx) | Details of a day card: code, bleeding, stretch, modifiers, intercourse and notes.                                                                                                                                                                           |
+| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)     | A 35-day grid before the first observation, from today. Each card opens a new observation.                                                                                                                                                                  |
+| [ChartDayDetail.tsx](../../../src/components/chart/ChartDayDetail.tsx)     | Desktop only. The bar under the rows with the selected day, **Edit** and **Open in Today**. The calendar shows it as a panel, with **Open in Chart** too.                                                                                                   |
+| [ChartLegend.tsx](../../../src/components/chart/ChartLegend.tsx)           | The stamp legend, under the rows. The **Legend** button under the rows and the menu item show it.                                                                                                                                                           |
 
 ### Cycle line
 
@@ -53,19 +53,18 @@ The first card has the controls. They act on all the rows. Each button is 36 px.
 - Today has a 2 px accent border and `--accent-soft`. The Peak Day has a ring of `--color-warning-ring`.
 - A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 
-### Phase bar
+### Stamp bar
 
-The bar uses the four phases of Analytics ([Cycle and phase rules](../cycle-and-phase-rules.md)), day by day. A day with a bleeding code or a red stamp before the Peak Day is a menses day.
+The bar repeats the stamps of the day cards under it, day by day, in the colors of the stamps ([Design system](../design-system.md)). Thus, the bar and the cards never disagree.
 
-| Phase                                 | Color                 |
-| ------------------------------------- | --------------------- |
-| Menses, before the Peak Day           | `--stamp-red`         |
-| Before Peak Day, up to the Peak Day   | `--phase-before-peak` |
-| Post-Peak count: days 1 to 3 after it | `--stamp-light-green` |
-| After the count                       | `--stamp-dark-green`  |
-| No observation                        | `--bg-surface-border` |
-
-The colors and the names are the same as on the **Cycle phases** bar of Analytics.
+| Day                                                                                  | Segment                                           |
+| ------------------------------------------------------------------------------------ | ------------------------------------------------- |
+| `RED`, `DARK_GREEN` or `YELLOW` stamp                                                | The fill of the stamp                             |
+| `WHITE_BABY` or `LIGHT_GREEN_BABY` stamp                                             | The fill of the stamp, with the edge of its badge |
+| A day with no code ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)) | An outline in `--stamp-empty`                     |
+| No observation                                                                       | `--bg-surface-border`                             |
+- A `RED` or `DARK_GREEN` segment has the `--stamp-edge-on-fill` edge of its badge, which shows in the dark theme.
+- The Peak Day segment has the `--color-warning-ring` ring of its day card.
 
 ### Shared scroll
 
@@ -93,7 +92,7 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
   - **Edit** opens the observation drawer for the day.
   - **Open in Today** opens the **Today** page on that day.
 - The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row. An arrow key with `Alt`, `Ctrl`, `Shift` or the Meta key does not move the selection.
-- When more than 4 cycles show, each past cycle shows only the cycle day and the stamp, with no phase bar. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
+- When more than 4 cycles show, each past cycle shows only the cycle day and the stamp, with no stamp bar. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
 - The empty chart (`ChartBlankGrid`) has no selection. A click on its card opens the drawer.
 - The **Today** tab opens on today, also after **Open in Today**.
 
@@ -108,7 +107,7 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
 - The page heading is for screen readers only. Each cycle is a `section` with the name "Cycle N".
 - **35-day** and **Strip** are toggle buttons with `aria-pressed`, in a group with the name **Chart view**.
 - Today has `aria-current="date"`. This applies to day cards with an observation and to empty day cards. The date of today comes from `getTodayStr()`.
-- The phase bar has `aria-hidden="true"`. Each segment has a title with the day and its phase.
+- The stamp bar has `aria-hidden="true"`. Each segment has a title with the day and its code, for example "Day 9: 2CX2". The title of the Peak Day adds "Peak Day (P)".
 - On a desktop, each card has `aria-pressed`: `true` for the selected day. The name of an empty card does not tell the user to click to add an observation.
 - The text of the detail bar is a polite live region, so a screen reader reads the new day. The buttons are not in the live region. The empty live region stays in the page when no day is selected, so a screen reader also reads the first selection.
 

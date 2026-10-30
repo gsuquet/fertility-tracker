@@ -198,8 +198,10 @@
     transition: all 0.2s ease;
   }
 
-  .version-tab-btn:hover {
-    color: var(--text-primary);
+  @media (hover: hover) {
+    .version-tab-btn:hover {
+      color: var(--text-primary);
+    }
   }
 
   .version-tab-btn.active {
@@ -326,8 +328,10 @@
       box-shadow 0.2s ease;
   }
 
-  .history-item-card:hover {
-    border-color: var(--accent-primary);
+  @media (hover: hover) {
+    .history-item-card:hover {
+      border-color: var(--accent-primary);
+    }
   }
 
   .history-item-card.expanded {
@@ -523,8 +527,10 @@
     border-radius: var(--radius-xs);
   }
 
-  .repo-external-link:hover {
-    background-color: var(--accent-soft);
+  @media (hover: hover) {
+    .repo-external-link:hover {
+      background-color: var(--accent-soft);
+    }
   }
 
   @media (max-width: 600px) {

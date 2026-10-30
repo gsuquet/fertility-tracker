@@ -53,6 +53,35 @@ describe('touch behavior of an installed application', () => {
     }
   });
 
+  // A touch screen keeps :hover on the last element tapped, so a tapped button stays highlighted
+  it('puts each hover style in a (hover: hover) query', () => {
+    const hoverRules = cssFiles(stylesDir).flatMap(file => {
+      const css = readFileSync(file, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+      const open: string[] = [];
+      const found: { selector: string; inHoverQuery: boolean }[] = [];
+      let start = 0;
+      for (let i = 0; i < css.length; i++) {
+        if (css[i] === '{') {
+          const prelude = css.slice(start, i).trim();
+          if (prelude.includes(':hover')) {
+            found.push({ selector: prelude, inHoverQuery: open.includes('@media (hover: hover)') });
+          }
+          open.push(prelude);
+          start = i + 1;
+        } else if (css[i] === '}') {
+          open.pop();
+          start = i + 1;
+        } else if (css[i] === ';') {
+          start = i + 1;
+        }
+      }
+      return found;
+    });
+    expect(hoverRules.length).toBeGreaterThan(10);
+    for (const rule of hoverRules)
+      expect(rule, rule.selector).toMatchObject({ inHoverQuery: true });
+  });
+
   it('keeps each scroll area from scrolling the page under it', () => {
     const scrollRules = cssFiles(stylesDir).flatMap(file =>
       [

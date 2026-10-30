@@ -154,3 +154,78 @@ for (const [language, t] of Object.entries(LANGUAGES) as [keyof typeof LANGUAGES
     });
   });
 }
+
+test.describe('Phone details of the Today and Calendar pages', () => {
+  test('the day status keeps its height, and Jump to Today keeps a tap area of 44 px', async ({
+    page,
+  }) => {
+    await openInLanguage(page, 'en');
+    const status = page.locator('.today-header-card.compact-date-bar');
+    const todayHeight = (await status.boundingBox())?.height;
+    await page.getByRole('banner').getByRole('button', { name: en.todayView.prevDay }).click();
+    const jump = page.getByRole('button', { name: en.todayView.goToToday });
+    await expect(jump).toBeVisible();
+    expect((await status.boundingBox())?.height).toBeCloseTo(todayHeight ?? 0, 1);
+
+    // A tap 22 px above or under the middle of the button still reaches it
+    const box = (await jump.boundingBox()) as {
+      x: number;
+      y: number;
+      width: number;
+      height: number;
+    };
+    const middle = { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    for (const dy of [-21.5, 21.5]) {
+      const hit = await page.evaluate(
+        ([x, y]) =>
+          document.elementFromPoint(x as number, y as number)?.closest('button')?.className,
+        [middle.x, middle.y + dy]
+      );
+      expect(hit).toContain('jump-today-btn');
+    }
+  });
+
+  test('a touch screen shows no hover color on a day arrow', async ({ page }) => {
+    await openInLanguage(page, 'en');
+    const prev = page.getByRole('banner').getByRole('button', { name: en.todayView.prevDay });
+    const background = () => prev.evaluate(el => getComputedStyle(el).backgroundColor);
+    const before = await background();
+    await prev.hover();
+    expect(await background()).toBe(before);
+  });
+
+  test('a code of 7 characters stays on one line in the calendar', async ({ page }) => {
+    const observations = buildDemoObservations(TODAY).map(o =>
+      o.date === '2026-10-11'
+        ? {
+            ...o,
+            stretch: '10',
+            modifiers: ['C', 'K', 'L'],
+            frequency: 'X1',
+            codeString: '10CKLX1',
+          }
+        : o
+    );
+    await page.addInitScript(
+      ([key, data]) => window.localStorage.setItem(key as string, data as string),
+      [STORAGE_OBSERVATIONS_KEY, JSON.stringify(observations)]
+    );
+    await openInLanguage(page, 'en');
+    const nav = page.getByRole('navigation', { name: en.mobileTabs.navLabel });
+    await nav.getByRole('button', { name: en.mobileTabs.calendar, exact: true }).click();
+    const codes = page.locator('.calendar-code');
+    // 390 px is the phone of the tests, 360 px is a small Android phone
+    for (const width of [390, 360]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const text of ['10CKLX1', '10KLAD', '6C/KX3']) {
+        const code = codes.filter({ hasText: new RegExp(`^${text.replace('/', '\\/')}$`) });
+        await expect(code).toHaveCount(1);
+        const lineHeight = await code.evaluate(el =>
+          Number.parseFloat(getComputedStyle(el).lineHeight)
+        );
+        const height = (await code.boundingBox())?.height ?? 0;
+        expect(height, `${text} at ${width} px`).toBeLessThan(lineHeight * 1.5);
+      }
+    }
+  });
+});

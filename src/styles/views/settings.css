@@ -100,9 +100,11 @@
     outline-offset: -2px;
   }
 
-  button.settings-row:hover:not(:disabled),
-  label.settings-row:hover {
-    background-color: var(--bg-primary);
+  @media (hover: hover) {
+    button.settings-row:hover:not(:disabled),
+    label.settings-row:hover {
+      background-color: var(--bg-primary);
+    }
   }
 
   .settings-row:disabled {
