@@ -3,7 +3,7 @@ import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { averagePhases, getCyclePhases } from '../domain/cyclePhases';
 import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
-import { formatMessage } from '../i18n';
+import { formatDays, formatMessage, isSingular } from '../i18n';
 import { shortDate } from '../utils/printCycles';
 
 interface StatTileProps {
@@ -26,9 +26,6 @@ const StatTile: React.FC<StatTileProps> = ({ label, value, unit, detail }) => (
   </li>
 );
 
-/** A whole number as it is, else one decimal */
-const formatDays = (days: number) => (Number.isInteger(days) ? String(days) : days.toFixed(1));
-
 /**
  * The four tiles of the selected cycle, or the averages of all cycles: the cycle length, the Peak
  * Day, the luteal phase and the intercourse days (RFC 0002).
@@ -41,8 +38,14 @@ export const CycleStatsHeader: React.FC = () => {
 
   // 'all' matches no cycle, so it shows the averages
   const selectedCycle = cycles.find(c => c.id === selectedCycleId);
-  const days = t.stats.days;
   const none = '---';
+  // The value with its unit, in the singular when the language uses it
+  const dayValue = (value: number) => ({
+    value: formatDays(value, t.locale),
+    unit: isSingular(value, t.locale) ? t.stats.day : t.stats.days,
+  });
+  const averageOf = (count: number) =>
+    count === 1 ? t.stats.averageOfOne : formatMessage(t.stats.averageOf, { count });
 
   let length: StatTileProps;
   let luteal: StatTileProps;
@@ -54,45 +57,38 @@ export const CycleStatsHeader: React.FC = () => {
 
   if (selectedCycle) {
     const phases = getCyclePhases(selectedCycle);
+    const start = shortDate(selectedCycle.startDate, t.locale);
+    const end = shortDate(getCycleEndDate(selectedCycle), t.locale);
     length = {
       label: t.stats.cycleLength,
-      value: String(phases.lengthDays),
-      unit: days,
-      detail: `${shortDate(selectedCycle.startDate, t.locale)} – ${shortDate(getCycleEndDate(selectedCycle), t.locale)}`,
+      ...dayValue(phases.lengthDays),
+      detail: start === end ? start : `${start} – ${end}`,
     };
     luteal = {
       label: t.stats.lutealPhase,
-      value: peak ? String(phases.lutealDays) : none,
-      unit: peak ? days : undefined,
+      ...(peak ? dayValue(phases.lutealDays) : { value: none }),
       detail: t.stats.afterPeak,
     };
     intercourse = {
       label: t.stats.intercourseCount,
-      value: String(selectedCycle.observations.filter(o => o.intercourse).length),
-      unit: days,
+      ...dayValue(selectedCycle.observations.filter(o => o.intercourse).length),
       detail: t.stats.inThisCycle,
     };
   } else {
     const average = averagePhases(cycles);
-    const averageOf = formatMessage(t.stats.averageOf, { count: cycles.length });
     length = {
       label: t.stats.cycleLength,
-      value: formatDays(average.lengthDays),
-      unit: days,
-      detail: averageOf,
+      ...dayValue(average.lengthDays),
+      detail: averageOf(cycles.length),
     };
     luteal = {
       label: t.stats.lutealPhase,
-      value: peak ? formatDays(average.lutealDays) : none,
-      unit: peak ? days : undefined,
-      detail: peak
-        ? formatMessage(t.stats.averageOf, { count: average.cyclesWithPeak })
-        : t.stats.afterPeak,
+      ...(peak ? dayValue(average.lutealDays) : { value: none }),
+      detail: peak ? averageOf(average.cyclesWithPeak) : t.stats.afterPeak,
     };
     intercourse = {
       label: t.stats.intercourseCount,
-      value: String(observations.filter(o => o.intercourse).length),
-      unit: days,
+      ...dayValue(observations.filter(o => o.intercourse).length),
       detail: t.stats.inAllCycles,
     };
   }
@@ -103,7 +99,13 @@ export const CycleStatsHeader: React.FC = () => {
       <StatTile
         label={t.stats.peakDay}
         value={peak ? formatMessage(t.stats.peakValue, { day: peak.cycleDay }) : none}
-        detail={peak ? shortDate(peak.date, t.locale) : t.stats.notYet}
+        detail={
+          !peak
+            ? t.stats.notYet
+            : selectedCycle
+              ? shortDate(peak.date, t.locale)
+              : formatMessage(t.stats.latestPeak, { date: shortDate(peak.date, t.locale) })
+        }
       />
       <StatTile {...luteal} />
       <StatTile {...intercourse} />

@@ -15,7 +15,9 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-The [statistics tiles](statistics-bar.md) are above the page. The page then shows these cards, in this order. On a phone, they are in one column. From 768 pixels, **Cycle phases** and **Mucus score trend** are at the left. **Stamps in this cycle** and **Clinical summary** are at the right. The explanation is under them.
+The [statistics tiles](statistics-bar.md) are above the page. The page then shows these cards, in this order. On a phone, they are in one column.
+
+From 768 pixels, the cards are in two columns, and each column stacks its cards. **Cycle phases** and **Mucus score trend** are at the left. **Stamps in this cycle** and **Clinical summary** are at the right. The explanation is under them.
 
 | Card                               | Content                                                                                                                                                                                     |
 | ---------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -25,16 +27,18 @@ The [statistics tiles](statistics-bar.md) are above the page. The page then show
 | Clinical summary                   | The average mucus score and the [luteal phase health](../cycle-and-phase-rules.md#luteal-phase-health). It does not repeat the values of the tiles.                                         |
 | What is the Creighton Mucus Score? | The explanation of the score. It is closed when the page opens.                                                                                                                             |
 - Without a Peak Day, **Cycle phases** shows "No Peak Day yet. The count starts after the Peak Day."
-- In the **All Cycles** view, **Cycle phases** shows the average of each phase. The stamps card is **Stamps in all cycles**. The trend shows one row for each cycle, with the cycle number and its first date.
-- A trend bar is 8 pixels wide with a gap of 1 pixel, so 35 days fit on a phone. Its height is 10 % for each point of the score, and at least 2 pixels. The axis under the bars names day 1 and each fifth day.
-- The value of a phase is a whole number, or a number with one decimal.
+- In the **All Cycles** view, **Cycle phases** shows the average of each phase. The stamps card is **Stamps in all cycles**. The trend shows one row for each cycle, with the cycle number and its first date. The date is short, for example "Sep 3".
+- A trend bar is 8 pixels wide with a gap of 1 pixel, so 35 days fit on a phone. Its height is 10 % for each point of the score, and at least 2 pixels. The axis under the bars names day 1 and each fifth day. A missing day has an empty column, so each cycle day stays in its column.
+- The value of a phase is a whole number, or a number with one decimal. The decimal sign is the sign of the language, for example "0,5" in French.
 - Without observations, the page shows an empty state with `id="analytics-panel"`.
 
 ## Accessibility
 
 - The phase bar is an image (`role="img"`). Its name gives each phase and its days, for example "Menses: 4 days, Before Peak Day: 9 days".
+- Each trend row is an image (`role="img"`). Its name gives the Peak Day and the highest score, for example "Peak Day on cycle day 13. Highest score: 10."
 - The trend chart (`.mucus-trend-wrapper`) scrolls horizontally when a cycle is longer than the card. It is a `<section>` with `tabIndex={0}` and `aria-labelledby` (role `region`).
-- The button of the explanation has `aria-expanded` and `aria-controls`.
+- The card titles are `h2` headings.
+- The button of the explanation has `aria-expanded` and `aria-controls`. The closed explanation has the `hidden` attribute.
 - The clinical summary is a description list.
 
 ## Implementation

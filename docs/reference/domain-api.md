@@ -51,7 +51,7 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 
 | Function         | Signature                            | Returns                                                                       |
 | ---------------- | ------------------------------------ | ----------------------------------------------------------------------------- |
-| `getCyclePhases` | `(cycle: Cycle) => CyclePhases`      | `lengthDays`, `mensesDays`, `follicularDays`, `lutealDays` and `peak`.        |
+| `getCyclePhases` | `(cycle: Cycle) => CyclePhases`      | `lengthDays`, `lutealDays` and `peak`.                                        |
 | `averagePhases`  | `(cycles: Cycle[]) => AveragePhases` | The averages per cycle, and `cyclesWithPeak`. All values are 0 for no cycles. |
 
 ## observationForm.ts

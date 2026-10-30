@@ -4,10 +4,6 @@ import type { Cycle, Observation } from '../types/crms';
 export interface CyclePhases {
   /** Days from the first to the last observation, both included. */
   lengthDays: number;
-  /** Days with a red stamp. */
-  mensesDays: number;
-  /** Days up to and including the Peak Day, or all days so far before the Peak Day. */
-  follicularDays: number;
   /** Days after the Peak Day, or 0 before the Peak Day. */
   lutealDays: number;
   peak: Observation | undefined;
@@ -18,8 +14,6 @@ export function getCyclePhases(cycle: Cycle): CyclePhases {
   const peak = cycle.observations.find(o => o.isPeakDay);
   return {
     lengthDays,
-    mensesDays: cycle.observations.filter(o => o.stamp === 'RED').length,
-    follicularDays: peak ? peak.cycleDay : lengthDays,
     lutealDays: peak ? lengthDays - peak.cycleDay : 0,
     peak,
   };
@@ -27,30 +21,30 @@ export function getCyclePhases(cycle: Cycle): CyclePhases {
 
 export interface AveragePhases {
   lengthDays: number;
-  mensesDays: number;
-  follicularDays: number;
   lutealDays: number;
-  /** The number of cycles in the follicular and luteal averages, when any cycle has a Peak Day. */
+  /** The number of cycles in the luteal average, when any cycle has a Peak Day. */
   cyclesWithPeak: number;
 }
 
 const average = (values: number[]) =>
   values.length === 0 ? 0 : values.reduce((sum, v) => sum + v, 0) / values.length;
 
+/** The cycles with a Peak Day, or all cycles when no cycle has a Peak Day */
+const splitBasis = (cycles: Cycle[]) => {
+  const withPeak = cycles.filter(c => c.observations.some(o => o.isPeakDay));
+  return withPeak.length > 0 ? withPeak : cycles;
+};
+
 /**
  * Averages the phases per cycle. A cycle without a Peak Day has no luteal phase yet, so
- * the follicular and luteal averages use only the cycles with a Peak Day when there are any.
+ * the luteal average uses only the cycles with a Peak Day when there are any.
  */
 export function averagePhases(cycles: Cycle[]): AveragePhases {
   const phases = cycles.map(getCyclePhases);
-  const withPeak = phases.filter(p => p.peak);
-  const splitBasis = withPeak.length > 0 ? withPeak : phases;
   return {
     lengthDays: average(phases.map(p => p.lengthDays)),
-    mensesDays: average(phases.map(p => p.mensesDays)),
-    follicularDays: average(splitBasis.map(p => p.follicularDays)),
-    lutealDays: average(splitBasis.map(p => p.lutealDays)),
-    cyclesWithPeak: withPeak.length,
+    lutealDays: average(splitBasis(cycles).map(c => getCyclePhases(c).lutealDays)),
+    cyclesWithPeak: phases.filter(p => p.peak).length,
   };
 }
 
@@ -68,10 +62,14 @@ export function dayPhase(obs: Observation, peakDay: number | undefined): DayPhas
   return obs.cycleDay - (peakDay as number) <= 3 ? 'post-peak' : 'luteal';
 }
 
-/** The days of a cycle in each of the four phases of Analytics and of the chart phase bar */
+/**
+ * The calendar days of a cycle in each of the four phases of Analytics. The four values add up to
+ * the cycle length, and the count and the days after it add up to the luteal phase.
+ */
 export interface PhaseSegments {
+  /** The menses days before the Peak Day */
   mensesDays: number;
-  /** The days before the Peak Day, after the menses, and the Peak Day */
+  /** The other days up to and including the Peak Day, or up to the last day without a Peak Day */
   beforePeakDays: number;
   /** The days of the Post-Peak count: 3 or less */
   countDays: number;
@@ -79,26 +77,30 @@ export interface PhaseSegments {
   afterCountDays: number;
 }
 
-/** Counts the observations of a cycle in each phase */
+/** Splits the calendar days of a cycle into the four phases. A missing day before the Peak Day is in the time before it. */
 export function getPhaseSegments(cycle: Cycle): PhaseSegments {
-  const peakDay = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
-  const phases = cycle.observations.map(o => dayPhase(o, peakDay));
-  const count = (...names: DayPhase[]) => phases.filter(p => names.includes(p)).length;
+  const { lengthDays, lutealDays, peak } = getCyclePhases(cycle);
+  const peakDay = peak?.cycleDay;
+  const mensesDays = cycle.observations.filter(o => dayPhase(o, peakDay) === 'menses').length;
+  const countDays = Math.min(3, lutealDays);
   return {
-    mensesDays: count('menses'),
-    beforePeakDays: count('follicular', 'peak'),
-    countDays: count('post-peak'),
-    afterCountDays: count('luteal'),
+    mensesDays,
+    beforePeakDays: (peakDay ?? lengthDays) - mensesDays,
+    countDays,
+    afterCountDays: lutealDays - countDays,
   };
 }
 
-/** The average of the phase segments of the cycles */
+/**
+ * The average of the phase segments. The menses average uses all cycles. The other averages use
+ * the cycles with a Peak Day when there are any, as the luteal average of averagePhases does.
+ */
 export function averageSegments(cycles: Cycle[]): PhaseSegments {
-  const segments = cycles.map(getPhaseSegments);
+  const split = splitBasis(cycles).map(getPhaseSegments);
   return {
-    mensesDays: average(segments.map(s => s.mensesDays)),
-    beforePeakDays: average(segments.map(s => s.beforePeakDays)),
-    countDays: average(segments.map(s => s.countDays)),
-    afterCountDays: average(segments.map(s => s.afterCountDays)),
+    mensesDays: average(cycles.map(c => getPhaseSegments(c).mensesDays)),
+    beforePeakDays: average(split.map(s => s.beforePeakDays)),
+    countDays: average(split.map(s => s.countDays)),
+    afterCountDays: average(split.map(s => s.afterCountDays)),
   };
 }

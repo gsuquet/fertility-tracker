@@ -58,6 +58,8 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'The mucus score trend fits 35 days on a phone, with day numbers under the bars',
       'Stamps in this cycle shows the number of days of each stamp',
       'The clinical summary no longer repeats the numbers of the tiles, and the explanation of the score is at the end',
+      'Cycle length is now the cycle day of the last observation. A day you did not log still counts',
+      'The luteal phase is judged only when the cycle has ended, and the chart phase bar uses the colors of Analytics',
     ],
     highlightsFr: [
       'Les quatre tuiles montrent leur libellé complet, la valeur et une ligne de détail, comme les dates du cycle',
@@ -65,6 +67,8 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
       'La tendance du score de glaire montre 35 jours sur un téléphone, avec les numéros des jours sous les barres',
       'Timbres de ce cycle montre le nombre de jours de chaque timbre',
       'Le résumé clinique ne répète plus les chiffres des tuiles, et l’explication du score est à la fin',
+      'La longueur du cycle est maintenant le jour du cycle de la dernière observation. Un jour non saisi compte aussi',
+      'La phase lutéale est évaluée seulement quand le cycle est terminé, et la barre des phases du graphique a les couleurs des analyses',
     ],
   },
   {

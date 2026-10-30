@@ -83,6 +83,9 @@ const whiteTextFills = [
   '--color-success-solid',
   '--color-intercourse',
   '--color-peak',
+  // The segments of the Analytics phase bar
+  '--stamp-red',
+  '--stamp-dark-green',
 ];
 
 describe('design token contrast (WCAG 2 AA)', () => {

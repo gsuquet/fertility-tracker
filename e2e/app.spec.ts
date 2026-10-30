@@ -165,7 +165,7 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.getByRole('tab', { name: en.tabs.analytics }).click();
     const analytics = page.getByRole('tabpanel', { name: en.tabs.analytics });
     await expect(analytics.getByRole('heading', { name: en.analytics.phasesTitle })).toBeVisible();
-    await expect(analytics).toContainText(en.analytics.normalLuteal);
+    await expect(analytics).toContainText(en.analytics.inProgressLuteal);
     await expect(page.getByRole('list', { name: en.stats.label })).toContainText(
       `${en.stats.peakDay}CD 13Oct 12`
     );

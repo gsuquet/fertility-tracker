@@ -258,9 +258,10 @@
     background-color: var(--stamp-red);
   }
 
+  /* The same colors as the phase bar of Analytics */
   .phase-follicular,
   .phase-peak {
-    background-color: var(--color-info);
+    background-color: var(--accent-solid);
   }
 
   .phase-post-peak {

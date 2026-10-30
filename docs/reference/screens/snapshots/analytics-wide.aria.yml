@@ -33,12 +33,13 @@
       - text: days In this cycle
   - tabpanel "Cycle Analytics":
     - heading "Cycle Analytics" [level=1]
-    - heading "Cycle phases" [level=3]
+    - heading "Cycle phases" [level=2]
     - 'img /Menses: 4 days, Before Peak Day: 9 days, Post-Peak count: 3 days, After the count: \d+ days/': /4 9 3 \d+/
-    - heading "Mucus score trend" [level=3]
+    - heading "Mucus score trend" [level=2]
     - paragraph: /Score from 0 to \d+ for each cycle day\. The pink bar is Peak Day\./
-    - region "Mucus score trend"
-    - heading "Stamps in this cycle" [level=3]
+    - region "Mucus score trend":
+      - 'img /Peak Day on cycle day \d+\. Highest score: \d+\./': /1 5 \d+ \d+ \d+ \d+/
+    - heading "Stamps in this cycle" [level=2]
     - list:
       - listitem:
         - text: Bleeding
@@ -52,12 +53,12 @@
       - listitem:
         - text: Post-Peak count
         - strong: "3"
-    - heading "Clinical summary" [level=3]
+    - heading "Clinical summary" [level=2]
     - term: Average mucus score
     - definition: "1.1"
     - term: Luteal phase
-    - definition: /Normal \(9 to \d+ days\)/
-    - heading "What is the Creighton Mucus Score?" [level=3]:
+    - definition: Cycle in progress
+    - heading "What is the Creighton Mucus Score?" [level=2]:
       - button "What is the Creighton Mucus Score?"
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/

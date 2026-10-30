@@ -20,6 +20,7 @@ import { buildDemoObservations } from '../../domain/demoData';
 import { en, fr, formatMessage } from '../../i18n';
 import { makeObservation } from '../../test/factories';
 import { renderWithProviders } from '../../test/render';
+import { shortDate } from '../../utils/printCycles';
 import type { Observation } from '../../types/crms';
 
 // Today is 2026-09-15 in these tests
@@ -133,7 +134,10 @@ describe('French text of the components', () => {
     expect(screen.getByRole('heading', { name: fr.analytics.stampsTitleAll })).toBeInTheDocument();
     expect(
       screen.getByText(
-        formatMessage(fr.analytics.cycleStarted, { number: 1, date: observations[0]!.date })
+        formatMessage(fr.analytics.cycleStarted, {
+          number: 1,
+          date: shortDate(observations[0]!.date, fr.locale),
+        })
       )
     ).toBeInTheDocument();
   });
@@ -339,6 +343,18 @@ describe('French text of the components', () => {
     expect(screen.getByText('JC 13')).toBeInTheDocument();
     expect(screen.getAllByText('Moyenne de 2 cycles')).toHaveLength(2);
     expect(screen.getByText(fr.stats.inAllCycles)).toBeInTheDocument();
+  });
+
+  it('writes a French decimal comma and the French singular in the stats header', () => {
+    // Two cycles of 2 and 1 days: an average of 1,5 day, which is singular in French
+    const observations = [
+      makeObservation({ date: '2026-09-01', bleeding: 'H' }),
+      makeObservation({ date: '2026-09-02', stretch: '0' }),
+      makeObservation({ date: '2026-09-03', bleeding: 'H' }),
+    ];
+    renderWithProviders(<CycleStatsHeader />, inFrench(observations, 'all'));
+    const length = screen.getByText(fr.stats.cycleLength).closest('li');
+    expect(length).toHaveTextContent(`1,5 ${fr.stats.day}`);
   });
 
   it('translates the version dialog pills and tagline', () => {

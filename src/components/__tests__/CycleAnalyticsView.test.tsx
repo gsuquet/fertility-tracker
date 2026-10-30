@@ -50,7 +50,7 @@ describe('CycleAnalyticsView Component', () => {
   it('shows the phases, the trend, the stamps, the summary and the explanation, in this order', () => {
     renderAnalyticsView();
     fireEvent.click(screen.getByText('Load Demo Data'));
-    const headings = screen.getAllByRole('heading', { level: 3 }).map(h => h.textContent);
+    const headings = screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent);
     expect(headings).toEqual([
       en.analytics.phasesTitle,
       en.analytics.trendTitle,
