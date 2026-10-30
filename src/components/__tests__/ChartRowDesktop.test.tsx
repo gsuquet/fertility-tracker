@@ -308,6 +308,10 @@ describe('ChartRow on a desktop', () => {
     expect(event.defaultPrevented).toBe(false);
     expect(document.activeElement).toBe(today);
     expect(today).toHaveAttribute('aria-pressed', 'true');
+    // A disabled day after today is not a toggle
+    const later = today.nextElementSibling as HTMLElement;
+    expect(later).toBeDisabled();
+    expect(later).not.toHaveAttribute('aria-pressed');
   });
 
   it('selects today again when the selected day no longer shows', () => {

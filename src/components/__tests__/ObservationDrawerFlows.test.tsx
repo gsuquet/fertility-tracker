@@ -414,6 +414,17 @@ describe('ObservationDrawer flows', () => {
     expect(saved()).not.toContain('2026-09-20');
   });
 
+  it('saves a change to a saved observation after today', () => {
+    const later = makeObservation({ id: 'later', date: '2026-09-20', bleeding: 'H' });
+    renderDrawer(later, [makeObservation({ date: '2026-09-10', bleeding: 'H' }), later]);
+    const field = within(drawer()).getByLabelText(en.labels.date);
+    expect(field).not.toHaveAttribute('max');
+    chip('stretch', '10');
+    press(en.actions.save);
+    expect(saved()).toMatch(/2026-09-20:[^|]*10/);
+    expect(screen.queryByRole('dialog')).toBeNull();
+  });
+
   it('shows no cycle day for a new day after today', () => {
     renderDrawer(makeObservation({ id: '', date: '2026-09-20' }), [
       makeObservation({ date: '2026-09-10', bleeding: 'H' }),

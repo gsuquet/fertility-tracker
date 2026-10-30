@@ -165,7 +165,7 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
       type="button"
       className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''} ${isFuture ? 'future-day' : ''} ${selected ? 'is-selected' : ''}`}
       aria-current={isToday ? 'date' : undefined}
-      aria-pressed={selected}
+      aria-pressed={isFuture ? undefined : selected}
       disabled={isFuture}
       onClick={() => onOpen(dateStr, dayNum)}
       aria-label={formatMessage(isFuture ? t.chartStrip.blankCellLabel : labelTemplate, {

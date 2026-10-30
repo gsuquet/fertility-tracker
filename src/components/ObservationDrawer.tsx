@@ -205,7 +205,7 @@ export const ObservationDrawer: React.FC = () => {
             type="date"
             className="form-input"
             value={date}
-            max={getTodayStr()}
+            max={date > getTodayStr() ? undefined : getTodayStr()}
             onChange={e => changeDate(e.target.value)}
             required
           />

@@ -94,7 +94,7 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
   - **Open in Today** opens the **Today** page on that day.
 - The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row. An arrow key with `Alt`, `Ctrl`, `Shift` or the Meta key does not move the selection. An arrow key toward a day after today does not move the selection.
 - When more than 4 cycles show, each past cycle shows only the cycle day and the stamp, with no stamp bar. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
-- The empty chart (`ChartBlankGrid`) has no selection. A click on its card opens the drawer.
+- The empty chart (`ChartBlankGrid`) has no selection. A click on today opens the drawer. The days after today are disabled.
 - The **Today** tab opens on today, also after **Open in Today**.
 
 ### Other rules
