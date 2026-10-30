@@ -277,8 +277,9 @@ describe('French text of the components', () => {
   });
 
   it('translates the popover rows of stretch, modifiers, intercourse and symptoms', () => {
+    // The day before today: today is an empty day that opens, the later days do not
     const obs = makeObservation({
-      date: TODAY,
+      date: '2026-09-14',
       codeString: '10KL I AP',
       stretch: '10',
       modifiers: ['K', 'L'],
@@ -295,9 +296,12 @@ describe('French text of the components', () => {
     expect(within(cell).getByText(fr.chartStrip.popoverModifiers)).toBeInTheDocument();
     expect(within(cell).getByText(fr.chartStrip.popoverIntercourse)).toBeInTheDocument();
     expect(within(cell).getByText(fr.chartStrip.popoverYes)).toBeInTheDocument();
-    expect(screen.getAllByRole('button', { name: /- vide\. Cliquez pour ajouter/ })).toHaveLength(
-      34
+    expect(screen.getByRole('button', { current: 'date' })).toHaveAccessibleName(
+      /- vide, .*\. Cliquez pour ajouter/
     );
+    const later = screen.getAllByRole('button', { name: /- vide$/ });
+    expect(later).toHaveLength(33);
+    for (const day of later) expect(day).toBeDisabled();
   });
 
   it('translates the blank chart grid', () => {

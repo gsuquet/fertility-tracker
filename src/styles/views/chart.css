@@ -516,10 +516,16 @@
   }
 
   @media (hover: hover) {
-    .empty-cell.paper-cell:hover {
+    .empty-cell.paper-cell:hover:not(:disabled) {
       border-color: var(--accent-primary);
       background-color: var(--accent-light);
     }
+  }
+
+  /* A day after today: it does not open */
+  .empty-cell.paper-cell.future-day {
+    border-color: var(--bg-surface-border);
+    cursor: default;
   }
 
   .empty-cell .add-icon {

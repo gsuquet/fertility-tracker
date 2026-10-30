@@ -392,15 +392,33 @@ describe('ObservationDrawer flows', () => {
     expect(within(drawer()).getByRole('button', { name: /^Bleeding/ })).toBeInTheDocument();
   });
 
-  it('shows the cycle day of a day with no observation, and none after today', () => {
+  it('shows the cycle day of a day with no observation, and turns a later date into today', () => {
     renderDrawer(makeObservation({ id: '', date: '2026-09-12' }), [
       makeObservation({ date: '2026-09-10', bleeding: 'H' }),
     ]);
     expect(within(drawer()).getByText(/Day 3 ·/)).toBeInTheDocument();
     expect(within(drawer()).getByText(en.todayView.notLoggedStatus)).toBeInTheDocument();
-    fireEvent.change(within(drawer()).getByLabelText(en.labels.date), {
-      target: { value: '2026-09-20' },
-    });
+    const field = within(drawer()).getByLabelText(en.labels.date);
+    expect(field).toHaveAttribute('max', '2026-09-15');
+    fireEvent.change(field, { target: { value: '2026-09-20' } });
+    expect(field).toHaveValue('2026-09-15');
+    expect(within(drawer()).getByText(/Day 6 ·/)).toBeInTheDocument();
+  });
+
+  it('still opens a saved observation after today, so it can be deleted', () => {
+    const later = makeObservation({ id: 'later', date: '2026-09-20', bleeding: 'H' });
+    renderDrawer(later, [makeObservation({ date: '2026-09-10', bleeding: 'H' }), later]);
+    expect(within(drawer()).getByLabelText(en.labels.date)).toHaveValue('2026-09-20');
+    expect(saved()).toContain('2026-09-20');
+    deleteFromMenu();
+    expect(saved()).not.toContain('2026-09-20');
+  });
+
+  it('shows no cycle day for a new day after today', () => {
+    renderDrawer(makeObservation({ id: '', date: '2026-09-20' }), [
+      makeObservation({ date: '2026-09-10', bleeding: 'H' }),
+    ]);
+    expect(within(drawer()).getByLabelText(en.labels.date)).toHaveValue('2026-09-20');
     expect(within(drawer()).queryByText(/Day \d+ ·/)).toBeNull();
   });
 

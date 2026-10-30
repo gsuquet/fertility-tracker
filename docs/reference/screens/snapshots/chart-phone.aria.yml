@@ -45,13 +45,13 @@
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Sun \d+-\d+ 0AD/
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD/: /\d+ Mon \d+-\d+ 0AD/
       - button /Cycle Day \d+, Date \d+-\d+-\d+, Stamp DARK_GREEN, Code 0AD, Today/: /\d+ Tue \d+-\d+ 0AD/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Wed \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Thu \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Fri \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Sat \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Sun \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Mon \d+-\d+/
-      - button /Day \d+ \(\d+-\d+-\d+\) - Empty\. Click to add observation\./: /\d+ Tue \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Wed \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Thu \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Fri \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Sat \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Sun \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Mon \d+-\d+/
+      - button /Day \d+ \(\d+-\d+-\d+\) - Empty/ [disabled]: /\d+ Tue \d+-\d+/
     - button "Legend"
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/

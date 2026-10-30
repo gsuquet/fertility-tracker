@@ -57,10 +57,28 @@ describe('ChartRow interactions', () => {
     vi.restoreAllMocks();
   });
 
-  it('opens an empty day of the empty grid', () => {
+  it('opens today in the empty grid, and disables the days after today', () => {
     renderChart();
-    fireEvent.click(screen.getByRole('button', { name: 'Day 3 (2026-09-17) - Empty' }));
-    expect(drawer()).toBe('2026-09-17 day 3 0AD');
+    const later = screen.getByRole('button', { name: 'Day 3 (2026-09-17) - Empty' });
+    expect(later).toBeDisabled();
+    expect(later).toHaveClass('future-day');
+    expect(later.querySelector('.add-icon')).toBeNull();
+    fireEvent.click(later);
+    expect(drawer()).toBe('closed');
+    const today = screen.getByRole('button', { current: 'date' });
+    expect(today).toBeEnabled();
+    expect(today.querySelector('.add-icon')).toBeInTheDocument();
+    fireEvent.click(today);
+    expect(drawer()).toMatch(/^2026-09-15 day 1/);
+  });
+
+  it('disables the empty days after today in a cycle row, with no click hint', () => {
+    renderChart(rich);
+    const later = screen.getByRole('button', { name: 'Day 7 (2026-09-16) - Empty' });
+    expect(later).toBeDisabled();
+    expect(later.querySelector('.add-icon')).toBeNull();
+    fireEvent.click(later);
+    expect(drawer()).toBe('closed');
   });
 
   // A native button opens with Enter and Space in the browser: jsdom does not do this
