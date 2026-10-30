@@ -77,7 +77,7 @@
         - listitem:
           - button /Wed, Oct \d+ Day \d+ 0AD/
         - listitem:
-          - button /I Tue, Oct \d+ Day \d+ 0AD I/
+          - button /Tue, Oct \d+ Day \d+ 0AD I/
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/
   - button "Legal"

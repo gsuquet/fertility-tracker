@@ -6,6 +6,12 @@ import { makeObservation } from '../../test/factories';
 import { buildDemoObservations } from '../../domain/demoData';
 import { DESKTOP_QUERY, WIDE_QUERY } from '../../hooks/useMediaQuery';
 import { en } from '../../i18n';
+import { useCycle } from '../../context/CycleContext';
+
+/** Shows the cycle that the chart opens on */
+const SelectedCycle = () => (
+  <output aria-label="selected cycle">{useCycle().selectedCycleId}</output>
+);
 
 // Cycle 2 starts on Aug 19, so Sep 15 is its day 28. Its Peak Day is day 13.
 const TODAY = '2026-09-15';
@@ -93,5 +99,49 @@ describe('TodayView on a desktop', () => {
     expect(screen.queryByRole('img', { name: /^This cycle/ })).toBeNull();
     const first = within(recentDays(7)).getAllByRole('button')[0];
     expect(first).toHaveTextContent(`Fri, Sep 11${en.todayView.noEntryShort}`);
+  });
+
+  it('opens the chart on the cycle of the strip', () => {
+    mockWidth(1440);
+    const onOpenChart = vi.fn();
+    const observations = buildDemoObservations(TODAY);
+    renderWithProviders(
+      <>
+        <TodayView onOpenChart={onOpenChart} />
+        <SelectedCycle />
+      </>,
+      { observations }
+    );
+    // Aug 10 is in cycle 1, which starts on Jul 22
+    fireEvent.change(screen.getByLabelText(en.labels.date), { target: { value: '2026-08-10' } });
+    expect(screen.getByRole('img', { name: /^This cycle: Day 20 of 28/ })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: en.todayView.openChart }));
+    expect(onOpenChart).toHaveBeenCalledOnce();
+    expect(screen.getByRole('status', { name: 'selected cycle' })).toHaveTextContent(
+      'cycle_2026-07-22'
+    );
+  });
+
+  it('shows no cycle and no cycle day after today', () => {
+    mockWidth(1440);
+    renderWithProviders(<TodayView />, { observations: buildDemoObservations(TODAY) });
+    fireEvent.change(screen.getByLabelText(en.labels.date), { target: { value: '2026-09-18' } });
+    expect(screen.queryByRole('img', { name: /^This cycle/ })).toBeNull();
+    const rows = within(recentDays(7)).getAllByRole('button');
+    // Sep 17 and Sep 16 are after today. Sep 15 is today, day 28.
+    expect(rows[0]).not.toHaveTextContent(/Day \d/);
+    expect(rows[1]).not.toHaveTextContent(/Day \d/);
+    expect(rows[2]).toHaveTextContent(/^Tue, Sep 15Day 28/);
+  });
+});
+
+describe('TodayView on a phone', () => {
+  it('shows the history list under the form', () => {
+    mockWidth(390);
+    renderWithProviders(<TodayView />, { observations: buildDemoObservations(TODAY) });
+    const form = document.querySelector('.today-form-card') as HTMLElement;
+    const history = screen.getByRole('heading', { name: en.todayView.recentHistory });
+    expect(form.compareDocumentPosition(history) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(screen.queryByRole('region', { name: /^Last \d days/ })).toBeNull();
   });
 });

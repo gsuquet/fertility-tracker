@@ -5,7 +5,7 @@ import { formatMessage } from '../../i18n';
 import type { Cycle, Observation } from '../../types/crms';
 import { getCycleDayOn } from '../../domain/cycleBoundaryDetector';
 import { showsEmptyStamp } from '../../domain/stampCalculator';
-import { addDays, formatDateDisplay } from '../../utils/dateUtils';
+import { addDays, formatDateDisplay, getTodayStr } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 
 interface TodayRecentDaysProps {
@@ -34,17 +34,21 @@ export const TodayRecentDays: React.FC<TodayRecentDaysProps> = ({
       <ul>
         {days.map(date => {
           const obs = observations.find(o => o.date === date);
-          const cycleDay = getCycleDayOn(cycles, date);
+          // A day after today has no cycle day
+          const cycleDay = date <= getTodayStr() ? getCycleDayOn(cycles, date) : undefined;
           return (
             <li key={date}>
               <button type="button" className="recent-day-row" onClick={() => onSelectDate(date)}>
-                <StampBadge
-                  stamp={obs?.stamp ?? 'DARK_GREEN'}
-                  isPeakDay={obs?.isPeakDay}
-                  intercourse={obs?.intercourse}
-                  size="sm"
-                  isEmpty={!obs || showsEmptyStamp(obs)}
-                />
+                {/* The code gives the same facts: the stamp is hidden from screen readers */}
+                <span className="recent-day-stamp" aria-hidden="true">
+                  <StampBadge
+                    stamp={obs?.stamp ?? 'DARK_GREEN'}
+                    isPeakDay={obs?.isPeakDay}
+                    intercourse={obs?.intercourse}
+                    size="sm"
+                    isEmpty={!obs || showsEmptyStamp(obs)}
+                  />
+                </span>
                 <span className="recent-day-date">
                   {formatDateDisplay(date, t.locale, {
                     weekday: 'short',

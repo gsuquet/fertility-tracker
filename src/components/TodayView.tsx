@@ -42,6 +42,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
     deleteObservation,
     selectedObservation,
     setSelectedObservation,
+    setSelectedCycleId,
   } = useCycle();
   const { t } = useLanguage();
 
@@ -102,8 +103,10 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
   } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
-  // The cycle of the selected day: the newest cycle that starts on or before it
-  const selectedCycle = cycles.find(c => c.startDate <= selectedDate);
+  // The cycle of the selected day: the newest cycle that starts on or before it. A day after today
+  // has no cycle.
+  const selectedCycle =
+    selectedDate <= getTodayStr() ? cycles.find(c => c.startDate <= selectedDate) : undefined;
   const yesterdayObs = observations.find(o => o.date === addDays(selectedDate, -1));
 
   const status = formStatus(
@@ -208,15 +211,6 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
 
       {/* One column on a phone. From 1024 px: the form at the left, the day at the right. */}
       <div className="today-main-grid" ref={swipeContentRef}>
-        {/* Phone: the 5 days before the selected day, above the form */}
-        {!isDesktop && (
-          <TodayHistoryList
-            selectedDate={selectedDate}
-            observations={observations}
-            onSelectDate={setSelectedDate}
-          />
-        )}
-
         {/* The progressive observation form and the Save bar */}
         <form ref={formRef} onSubmit={handleSave} className="today-form-card">
           <h2 className="sr-only">{t.todayView.title}</h2>
@@ -244,6 +238,15 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
           </div>
         </form>
 
+        {/* Phone: the 5 days before the selected day, under the form */}
+        {!isDesktop && (
+          <TodayHistoryList
+            selectedDate={selectedDate}
+            observations={observations}
+            onSelectDate={setSelectedDate}
+          />
+        )}
+
         {isDesktop && (
           <div className="today-side">
             <TodayFertilityGuidance
@@ -260,7 +263,14 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
               <TodayCycleStrip
                 cycle={selectedCycle}
                 selectedDate={selectedDate}
-                onOpenChart={onOpenChart}
+                onOpenChart={
+                  onOpenChart &&
+                  (() => {
+                    // The chart opens on the cycle of the strip
+                    setSelectedCycleId(selectedCycle.id);
+                    onOpenChart();
+                  })
+                }
               />
             )}
             <TodayRecentDays

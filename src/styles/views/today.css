@@ -218,7 +218,7 @@
 
   @media (min-width: 1024px) {
     .today-main-grid {
-      grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+      grid-template-columns: minmax(0, 640px) minmax(360px, 1fr);
     }
   }
 
@@ -264,6 +264,7 @@
   /* The status card: the stamp (56 px), the code, one sentence, the saved state and the menu */
   .today-status-card {
     display: flex;
+    flex-wrap: wrap;
     align-items: center;
     gap: var(--space-md);
     padding: var(--space-md);
@@ -271,17 +272,30 @@
 
   .today-status-card .stamp-badge-container {
     width: auto;
+    height: auto;
     flex-shrink: 0;
+  }
+
+  /* RFC 0002: a stamp of 40 px and a code of 22 px */
+  .today-status-card .stamp-lg .stamp-badge {
+    width: 40px;
+    height: 40px;
+    border-radius: var(--radius-sm);
+  }
+
+  .today-status-card .stamp-lg .baby-svg {
+    width: 22px;
+    height: 22px;
   }
 
   .status-card-info {
     flex: 1;
-    min-width: 0;
+    min-width: 10rem;
   }
 
   .status-code-text {
     font-family: var(--font-mono);
-    font-size: var(--font-size-2xl);
+    font-size: var(--font-size-xl);
     font-weight: 800;
     letter-spacing: 0.02em;
     line-height: 1.15;
@@ -399,7 +413,7 @@
 
   .recent-day-row {
     display: grid;
-    grid-template-columns: auto 8rem 4rem minmax(0, 1fr) auto;
+    grid-template-columns: auto 6.5rem 3.5rem minmax(0, 1fr) auto;
     align-items: center;
     gap: var(--space-sm);
     width: 100%;
@@ -415,6 +429,10 @@
 
   .recent-day-row:hover {
     background-color: var(--accent-soft);
+  }
+
+  .recent-day-stamp {
+    display: flex;
   }
 
   .recent-day-row .stamp-badge-container {

@@ -52,10 +52,10 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.reload();
 
     await expect(directCode(page)).toHaveValue('10KLX3');
-    // On a desktop, the status card shows the saved code of the day
-    const status = page.locator('.today-status-card');
-    await expect(status).toContainText('10KLX3');
-    await expect(status).toContainText(en.todayView.loggedStatus);
+    // The next day lists the saved day first in the last days of the desktop
+    await page.getByRole('button', { name: en.todayView.nextDay }).click();
+    const lastDays = page.getByRole('region', { name: /^Last \d days$/ });
+    await expect(lastDays.getByRole('button').first()).toHaveText(/10KLX3/);
   });
 
   test('restores the observations from a .ftbackup file', async ({ page }) => {
