@@ -216,6 +216,13 @@ describe('ChartRow interactions', () => {
       seen.add(stamp);
       expect(segments[idx]).toHaveClass(`segment-${stamp}`);
     });
+    // The Peak Day has the ring of its card, and its title says so
+    const peak = current.querySelectorAll('.segment-peak');
+    expect(peak).toHaveLength(1);
+    expect(peak[0]?.getAttribute('title')).toMatch(
+      new RegExp(`${en.chartStrip.phasePeak.replace(/[()]/g, '\\$&')}$`)
+    );
+    expect(cards[[...segments].indexOf(peak[0] as Element)]).toHaveClass('peak-cell');
     // The demo cycle has each kind of stamp, a day with no code and a day to come
     expect([...seen].sort()).toEqual([
       'dark_green',

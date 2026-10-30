@@ -118,6 +118,23 @@ describe('TodayView flows', () => {
     expect(screen.queryByText(/Infertile/)).toBeNull();
   });
 
+  it('moves the focus to the previous day when the next day becomes disabled', () => {
+    renderToday();
+    const prev = screen.getByRole('button', { name: en.todayView.prevDay });
+    const next = screen.getByRole('button', { name: en.todayView.nextDay });
+    fireEvent.click(prev);
+    next.focus();
+    fireEvent.click(next);
+    expect(next).toBeDisabled();
+    expect(document.activeElement).toBe(prev);
+    // A click on Jump to Today does not move the focus to the arrows
+    fireEvent.click(prev);
+    const jump = screen.getByRole('button', { name: en.todayView.goToToday });
+    jump.focus();
+    fireEvent.click(jump);
+    expect(document.activeElement).not.toBe(prev);
+  });
+
   it('never goes after today', () => {
     renderToday();
     const date = screen.getByLabelText(en.labels.date);

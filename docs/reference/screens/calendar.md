@@ -28,7 +28,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | Phone        | 80 pixels high or more, 1/7 of the width                | 11 pixels, `--font-mono` |
 | From 1024 px | 96 pixels high or more, in a grid of 896 pixels or less | 11 pixels                |
 
-On a phone of 390 pixels, a code of 7 characters or less stays on one line, for example `10CKLX1`. For this width, the grid has a gap of 2 pixels and the cells have a side padding of 1 pixel. The code has a letter spacing of -0.03 em. A longer code goes onto more lines and the cell becomes taller. The code is never cut.
+On a phone of 360 pixels or more, a code of 7 characters or less stays on one line, for example `10CKLX1`. For this width, the grid has a gap of 2 pixels and the cells have no side padding. The code has a letter spacing of -0.05 em. A longer code goes onto more lines and the cell becomes taller. The code is never cut.
 
 ### Marks
 

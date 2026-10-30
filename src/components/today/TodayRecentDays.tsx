@@ -34,7 +34,7 @@ export const TodayRecentDays: React.FC<TodayRecentDaysProps> = ({
       <ul>
         {days.map(date => {
           const obs = observations.find(o => o.date === date);
-          // The selected date is never after today, so each of these days has a cycle day
+          // The selected date is never after today, so a day has a cycle day when a cycle starts on or before it
           const cycleDay = getCycleDayOn(cycles, date);
           return (
             <li key={date}>

@@ -85,8 +85,15 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
   const cycleDay = getCycleDayOn(cycles, selectedDate);
 
   // Navigation handlers
-  const handlePrevDay = () => setSelectedDate(prev => addDays(prev, -1));
-  const handleNextDay = () => setSelectedDate(prev => notAfterToday(addDays(prev, 1)));
+  // The day that the last change asked for. A swipe reads it before React renders that change.
+  const latestDate = useRef(selectedDate);
+  latestDate.current = selectedDate;
+  const goTo = (date: string) => {
+    latestDate.current = notAfterToday(date);
+    setSelectedDate(latestDate.current);
+  };
+  const handlePrevDay = () => goTo(addDays(latestDate.current, -1));
+  const handleNextDay = () => goTo(addDays(latestDate.current, 1));
   const handleGoToToday = () => setSelectedDate(getTodayStr());
 
   // The arrow keys and T call the same functions as the buttons
@@ -101,7 +108,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
     contentRef: swipeContentRef,
   } = useDaySwipe(
     direction => (direction === 'next' ? handleNextDay() : handlePrevDay()),
-    direction => direction === 'prev' || !isToday
+    direction => direction === 'prev' || latestDate.current < getTodayStr()
   );
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);

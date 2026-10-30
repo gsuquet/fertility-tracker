@@ -214,13 +214,18 @@ test.describe('Phone details of the Today and Calendar pages', () => {
     const nav = page.getByRole('navigation', { name: en.mobileTabs.navLabel });
     await nav.getByRole('button', { name: en.mobileTabs.calendar, exact: true }).click();
     const codes = page.locator('.calendar-code');
-    for (const text of ['10CKLX1', '10KLAD', '6C/KX3']) {
-      const code = codes.filter({ hasText: new RegExp(`^${text.replace('/', '\\/')}$`) });
-      await expect(code).toHaveCount(1);
-      const lineHeight = await code.evaluate(el =>
-        Number.parseFloat(getComputedStyle(el).lineHeight)
-      );
-      expect((await code.boundingBox())?.height ?? 0, text).toBeLessThan(lineHeight * 1.5);
+    // 390 px is the phone of the tests, 360 px is a small Android phone
+    for (const width of [390, 360]) {
+      await page.setViewportSize({ width, height: 844 });
+      for (const text of ['10CKLX1', '10KLAD', '6C/KX3']) {
+        const code = codes.filter({ hasText: new RegExp(`^${text.replace('/', '\\/')}$`) });
+        await expect(code).toHaveCount(1);
+        const lineHeight = await code.evaluate(el =>
+          Number.parseFloat(getComputedStyle(el).lineHeight)
+        );
+        const height = (await code.boundingBox())?.height ?? 0;
+        expect(height, `${text} at ${width} px`).toBeLessThan(lineHeight * 1.5);
+      }
     }
   });
 });

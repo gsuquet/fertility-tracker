@@ -213,6 +213,23 @@ describe('useDaySwipe', () => {
     expect(onSwipe.mock.calls).toEqual([['next'], ['next']]);
   });
 
+  it('asks canSwipe after the first of two fast swipes changed the day', async () => {
+    // The page allows one more next day: the first swipe uses it
+    let left = 1;
+    const onSwipe = vi.fn(() => {
+      left -= 1;
+    });
+    render(<Page onSwipe={onSwipe} canSwipe={() => left > 0} />);
+    swipe(-40, { ms: 40 });
+    await wait(50);
+    swipe(-40, { ms: 40, id: 2 });
+    expect(onSwipe).toHaveBeenCalledOnce();
+    // The content goes back, and no second day change comes
+    expect(content().style.transform).toBe('');
+    await wait(500);
+    expect(onSwipe).toHaveBeenCalledOnce();
+  });
+
   it('lets a zoomed page pan, and does not swipe there', async () => {
     const listeners = new Map<string, () => void>();
     const viewport = {

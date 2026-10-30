@@ -63,6 +63,8 @@ The bar repeats the stamps of the day cards under it, day by day, in the colors 
 | `WHITE_BABY` or `LIGHT_GREEN_BABY` stamp                                             | The fill of the stamp, with the edge of its badge |
 | A day with no code ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)) | An outline in `--stamp-empty`                     |
 | No observation                                                                       | `--bg-surface-border`                             |
+- A `RED` or `DARK_GREEN` segment has the `--stamp-edge-on-fill` edge of its badge, which shows in the dark theme.
+- The Peak Day segment has the `--color-warning-ring` ring of its day card.
 
 ### Shared scroll
 
@@ -105,7 +107,7 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
 - The page heading is for screen readers only. Each cycle is a `section` with the name "Cycle N".
 - **35-day** and **Strip** are toggle buttons with `aria-pressed`, in a group with the name **Chart view**.
 - Today has `aria-current="date"`. This applies to day cards with an observation and to empty day cards. The date of today comes from `getTodayStr()`.
-- The stamp bar has `aria-hidden="true"`. Each segment has a title with the day and its code, for example "Day 12: 10KLAD AP".
+- The stamp bar has `aria-hidden="true"`. Each segment has a title with the day and its code, for example "Day 9: 2CX2". The title of the Peak Day adds "Peak Day (P)".
 - On a desktop, each card has `aria-pressed`: `true` for the selected day. The name of an empty card does not tell the user to click to add an observation.
 - The text of the detail bar is a polite live region, so a screen reader reads the new day. The buttons are not in the live region. The empty live region stays in the page when no day is selected, so a screen reader also reads the first selection.
 

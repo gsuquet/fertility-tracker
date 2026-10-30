@@ -61,7 +61,7 @@
     color: var(--text-primary);
   }
 
-  /* On a phone, a gap of 2 px and a side padding of 1 px give the code the width of 7 characters */
+  /* On a phone, a gap of 2 px and no side padding give the code the width of 7 characters */
   .calendar-grid {
     display: grid;
     grid-template-columns: repeat(7, minmax(0, 1fr));
@@ -103,7 +103,7 @@
     box-sizing: border-box;
     min-width: 0;
     min-height: 80px;
-    padding: 4px 1px;
+    padding: 4px 0;
     overflow: hidden;
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-md);
@@ -178,7 +178,7 @@
   }
 
   /*
-   * The code stays on one line up to 7 characters on a phone of 390 px, for example 10CKLX1. A
+   * The code stays on one line up to 7 characters on a phone of 360 px, for example 10CKLX1. A
    * longer code is never cut: it goes onto more lines and the cell becomes taller.
    */
   .calendar-code {
@@ -187,7 +187,7 @@
     font-family: var(--font-mono);
     font-size: var(--font-size-2xs);
     font-weight: 700;
-    letter-spacing: -0.03em;
+    letter-spacing: -0.05em;
     line-height: 1.15;
     text-align: center;
     overflow-wrap: anywhere;

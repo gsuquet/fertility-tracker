@@ -1,4 +1,5 @@
 import type React from 'react';
+import { useEffect, useRef } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
 import { useShortcutHint } from '../../hooks/useKeyboardShortcuts';
 import type { Observation } from '../../types/crms';
@@ -39,6 +40,14 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
 }) => {
   const { t } = useLanguage();
   const hint = useShortcutHint();
+  const prevRef = useRef<HTMLButtonElement>(null);
+  const nextRef = useRef<HTMLButtonElement>(null);
+
+  // On today, the next-day button is disabled. A disabled button loses the focus, so the focus goes
+  // to the previous-day button.
+  useEffect(() => {
+    if (isToday && document.activeElement === nextRef.current) prevRef.current?.focus();
+  }, [isToday]);
 
   // The wrapper is a label, so a click anywhere on it reaches the date input
   const handleOpenPicker = (inputEl: HTMLInputElement) => {
@@ -75,6 +84,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
       <InTopBar>
         <div className="compact-date-nav-controls">
           <button
+            ref={prevRef}
             type="button"
             className="icon-button date-nav-btn compact-nav-btn"
             onClick={onPrevDay}
@@ -103,6 +113,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
           </label>
 
           <button
+            ref={nextRef}
             type="button"
             className="icon-button date-nav-btn compact-nav-btn"
             onClick={onNextDay}

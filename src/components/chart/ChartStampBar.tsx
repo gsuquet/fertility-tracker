@@ -24,13 +24,17 @@ export const ChartStampBar: React.FC<ChartStampBarProps> = ({ cycle, totalSlots,
         const obs = byDay.get(dayNum);
         // A day with no code shows the empty stamp on its card, so its segment is empty too
         const stamp = !obs ? 'none' : showsEmptyStamp(obs) ? 'empty' : obs.stamp.toLowerCase();
+        const code = obs?.codeString || t.chartStrip.noCode;
         const title = obs
           ? formatMessage(t.chartStrip.dayCode, {
               day: dayNum,
-              code: obs.codeString || t.chartStrip.noCode,
+              code: obs.isPeakDay ? `${code} · ${t.chartStrip.phasePeak}` : code,
             })
           : formatMessage(t.common.dayNumber, { day: dayNum });
-        return <span key={dayNum} className={`stamp-segment segment-${stamp}`} title={title} />;
+        const peak = obs?.isPeakDay ? ' segment-peak' : '';
+        return (
+          <span key={dayNum} className={`stamp-segment segment-${stamp}${peak}`} title={title} />
+        );
       })}
     </div>
   );

@@ -259,10 +259,12 @@
   /* The fill of each stamp (badges.css). A light stamp has the edge of its badge. */
   .segment-red {
     background-color: var(--stamp-red);
+    box-shadow: inset 0 0 0 1px var(--stamp-edge-on-fill);
   }
 
   .segment-dark_green {
     background-color: var(--stamp-dark-green);
+    box-shadow: inset 0 0 0 1px var(--stamp-edge-on-fill);
   }
 
   .segment-yellow {
@@ -289,6 +291,12 @@
 
   .segment-none {
     background-color: var(--bg-surface-border);
+  }
+
+  /* The Peak Day has the ring of its day card */
+  .segment-peak {
+    outline: 1.5px solid var(--color-warning-ring);
+    outline-offset: 1px;
   }
 
   /* The day detail bar of the desktop chart */
