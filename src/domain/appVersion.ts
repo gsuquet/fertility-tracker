@@ -13,6 +13,11 @@ export function getBuildDate(): string {
   return __BUILD_DATE__;
 }
 
+/** Short commit hash of the build, or null when the build does not know it (vite.config.ts). */
+export function getCommitHash(): string | null {
+  return __COMMIT_HASH__;
+}
+
 export function checkAndRecordVersionSeen(): {
   isNewVersion: boolean;
   previousVersion: string | null;

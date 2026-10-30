@@ -1,6 +1,7 @@
 import { defineConfig } from 'vitest/config';
 import react from '@vitejs/plugin-react';
 import { readFileSync } from 'fs';
+import { resolveCommitHash } from './scripts/version/commitHash.ts';
 import { serviceWorkerPlugin } from './scripts/pwa/serviceWorkerPlugin.ts';
 
 const pkg = JSON.parse(readFileSync('./package.json', 'utf-8'));
@@ -11,6 +12,7 @@ export default defineConfig({
   define: {
     __APP_VERSION__: JSON.stringify(pkg.version),
     __BUILD_DATE__: JSON.stringify(new Date().toISOString()),
+    __COMMIT_HASH__: JSON.stringify(resolveCommitHash(process.env)),
   },
   test: {
     globals: true,

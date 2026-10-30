@@ -259,7 +259,10 @@ export const VersionModal: React.FC<VersionModalProps> = ({
               <div className="system-grid">
                 <div className="system-grid-item">
                   <span className="grid-label">{t.versionTracker.appVersion}</span>
-                  <span className="grid-value font-mono">v{versionInfo.version}</span>
+                  <span className="grid-value font-mono">
+                    v{versionInfo.version}
+                    {versionInfo.commitHash && ` (${versionInfo.commitHash})`}
+                  </span>
                 </div>
                 <div className="system-grid-item">
                   <span className="grid-label">{t.versionTracker.crmsSpec}</span>

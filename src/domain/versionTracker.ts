@@ -1,4 +1,4 @@
-import { getAppVersion, getBuildDate } from './appVersion';
+import { getAppVersion, getBuildDate, getCommitHash } from './appVersion';
 import { groupObservationsIntoCycles } from './cycleBoundaryDetector';
 import {
   LAST_SEEN_VERSION_KEY,
@@ -24,6 +24,8 @@ export interface VersionRelease {
 
 export interface VersionInfo {
   version: string;
+  /** Short commit hash of the build, or null when the build does not know it. */
+  commitHash: string | null;
   buildDate: string;
   crmsSpecVersion: string;
   appName: string;
@@ -43,6 +45,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
+  {
+    version: '1.47.0',
+    date: '2026-10-30',
+    title: 'Commit of the Build',
+    titleFr: 'Commit de la version',
+    tagline: 'The System Information tab shows the commit of the build after the version',
+    taglineFr: 'L’onglet Informations système montre le commit de la version après le numéro',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The version in the System Information tab has the short commit hash, for example v1.47.0 (b128cbc)',
+      'Thus, you can find the exact code of the version that you use',
+    ],
+    highlightsFr: [
+      'La version dans l’onglet Informations système a le hash court du commit, par exemple v1.47.0 (b128cbc)',
+      'Ainsi, vous pouvez trouver le code exact de la version que vous utilisez',
+    ],
+  },
   {
     version: '1.46.1',
     date: '2026-10-30',
@@ -1711,6 +1730,7 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
 export function getVersionInfo(): VersionInfo {
   return {
     version: getAppVersion(),
+    commitHash: getCommitHash(),
     buildDate: getBuildDate(),
     crmsSpecVersion: CRMS_SPEC_VERSION,
     appName: 'Fertility Tracker',
