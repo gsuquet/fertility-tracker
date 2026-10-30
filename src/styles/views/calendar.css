@@ -26,6 +26,12 @@
     overflow: hidden;
   }
 
+  /* The grid clips its edges, so the focus ring is inside the cell */
+  .calendar-day:focus-visible,
+  .calendar-header .icon-button:focus-visible {
+    outline-offset: -2px;
+  }
+
   .calendar-header {
     display: flex;
     align-items: center;
@@ -124,7 +130,7 @@
 
   /* The days of the selected cycle: a tint behind text of full contrast */
   .calendar-day.in-cycle {
-    background-color: var(--accent-light);
+    background-color: var(--calendar-cycle-tint);
   }
 
   /* The first day of a cycle: a red edge, and C with the cycle number in the marks */
@@ -237,14 +243,10 @@
       padding: 6px 4px;
     }
 
-    .calendar-code {
-      font-size: var(--font-size-xs);
-    }
-
-    /* The panel stays in view while the page scrolls */
+    /* The panel stays in view while the page scrolls, under the sticky header */
     .calendar-view .chart-day-detail.is-panel {
       position: sticky;
-      top: var(--space-md);
+      top: calc(68px + env(safe-area-inset-top, 0px) + var(--space-md));
     }
   }
 }

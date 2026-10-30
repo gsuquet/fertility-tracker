@@ -17,12 +17,13 @@ const [current, past] = groupObservationsIntoCycles(demo);
 
 const Probe = () => {
   const { isDrawerOpen, selectedObservation } = useCycleUi();
-  const { setSelectedCycleId } = useCycle();
+  const { selectedCycleId, setSelectedCycleId } = useCycle();
   return (
     <>
       <span data-testid="drawer">
         {`${isDrawerOpen ? 'open' : 'closed'} ${selectedObservation?.date ?? 'none'}`}
       </span>
+      <span data-testid="cycle">{selectedCycleId}</span>
       <button type="button" onClick={() => setSelectedCycleId('all')}>
         all cycles
       </button>
@@ -101,7 +102,7 @@ describe('CalendarGrid cycles and marks', () => {
     expect(marks('2026-09-02')).toBe('I');
     expect(day('2026-09-02')).toHaveAccessibleName(/, intercourse$/);
     // The code does not repeat the I mark or show the symptoms
-    expect(day('2026-09-02')).toHaveAccessibleName(/Observation 0AD I AP, /);
+    expect(day('2026-09-02')).toHaveAccessibleName(/Observation 0AD, /);
     expect(day('2026-09-02').querySelector('.calendar-code')?.textContent).toBe('0AD');
   });
 
@@ -176,10 +177,13 @@ describe('CalendarGrid on a desktop', () => {
     expect(onOpenToday).toHaveBeenCalledOnce();
     expect(screen.getByTestId('drawer')).toHaveTextContent('closed 2026-09-10');
 
-    fireEvent.click(day('2026-09-11'));
+    // Open in Chart selects the cycle of the day in the picker
+    fireEvent.click(screen.getByRole('button', { name: 'all cycles' }));
+    previousMonth();
+    fireEvent.click(day('2026-08-10'));
     fireEvent.click(within(panel()).getByRole('button', { name: en.chartStrip.openInChart }));
     expect(onOpenChart).toHaveBeenCalledOnce();
-    expect(screen.getByTestId('drawer')).toHaveTextContent('closed 2026-09-11');
+    expect(screen.getByTestId('cycle')).toHaveTextContent(past?.id as string);
   });
 
   it('shows only the date of a day before the first cycle, and a blank day for an empty date', () => {
@@ -193,8 +197,26 @@ describe('CalendarGrid on a desktop', () => {
     expect(panel()).not.toHaveTextContent('Cycle');
     fireEvent.click(within(panel()).getByRole('button', { name: en.chartStrip.openInToday }));
     expect(screen.getByTestId('drawer')).toHaveTextContent('closed 2026-09-05');
-    fireEvent.click(within(panel()).getByRole('button', { name: en.chartStrip.openInChart }));
-    expect(onOpenChart).toHaveBeenCalledOnce();
+    expect(within(panel()).queryByRole('button', { name: en.chartStrip.openInChart })).toBeNull();
+    fireEvent.click(day('2026-09-10'));
+    expect(within(panel()).getByRole('button', { name: en.chartStrip.openInChart })).toBeVisible();
+    expect(onOpenChart).not.toHaveBeenCalled();
+  });
+
+  it('opens the drawer with a second click on the selected day', () => {
+    renderCalendar();
+    fireEvent.click(day('2026-09-10'));
+    expect(screen.getByTestId('drawer')).toHaveTextContent('closed');
+    fireEvent.click(day('2026-09-10'));
+    expect(screen.getByTestId('drawer')).toHaveTextContent('open 2026-09-10');
+  });
+
+  it('selects the first day of a past cycle, and today again for all cycles', () => {
+    renderCalendar({ selectedCycleId: past?.id as string });
+    expect(day('2026-07-22')).toHaveAttribute('aria-pressed', 'true');
+    expect(panel()).toHaveTextContent('Cycle 1, day 1');
+    fireEvent.click(screen.getByRole('button', { name: 'all cycles' }));
+    expect(day(TODAY)).toHaveAttribute('aria-pressed', 'true');
   });
 
   it('has no Open in Chart button without its action', () => {

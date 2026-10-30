@@ -18,7 +18,7 @@ import type { Cycle, Observation } from '../types/crms';
 interface CalendarGridProps {
   /** Opens the Today page on the selected day */
   onOpenToday?: (() => void) | undefined;
-  /** Opens the chart on the cycle of the selected day */
+  /** Opens the chart page. The calendar first selects the cycle of the day in the picker. */
   onOpenChart?: (() => void) | undefined;
 }
 
@@ -43,8 +43,14 @@ const emptyDay = (date: string): Observation => ({
 });
 
 export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenChart }) => {
-  const { observations, cycles, selectedCycleId, setSelectedObservation, setIsDrawerOpen } =
-    useCycle();
+  const {
+    observations,
+    cycles,
+    selectedCycleId,
+    setSelectedCycleId,
+    setSelectedObservation,
+    setIsDrawerOpen,
+  } = useCycle();
   const { t } = useLanguage();
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const todayStr = getTodayStr();
@@ -54,14 +60,18 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
   const monthForSelection = () =>
     selectedCycle && selectedCycle !== cycles[0] ? monthOf(selectedCycle.startDate) : new Date();
   const [currentMonth, setCurrentMonth] = useState(monthForSelection);
+  // On a desktop, a click selects a day and the panel shows it. Today, or the first day of a past
+  // cycle, is selected first.
+  const dateForSelection = () =>
+    selectedCycle && selectedCycle !== cycles[0] ? selectedCycle.startDate : todayStr;
+  const [selectedDate, setSelectedDate] = useState(dateForSelection);
   // The calendar follows the cycle picker: a new selection opens the month of that cycle
   const [shownCycleId, setShownCycleId] = useState(selectedCycleId);
   if (shownCycleId !== selectedCycleId) {
     setShownCycleId(selectedCycleId);
     setCurrentMonth(monthForSelection());
+    setSelectedDate(dateForSelection());
   }
-  // On a desktop, a click selects a day and the panel shows it. Today is selected first.
-  const [selectedDate, setSelectedDate] = useState(todayStr);
 
   const year = currentMonth.getFullYear();
   const month = currentMonth.getMonth();
@@ -134,10 +144,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
       }}
       t={t}
       onEdit={() => openDrawer(selectedDate)}
+      // The chart shows the cycles, so a date before the first cycle has no Open in Chart
       onOpenInChart={
         onOpenChart &&
+        detailCycle &&
         (() => {
-          setSelectedObservation(obsMap.get(selectedDate) ?? emptyDay(selectedDate));
+          setSelectedCycleId(detailCycle.id);
           onOpenChart();
         })
       }
@@ -207,7 +219,9 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
             // The marks under the code, and the same facts in the accessible name
             const facts = [
               obs
-                ? formatMessage(t.calendar.observationStatus, { code: obs.codeString })
+                ? formatMessage(t.calendar.observationStatus, {
+                    code: cardCodeTokens(obs.codeString).join(' '),
+                  })
                 : t.calendar.noObservation,
               startOf !== undefined && formatMessage(t.calendar.cycleStart, { number: startOf }),
               obs?.isPeakDay && t.calendar.peakDay,
@@ -233,7 +247,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
                 aria-current={isToday ? 'date' : undefined}
                 aria-pressed={isDesktop && !isFutureDay ? dateStr === selectedDate : undefined}
                 disabled={isFutureDay}
-                onClick={() => (isDesktop ? setSelectedDate(dateStr) : openDrawer(dateStr))}
+                // On a desktop, a second click on the selected day opens the drawer, as on the chart
+                onClick={() =>
+                  isDesktop && dateStr !== selectedDate
+                    ? setSelectedDate(dateStr)
+                    : openDrawer(dateStr)
+                }
                 aria-label={formatMessage(t.calendar.dayLabel, {
                   date: dateStr,
                   status: facts.join(', '),

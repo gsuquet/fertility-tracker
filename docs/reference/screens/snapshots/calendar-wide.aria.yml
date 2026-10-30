@@ -46,17 +46,17 @@
     - button /Date \d+-\d+-\d+, Observation 0AD/: 7 0AD
     - button /Date \d+-\d+-\d+, Observation 2CX2/: 8 2CX2
     - button /Date \d+-\d+-\d+, Observation 2CX2/: 9 2CX2
-    - button /Date \d+-\d+-\d+, Observation 6C\/KX3 I, intercourse/: /\d+ 6C\/KX3/
+    - button /Date \d+-\d+-\d+, Observation 6C\/KX3, intercourse/: /\d+ 6C\/KX3/
     - button /Date \d+-\d+-\d+, Observation 8KX3/: /\d+ 8KX3/
-    - button /Date \d+-\d+-\d+, Observation 10KLAD AP, Peak Day/: /\d+ 10KLAD/
+    - button /Date \d+-\d+-\d+, Observation 10KLAD, Peak Day/: /\d+ 10KLAD/
     - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 1/: /\d+ 0AD/
-    - button /Date \d+-\d+-\d+, Observation 0AD I, Post-Peak day 2, intercourse/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 2, intercourse/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD, Post-Peak day 3/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
-    - button /Date \d+-\d+-\d+, Observation 0AD I, intercourse/: /\d+ 0AD/
+    - button /Date \d+-\d+-\d+, Observation 0AD, intercourse/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/
     - button /Date \d+-\d+-\d+, Observation 0AD/: /\d+ 0AD/

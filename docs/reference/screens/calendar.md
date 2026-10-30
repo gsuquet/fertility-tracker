@@ -26,7 +26,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | Size         | Cell                                                    | Code                     |
 | ------------ | ------------------------------------------------------- | ------------------------ |
 | Phone        | 80 pixels high or more, 1/7 of the width                | 11 pixels, `--font-mono` |
-| From 1024 px | 96 pixels high or more, in a grid of 896 pixels or less | 12 pixels                |
+| From 1024 px | 96 pixels high or more, in a grid of 896 pixels or less | 11 pixels                |
 
 A long code goes onto more lines and the cell becomes taller. The code is never cut.
 
@@ -57,12 +57,18 @@ The tint is `--accent-light` behind the cell. All the days keep text of full con
 
 ### Click on a day
 
-| Size         | Result                                                                                                                                                     |
-| ------------ | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Phone        | The observation drawer opens for that date.                                                                                                                |
-| From 1024 px | The click selects the day. The day panel at the right of the grid shows it. The panel is the day detail of the chart ([Paper Chart Strip page](chart.md)). |
+| Size         | Result                                                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| Phone        | The observation drawer opens for that date.                                                                                                |
+| From 1024 px | The click selects the day. The day panel at the right of the grid shows it. A click on the selected day opens the drawer, as on the chart. |
 
-On a desktop, today is selected when the page opens. The day panel shows the stamp, the date, the cycle and the cycle day, the code, the fertility sentence and the saved state. It has three buttons: **Edit** opens the drawer, **Open in Chart** opens the chart, and **Open in Today** opens the **Today** page on that day. A date before the first cycle shows only the date.
+The panel is the day detail of the chart ([Paper Chart Strip page](chart.md)). It shows the stamp, the date, the cycle and the cycle day, the code, the fertility sentence and the saved state.
+
+- When the page opens, the panel shows today. For a past cycle in the picker, it shows the first day of that cycle.
+- **Edit** opens the drawer. **Open in Today** opens the **Today** page on that day.
+- **Open in Chart** selects the cycle of the day in the cycle picker and opens the chart.
+- A date before the first cycle shows only the date, and has no **Open in Chart**.
+- The panel stays under the sticky header while the page scrolls.
 
 ### Swipe between months
 
