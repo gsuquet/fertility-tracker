@@ -1,7 +1,7 @@
 # RFC 0002: Phone-first redesign of the screens
 
 - **Start date:** 2026-10-29
-- **Status:** Accepted
+- **Status:** Completed
 - **Author:** Gabriel
 - **Pull request:** [#116](https://github.com/gsuquet/fertility-tracker/pull/116)
 - **Issue:** [#115](https://github.com/gsuquet/fertility-tracker/issues/115)
