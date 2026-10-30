@@ -45,27 +45,27 @@ describe('App install offer', () => {
   it('has no install button, Settings row or banner when the browser cannot install', async () => {
     saveObservations(3);
     render(<App />);
-    expect(screen.queryByRole('button', { name: en.install.headerLabel })).toBeNull();
     expect(screen.queryByRole('complementary', { name: en.install.bannerTitle })).toBeNull();
     expect(within(await openSettings()).queryByText(en.install.menuEntry)).toBeNull();
   });
 
-  it('shows the prompt of the browser from the header, Settings and the banner', async () => {
+  it('shows the prompt of the browser from Settings and the banner', async () => {
     install.mode = 'prompt';
     saveObservations(3);
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.install.headerLabel }));
     fireEvent.click(
       within(await openSettings()).getByRole('button', { name: en.settings.install })
     );
     fireEvent.click(screen.getByRole('button', { name: en.install.bannerInstall }));
-    expect(install.promptInstall).toHaveBeenCalledTimes(3);
+    expect(install.promptInstall).toHaveBeenCalledTimes(2);
   });
 
   it('opens the install guide on iOS', async () => {
     install.mode = 'ios';
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.install.headerLabel }));
+    fireEvent.click(
+      within(await openSettings()).getByRole('button', { name: en.settings.install })
+    );
     expect(
       await screen.findByRole('dialog', { name: en.install.guideTitle }, { timeout: 5000 })
     ).toBeInTheDocument();

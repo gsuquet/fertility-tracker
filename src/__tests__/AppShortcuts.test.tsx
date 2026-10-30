@@ -5,12 +5,20 @@ import { setShortcutsEnabled } from '../hooks/useKeyboardShortcuts';
 import { en } from '../i18n';
 import { addDays, formatDateDisplay, getTodayStr } from '../utils/dateUtils';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
+import { openVersionNotes } from '../test/appActions';
 
 const press = (key: string, init: KeyboardEventInit = {}) =>
   fireEvent.keyDown(document.activeElement ?? document.body, { key, ...init });
 
 const tab = (name: string) => screen.getByRole('tab', { name });
-const dayTitle = (offset: number) => formatDateDisplay(addDays(getTodayStr(), offset), 'en-US');
+// The top bar has the short date of Today
+const dayTitle = (offset: number) =>
+  formatDateDisplay(addDays(getTodayStr(), offset), 'en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  });
+const shownDay = () => within(screen.getByRole('banner')).getByText(/^\w{3}, \w{3} \d+$/);
 
 describe('App keyboard shortcuts', () => {
   beforeEach(() => {
@@ -44,16 +52,16 @@ describe('App keyboard shortcuts', () => {
     render(<App />);
     press('ArrowLeft');
     press('ArrowLeft');
-    expect(screen.getByText(dayTitle(-2))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(-2));
     press('ArrowRight');
-    expect(screen.getByText(dayTitle(-1))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(-1));
     press('t');
-    expect(screen.getByText(dayTitle(0))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(0));
     // On the chart, the arrows stay with the chart
     press('2');
     press('ArrowLeft');
     press('1');
-    expect(screen.getByText(dayTitle(0))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(0));
   });
 
   it('changes the day with the arrows after a click on a page tab', () => {
@@ -62,7 +70,7 @@ describe('App keyboard shortcuts', () => {
     fireEvent.click(today);
     today.focus();
     press('ArrowLeft');
-    expect(screen.getByText(dayTitle(-1))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(-1));
   });
 
   it('does not use the keys that the user types in a field', () => {
@@ -75,7 +83,7 @@ describe('App keyboard shortcuts', () => {
     press('2');
     press('ArrowLeft');
     expect(tab(en.tabs.today)).toHaveAttribute('aria-selected', 'true');
-    expect(screen.getByText(dayTitle(0))).toBeInTheDocument();
+    expect(shownDay()).toHaveTextContent(dayTitle(0));
   });
 
   it('opens Today for a new observation with N', () => {
@@ -105,9 +113,7 @@ describe('App keyboard shortcuts', () => {
 
   it('opens the shortcuts dialog from the version dialog', async () => {
     render(<App />);
-    fireEvent.click(
-      within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
-    );
+    openVersionNotes();
     const version = await screen.findByRole('dialog', { name: en.versionTracker.title });
     fireEvent.click(within(version).getByRole('button', { name: en.shortcuts.title }));
     expect(await screen.findByRole('dialog', { name: en.shortcuts.title })).toBeInTheDocument();
@@ -118,10 +124,9 @@ describe('App keyboard shortcuts', () => {
     render(<App />);
     expect(tab(en.tabs.chart)).toHaveAttribute('aria-keyshortcuts', '2');
     expect(tab(en.tabs.chart)).toHaveAttribute('title', `${en.tabs.chart} (2)`);
-    expect(screen.getByRole('button', { name: en.actions.newEntry })).toHaveAttribute(
-      'title',
-      `${en.actions.newEntry} (N)`
-    );
+    expect(
+      within(screen.getByRole('banner')).getByRole('button', { name: en.mobileTabs.log })
+    ).toHaveAttribute('title', `${en.actions.newEntry} (N)`);
     expect(screen.getByRole('button', { name: en.todayView.prevDay })).toHaveAttribute(
       'aria-keyshortcuts',
       'ArrowLeft'

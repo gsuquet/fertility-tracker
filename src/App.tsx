@@ -218,7 +218,7 @@ const MainApp: React.FC = () => {
   useShortcut('calendar', () => setActiveTab('calendar'));
   useShortcut('analytics', () => setActiveTab('analytics'));
   useShortcut('help', openShortcuts);
-  // As the Log Observation button of the header
+  // As the Log button of the header
   useShortcut('newEntry', () => {
     setSelectedObservation(null);
     setActiveTab('today');
@@ -253,11 +253,7 @@ const MainApp: React.FC = () => {
         <Header
           activeTab={activeTab}
           setActiveTab={setActiveTab}
-          onOpenExport={() => setIsExportModalOpen(true)}
-          onOpenVersion={() => setVersionTab('notes')}
-          onOpenWelcome={() => setIsWelcomeModalOpen(true)}
           onOpenSettings={() => setIsSettingsOpen(true)}
-          onInstall={handleInstall}
           onTopBarSlot={setTopBarSlot}
         />
 
@@ -267,7 +263,8 @@ const MainApp: React.FC = () => {
           <StorageSaveWarning onBackUp={backUpNow} />
           <StorageRecoveryNotice />
           <BackupReminder onBackUp={backUpNow} />
-          <CycleStatsHeader />
+          {/* The statistics bar is on Analytics only (RFC 0002) */}
+          {activeTab === 'analytics' && <CycleStatsHeader />}
 
           {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
           <div className="page-view">

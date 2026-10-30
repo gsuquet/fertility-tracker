@@ -15,7 +15,7 @@ The installed application must behave like the other applications of the device.
 | Tap highlight     | `html` has `-webkit-tap-highlight-color: transparent`. The `:focus-visible` outlines do not change.                                                                                                                                                           |
 | Double tap        | Buttons, links, form fields and labels have `touch-action: manipulation`. A double tap does not zoom. Pinch zoom stays available (`maximum-scale=5.0`).                                                                                                       |
 | Long press        | Buttons, tabs, the header and the page buttons have `user-select: none` and `-webkit-touch-callout: none`. The text of fields, notes, dialogs and release notes stays selectable.                                                                             |
-| Safe areas        | The header adds `env(safe-area-inset-top)` above its height (68 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. The toasts at the top add the top inset. |
+| Safe areas        | The header adds `env(safe-area-inset-top)` above its height (60 pixels, 54 pixels on a phone), and the left and right insets on its sides. The main content and the page buttons also add the left and right insets. The toasts at the top add the top inset. |
 | Space for buttons | `--mobile-nav-height` (62 pixels) and `--mobile-nav-space` (that height and `env(safe-area-inset-bottom)`) are the only values for the page buttons. The body, the toasts and the chart popover use them.                                                     |
 | Footer            | In an installed display mode, `footer.css` hides the footer. The version dialog shows the legal notice ([Version dialog](screens/version-dialog.md)).                                                                                                         |
 
@@ -79,7 +79,7 @@ The application offers installation one time, after it has some data. It never a
 | `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). Chrome, Firefox, Edge, Opera and Google on iOS (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`) give `null`. The in-app browsers of Facebook, Instagram and LINE also give `null`. The guide gives the steps of Safari only. | Opens the guide **Install on iPhone**.                                             |
 | `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                                                        | Nothing. No button shows.                                                          |
 - The application is installed when a display mode of [Installed application and touch](#installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
-- When the mode is not `null`, [Settings](screens/settings.md) has **Install app** at the top, on each screen width. The header also has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it.
+- When the mode is not `null`, [Settings](screens/settings.md) has **Install app** at the top, on each screen width.
 - The application does not record if the user installed it.
 
 The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
@@ -93,7 +93,7 @@ The install banner is a slim card above the page buttons, at the bottom of the s
 
 On a phone, **Install** is under the text, so the text keeps its width. While the banner or the update message shows, the body gets a bottom padding of `--install-banner-space`. Thus, the end of the page can scroll above the message.
 
-The close button and **Install** set `fertility_tracker_install_banner_closed`. Then the banner never shows again. The menu entry and the header button stay.
+The close button and **Install** set `fertility_tracker_install_banner_closed`. Then the banner never shows again. The entry of Settings stays.
 
 The guide **Install on iPhone** is a dialog of [Modal.tsx](../../src/components/Modal.tsx). At the top, a note says that the installed application has its own storage, separate from Safari. Then it has these steps, in this order:
 
@@ -132,7 +132,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 | Key             | Action                                                 | Where          |
 | --------------- | ------------------------------------------------------ | -------------- |
 | `1` `2` `3` `4` | Open **Today**, **Chart**, **Calendar**, **Analytics** | All pages      |
-| `N`             | New observation, as **Log Observation** in the header  | All pages      |
+| `N`             | New observation, as **Log** in the header              | All pages      |
 | `←` `→`         | Previous day and next day                              | **Today** page |
 | `T`             | The date of today                                      | **Today** page |
 | `?`             | Open the **Keyboard shortcuts** dialog                 | All pages      |
@@ -153,7 +153,7 @@ The first install has no controller. Thus, it activates at once and the applicat
 - The **Keyboard shortcuts** dialog lists each shortcut with its translated action, and then **Ctrl+S** and **⌘S**. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
 - These open the dialog: `?`, **Keyboard shortcuts** in the **Help** group of Settings, and the **Keyboard shortcuts** button of the **About & Version Tracker** dialog. When the shortcuts are off, `?` does nothing, and the buttons stay.
 - The **Use keyboard shortcuts** switch of Settings and the checkbox of the **Keyboard shortcuts** dialog change the same choice.
-- These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
+- These buttons have a shortcut: the page tabs, **Log**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
 ## Page slide
 
@@ -229,6 +229,7 @@ Only Chromium browsers on a computer (Chrome and Edge) have these two functions.
 - An empty part of the header moves the window (`app-region: drag`). Buttons, links, fields and tabs do not (`app-region: no-drag`).
 - While a dialog is open, no part of the header moves the window. Thus, a click on a dialog in front of the header stays a click.
 - The dialogs and the drawer start below the title bar. Thus, the window controls never cover a close button.
+- From 641 to 1359 pixels, the first row of the header is the title bar. The controls of the page are in the rows under it.
 - A window of 640 pixels or less keeps the 54-pixel height of the phone header.
 - The user can turn the overlay off with the button of the browser in the title bar. The media query then stops, and the header goes back to its usual layout.
 - A phone and a browser tab never match this media query.

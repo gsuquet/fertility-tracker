@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { en } from '../i18n';
+import { openShareChart, openVersionNotes } from '../test/appActions';
 
 // Chunks that the server no longer has, for example in an old tab after a new deploy
 vi.mock('../components/PrintExportView', () => {
@@ -22,7 +23,7 @@ describe('App with chunks that fail to load', () => {
     vi.spyOn(console, 'error').mockImplementation(() => {});
     const print = vi.spyOn(window, 'print').mockImplementation(() => {});
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    await openShareChart();
     const dialog = await screen.findByRole(
       'dialog',
       { name: en.exportModal.title },
@@ -39,9 +40,7 @@ describe('App with chunks that fail to load', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
-    fireEvent.click(
-      within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
-    );
+    openVersionNotes();
     const failed = await screen.findByRole(
       'dialog',
       { name: en.errorBoundary.title },

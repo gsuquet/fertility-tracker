@@ -23,7 +23,7 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 - The cycle day comes from the saved observation. A day with no observation gets the cycle day of the **Today** page. A day after today shows no cycle day.
 - The status card is the banner of the **Today** page. A saved day with no change shows its saved stamp, with the Peak Day and the count of three. A change shows the stamp of the form.
 - **Ctrl+S** or **⌘S** saves while the drawer is the dialog on top.
-- The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log Observation**, **Log today**, the chart and the calendar.
+- The drawer always shows the saved observation of its date, as the Today form does. This is true for each way to open it: **+**, **Log**, **Log today**, the chart and the calendar.
 
 | Condition                   | Result                                                                                                      |
 | --------------------------- | ----------------------------------------------------------------------------------------------------------- |

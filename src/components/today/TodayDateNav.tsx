@@ -53,7 +53,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
     }
   };
 
-  // The top bar of a phone has the short date, for example "Tue, Oct 27"
+  // The top bar has the short date, for example "Tue, Oct 27"
   const inTopBar = !!useInTopBar();
   const formattedDateTitle = formatDateDisplay(
     selectedDate,

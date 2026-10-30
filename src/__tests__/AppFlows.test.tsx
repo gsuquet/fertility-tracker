@@ -7,6 +7,7 @@ import { makeObservation } from '../test/factories';
 import { addDays, getTodayStr } from '../utils/dateUtils';
 import { en } from '../i18n';
 import * as chartImage from '../utils/chartImage';
+import { openFromSettings, openShareChart, openShareChartNow } from '../test/appActions';
 
 const footer = () => screen.getByRole('contentinfo');
 
@@ -106,12 +107,10 @@ describe('App flows', () => {
     expect(await screen.findByRole('tabpanel', { name: en.tabs.chart })).toBeInTheDocument();
   });
 
-  it('opens the guide from the header', async () => {
+  it('opens the guide from Settings', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);
-    fireEvent.click(
-      within(screen.getByRole('banner')).getByRole('button', { name: en.welcomeModal.title })
-    );
+    await openFromSettings(en.settings.welcomeGuide);
     expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
   });
 
@@ -156,11 +155,9 @@ describe('App flows', () => {
     ).toHaveAttribute('aria-selected', 'true');
     fireEvent.keyDown(notes, { key: 'Escape' });
 
-    const openGuide = () => {
-      fireEvent.click(
-        within(screen.getByRole('banner')).getByRole('button', { name: en.welcomeModal.title })
-      );
-      return screen.findByRole('dialog', { name: en.welcomeModal.title });
+    const openGuide = async () => {
+      await openFromSettings(en.settings.welcomeGuide);
+      return screen.findByRole('dialog', { name: en.welcomeModal.title }, { timeout: 5000 });
     };
     let guide = await openGuide();
     fireEvent.click(within(guide).getByRole('button', { name: en.welcomeModal.next }));
@@ -187,7 +184,7 @@ describe('App flows', () => {
       .mockResolvedValueOnce(false);
     render(<App />);
     const downloadPng = async () => {
-      fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+      await openShareChart();
       const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
       fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.downloadPng }));
     };
@@ -225,7 +222,7 @@ describe('App flows', () => {
     const print = vi.spyOn(window, 'print').mockImplementation(() => {});
     document.title = 'Fertility Tracker';
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    await openShareChart();
     const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
 
     vi.useFakeTimers({ toFake: ['setTimeout'] });
@@ -251,12 +248,12 @@ describe('App flows', () => {
     document.title = 'Fertility Tracker';
     render(<App />);
     const printAll = () => {
-      fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+      openShareChartNow();
       const dialog = screen.getByRole('dialog', { name: en.exportModal.title });
       fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
     };
     // Load the lazy export dialog before the timers are fake
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    await openShareChart();
     fireEvent.keyDown(await screen.findByRole('dialog', { name: en.exportModal.title }), {
       key: 'Escape',
     });
@@ -281,7 +278,7 @@ describe('App flows', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     vi.spyOn(window, 'print').mockImplementation(() => {});
     const { unmount } = render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    await openShareChart();
     const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });

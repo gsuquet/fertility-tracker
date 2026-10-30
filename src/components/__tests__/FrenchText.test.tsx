@@ -185,23 +185,17 @@ describe('French text of the components', () => {
 
   it('translates the header and the gear', () => {
     renderWithProviders(
-      <Header
-        activeTab="today"
-        setActiveTab={() => {}}
-        onOpenExport={() => {}}
-        onOpenVersion={() => {}}
-        onOpenWelcome={() => {}}
-        onOpenSettings={() => {}}
-      />,
+      <Header activeTab="today" setActiveTab={() => {}} onOpenSettings={() => {}} />,
       inFrench()
     );
     expect(screen.getByRole('button', { name: fr.menu.homeLabel })).toBeInTheDocument();
     expect(screen.getByRole('tablist', { name: fr.menu.mainNavLabel })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: fr.menu.languageLabel })).toHaveAttribute(
-      'title',
-      fr.menu.languageTitle
-    );
-    expect(screen.getByRole('button', { name: fr.menu.themeToggleLabel })).toBeInTheDocument();
+    // Label in name: each full French name contains the visible short name
+    for (const tab of ['today', 'chart', 'calendar', 'analytics'] as const) {
+      const button = screen.getByRole('tab', { name: fr.tabs[tab] });
+      expect(button).toHaveTextContent(fr.mobileTabs[tab]);
+      expect(fr.tabs[tab]).toContain(fr.mobileTabs[tab]);
+    }
     expect(screen.getByRole('button', { name: fr.settings.open })).toHaveAttribute(
       'title',
       fr.settings.open
