@@ -208,12 +208,18 @@
     outline: none;
   }
 
-  /* Today Main Grid Layout */
+  /* One column on a phone. From 1024 px: the form (640 px or less) at the left, the day at the right. */
   .today-main-grid {
     display: grid;
-    grid-template-columns: minmax(270px, 1fr) minmax(0, 1.4fr) minmax(270px, 1fr);
+    grid-template-columns: minmax(0, 1fr);
     gap: 1.5rem;
-    align-items: stretch;
+    align-items: start;
+  }
+
+  @media (min-width: 1024px) {
+    .today-main-grid {
+      grid-template-columns: minmax(0, 640px) minmax(0, 1fr);
+    }
   }
 
   /* Today Form Card */
@@ -238,78 +244,204 @@
     min-height: var(--row-height);
   }
 
-  /* Side Panel: Status & History */
-  .today-side-panel {
+  /* Desktop: the status, the current cycle and the last days, in one column */
+  .today-side {
     display: flex;
     flex-direction: column;
-    gap: 1.5rem;
+    gap: var(--space-md);
+    min-width: 0;
   }
 
-  .today-status-card {
+  .today-status-card,
+  .today-cycle-card,
+  .today-recent-days {
     background-color: var(--bg-surface);
     border: 1px solid var(--bg-surface-border);
     border-radius: var(--radius-xl);
-    padding: 1.5rem;
-    display: flex;
-    flex-direction: column;
-    gap: 1.2rem;
     box-shadow: var(--shadow-sm);
   }
 
-  .status-card-header {
+  /* The status card: the stamp (56 px), the code, one sentence, the saved state and the menu */
+  .today-status-card {
     display: flex;
     align-items: center;
-    gap: 0.5rem;
-    color: var(--accent-primary);
+    gap: var(--space-md);
+    padding: var(--space-md);
   }
 
-  .status-card-header h3 {
-    font-size: var(--font-size-base);
-    font-weight: 800;
-    color: var(--text-primary);
-    margin: 0;
+  .today-status-card .stamp-badge-container {
+    width: auto;
+    flex-shrink: 0;
   }
 
-  .status-card-header .obs-actions-btn {
-    margin-left: auto;
-  }
-
-  .status-stamp-wrapper {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    gap: 0.75rem;
-    background-color: var(--bg-primary);
-    border-radius: var(--radius-lg);
-    padding: 1.5rem;
-    border: 1px solid var(--bg-surface-border);
+  .status-card-info {
+    flex: 1;
+    min-width: 0;
   }
 
   .status-code-text {
     font-family: var(--font-mono);
-    font-size: var(--font-size-xl);
+    font-size: var(--font-size-2xl);
     font-weight: 800;
-    letter-spacing: 0.04em;
+    letter-spacing: 0.02em;
+    line-height: 1.15;
     color: var(--text-primary);
+    overflow-wrap: anywhere;
   }
 
-  .status-guidance-box {
-    display: flex;
-    align-items: flex-start;
-    gap: 0.65rem;
-    background-color: var(--accent-soft);
-    border: 1px solid var(--accent-glow);
-    border-radius: var(--radius-md);
-    padding: 0.85rem;
-    font-size: var(--font-size-sm);
-    line-height: 1.45;
+  .status-card-guidance {
+    margin: 2px 0 0;
+    font-size: var(--font-size-md);
     color: var(--text-secondary);
   }
 
-  .guidance-icon {
-    color: var(--accent-primary);
+  .status-card-saved {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
     flex-shrink: 0;
-    margin-top: 2px;
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+    font-weight: 700;
+  }
+
+  .status-card-saved.is-saved {
+    color: var(--color-success-text);
+  }
+
+  .today-cycle-card,
+  .today-recent-days {
+    padding: var(--space-md);
+  }
+
+  .today-cycle-card h2,
+  .today-recent-days h2 {
+    margin: 0;
+    font-size: var(--font-size-base);
+    font-weight: 800;
+    color: var(--text-primary);
+  }
+
+  /* The current cycle: one row of 35 columns or more, with the cycle day under each stamp */
+  .today-cycle-head {
+    display: flex;
+    align-items: baseline;
+    gap: var(--space-sm);
+    margin-bottom: var(--space-sm);
+  }
+
+  .today-cycle-summary {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .today-cycle-open {
+    margin-left: auto;
+    min-height: var(--control-size-md);
+  }
+
+  .today-cycle-strip {
+    display: grid;
+    grid-auto-columns: minmax(0, 1fr);
+    grid-auto-flow: column;
+    gap: 2px;
+  }
+
+  .strip-day {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+    min-width: 0;
+  }
+
+  .strip-day .stamp-badge-container {
+    width: 100%;
+  }
+
+  .strip-day .stamp-sm .stamp-badge,
+  .strip-day-empty {
+    width: 100%;
+    height: 18px;
+    border-radius: var(--radius-2xs);
+  }
+
+  .strip-day .stamp-sm .baby-svg {
+    width: 12px;
+    height: 12px;
+  }
+
+  .strip-day-empty {
+    box-sizing: border-box;
+    border: 1px dashed var(--stamp-empty);
+  }
+
+  .strip-day-num {
+    color: var(--text-secondary);
+    font-size: var(--font-size-2xs);
+  }
+
+  .strip-day.is-selected .strip-day-num {
+    color: var(--text-primary);
+    font-weight: 800;
+  }
+
+  /* The last days of the desktop: one row of 48 px for each day, newest first */
+  .today-recent-days ul {
+    margin: var(--space-sm) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .today-recent-days li + li {
+    border-top: 1px solid var(--bg-surface-border);
+  }
+
+  .recent-day-row {
+    display: grid;
+    grid-template-columns: auto 8rem 4rem minmax(0, 1fr) auto;
+    align-items: center;
+    gap: var(--space-sm);
+    width: 100%;
+    min-height: var(--row-height);
+    padding: 0 var(--space-xs);
+    border: none;
+    background: none;
+    color: var(--text-primary);
+    font: inherit;
+    text-align: left;
+    cursor: pointer;
+  }
+
+  .recent-day-row:hover {
+    background-color: var(--accent-soft);
+  }
+
+  .recent-day-row .stamp-badge-container {
+    width: auto;
+    height: auto;
+  }
+
+  .recent-day-date {
+    font-weight: 700;
+  }
+
+  .recent-day-cycle,
+  .recent-day-empty {
+    color: var(--text-secondary);
+    font-size: var(--font-size-sm);
+  }
+
+  .recent-day-code {
+    overflow: hidden;
+    font-family: var(--font-mono);
+    font-weight: 700;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .recent-day-chevron {
+    color: var(--text-muted);
   }
 
   /* Recent History Card */
@@ -448,69 +580,6 @@
     font-size: var(--font-size-sm);
     line-height: 1.35;
     color: var(--text-secondary);
-  }
-
-  /* Responsive Breakpoints */
-  @media (min-width: 1025px) {
-    .today-recent-card {
-      order: 1;
-    }
-    .today-form-card {
-      order: 2;
-    }
-    .today-status-card {
-      order: 3;
-    }
-  }
-
-  @media (min-width: 901px) {
-    .mobile-only-stamp-banner {
-      display: none !important;
-    }
-    .desktop-only-stamp-card {
-      display: flex !important;
-    }
-  }
-
-  @media (max-width: 1024px) and (min-width: 901px) {
-    .today-main-grid {
-      grid-template-columns: 1fr 320px;
-    }
-    .today-form-card {
-      grid-column: 1;
-      grid-row: 1 / span 2;
-      order: 1;
-    }
-    .today-recent-card {
-      grid-column: 2;
-      grid-row: 1;
-      order: 2;
-    }
-    .today-status-card {
-      grid-column: 2;
-      grid-row: 2;
-      order: 3;
-    }
-  }
-
-  @media (max-width: 900px) {
-    /* minmax(0, 1fr): a wide card, such as the recent days, does not widen the page */
-    .today-main-grid {
-      grid-template-columns: minmax(0, 1fr);
-    }
-    .today-form-card {
-      order: 1;
-      grid-row: auto;
-    }
-    .today-recent-card {
-      order: 2;
-    }
-    .mobile-only-stamp-banner {
-      display: flex !important;
-    }
-    .desktop-only-stamp-card {
-      display: none !important;
-    }
   }
 
   @media (max-width: 768px) {

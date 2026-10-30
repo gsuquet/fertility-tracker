@@ -2,7 +2,7 @@ import { act, fireEvent, render, screen, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { App } from '../App';
 import { STORAGE_HAS_SEEN_WELCOME_KEY, STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
-import { DESKTOP_QUERY } from '../hooks/useMediaQuery';
+import { DESKTOP_QUERY, WIDE_QUERY } from '../hooks/useMediaQuery';
 import { makeObservation } from '../test/factories';
 import { addDays, getTodayStr } from '../utils/dateUtils';
 import { en } from '../i18n';
@@ -18,7 +18,7 @@ describe('App flows', () => {
     vi.mocked(window.matchMedia).mockImplementation(
       query =>
         ({
-          matches: desktop && query === DESKTOP_QUERY,
+          matches: desktop && (query === DESKTOP_QUERY || query === WIDE_QUERY),
           media: query,
           addEventListener: vi.fn(),
           removeEventListener: vi.fn(),
@@ -92,6 +92,18 @@ describe('App flows', () => {
     const again = await screen.findByRole('region', { name: en.chartStrip.detailLabel });
     fireEvent.click(within(again).getByRole('button', { name: en.chartStrip.openInToday }));
     expect(await screen.findByRole('tabpanel', { name: en.tabs.today })).toBeInTheDocument();
+  });
+
+  it('opens the chart from the current cycle of the wide desktop Today page', async () => {
+    localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
+    localStorage.setItem(
+      STORAGE_OBSERVATIONS_KEY,
+      JSON.stringify([makeObservation({ date: getTodayStr(), bleeding: 'H', codeString: 'H' })])
+    );
+    desktop = true;
+    render(<App />);
+    fireEvent.click(await screen.findByRole('button', { name: en.todayView.openChart }));
+    expect(await screen.findByRole('tabpanel', { name: en.tabs.chart })).toBeInTheDocument();
   });
 
   it('opens the guide from the header', async () => {

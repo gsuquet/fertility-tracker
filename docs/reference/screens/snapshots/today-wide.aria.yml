@@ -38,12 +38,6 @@
     - textbox "Date": /\d+-\d+-\d+/
     - button "Next Day"
     - text: /Today Day \d+ Saved/
-    - heading "Recent 5-Day Observation History" [level=3]
-    - button /Fri, \d+\/\d+ 0AD/
-    - button /Sat, \d+\/\d+ 0AD/
-    - button /Sun, \d+\/\d+ 0AD/
-    - button /Mon, \d+\/\d+ 0AD/
-    - button /Tue, \d+\/\d+ 0AD/
     - heading "Today's Observation" [level=2]
     - text: Direct Code Entry
     - textbox "Direct Code Entry":
@@ -58,10 +52,32 @@
     - switch "Designate Peak Day (P)"
     - button "Notes None"
     - button "Saved" [disabled]
-    - heading "Stamp Preview" [level=3]
-    - button "Observation actions"
     - text: 0AD
     - paragraph: Dry day. Infertile under the CrMS rules.
+    - text: Saved
+    - button "Observation actions"
+    - region "This cycle":
+      - heading "This cycle" [level=2]
+      - text: /Day \d+ of \d+ · Peak Day \d+/
+      - button "Open the chart"
+      - 'img /This cycle: Day \d+ of \d+ · Peak Day \d+/'
+    - region "Last 7 days":
+      - heading "Last 7 days" [level=2]
+      - list:
+        - listitem:
+          - button /Mon, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /Sun, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /Sat, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /Fri, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /Thu, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /Wed, Oct \d+ Day \d+ 0AD/
+        - listitem:
+          - button /I Tue, Oct \d+ Day \d+ 0AD I/
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/
   - button "Legal"

@@ -83,6 +83,18 @@
     min-height: var(--row-height);
   }
 
+  /* From 1024 px: a panel of 480 px at the right. The page stays visible, with no blur. */
+  @media (min-width: 1024px) {
+    .drawer-container {
+      max-width: 480px;
+    }
+
+    .drawer-overlay {
+      backdrop-filter: none;
+      -webkit-backdrop-filter: none;
+    }
+  }
+
   /* Responsive Media Queries */
   @media (max-width: 640px) {
     /* The backdrop fades while the user drags the sheet down (useSheetDrag.ts) */

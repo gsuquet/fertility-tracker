@@ -28,7 +28,6 @@ export const en = {
     loggedStatus: 'Saved',
     notLoggedStatus: 'Not saved',
     noObservation: 'No observation yet',
-    fertilityStatus: 'Fertility Status & Guidance',
     recentHistory: 'Recent 5-Day Observation History',
     prevDay: 'Previous Day',
     nextDay: 'Next Day',
@@ -44,6 +43,11 @@ export const en = {
     modeDetailed: 'Group Rows',
     notesPlaceholder: 'Add relevant notes (e.g., stress, medication, travel)...',
     savedLabel: 'Saved',
+    lastDays: 'Last {count} days',
+    thisCycle: 'This cycle',
+    cycleDayOf: 'Day {day} of {length}',
+    peakOnDay: 'Peak Day {day}',
+    openChart: 'Open the chart',
   },
   observationForm: {
     groups: {
@@ -151,7 +155,6 @@ export const en = {
     notes: 'Notes / Observations',
     directInput: 'Direct Code Entry',
     directInputPlaceholder: 'e.g. 10KLX3 I AP',
-    stampPreview: 'Stamp Preview',
     peakDay: 'Peak Day (P)',
     postPeakCount: 'Post-Peak Count',
   },

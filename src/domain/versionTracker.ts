@@ -44,6 +44,31 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.42.0',
+    date: '2026-10-30',
+    title: 'Today Uses the Full Desktop Width',
+    titleFr: 'Aujourd’hui utilise toute la largeur de l’ordinateur',
+    tagline:
+      'The form at the left, and the status, the current cycle and the last days at the right',
+    taglineFr:
+      'Le formulaire à gauche, et l’état, le cycle en cours et les derniers jours à droite',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'On a desktop, the Today page has two columns: the form at the left and the day at the right',
+      'A status card shows the stamp, the code, one guidance sentence and if the day is saved',
+      'On a wide screen, a strip shows the current cycle, with a button that opens the chart',
+      'A list shows the last 7 days, or 5 days on a smaller desktop. A click opens that day',
+      'On a desktop, the observation panel is 480 pixels wide and the chart behind it stays clear',
+    ],
+    highlightsFr: [
+      'Sur un ordinateur, la page Aujourd’hui a deux colonnes : le formulaire à gauche et le jour à droite',
+      'Une carte d’état montre le timbre, le code, une phrase de conseil et si le jour est enregistré',
+      'Sur un grand écran, une bande montre le cycle en cours, avec un bouton qui ouvre le graphique',
+      'Une liste montre les 7 derniers jours, ou 5 jours sur un plus petit écran. Un clic ouvre ce jour',
+      'Sur un ordinateur, le panneau d’observation fait 480 pixels de large et le graphique derrière reste net',
+    ],
+  },
+  {
     version: '1.41.0',
     date: '2026-10-30',
     title: 'A Calendar That Shows Your Cycles',
