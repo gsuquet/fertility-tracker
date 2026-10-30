@@ -1,85 +1,94 @@
 import type React from 'react';
-import { useState, useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { X, Printer, Calendar, Layers, CheckSquare, Square } from 'lucide-react';
+import { X, Printer, ImageDown } from 'lucide-react';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
+import { formatMessage } from '../i18n';
+import type { Observation } from '../types/crms';
+import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
+import { formatDateDisplay, getTodayStr } from '../utils/dateUtils';
+import { selectPrintCycles } from '../utils/printCycles';
+import { downloadChartPng } from '../utils/chartImage';
 
 interface ExportModalProps {
   onClose: () => void;
   /** Receives the cycles to print and a short label for the PDF file name. */
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
+  /** Receives true after the PNG download, or false when the browser cannot make the image. */
+  onImageDone: (downloaded: boolean) => void;
 }
 
-/** The print of the chart. Backup, restore, demo and delete are in Settings (RFC 0002). */
-export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrint }) => {
+/** The short date of a cycle row, for example "Sep 30" */
+const shortDate = (date: string, locale: string) =>
+  formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
+
+/**
+ * Share chart: the choice of cycles, Download PNG and Print or PDF (RFC 0002). Backup, restore,
+ * demo and delete are in Settings.
+ */
+export const ExportModal: React.FC<ExportModalProps> = ({
+  onClose,
+  onPreparePrint,
+  onImageDone,
+}) => {
   const { cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
   // On a phone, a drag down closes the dialog as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
 
-  const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
-  const [selectedSingleId, setSelectedSingleId] = useState<string>('');
-  const [selectedMultiIds, setSelectedMultiIds] = useState<string[]>([]);
-
-  // The app mounts the dialog each time it opens, so each opening starts from this selection
+  // The app mounts the dialog each time it opens, so each opening starts from the cycle of the
+  // cycle picker, or from the newest cycle with All cycles
+  const [selectedIds, setSelectedIds] = useState<string[]>([]);
   useEffect(() => {
-    const [newest] = cycles;
-    if (newest) {
-      const initialSingle = selectedCycleId === 'all' ? newest.id : selectedCycleId;
-      setSelectedSingleId(initialSingle);
-      setSelectedMultiIds(cycles.map(c => c.id));
-    }
+    const picked = cycles.find(c => c.id === selectedCycleId) ?? cycles[0];
+    setSelectedIds(picked ? [picked.id] : []);
   }, [cycles, selectedCycleId]);
 
-  const handleSelectAllMulti = () => {
-    setSelectedMultiIds(cycles.map(c => c.id));
-  };
-
-  const handleDeselectAllMulti = () => {
-    setSelectedMultiIds([]);
-  };
-
-  const toggleMultiCycle = (cycleId: string) => {
-    setSelectedMultiIds(prev =>
+  const toggle = (cycleId: string) =>
+    setSelectedIds(prev =>
       prev.includes(cycleId) ? prev.filter(id => id !== cycleId) : [...prev, cycleId]
     );
-  };
 
   // Cycles are listed newest first, so Cycle 1 is the oldest
-  const cycleLabel = (cycleId: string) => {
-    const cycleIndex = cycles.findIndex(c => c.id === cycleId);
-    return cycleIndex === -1 ? 'all-cycles' : `cycle-${cycles.length - cycleIndex}`;
-  };
+  const cycleNumber = (index: number) => cycles.length - index;
 
-  const describeSelection = (ids: string[]) => {
-    const [first, ...rest] = ids;
-    if (first && rest.length === 0) return cycleLabel(first);
-    return ids.length > 0 && ids.length < cycles.length ? 'selected-cycles' : 'all-cycles';
+  // Without cycles, the two actions export one empty cycle that starts today
+  const ids = cycles.length === 0 ? ['all'] : selectedIds;
+  const fileDetail = () => {
+    const [first] = ids;
+    if (ids.length === 1 && first !== 'all') {
+      return `cycle-${cycleNumber(cycles.findIndex(c => c.id === first))}`;
+    }
+    return ids.length < cycles.length ? 'selected-cycles' : 'all-cycles';
   };
 
   const handlePrint = () => {
-    const idsToExport =
-      exportMode === 'single'
-        ? [selectedSingleId || 'all']
-        : selectedMultiIds.length > 0
-          ? selectedMultiIds
-          : ['all'];
-    onPreparePrint(idsToExport, describeSelection(idsToExport));
+    onPreparePrint(ids, fileDetail());
     onClose();
   };
 
+  const handleDownloadPng = () => {
+    const detail = fileDetail();
+    onClose();
+    void downloadChartPng(selectPrintCycles(cycles, ids, getTodayStr()), t, detail)
+      .catch(() => false)
+      .then(onImageDone);
+  };
+
+  const nothingSelected = ids.length === 0;
+
   return (
     <Modal
-      labelledBy="modal-title"
+      labelledBy="share-title"
       onClose={onClose}
       className="modal-overlay"
-      panelClassName="modal-container export-modal-enhanced"
+      panelClassName="modal-container export-modal-enhanced share-dialog"
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="modal-header" {...dragHandlers}>
-        <h2 id="modal-title">{t.exportModal.title}</h2>
+        <h2 id="share-title">{t.exportModal.title}</h2>
         <button
           type="button"
           className="icon-button"
@@ -90,126 +99,73 @@ export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrin
         </button>
       </div>
 
-      <div className="modal-body" ref={bodyRef}>
-        <p className="modal-description">{t.exportModal.description}</p>
-
-        {/* PDF Scope Configurator Section */}
-        <div className="pdf-config-section">
-          <h3 className="section-subtitle">{t.exportModal.pdfExportMode}</h3>
-
-          <div className="mode-segmented-control">
-            <button
-              type="button"
-              className={`segmented-btn ${exportMode === 'single' ? 'active' : ''}`}
-              onClick={() => setExportMode('single')}
-            >
-              <Calendar size={16} />
-              <span>{t.exportModal.singleCycle}</span>
-            </button>
-
-            <button
-              type="button"
-              className={`segmented-btn ${exportMode === 'multiple' ? 'active' : ''}`}
-              onClick={() => setExportMode('multiple')}
-            >
-              <Layers size={16} />
-              <span>{t.exportModal.multipleCycles}</span>
-            </button>
-          </div>
-
-          {exportMode === 'single' ? (
-            <div className="single-cycle-select-wrapper">
-              <label htmlFor="single-cycle-picker" className="form-label">
-                {t.exportModal.selectCycle}:
-              </label>
-              <select
-                id="single-cycle-picker"
-                className="form-select"
-                value={selectedSingleId}
-                onChange={e => setSelectedSingleId(e.target.value)}
-              >
-                {cycles.map((cycle, idx) => {
-                  const cycleNum = cycles.length - idx;
-                  return (
-                    <option key={cycle.id} value={cycle.id}>
-                      {t.chartStrip.cycleBadge} {cycleNum} ({cycle.startDate} •{' '}
-                      {cycle.observations.length} {t.stats.days})
-                    </option>
-                  );
-                })}
-              </select>
-            </div>
-          ) : (
-            <div className="multi-cycle-select-wrapper">
-              <div className="multi-select-header">
-                <span className="form-label">{t.exportModal.selectCycles}:</span>
-                <div className="multi-select-actions">
-                  <button type="button" className="btn-text-action" onClick={handleSelectAllMulti}>
-                    {t.exportModal.selectAll}
-                  </button>
-                  <span className="action-divider">•</span>
-                  <button
-                    type="button"
-                    className="btn-text-action"
-                    onClick={handleDeselectAllMulti}
-                  >
-                    {t.exportModal.deselectAll}
-                  </button>
-                </div>
-              </div>
-
-              <div className="multi-cycle-list">
-                {cycles.map((cycle, idx) => {
-                  const cycleNum = cycles.length - idx;
-                  const isChecked = selectedMultiIds.includes(cycle.id);
-                  return (
-                    <label
-                      key={cycle.id}
-                      className={`multi-cycle-item ${isChecked ? 'checked' : ''}`}
-                    >
+      <div className="modal-body share-body" ref={bodyRef}>
+        <fieldset className="share-cycles">
+          <legend className="share-cycles-title">{t.exportModal.cycles}</legend>
+          {cycles.length > 0 && (
+            <ul className="share-cycle-list">
+              {cycles.map((cycle, index) => {
+                const checked = selectedIds.includes(cycle.id);
+                // A cycle always has an observation: the first day
+                const lengthDays = (cycle.observations.at(-1) as Observation).cycleDay;
+                // The name is the cycle number. The tag and the dates are the description.
+                const id = `share-cycle-${cycle.id}`;
+                return (
+                  <li key={cycle.id}>
+                    <label className={`share-cycle ${checked ? 'is-checked' : ''}`}>
                       <input
                         type="checkbox"
-                        checked={isChecked}
-                        onChange={() => toggleMultiCycle(cycle.id)}
-                        className="visually-hidden-checkbox"
+                        checked={checked}
+                        onChange={() => toggle(cycle.id)}
+                        aria-labelledby={`${id}-name`}
+                        aria-describedby={index === 0 ? `${id}-tag ${id}-dates` : `${id}-dates`}
                       />
-                      {isChecked ? (
-                        <CheckSquare size={18} className="checkbox-icon checked" />
-                      ) : (
-                        <Square size={18} className="checkbox-icon" />
-                      )}
-                      <span className="cycle-item-name">
-                        <strong>
-                          {t.chartStrip.cycleBadge} {cycleNum}
-                        </strong>
-                      </span>
-                      <span className="cycle-item-dates">
-                        {cycle.startDate} ({cycle.observations.length} {t.stats.days})
+                      <span className="share-cycle-text">
+                        <span className="share-cycle-name">
+                          <span id={`${id}-name`}>
+                            {t.chartStrip.cycleBadge} {cycleNumber(index)}
+                          </span>
+                          {index === 0 && (
+                            <span className="share-cycle-tag" id={`${id}-tag`}>
+                              {t.cyclePicker.current}
+                            </span>
+                          )}
+                        </span>
+                        <span className="share-cycle-dates" id={`${id}-dates`}>
+                          {shortDate(cycle.startDate, t.locale)} –{' '}
+                          {shortDate(getCycleEndDate(cycle), t.locale)} ·{' '}
+                          {formatMessage(t.chartStrip.cycleDays, { count: lengthDays })}
+                        </span>
                       </span>
                     </label>
-                  );
-                })}
-              </div>
-            </div>
+                  </li>
+                );
+              })}
+            </ul>
           )}
+        </fieldset>
+        <p className="share-note">{t.exportModal.oldestToNewestNote}</p>
+      </div>
 
-          <div className="pdf-info-note">{t.exportModal.oldestToNewestNote}</div>
-        </div>
-
-        <div className="export-actions-grid">
-          <button
-            type="button"
-            className="export-card-btn primary-export-btn"
-            onClick={handlePrint}
-            aria-label={t.exportModal.printPdf}
-          >
-            <Printer size={24} className="export-icon" />
-            <div className="export-text">
-              <strong>{t.exportModal.printPdf}</strong>
-              <span>{t.exportModal.pdfDescription}</span>
-            </div>
-          </button>
-        </div>
+      <div className="share-footer">
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={handleDownloadPng}
+          disabled={nothingSelected}
+        >
+          <ImageDown size={18} aria-hidden="true" />
+          {t.exportModal.downloadPng}
+        </button>
+        <button
+          type="button"
+          className="btn btn-primary"
+          onClick={handlePrint}
+          disabled={nothingSelected}
+        >
+          <Printer size={18} aria-hidden="true" />
+          {t.exportModal.printPdf}
+        </button>
       </div>
     </Modal>
   );

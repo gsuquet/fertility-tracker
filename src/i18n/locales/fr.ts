@@ -308,22 +308,15 @@ export const fr: TranslationSchema = {
   },
   exportModal: {
     title: 'Partager le graphique',
-    description:
-      'Imprimez votre graphique Creighton, ou enregistrez-le en PDF, pour votre instructeur FertilityCare ou médecin NaPro.',
-    printPdf: 'Imprimer / Sauvegarder en PDF',
+    cycles: 'Cycles',
+    printPdf: 'Imprimer ou PDF',
     downloadPng: 'Télécharger en PNG',
-    pdfExportMode: "Périmètre d'exportation PDF",
-    singleCycle: 'Cycle unique',
-    multipleCycles: 'Plusieurs cycles',
-    selectCycle: 'Sélectionner le cycle',
-    selectCycles: 'Sélectionner les cycles à exporter',
-    selectAll: 'Tout sélectionner',
-    deselectAll: 'Tout désélectionner',
     oldestToNewestNote:
-      'Exporté en mode paysage (grille de 35 jours) du plus ancien au plus récent.',
+      'Pages en mode paysage avec la grille de 35 jours, du cycle le plus ancien au plus récent.',
     exportSuccess: 'Rapport PDF généré avec succès !',
     printError: 'La vue d’impression ne s’est pas chargée. Rechargez la page pour réessayer.',
-    pdfDescription: 'Crée un PDF en mode paysage avec une grille de 35 jours.',
+    pngSuccess: 'Image du graphique téléchargée.',
+    pngError: 'L’image du graphique n’a pas pu être créée. Utilisez plutôt Imprimer ou PDF.',
     jsonDescription:
       "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
     importError:

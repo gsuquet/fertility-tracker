@@ -306,7 +306,13 @@ const MainApp: React.FC = () => {
         {isExportModalOpen && (
           <ErrorBoundary onClose={closeExportModal}>
             <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-              <ExportModal onClose={closeExportModal} onPreparePrint={handlePreparePrint} />
+              <ExportModal
+                onClose={closeExportModal}
+                onPreparePrint={handlePreparePrint}
+                onImageDone={downloaded =>
+                  showToast(downloaded ? t.exportModal.pngSuccess : t.exportModal.pngError)
+                }
+              />
             </React.Suspense>
           </ErrorBoundary>
         )}

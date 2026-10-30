@@ -2,8 +2,8 @@ import type React from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { StampBadge } from './StampBadge';
-import type { Observation } from '../types/crms';
-import { addDays, getTodayStr } from '../utils/dateUtils';
+import { getTodayStr } from '../utils/dateUtils';
+import { printCode, printRows, printStartDate, selectPrintCycles } from '../utils/printCycles';
 import { formatMessage } from '../i18n';
 import { Target } from 'lucide-react';
 import { BabyIcon } from './icons/BabyIcon';
@@ -20,27 +20,8 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
   const monthDay = (date: string) =>
     formatMessage(t.common.monthDay, { month: date.slice(5, 7), day: date.slice(8, 10) });
 
-  const displayCycles =
-    cycles.length > 0
-      ? cycles
-      : [
-          {
-            id: 'cycle_empty',
-            startDate: getTodayStr(),
-            observations: [],
-          },
-        ];
-
-  // Filter cycles matching selectedCycleIds
-  const filtered =
-    selectedCycleIds.includes('all') || selectedCycleIds.length === 0
-      ? displayCycles
-      : displayCycles.filter(c => selectedCycleIds.includes(c.id));
-
-  if (filtered.length === 0) return null;
-
-  // Sort selected cycles chronologically: oldest to newest
-  const sortedCycles = [...filtered].sort((a, b) => a.startDate.localeCompare(b.startDate));
+  const sortedCycles = selectPrintCycles(cycles, selectedCycleIds, getTodayStr());
+  if (sortedCycles.length === 0) return null;
 
   return (
     <div className="print-export-container" id="printable-pdf-export">
@@ -60,35 +41,12 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
       </div>
 
       <div className="print-cycles-list">
-        {sortedCycles.map(cycle => {
-          // Cycles are listed newest first, so Cycle 1 is the oldest
-          const cycleNum = displayCycles.length - displayCycles.indexOf(cycle);
-          const startDate = cycle.observations[0]?.date || cycle.startDate;
+        {sortedCycles.map(({ cycle, number: cycleNum }) => {
+          const startDate = printStartDate(cycle);
           const endDate = cycle.observations[cycle.observations.length - 1]?.date || startDate;
           const daysCount = cycle.observations.length;
-          const peakObs = cycle.observations.find(o => o.isPeakDay);
-          const peakDayNum = peakObs?.cycleDay;
-
-          // Map observations by cycleDay
-          const obsMap = new Map<number, Observation>();
-          cycle.observations.forEach(o => obsMap.set(o.cycleDay, o));
-
-          // Compute total grid slots (minimum 35, padded to multiple of 35)
-          const maxObsDay = Math.max(...cycle.observations.map(o => o.cycleDay), 0);
-          const totalGridSlots = Math.max(35, Math.ceil(maxObsDay / 35) * 35);
-
-          const slots = Array.from({ length: totalGridSlots }, (_, i) => {
-            const dayNum = i + 1;
-            const obs = obsMap.get(dayNum);
-            const computedDate = obs?.date || addDays(startDate, dayNum - 1);
-            return { dayNum, obs, dateStr: computedDate };
-          });
-
-          // Split slots into 35-column row chunks
-          const rowChunks: (typeof slots)[] = [];
-          for (let i = 0; i < slots.length; i += 35) {
-            rowChunks.push(slots.slice(i, i + 35));
-          }
+          const peakDayNum = cycle.observations.find(o => o.isPeakDay)?.cycleDay;
+          const rowChunks = printRows(cycle);
 
           return (
             <div key={cycle.id} className="print-cycle-card">
@@ -120,7 +78,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
               <div className="print-grid-wrapper">
                 {rowChunks.map((chunk, chunkIdx) => (
                   <div key={chunkIdx} className="print-grid-row">
-                    {chunk.map(({ dayNum, obs, dateStr }) => {
+                    {chunk.map(({ dayNum, obs, date: dateStr }) => {
                       const isPeak = obs?.isPeakDay;
 
                       if (obs) {
@@ -145,12 +103,7 @@ export const PrintExportView: React.FC<PrintExportViewProps> = ({ selectedCycleI
                               <span className="print-day-num">{obs.cycleDay}</span>
                             </div>
 
-                            {(() => {
-                              const cleanCode = obs.codeString
-                                .replace(/\b(AP|RAP|LAP)\b/g, '')
-                                .replace(/\s+/g, '');
-                              return <div className="print-code">{cleanCode || '---'}</div>;
-                            })()}
+                            <div className="print-code">{printCode(obs.codeString) || '---'}</div>
 
                             {obs.symptoms && obs.symptoms.length > 0 && (
                               <div className="print-symptoms">{obs.symptoms.join(',')}</div>
