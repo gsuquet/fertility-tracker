@@ -38,12 +38,6 @@
     .undo-toast {
       bottom: calc(var(--mobile-nav-space) + var(--space-sm));
     }
-
-    /* In the mobile menu, the toast goes to the top, so it does not cover the menu actions */
-    .mobile-menu-overlay .undo-toast {
-      top: calc(var(--space-md) + env(safe-area-inset-top, 0px));
-      bottom: auto;
-    }
   }
 
   @media print {

@@ -17,21 +17,22 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 
 ## Header buttons
 
-| Button                             | Phone location      | Action                                              |
-| ---------------------------------- | ------------------- | --------------------------------------------------- |
-| Cycle picker                       | Header              | Selects one cycle or **All Cycles**.                |
-| **Log Observation**                | **+** at the bottom | Opens the observation drawer on today.              |
-| **Practitioner PDF / PNG**         | Menu                | Opens the export and backup dialog.                 |
-| **Welcome to Fertility Tracker**   | Menu                | Opens the welcome guide.                            |
-| **About & Version Tracker**        | Menu                | Opens the release notes and the storage data.       |
-| Language button (**EN** or **FR**) | Menu                | Changes the language.                               |
-| Theme button                       | Menu                | Changes between the light theme and the dark theme. |
+| Button                             | Phone location                      | Action                                              |
+| ---------------------------------- | ----------------------------------- | --------------------------------------------------- |
+| Cycle picker                       | Header                              | Selects one cycle or **All Cycles**.                |
+| **Log Observation**                | **+** at the bottom                 | Opens the observation drawer on today.              |
+| **Practitioner PDF / PNG**         | **Chart options** > **Share chart** | Opens the **Share chart** dialog.                   |
+| **Welcome to Fertility Tracker**   | Settings                            | Opens the welcome guide.                            |
+| **About & Version Tracker**        | Settings                            | Opens the release notes and the storage data.       |
+| Language button (**EN** or **FR**) | Settings                            | Changes the language.                               |
+| Theme button                       | Settings                            | Changes between the light theme and the dark theme. |
+| **Settings** (a gear)              | Top bar                             | Opens Settings.                                     |
 
 ## App icon badge
 
 In the installed app, the icon can show a dot while today has no observation. The badge is off by default.
 
-To turn it on, open **About & Version Tracker**, then **System Information**. Select **Show a dot on the app icon when today has no observation**. The checkbox shows only when the browser can show a badge.
+To turn it on, open **Settings** and turn on **App icon badge**. The switch shows only when the browser can show a badge.
 
 On iPhone, iPad and Mac, the system asks for the permission for notifications. The app never sends notifications. The dot changes only while the app is open.
 
@@ -58,7 +59,7 @@ On a computer, one key starts an action. A shortcut does nothing while a dialog 
 | `?`             | Opens the **Keyboard shortcuts** dialog.                   |
 | `Ctrl+S` `⌘S`   | Saves the observation form. It also works in a field.      |
 
-To turn the shortcuts off, clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. The phone menu and the **About & Version Tracker** dialog open it too.
+To turn the shortcuts off, turn off **Use keyboard shortcuts** in **Settings**. Or clear **Use keyboard shortcuts** in the **Keyboard shortcuts** dialog. **Settings** and the **About & Version Tracker** dialog open this dialog too.
 
 ## Observation form
 
@@ -82,19 +83,38 @@ The **Today** page and the observation drawer have the same fields.
 
 A tap on a group row opens its buttons. The status card shows the stamp of the day before you save.
 
-## Export and backup dialog
+## Settings
 
-| Button                  | Action                                                                                                           |
-| ----------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| **Single Cycle**        | Prints one cycle.                                                                                                |
-| **Multiple Cycles**     | Prints the selected cycles.                                                                                      |
-| **Print / Save as PDF** | Opens the print dialog of the browser.                                                                           |
-| **Backup Data**         | Downloads all observations in a `.ftbackup` file. The file is plain JSON.                                        |
-| **Restore Data**        | Replaces or merges the observations with a `.ftbackup` or `.json` backup file. Asks first if observations exist. |
-| **Load Demo Cycle**     | Replaces all observations with two demo cycles. Asks first if observations exist.                                |
-| **Clear Data / Reset**  | Deletes all observations after a confirmation. It is disabled when no observations exist.                        |
+The gear (**Settings**) in the header opens Settings. On a phone, it is a full page with a back button at the left. On a wider screen, it is a dialog. **Back**, `Escape` and the close button close it.
 
-If the file is not a valid backup, the dialog shows an error. The observations do not change.
+| Group                    | Button or switch             | Action                                                                                                           |
+| ------------------------ | ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| None                     | **Install**                  | Installs the application. It shows only when the browser can install it.                                         |
+| **Appearance and input** | **Language**                 | Selects **English** or **Français**.                                                                             |
+| **Appearance and input** | **Theme**                    | Selects **Light** or **Dark**.                                                                                   |
+| **Appearance and input** | **Vibration**                | Turns the vibrations on or off. It shows only when the device can vibrate.                                       |
+| **Appearance and input** | **App icon badge**           | Turns the dot on the app icon on or off. It shows only when the browser can show a badge.                        |
+| **Appearance and input** | **Use keyboard shortcuts**   | Turns the keyboard shortcuts on or off.                                                                          |
+| **Backup and restore**   | **Back up now**              | Downloads all observations in a `.ftbackup` file at once. The file is plain JSON. It shows the last backup date. |
+| **Backup and restore**   | **Restore from a file**      | Replaces or merges the observations with a `.ftbackup` or `.json` backup file. Asks first if observations exist. |
+| **Help**                 | **Welcome guide**            | Opens the welcome guide.                                                                                         |
+| **Help**                 | **Keyboard shortcuts**       | Opens the **Keyboard shortcuts** dialog.                                                                         |
+| **About**                | **About Fertility Tracker**  | Opens the release notes and the storage data.                                                                    |
+| **About**                | **Legal and medical notice** | Opens the legal and medical notice.                                                                              |
+| **Data**                 | **Load the demo cycles**     | Replaces all observations with two demo cycles. Asks first if observations exist.                                |
+| **Data**                 | **Delete all data**          | Deletes all observations after a confirmation. It is disabled when no observations exist.                        |
+
+If the file is not a valid backup, Settings shows an error. The observations do not change.
+
+## Share chart dialog
+
+**Share chart** in the **Chart options** menu (`⋮`) of the chart page opens this dialog. On a wide screen, the export button of the header opens it too.
+
+| Button                  | Action                                 |
+| ----------------------- | -------------------------------------- |
+| **Single Cycle**        | Prints one cycle.                      |
+| **Multiple Cycles**     | Prints the selected cycles.            |
+| **Print / Save as PDF** | Opens the print dialog of the browser. |
 
 ## Confirmation dialog
 
@@ -102,9 +122,9 @@ The confirmation dialog opens before an action replaces or deletes data. The foc
 
 | Dialog                               | Opens from                                        | Button that continues    |
 | ------------------------------------ | ------------------------------------------------- | ------------------------ |
-| **Restore this backup?**             | **Restore Data**                                  | **Merge** or **Replace** |
-| **Replace your data with the demo?** | **Load Demo Cycle**                               | **Load the demo**        |
-| **Delete all chart data?**           | **Clear Data / Reset**                            | **Delete all data**      |
+| **Restore this backup?**             | **Restore from a file**                           | **Merge** or **Replace** |
+| **Replace your data with the demo?** | **Load the demo cycles**                          | **Load the demo**        |
+| **Delete all chart data?**           | **Delete all data**                               | **Delete all data**      |
 | **Delete the unreadable data?**      | **Delete the copy** in the unreadable data notice | **Delete the copy**      |
 
 **Cancel**, the `Escape` key and a click outside the dialog close it. The data does not change.
@@ -130,13 +150,13 @@ The notice shows above the pages when the application cannot read the saved obse
 
 ## Dialogs
 
-| Dialog                      | When it opens                                                         |
-| --------------------------- | --------------------------------------------------------------------- |
-| Welcome guide               | At the first visit, and from the header.                              |
-| **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
-| **About & Version Tracker** | From the header, and from **Legal** and the version in the footer.    |
+| Dialog                      | When it opens                                                                  |
+| --------------------------- | ------------------------------------------------------------------------------ |
+| Welcome guide               | At the first visit, and from the header or Settings.                           |
+| **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding.          |
+| **About & Version Tracker** | From the header or Settings, and from **Legal** and the version in the footer. |
 
-All the dialogs, the observation drawer, the mobile menu and the cycle menu use the same keyboard rules:
+All the dialogs, Settings, the observation drawer and the cycle menu use the same keyboard rules:
 
 | Key or action              | Result                                                                                        |
 | -------------------------- | --------------------------------------------------------------------------------------------- |
@@ -147,24 +167,24 @@ All the dialogs, the observation drawer, the mobile menu and the cycle menu use 
 | **Back**                   | Closes the top dialog only.                                                                   |
 | The dialog closes          | The focus goes back to the button that opened the dialog.                                     |
 
-On a phone, you can also drag the observation drawer, the mobile menu, the cycle menu and the other dialogs down to close them. Drag the handle, the header, or the list or body when it is at the top. A short drag puts the sheet back. A swipe on these sheets does not scroll the page behind them.
+On a phone, you can also drag the observation drawer, the cycle menu and the other dialogs down to close them. Settings is a full page, and you cannot drag it. Drag the handle, the header, or the list or body when it is at the top. A short drag puts the sheet back. A swipe on these sheets does not scroll the page behind them.
 
 ## Installed application
 
 You can install the application on a phone or a computer. The installed application has these differences:
 
-| Function             | Installed application                                                                   |
-| -------------------- | --------------------------------------------------------------------------------------- |
-| Footer               | Not shown. **About & Version Tracker** > **System Information** shows the legal notice. |
-| Pull down at the top | Does not reload the application.                                                        |
-| **Log today**        | Shortcut of the app icon. Opens the observation drawer on today.                        |
-| **Chart**            | Shortcut of the app icon. Opens the **Paper Chart Strip** page.                         |
+| Function             | Installed application                                                          |
+| -------------------- | ------------------------------------------------------------------------------ |
+| Footer               | Not shown. **Settings** > **Legal and medical notice** shows the legal notice. |
+| Pull down at the top | Does not reload the application.                                               |
+| **Log today**        | Shortcut of the app icon. Opens the observation drawer on today.               |
+| **Chart**            | Shortcut of the app icon. Opens the **Paper Chart Strip** page.                |
 
 Touch and hold the app icon (or right-click it on a computer) to see the shortcuts. The shortcuts are available on Android and in Chrome or Edge on a computer.
 
 ### Install the application
 
-When the browser can install the application, the phone menu has **Install app**. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
+When the browser can install the application, **Settings** has **Install app** at the top. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
 
 | Browser                                                     | **Install** does                                                                                                 |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |
@@ -193,6 +213,7 @@ If a page or a dialog cannot load, the application shows the message **This part
   - [Cycle Analytics page](screens/analytics.md)
   - [Observation drawer](screens/observation-drawer.md)
   - [Export dialog](screens/export-dialog.md)
+  - [Settings](screens/settings.md)
   - [Version dialog](screens/version-dialog.md)
   - [Welcome guide](screens/welcome-guide.md)
   - [Error screen](screens/error-screen.md)

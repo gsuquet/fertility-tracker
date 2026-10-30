@@ -2,9 +2,9 @@ import AxeBuilder from '@axe-core/playwright';
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
-import { openApp } from './fixtures';
+import { loadDemoData, openApp, openSettings, openShareChart } from './fixtures';
 
-type Screen = keyof typeof en.tabs | 'exportDialog';
+type Screen = keyof typeof en.tabs | 'exportDialog' | 'settings';
 
 /**
  * Axe violations that the application has today, as "rule-id target" pairs for each screen.
@@ -18,6 +18,7 @@ const KNOWN_VIOLATIONS: Record<Screen, readonly string[]> = {
   calendar: [],
   analytics: [],
   exportDialog: [],
+  settings: [],
 };
 
 const checkAccessibility = async (page: Page, screen: Screen) => {
@@ -29,9 +30,7 @@ const checkAccessibility = async (page: Page, screen: Screen) => {
 test.describe('Accessibility (axe, WCAG 2 A and AA)', () => {
   test.beforeEach(async ({ page }) => {
     await openApp(page);
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await page.getByRole('button', { name: en.actions.loadDemo }).click();
-    await expect(page.getByRole('dialog')).toBeHidden();
+    await loadDemoData(page);
   });
 
   for (const [tab, name] of Object.entries(en.tabs) as [keyof typeof en.tabs, string][]) {
@@ -43,8 +42,12 @@ test.describe('Accessibility (axe, WCAG 2 A and AA)', () => {
   }
 
   test('the export dialog has only the known violations', async ({ page }) => {
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await expect(page.getByRole('dialog', { name: en.exportModal.title })).toBeVisible();
+    await openShareChart(page);
     await checkAccessibility(page, 'exportDialog');
+  });
+
+  test('Settings has only the known violations', async ({ page }) => {
+    await openSettings(page);
+    await checkAccessibility(page, 'settings');
   });
 });

@@ -94,7 +94,7 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 
 - Each write of `fertility_care_observations` gives its result. `saveFailed` in `useCycleData()` is `true` after a refused write and `false` after the next write that succeeds.
 - [StorageSaveWarning.tsx](../../src/components/StorageSaveWarning.tsx) shows an alert (`role="alert"`, `storageWarning.saveFailed`) above the pages while `saveFailed` is `true`. It has no close button.
-- The alert has a **Back up now** button. It opens the export dialog, so the user can download the observations that are only in memory.
+- The alert has a **Back up now** button. It downloads the backup file at once (`useBackUpNow()`). Thus, the user can keep the observations that are only in memory.
 - When observations exist, the provider calls `requestPersistentStorage()` from [storage.ts](../../src/utils/storage.ts) one time. It calls `navigator.storage.persist()` to stop the browser from removing the data.
 - `requestPersistentStorage()` gives `false` when the API is not available or fails. The application works the same when the browser refuses.
 
@@ -102,7 +102,7 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 
 **Source files:** [backupReminder.ts](../../src/domain/backupReminder.ts), [BackupReminder.tsx](../../src/components/BackupReminder.tsx)
 
-- **Backup Data** calls `markBackedUp()`. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
+- **Back up now** calls `markBackedUp()`, in [Settings](screens/settings.md), in the reminder and in the save warning. It saves the date of today in `fertility_care_last_backup` and in `lastBackupDate`.
 - When the first observation that is not demo data exists, the provider saves today in `fertility_care_backup_reminder_start` (`backupReminderStart`). Before that, `backupReminderStart` is `null`. A value that exists does not change.
 - `saveObservation()` gives a new `id` (`obs_DATE_TIME`) to a day whose `id` starts with `demo_`. Thus, a changed demo day is an observation of the user.
 - Delete, the manual Peak Day and the merge find a day by its new `id` or by its date.
@@ -113,7 +113,7 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - No snooze is active. `snoozedUntil` is missing, is not a valid date, or is not after `today`.
 - `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup. Without a valid backup date, the count starts at `reminderStart`. Without either date, the result is `false`.
 
-`BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** opens the export dialog. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`. Thus, the message stays hidden after a reload.
+`BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** downloads the backup file at once, as in Settings. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`. Thus, the message stays hidden after a reload.
 
 ## Undo of replaced data
 

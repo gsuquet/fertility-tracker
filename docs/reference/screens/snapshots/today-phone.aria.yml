@@ -4,7 +4,7 @@
   - textbox "Date": /\d+-\d+-\d+/
   - button "Next Day"
   - button "Filter cycle view": Cycle 2
-  - button "More actions"
+  - button "Settings"
 - main:
   - tabpanel "Today":
     - heading "Today" [level=1]

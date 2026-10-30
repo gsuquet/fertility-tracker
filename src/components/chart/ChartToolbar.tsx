@@ -1,5 +1,5 @@
 import type React from 'react';
-import { BarChart3, Info } from 'lucide-react';
+import { BarChart3, Info, Share2 } from 'lucide-react';
 import type { TranslationSchema } from '../../i18n';
 import type { MenuEntry } from '../MenuButton';
 import { MenuButton } from '../MenuButton';
@@ -20,17 +20,20 @@ interface ChartToolbarProps {
   onToggleLegend: () => void;
   /** View controls of a chart with cycles. The blank grid has none. */
   controls?: ChartViewControls;
+  /** Opens Share chart */
+  onShare?: (() => void) | undefined;
 }
 
 /**
  * The one row of chart controls: **35-day** or **Strip**, and the ⋮ menu with **Phase bar** and
- * **Legend**. On a phone, the row is in the top bar.
+ * **Legend**, then **Share chart**. On a phone, the row is in the top bar.
  */
 export const ChartToolbar: React.FC<ChartToolbarProps> = ({
   t,
   showLegend,
   onToggleLegend,
   controls,
+  onShare,
 }) => {
   const entries: MenuEntry[] = [];
   if (controls) {
@@ -49,6 +52,17 @@ export const ChartToolbar: React.FC<ChartToolbarProps> = ({
     checked: showLegend,
     onSelect: onToggleLegend,
   });
+  if (onShare) {
+    entries.push(
+      { kind: 'separator' },
+      {
+        kind: 'item',
+        label: t.chartStrip.shareChart,
+        icon: <Share2 size={18} />,
+        onSelect: onShare,
+      }
+    );
+  }
 
   return (
     <InTopBar>

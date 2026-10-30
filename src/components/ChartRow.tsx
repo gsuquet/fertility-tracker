@@ -42,9 +42,11 @@ const centerLeft = (strip: HTMLElement, cell: Element) => {
 interface ChartRowProps {
   /** Opens the Today page. Today shows the date of the selected observation. */
   onOpenToday?: () => void;
+  /** Opens Share chart: the print of the chart */
+  onShare?: (() => void) | undefined;
 }
 
-export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
+export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday, onShare }) => {
   const { cycles, selectedCycleId, setSelectedObservation, setIsDrawerOpen } = useCycle();
   const { t } = useLanguage();
   // On a desktop, a click selects a day for the detail bar. On a phone, it opens the sheet.
@@ -222,7 +224,12 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
         aria-labelledby="tab-chart"
       >
         <PageTitle title={t.tabs.chart} />
-        <ChartToolbar t={t} showLegend={showLegend} onToggleLegend={toggleLegend} />
+        <ChartToolbar
+          t={t}
+          showLegend={showLegend}
+          onToggleLegend={toggleLegend}
+          onShare={onShare}
+        />
         <ChartBlankGrid t={t} onOpenDay={openEmptyDay} />
         {legend}
       </div>
@@ -296,6 +303,7 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday }) => {
         t={t}
         showLegend={showLegend}
         onToggleLegend={toggleLegend}
+        onShare={onShare}
         controls={{
           viewMode,
           onViewModeChange: setViewMode,

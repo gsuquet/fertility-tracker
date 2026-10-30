@@ -4,7 +4,7 @@ This page gives the rules of `Modal.tsx`, the dialog component that each dialog,
 
 ## Rules
 
-[Modal.tsx](../../src/components/Modal.tsx) is the only dialog component. `ExportModal`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, `InstallGuideModal`, `KeyboardShortcutsModal`, `ErrorBoundary`, the phone menu and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
+[Modal.tsx](../../src/components/Modal.tsx) is the only dialog component. `ExportModal`, `SettingsDialog`, `VersionModal`, `WelcomeModal`, `CycleStartModal`, `ObservationDrawer`, `ConfirmDialog`, `InstallGuideModal`, `KeyboardShortcutsModal`, `ErrorBoundary` and the cycle menu use it. No other component has a focus trap or an `Escape` handler for a dialog.
 
 | Function       | Rule                                                                                                                                                  |
 | -------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -27,7 +27,6 @@ This page gives the rules of `Modal.tsx`, the dialog component that each dialog,
 
 - In a dialog, the undo message stays visible, and **Undo** and **Delete the copy** stay available. The focus trap includes them.
 - After **Undo** or **Delete the copy** in a dialog, the focus goes to the top dialog. When the dialog closes, the message goes back to the page.
-- In the phone menu, the undo message shows at the top of the screen. Thus, it does not cover the menu.
 
 ## Related documents
 

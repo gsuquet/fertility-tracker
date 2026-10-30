@@ -1,58 +1,20 @@
 import type React from 'react';
-import { useState, useEffect, useRef } from 'react';
+import { useState, useEffect } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import {
-  X,
-  Printer,
-  Download,
-  FileText,
-  Calendar,
-  Layers,
-  CheckSquare,
-  Square,
-} from 'lucide-react';
-import { downloadBackupFile } from '../utils/exportUtils';
-import { parseObservationData } from '../domain/storageFormat';
-import { summarizeObservations } from '../domain/backupImport';
-import type { BackupSummary, ImportMode } from '../domain/backupImport';
-import { ConfirmDialog } from './ConfirmDialog';
+import { X, Printer, Calendar, Layers, CheckSquare, Square } from 'lucide-react';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
-import { formatMessage } from '../i18n';
 
 interface ExportModalProps {
   onClose: () => void;
   /** Receives the cycles to print and a short label for the PDF file name. */
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
-  /** Starts with the focus on Restore Data, for example from Restore a backup of the welcome guide. */
-  startWithRestore?: boolean | undefined;
-  /** A backup file that the user opened with the app. The dialog restores it at once. */
-  launchedBackup?: { text: string } | null | undefined;
 }
 
-/** A data action that waits for the user to confirm it. */
-type PendingAction =
-  | { kind: 'demo' }
-  | { kind: 'clear' }
-  | { kind: 'import'; text: string; summary: BackupSummary };
-
-export const ExportModal: React.FC<ExportModalProps> = ({
-  onClose,
-  onPreparePrint,
-  startWithRestore = false,
-  launchedBackup = null,
-}) => {
-  const {
-    observations,
-    cycles,
-    selectedCycleId,
-    exportDataJson,
-    importDataJson,
-    loadDemoData,
-    clearAllData,
-    markBackedUp,
-  } = useCycle();
+/** The print of the chart. Backup, restore, demo and delete are in Settings (RFC 0002). */
+export const ExportModal: React.FC<ExportModalProps> = ({ onClose, onPreparePrint }) => {
+  const { cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
   // On a phone, a drag down closes the dialog as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onClose, true);
@@ -60,11 +22,6 @@ export const ExportModal: React.FC<ExportModalProps> = ({
   const [exportMode, setExportMode] = useState<'single' | 'multiple'>('single');
   const [selectedSingleId, setSelectedSingleId] = useState<string>('');
   const [selectedMultiIds, setSelectedMultiIds] = useState<string[]>([]);
-  const [pending, setPending] = useState<PendingAction | null>(null);
-  const [importError, setImportError] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  // The focus also scrolls the restore button into view on a small screen
-  const restoreButtonRef = useRef<HTMLButtonElement>(null);
 
   // The app mounts the dialog each time it opens, so each opening starts from this selection
   useEffect(() => {
@@ -113,100 +70,12 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onClose();
   };
 
-  const handleDownloadJson = () => {
-    downloadBackupFile(exportDataJson());
-    markBackedUp();
-    onClose();
-  };
-
-  const hasData = observations.length > 0;
-
-  // Without data there is nothing to lose, so the action runs at once.
-  const runOrConfirm = (action: PendingAction) => {
-    if (hasData) {
-      setPending(action);
-    } else {
-      runAction(action);
-    }
-  };
-
-  const runAction = (action: PendingAction, mode: ImportMode = 'replace') => {
-    if (action.kind === 'demo') loadDemoData();
-    if (action.kind === 'clear') clearAllData();
-    if (action.kind === 'import') importDataJson(action.text, mode);
-    setPending(null);
-    onClose();
-  };
-
-  // The contents decide, not the extension: a .ftbackup file and an old .json file both work
-  const restoreText = (text: string) => {
-    const imported = parseObservationData(text);
-    setImportError(imported === null);
-    if (imported) {
-      runOrConfirm({ kind: 'import', text, summary: summarizeObservations(imported.observations) });
-    }
-  };
-  const restoreTextRef = useRef(restoreText);
-  restoreTextRef.current = restoreText;
-
-  // A file opened with the app goes through the same preview and confirmation
-  useEffect(() => {
-    if (launchedBackup) restoreTextRef.current(launchedBackup.text);
-  }, [launchedBackup]);
-
-  const handleFileUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (!file) return;
-    const text = await file.text();
-    e.target.value = '';
-    restoreText(text);
-  };
-
-  const confirmContent = (action: PendingAction) => {
-    const count = String(observations.length);
-    const c = t.confirmDialog;
-    if (action.kind === 'demo') {
-      return {
-        title: c.demoTitle,
-        messages: [formatMessage(c.demoMessage, { count })],
-        actions: [{ label: c.demoConfirm, onClick: () => runAction(action) }],
-      };
-    }
-    if (action.kind === 'clear') {
-      return {
-        title: c.clearTitle,
-        messages: [formatMessage(c.clearMessage, { count })],
-        actions: [{ label: c.clearConfirm, onClick: () => runAction(action), danger: true }],
-      };
-    }
-    const { summary } = action;
-    const fileMessage =
-      summary.count === 0
-        ? c.importEmpty
-        : formatMessage(c.importSummary, {
-            count: summary.count,
-            first: String(summary.firstDate),
-            last: String(summary.lastDate),
-          });
-    return {
-      title: c.importTitle,
-      messages: [fileMessage, formatMessage(c.importChoice, { count })],
-      actions: [
-        { label: c.importMerge, onClick: () => runAction(action, 'merge') },
-        { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
-      ],
-    };
-  };
-
-  const confirmation = pending && confirmContent(pending);
-
   return (
     <Modal
       labelledBy="modal-title"
       onClose={onClose}
       className="modal-overlay"
       panelClassName="modal-container export-modal-enhanced"
-      {...(startWithRestore ? { initialFocusRef: restoreButtonRef } : {})}
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="modal-header" {...dragHandlers}>
@@ -340,72 +209,8 @@ export const ExportModal: React.FC<ExportModalProps> = ({
               <span>{t.exportModal.pdfDescription}</span>
             </div>
           </button>
-
-          <button
-            type="button"
-            className="export-card-btn"
-            onClick={handleDownloadJson}
-            aria-label={t.actions.exportJson}
-          >
-            <Download size={24} className="export-icon" />
-            <div className="export-text">
-              <strong>{t.actions.exportJson}</strong>
-              <span>{t.exportModal.jsonDescription}</span>
-            </div>
-          </button>
         </div>
-
-        <div className="modal-divider" />
-
-        <div className="import-restore-section">
-          <button
-            ref={restoreButtonRef}
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => fileInputRef.current?.click()}
-          >
-            <FileText size={16} />
-            <span>{t.actions.importJson}</span>
-          </button>
-          {/* No accept filter: iOS greys out a file with an extension that it does not know */}
-          <input ref={fileInputRef} type="file" onChange={handleFileUpload} hidden />
-
-          <button
-            type="button"
-            className="btn btn-secondary"
-            onClick={() => runOrConfirm({ kind: 'demo' })}
-          >
-            {t.actions.loadDemo}
-          </button>
-
-          <button
-            type="button"
-            className="btn btn-danger"
-            disabled={!hasData}
-            onClick={() => setPending({ kind: 'clear' })}
-          >
-            {t.actions.clearData}
-          </button>
-        </div>
-
-        {importError && (
-          <p className="import-error" role="alert">
-            {t.exportModal.importError}
-          </p>
-        )}
       </div>
-
-      {confirmation && (
-        <ConfirmDialog
-          title={confirmation.title}
-          actions={confirmation.actions}
-          onCancel={() => setPending(null)}
-        >
-          {confirmation.messages.map(message => (
-            <p key={message}>{message}</p>
-          ))}
-        </ConfirmDialog>
-      )}
     </Modal>
   );
 };

@@ -5,7 +5,15 @@ import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
 import { en } from '../src/i18n/locales/en';
 import { formatMessage } from '../src/i18n/format';
 import { formatDateDisplay } from '../src/utils/dateUtils';
-import { TODAY, escapeRegExp, fixClock, labelPattern, openApp } from './fixtures';
+import {
+  TODAY,
+  escapeRegExp,
+  fixClock,
+  labelPattern,
+  loadDemoData,
+  openApp,
+  openSettings,
+} from './fixtures';
 
 const directCode = (page: Page) => page.getByRole('textbox', { name: en.labels.directInput });
 
@@ -59,24 +67,25 @@ test.describe('Fertility Tracker in a browser', () => {
     await logObservation(page, '10KLX3 I');
     const before = await savedObservations(page);
 
-    const exportDialog = page.getByRole('dialog', { name: en.exportModal.title });
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
+    let settings = await openSettings(page);
     const downloadEvent = page.waitForEvent('download');
-    await exportDialog.getByRole('button', { name: en.actions.exportJson }).click();
+    await settings.getByRole('button', { name: en.settings.backUpNow }).click();
     const download = await downloadEvent;
     // The name keeps .ftbackup: no .json is added after it
     expect(download.suggestedFilename()).toBe(`fertility-tracker-backup-${TODAY}.ftbackup`);
     const backup = await readFile(await download.path(), 'utf-8');
     expect(backup).toContain('10KLX3 I');
 
+    // The backup date shows in Settings, which stays open
+    await expect(settings).toContainText(en.settings.lastBackup.replace('{date}', 'Oct 27, 2026'));
+
     // Clear the data, so that only the restore can bring the observation back.
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await exportDialog.getByRole('button', { name: en.actions.clearData }).click();
+    await settings.getByRole('button', { name: en.settings.deleteAll }).click();
     const clearConfirm = page.getByRole('dialog', { name: en.confirmDialog.clearTitle });
     await expect(clearConfirm).toBeVisible();
     await clearConfirm.getByRole('button', { name: en.confirmDialog.clearConfirm }).click();
     await expect(clearConfirm).toBeHidden();
-    await expect(exportDialog).toBeHidden();
+    await expect(settings).toBeHidden();
     await expect(directCode(page)).toHaveValue('');
     const undoToast = page.getByRole('status').filter({ hasText: en.undoToast.clear });
     await expect(undoToast).toBeVisible();
@@ -86,9 +95,9 @@ test.describe('Fertility Tracker in a browser', () => {
     await logObservation(page, '0AD');
     await expect(undoToast).toBeHidden();
 
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
+    settings = await openSettings(page);
     const fileChooser = page.waitForEvent('filechooser');
-    await exportDialog.getByRole('button', { name: en.actions.importJson }).click();
+    await settings.getByRole('button', { name: en.settings.restore }).click();
     await (await fileChooser).setFiles({
       name: download.suggestedFilename(),
       mimeType: 'application/octet-stream',
@@ -104,7 +113,7 @@ test.describe('Fertility Tracker in a browser', () => {
     await expect(preview).toContainText(en.confirmDialog.importChoice.replace('{count}', '1'));
     await preview.getByRole('button', { name: en.confirmDialog.importReplace }).click();
     await expect(preview).toBeHidden();
-    await expect(exportDialog).toBeHidden();
+    await expect(settings).toBeHidden();
     await expect(page.getByRole('status').filter({ hasText: en.undoToast.import })).toBeVisible();
     await expect(directCode(page)).toHaveValue('10KLX3 I');
     expect(await savedObservations(page)).toBe(before);
@@ -116,8 +125,7 @@ test.describe('Fertility Tracker in a browser', () => {
 
   test('shows the demo data in the chart, calendar and analytics views', async ({ page }) => {
     await openApp(page);
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await page.getByRole('button', { name: en.actions.loadDemo }).click();
+    await loadDemoData(page);
 
     // The demo Peak Day is cycle day 13 of the newest cycle, 2026-10-12.
     await page.getByRole('tab', { name: en.tabs.chart }).click();
@@ -167,8 +175,7 @@ test.describe('Fertility Tracker in a browser', () => {
 
   test('sets and clears a manual Peak Day in the drawer', async ({ page }) => {
     await openApp(page);
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await page.getByRole('button', { name: en.actions.loadDemo }).click();
+    await loadDemoData(page);
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
     const peakStat = (day: number, date: string) =>
@@ -209,8 +216,7 @@ test.describe('Fertility Tracker in a browser', () => {
 
   test('keeps the undo toast usable in the drawer dialog', async ({ page }) => {
     await openApp(page);
-    await page.getByRole('button', { name: en.actions.exportPdf }).click();
-    await page.getByRole('button', { name: en.actions.loadDemo }).click();
+    await loadDemoData(page);
     const toast = page.getByRole('status').filter({ hasText: en.undoToast.demo });
     await expect(toast).toBeVisible();
 

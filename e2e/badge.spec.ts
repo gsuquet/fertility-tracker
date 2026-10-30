@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
-import { openApp } from './fixtures';
+import { openApp, openSettings } from './fixtures';
 
 /**
  * The installed app, with a Badging API that records each call. A Playwright browser is never
@@ -39,10 +39,8 @@ test.describe('App icon badge', () => {
     // Off by default: the app only removes a dot
     await expect.poll(() => calls(page)).toEqual(['clear']);
 
-    await page.getByRole('banner').getByRole('button', { name: en.versionTracker.title }).click();
-    const about = page.getByRole('dialog', { name: en.versionTracker.title });
-    await about.getByRole('tab', { name: en.versionTracker.tabSystemInfo }).click();
-    await about.getByRole('checkbox', { name: en.appBadge.label }).check();
+    const settings = await openSettings(page);
+    await settings.getByRole('switch', { name: en.appBadge.title }).click();
     await expect.poll(() => calls(page)).toEqual(['clear', 'set']);
     await page.keyboard.press('Escape');
 

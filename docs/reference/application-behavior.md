@@ -38,7 +38,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 
 **Source file:** [src/hooks/useHistoryLayer.ts](../../src/hooks/useHistoryLayer.ts)
 
-**Back** is the back button or back gesture of the device, or the back button of the browser. Each open layer and each page change has one entry in the browser history. A layer is a dialog of [Modal.tsx](../../src/components/Modal.tsx), the observation drawer, the phone menu or the cycle menu.
+**Back** is the back button or back gesture of the device, or the back button of the browser. Each open layer and each page change has one entry in the browser history. A layer is a dialog of [Modal.tsx](../../src/components/Modal.tsx), the observation drawer or the cycle menu.
 
 | Action                                   | Result                                                                                                                                                                  |
 | ---------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -53,7 +53,7 @@ The manifest has two shortcuts. A long press (or a right click) on the applicati
 - No other module adds history entries or goes back. `clearLaunchShortcut()` only removes the `shortcut` parameter and keeps the state.
 - `useHistoryTab(initialTab)` gives the page and the function that changes it. `App` uses it.
 - Each entry of the application has `state.ftLayerDepth`: the number of layers that were open. The application compares it to the open layers after each change, in a microtask.
-- Thus, React `StrictMode` does not add two entries. When a layer closes and another opens at the same time, they share one entry. For example, the phone menu opens the export dialog.
+- Thus, React `StrictMode` does not add two entries. When a layer closes and another opens at the same time, they share one entry. For example, **Restore a backup** closes the welcome guide and opens Settings.
 - When the page changes while a layer entry is current, the application first goes back to the entry of the page. Then it adds the entry of the new page and the entries of the layers that stay open.
 - At the start, the application reads the current entry:
 
@@ -79,7 +79,7 @@ The application offers installation one time, after it has some data. It never a
 | `ios`    | Safari on iOS or iPadOS (also an iPad that shows as `MacIntel` with touch points). Chrome, Firefox, Edge, Opera and Google on iOS (`CriOS`, `FxiOS`, `EdgiOS`, `OPiOS`, `GSA`) give `null`. The in-app browsers of Facebook, Instagram and LINE also give `null`. The guide gives the steps of Safari only. | Opens the guide **Install on iPhone**.                                             |
 | `null`   | The application is installed, or the browser cannot install it (Safari on macOS, Firefox). After `appinstalled`, the mode is `null`.                                                                                                                                                                        | Nothing. No button shows.                                                          |
 - The application is installed when a display mode of [Installed application and touch](#installed-application-and-touch) matches, or when `navigator.standalone` is true (iOS).
-- When the mode is not `null`, the phone menu has **Install app** at the top. The header has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it. From 641 to 1439 pixels, the footer has **Install app**.
+- When the mode is not `null`, [Settings](screens/settings.md) has **Install app** at the top, on each screen width. The header also has an **Install the app** icon button on a screen of 1440 pixels or more. Below that width, the header has no space for it.
 - The application does not record if the user installed it.
 
 The install banner is a slim card above the page buttons, at the bottom of the screen. It has the app icon, **Install Fertility Tracker**, one line on the benefits, an **Install** button and a close button (`×`). It is not a dialog, and the page under it stays usable. It shows only when all these conditions are true:
@@ -97,7 +97,7 @@ The close button and **Install** set `fertility_tracker_install_banner_closed`. 
 
 The guide **Install on iPhone** is a dialog of [Modal.tsx](../../src/components/Modal.tsx). At the top, a note says that the installed application has its own storage, separate from Safari. Then it has these steps, in this order:
 
-1. Back up your data, with a **Back up my data** button. The button downloads the JSON backup, as the export dialog does ([Export, backup and print](screens/export-dialog.md)).
+1. Back up your data, with a **Back up my data** button. The button downloads the JSON backup, as **Back up now** in Settings does ([Settings](screens/settings.md)).
 2. Tap **Share** in the toolbar of Safari.
 3. Choose **Add to Home Screen**.
 4. Open the application and choose **Restore a backup** ([Welcome guide](screens/welcome-guide.md)).
@@ -145,13 +145,14 @@ The first install has no controller. Thus, it activates at once and the applicat
   - A key that is not a character keeps its own meaning. For example, `4` of the number pad without Num Lock is `←`.
   - The letters ignore the case. On a keyboard without Latin letters, for example Cyrillic, `N` and `T` use `event.code` (`KeyN`, `KeyT`).
 - A shortcut does nothing in these cases:
-  - A dialog is open (`dialog[open]`), for example the drawer or the phone menu.
+  - A dialog is open (`dialog[open]`), for example the drawer or Settings.
   - The focus is in an input, a text area, a select or an editable element.
   - For `←` and `→` only: the focus is in a widget that uses the arrow keys. These roles are such widgets: `listbox`, `grid`, `menu`, `menubar`, `radiogroup`, `slider` and `tree`. The page tabs do not use the arrows, so the arrows change the day there.
   - Another handler already used the key (`event.defaultPrevented`).
   - The page of the shortcut is not open. For example, `←` does nothing on the chart page.
 - The **Keyboard shortcuts** dialog lists each shortcut with its translated action, and then **Ctrl+S** and **⌘S**. Its checkbox **Use keyboard shortcuts** turns all the shortcuts on or off (WCAG 2.1.4). The application saves the choice in `fertility_tracker_shortcuts_off`. The shortcuts are on by default.
-- These open the dialog: `?`, and the **Keyboard shortcuts** button of the phone menu and of the **About & Version Tracker** dialog. When the shortcuts are off, `?` does nothing, and the buttons stay.
+- These open the dialog: `?`, **Keyboard shortcuts** in the **Help** group of Settings, and the **Keyboard shortcuts** button of the **About & Version Tracker** dialog. When the shortcuts are off, `?` does nothing, and the buttons stay.
+- The **Use keyboard shortcuts** switch of Settings and the checkbox of the **Keyboard shortcuts** dialog change the same choice.
 - These buttons have a shortcut: the page tabs, **Log Observation**, the day arrows and **Jump to Today**. When the shortcuts are on, their `title` tooltip shows the key, for example **Log Observation (N)**. They also have `aria-keyshortcuts`. When the shortcuts are off, the buttons do not show the keys.
 
 ## Page slide
@@ -184,10 +185,10 @@ The first install has no controller. Thus, it activates at once and the applicat
 | Today has no observation | The icon of the installed app shows a dot. |
 | **Else**                 | The application removes the dot.           |
 - The dot is `navigator.setAppBadge()` with no number. It never shows a number or data of the cycle. `navigator.clearAppBadge()` removes it.
-- The badge is off by default. The checkbox **Show a dot on the app icon when today has no observation** turns it on or off. It is in the **System Information** tab of the **About & Version Tracker** dialog. The application saves the choice in `fertility_tracker_badge_on`.
-- The checkbox shows only when the browser has the Badging API. Its hint tells that the dot changes only while the app is open.
-- In the web apps of WebKit (iOS, iPadOS and the Dock of macOS), the badge needs the permission for notifications. When the user turns the badge on there, the application asks for the permission. The hint tells why. The application never sends notifications.
-- While the system asks, the checkbox is disabled, so a second tap does not ask again. A request that fails is a refusal.
+- The badge is off by default. The switch **App icon badge** turns it on or off. It is in the **Appearance and input** group of [Settings](screens/settings.md). Its detail is "Show a dot on the app icon when today has no observation". The application saves the choice in `fertility_tracker_badge_on`.
+- The switch shows only when the browser has the Badging API. The dot changes only while the app is open.
+- In the web apps of WebKit (iOS, iPadOS and the Dock of macOS), the badge needs the permission for notifications. When the user turns the badge on there, the application asks for the permission. On Apple systems, the detail of the switch also tells why. The application never sends notifications.
+- While the system asks, the switch is disabled, so a second tap does not ask again. A request that fails is a refusal.
 - If the user refuses the permission, the badge stays off, and a message tells how to allow it in the settings of the system.
 - `useAppBadge(observations)` in `App` updates the badge in these cases:
   - When the app starts.
@@ -212,12 +213,12 @@ The first install has no controller. Thus, it activates at once and the applicat
   - The user prefers reduced motion (`prefers-reduced-motion: reduce`).
   - The user turned the vibrations off.
 - A vibration that the browser refuses does nothing.
-- The vibrations are on by default. The **Vibration : On** button in the phone menu, below the language and theme buttons, turns them off or on. The button shows only when the browser has the Vibration API. The application saves the choice in `fertility_tracker_haptics_off`.
+- The vibrations are on by default. The **Vibration** switch in the **Appearance and input** group of [Settings](screens/settings.md) turns them off or on. The switch shows only when the browser has the Vibration API. The application saves the choice in `fertility_tracker_haptics_off`.
 - The choice stays in memory when the browser cannot save it.
 
 ## Desktop title bar and backup files
 
-**Source files:** [public/manifest.webmanifest](../../public/manifest.webmanifest), [src/styles/views/header.css](../../src/styles/views/header.css), [src/utils/launchShortcut.ts](../../src/utils/launchShortcut.ts), [src/App.tsx](../../src/App.tsx), [src/components/ExportModal.tsx](../../src/components/ExportModal.tsx)
+**Source files:** [public/manifest.webmanifest](../../public/manifest.webmanifest), [src/styles/views/header.css](../../src/styles/views/header.css), [src/utils/launchShortcut.ts](../../src/utils/launchShortcut.ts), [src/App.tsx](../../src/App.tsx), [src/components/settings/SettingsDialog.tsx](../../src/components/settings/SettingsDialog.tsx)
 
 Only Chromium browsers on a computer (Chrome and Edge) have these two functions. Elsewhere, nothing changes.
 
@@ -237,7 +238,7 @@ Only Chromium browsers on a computer (Chrome and Edge) have these two functions.
 - The manifest has one `file_handlers` entry. It accepts only `.ftbackup`, never `.json`. Its `action` is `./?restore=file`.
 - A double click on a `.ftbackup` file, or **Open with** Fertility Tracker, opens the app. The manifest asks for `focus-existing`, so an open window gets the file.
 - `listenForLaunches()` sets the one consumer of `window.launchQueue` for the shortcuts and for the files. It reads the first file and gives its text to `App`. A file that the app cannot read gives an empty text.
-- `App` opens the export dialog with the text. The dialog uses the same steps as **Restore Data**: the preview, the confirmation and the undo copy. A file that is not a valid backup shows `exportModal.importError`.
+- `App` opens [Settings](screens/settings.md) with the text. Settings uses the same steps as **Restore from a file**: the preview, the confirmation and the undo copy. A file that is not a valid backup shows `exportModal.importError`.
 - `clearLaunchShortcut()` removes `restore` from the address. Only the launch queue gives a file: the parameter alone opens nothing.
 
 ## Related documents

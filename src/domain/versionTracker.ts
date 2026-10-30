@@ -44,6 +44,32 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.38.0',
+    date: '2026-10-29',
+    title: 'All the Settings in One Place',
+    titleFr: 'Tous les réglages au même endroit',
+    tagline: 'The gear opens Settings: display, backup and restore, help, about and data',
+    taglineFr:
+      'La roue dentée ouvre les Réglages : affichage, sauvegarde et restauration, aide, à propos et données',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The gear in the top bar opens Settings. On a phone it is a full page, and Back closes it',
+      'Settings has the language, the theme, the vibration, the app icon badge and the keyboard shortcuts',
+      'Back up now shows the date of your last backup. Restore from a file is next to it',
+      'Load the demo cycles and Delete all data are at the end, and Delete all data is in red text',
+      'Share chart in the chart menu prints the chart or saves it as a PDF',
+      'Back up now in the backup reminder downloads the backup at once',
+    ],
+    highlightsFr: [
+      'La roue dentée de la barre du haut ouvre les Réglages. Sur un téléphone, c’est une page entière, et Retour la ferme',
+      'Les Réglages ont la langue, le thème, la vibration, la pastille de l’icône et les raccourcis clavier',
+      'Sauvegarder maintenant montre la date de votre dernière sauvegarde. Restaurer depuis un fichier est juste à côté',
+      'Charger les cycles de démonstration et Supprimer toutes les données sont à la fin, et la suppression est en rouge',
+      'Partager le graphique, dans le menu du graphique, imprime le graphique ou l’enregistre en PDF',
+      'Sauvegarder maintenant, dans le rappel de sauvegarde, télécharge la sauvegarde tout de suite',
+    ],
+  },
+  {
     version: '1.37.0',
     date: '2026-10-29',
     title: 'Clearer Bars on the Phone',

@@ -8,13 +8,10 @@ interface FooterProps {
   onOpenVersion: () => void;
   /** Opens the version dialog at its full legal and medical notice */
   onOpenLegal: () => void;
-  /** Installs the app. The entry shows only from 641 to 1439 pixels, where the header and the
-   *  phone menu have no Install entry. */
-  onInstall?: (() => void) | undefined;
 }
 
 /** The one line of the browser footer: "© 2026 Fertility Tracker · Legal · v1.37.0" (RFC 0002) */
-export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenLegal, onInstall }) => {
+export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenLegal }) => {
   const { t } = useLanguage();
 
   return (
@@ -24,16 +21,6 @@ export const Footer: React.FC<FooterProps> = ({ onOpenVersion, onOpenLegal, onIn
       <button type="button" className="footer-link" onClick={onOpenLegal}>
         {t.footer.legal}
       </button>
-      {onInstall && (
-        <>
-          <span className="footer-install" aria-hidden="true">
-            ·
-          </span>
-          <button type="button" className="footer-link footer-install" onClick={onInstall}>
-            {t.install.menuEntry}
-          </button>
-        </>
-      )}
       <span aria-hidden="true">·</span>
       <button
         type="button"

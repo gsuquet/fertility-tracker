@@ -8,13 +8,14 @@ Use this procedure to make a PDF file or a paper copy of your chart. The file ha
 
 ## Procedure
 
-1. Click **Practitioner PDF / PNG**. On a phone, click the menu button and then **Practitioner PDF / PNG**.
-2. In **PDF Export Scope**, select one of these options:
+1. Open the **Chart** page.
+2. Click **Chart options** (⋮) and then **Share chart**. On a wide screen, you can also click **Practitioner PDF / PNG** in the header.
+3. In **PDF Export Scope**, select one of these options:
    - **Single Cycle**: select the cycle in **Select Cycle**.
    - **Multiple Cycles**: select the cycles in the list. Use **Select All** or **Deselect All** if necessary.
-3. Click **Print / Save as PDF**. The print dialog of your browser opens.
-4. Select the printer, or select **Save as PDF**.
-5. Click **Print** or **Save**.
+4. Click **Print / Save as PDF**. The print dialog of your browser opens.
+5. Select the printer, or select **Save as PDF**.
+6. Click **Print** or **Save**.
 
 ## Result
 

@@ -1,7 +1,7 @@
 - banner:
   - heading "Analytics" [level=1]
   - button "Filter cycle view": Cycle 2
-  - button "More actions"
+  - button "Settings"
 - main:
   - text: /Cycle Length \d+ days Estimated Peak Day CD \d+ \(\d+-\d+-\d+\) Luteal Phase Count \d+ days Intercourse Frequency 3/
   - tabpanel "Cycle Analytics":

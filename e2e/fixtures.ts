@@ -1,4 +1,6 @@
+import { expect } from '@playwright/test';
 import type { Page } from '@playwright/test';
+import { en } from '../src/i18n/locales/en';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../src/utils/storageKeys';
 
 /** The date of "today" in the browser, so that the dates on the screen are stable. */
@@ -42,3 +44,38 @@ export const labelPattern = (template: string, values: Record<string, string | n
       })
       .join('')}$`
   );
+
+/** Opens Settings from the gear of the top bar. */
+export const openSettings = async (page: Page) => {
+  await page.getByRole('banner').getByRole('button', { name: en.settings.open }).click();
+  const settings = page.getByRole('dialog', { name: en.settings.title });
+  await expect(settings).toBeVisible();
+  return settings;
+};
+
+/** Loads the demo cycles from Settings, when the app has no data. */
+export const loadDemoData = async (page: Page) => {
+  const settings = await openSettings(page);
+  await settings.getByRole('button', { name: en.settings.loadDemo }).click();
+  await expect(settings).toBeHidden();
+};
+
+/** Opens Share chart from the chart options menu. */
+export const openShareChart = async (page: Page) => {
+  const panel = page.getByRole('tabpanel', { name: en.tabs.chart });
+  if (!(await panel.isVisible())) {
+    const nav = page.getByRole('navigation', { name: en.mobileTabs.navLabel });
+    if (await nav.isVisible()) {
+      await nav.getByRole('button', { name: en.mobileTabs.chart, exact: true }).click();
+    } else {
+      await page.getByRole('tab', { name: en.tabs.chart }).click();
+    }
+    // A click during the page slide reaches the slide, not the page
+    await page.waitForFunction(() => !document.documentElement.dataset.pageTransition);
+  }
+  await page.getByRole('button', { name: en.chartStrip.optionsLabel }).click();
+  await page.getByRole('menuitem', { name: en.chartStrip.shareChart }).click();
+  const dialog = page.getByRole('dialog', { name: en.exportModal.title });
+  await expect(dialog).toBeVisible();
+  return dialog;
+};

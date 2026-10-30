@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
-import { openApp } from './fixtures';
+import { openApp, openSettings } from './fixtures';
 
 /** Presses the back button of the browser. The app changes only its own history entries. */
 const pressBack = (page: Page) => page.evaluate(() => window.history.back());
@@ -37,21 +37,17 @@ test.describe('Back button and address', () => {
     await page.getByRole('button', { name: en.actions.save }).click();
     await expect(page.getByRole('status')).toHaveText(en.todayView.savedNotice);
 
-    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-    await page
-      .getByRole('button', { name: new RegExp(en.actions.exportPdf.replace('/', '\\/')) })
-      .click();
-    const exportDialog = page.getByRole('dialog', { name: en.exportModal.title });
-    await exportDialog.getByRole('button', { name: en.actions.clearData }).click();
+    const settings = await openSettings(page);
+    await settings.getByRole('button', { name: en.settings.deleteAll }).click();
     const confirm = page.getByRole('dialog', { name: en.confirmDialog.clearTitle });
     await expect(confirm).toBeVisible();
 
     await pressBack(page);
     await expect(confirm).toBeHidden();
-    await expect(exportDialog).toBeVisible();
+    await expect(settings).toBeVisible();
 
     await pressBack(page);
-    await expect(exportDialog).toBeHidden();
+    await expect(settings).toBeHidden();
     await expect(panel(page, 'today')).toBeVisible();
   });
 

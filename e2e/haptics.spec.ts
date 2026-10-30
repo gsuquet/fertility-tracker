@@ -1,7 +1,7 @@
 import { expect, test } from '@playwright/test';
 import type { Page } from '@playwright/test';
 import { en } from '../src/i18n/locales/en';
-import { openApp } from './fixtures';
+import { openApp, openSettings } from './fixtures';
 
 /** A Vibration API that records each pattern. */
 const recordVibrations = async (page: Page) => {
@@ -36,10 +36,10 @@ test.describe('Haptic feedback', () => {
     await expect.poll(() => vibrations(page)).toEqual([10, 15, 10]);
     await page.keyboard.press('Escape');
 
-    await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-    const menu = page.getByRole('dialog', { name: en.menu.mobileMenuLabel });
-    await menu.getByRole('button', { name: en.menu.hapticsOn }).click();
-    await expect(menu.getByRole('button', { name: en.menu.hapticsOff })).toBeVisible();
+    const settings = await openSettings(page);
+    const vibration = settings.getByRole('switch', { name: en.settings.vibration });
+    await vibration.click();
+    await expect(vibration).toHaveAttribute('aria-checked', 'false');
     await page.keyboard.press('Escape');
 
     // The choice stays after a reload

@@ -1,5 +1,4 @@
 import type React from 'react';
-import { useState } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { useTheme } from '../context/ThemeContext';
 import { useCycle } from '../context/CycleContext';
@@ -20,19 +19,10 @@ import {
   CalendarDays,
   Info,
   BookOpen,
-  MoreVertical,
-  X,
-  Sparkles,
   Smartphone,
-  Keyboard,
-  Vibrate,
-  VibrateOff,
+  Settings,
 } from 'lucide-react';
-import { getAppVersion } from '../domain/appVersion';
-import { Modal } from './Modal';
 import { useShortcutHint } from '../hooks/useKeyboardShortcuts';
-import { useSheetDrag } from '../hooks/useSheetDrag';
-import { isHapticsSupported, setHapticsEnabled, useHapticsEnabled } from '../utils/haptics';
 
 interface HeaderProps {
   activeTab: ActiveTab;
@@ -40,7 +30,7 @@ interface HeaderProps {
   onOpenExport: () => void;
   onOpenVersion: () => void;
   onOpenWelcome: () => void;
-  onOpenShortcuts: () => void;
+  onOpenSettings: () => void;
   /** Installs the app. Not given when the app is installed or the browser cannot install it. */
   onInstall?: (() => void) | undefined;
   /** Receives the element of the top bar that holds the page controls on a phone */
@@ -53,30 +43,21 @@ export const Header: React.FC<HeaderProps> = ({
   onOpenExport,
   onOpenVersion,
   onOpenWelcome,
-  onOpenShortcuts,
+  onOpenSettings,
   onInstall,
   onTopBarSlot,
 }) => {
   const { language, setLanguage, t } = useLanguage();
   const { theme, toggleTheme } = useTheme();
   const { setSelectedObservation } = useCycle();
-  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const hint = useShortcutHint();
   const pickerFirst = useMediaQuery(PHONE_QUERY) && activeTab === 'chart';
-  const hapticsOn = useHapticsEnabled();
-  // On a phone, a drag down closes the menu as the close button does
-  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(
-    () => setIsMoreMenuOpen(false),
-    isMoreMenuOpen
-  );
 
   // Today opens on today, not on a day that the chart opened before
   const handleNewEntry = () => {
     setSelectedObservation(null);
     setActiveTab('today');
   };
-
-  const currentVersion = getAppVersion();
 
   return (
     <header className={`app-header page-${activeTab}`}>
@@ -239,171 +220,17 @@ export const Header: React.FC<HeaderProps> = ({
           {theme === 'dark' ? <Sun size={18} /> : <Moon size={18} />}
         </button>
 
-        {/* Mobile More Actions Button */}
+        {/* Settings: the gear of the top bar, on each screen width (RFC 0002) */}
         <button
           type="button"
-          className="icon-button mobile-more-btn"
-          onClick={() => setIsMoreMenuOpen(true)}
-          title={t.menu.moreActionsTitle}
-          aria-label={t.menu.moreActionsLabel}
-          aria-expanded={isMoreMenuOpen}
+          className="icon-button settings-btn"
+          onClick={onOpenSettings}
+          title={t.settings.open}
+          aria-label={t.settings.open}
         >
-          <MoreVertical size={18} />
+          <Settings size={18} />
         </button>
       </div>
-
-      {/* Mobile Actions Bottom Sheet: the Modal primitive renders it in a portal */}
-      {isMoreMenuOpen && (
-        <Modal
-          label={t.menu.mobileMenuLabel}
-          onClose={() => setIsMoreMenuOpen(false)}
-          className="modal-overlay mobile-menu-overlay"
-          panelClassName="mobile-action-sheet"
-        >
-          <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
-          <div className="mobile-action-sheet-header" {...dragHandlers}>
-            <div className="sheet-header-title">
-              <Sparkles size={16} className="sheet-icon" />
-              <span>{t.menu.title}</span>
-            </div>
-            <button
-              type="button"
-              className="icon-button sheet-close-btn"
-              onClick={() => setIsMoreMenuOpen(false)}
-              aria-label={t.menu.closeMenu}
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          <div className="mobile-action-sheet-body" ref={bodyRef}>
-            {onInstall && (
-              <button
-                type="button"
-                className="sheet-action-item"
-                onClick={() => {
-                  setIsMoreMenuOpen(false);
-                  onInstall();
-                }}
-              >
-                <div className="sheet-action-icon install-icon-bg">
-                  <Smartphone size={18} />
-                </div>
-                <div className="sheet-action-content">
-                  <strong>{t.install.menuEntry}</strong>
-                  <span>{t.install.menuHint}</span>
-                </div>
-              </button>
-            )}
-
-            {/* Export Option */}
-            <button
-              type="button"
-              className="sheet-action-item"
-              onClick={() => {
-                setIsMoreMenuOpen(false);
-                onOpenExport();
-              }}
-            >
-              <div className="sheet-action-icon export-icon-bg">
-                <Download size={18} />
-              </div>
-              <div className="sheet-action-content">
-                <strong>{t.actions.exportPdf}</strong>
-                <span>{t.menu.exportHint}</span>
-              </div>
-            </button>
-
-            {/* Welcome & Guide Option */}
-            <button
-              type="button"
-              className="sheet-action-item"
-              onClick={() => {
-                setIsMoreMenuOpen(false);
-                onOpenWelcome();
-              }}
-            >
-              <div className="sheet-action-icon guide-icon-bg">
-                <BookOpen size={18} />
-              </div>
-              <div className="sheet-action-content">
-                <strong>{t.welcomeModal.title}</strong>
-                <span>{t.menu.guideHint}</span>
-              </div>
-            </button>
-
-            {/* Version & About Option */}
-            <button
-              type="button"
-              className="sheet-action-item"
-              onClick={() => {
-                setIsMoreMenuOpen(false);
-                onOpenVersion();
-              }}
-            >
-              <div className="sheet-action-icon info-icon-bg">
-                <Info size={18} />
-              </div>
-              <div className="sheet-action-content">
-                <div className="sheet-action-title-row">
-                  <strong>{t.versionTracker.title}</strong>
-                  <span className="sheet-version-badge">v{currentVersion}</span>
-                </div>
-                <span>{t.menu.versionHint}</span>
-              </div>
-            </button>
-
-            {/* A tablet with a keyboard uses the phone menu too */}
-            <button
-              type="button"
-              className="sheet-action-item"
-              onClick={() => {
-                setIsMoreMenuOpen(false);
-                onOpenShortcuts();
-              }}
-            >
-              <div className="sheet-action-icon guide-icon-bg">
-                <Keyboard size={18} />
-              </div>
-              <div className="sheet-action-content">
-                <strong>{t.shortcuts.title}</strong>
-                <span>{t.shortcuts.menuHint}</span>
-              </div>
-            </button>
-
-            <div className="sheet-divider" />
-
-            {/* Language & Theme Controls Row */}
-            <div className="sheet-quick-toggles">
-              <button
-                type="button"
-                className="sheet-toggle-btn"
-                onClick={() => setLanguage(language === 'en' ? 'fr' : 'en')}
-              >
-                <Globe size={16} />
-                <span>{t.menu.languageToggle}</span>
-              </button>
-
-              <button type="button" className="sheet-toggle-btn" onClick={toggleTheme}>
-                {theme === 'dark' ? <Sun size={16} /> : <Moon size={16} />}
-                <span>{theme === 'dark' ? t.menu.themeDark : t.menu.themeLight}</span>
-              </button>
-
-              {/* Only a browser with the Vibration API can vibrate: Safari on iOS cannot */}
-              {isHapticsSupported() && (
-                <button
-                  type="button"
-                  className="sheet-toggle-btn sheet-toggle-wide"
-                  onClick={() => setHapticsEnabled(!hapticsOn)}
-                >
-                  {hapticsOn ? <Vibrate size={16} /> : <VibrateOff size={16} />}
-                  <span>{hapticsOn ? t.menu.hapticsOn : t.menu.hapticsOff}</span>
-                </button>
-              )}
-            </div>
-          </div>
-        </Modal>
-      )}
     </header>
   );
 };

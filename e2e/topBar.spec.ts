@@ -33,7 +33,7 @@ test.describe('Top bar of a narrow phone in French', () => {
       bar.getByRole('button', { name: fr.chartStrip.view35 }),
       bar.getByRole('button', { name: fr.chartStrip.viewStrip }),
       bar.getByRole('button', { name: fr.chartStrip.optionsLabel }),
-      bar.getByRole('button', { name: fr.menu.moreActionsLabel }),
+      bar.getByRole('button', { name: fr.settings.open }),
     ];
     // The label of the picker shows in full: "Cycle 2", not "Cycle…"
     const label = bar.locator('.cycle-selector-text.mobile-text');

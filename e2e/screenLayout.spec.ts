@@ -3,7 +3,7 @@ import type { Locator, Page } from '@playwright/test';
 import { buildDemoObservations } from '../src/domain/demoData';
 import { en } from '../src/i18n/locales/en';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
-import { TODAY, escapeRegExp, labelPattern, openApp } from './fixtures';
+import { TODAY, labelPattern, openApp, openSettings, openShareChart } from './fixtures';
 
 /**
  * The ARIA snapshot of each screen, at the two sizes of ADR 0006. The snapshots are in
@@ -87,17 +87,11 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
     }
     return settled(page.getByRole('dialog'));
   },
-  'export-dialog': async (page, size) => {
-    if (size === 'phone') {
-      await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-      await page
-        .getByRole('dialog', { name: en.menu.mobileMenuLabel })
-        .getByRole('button', { name: new RegExp(escapeRegExp(en.actions.exportPdf)) })
-        .click();
-    } else {
-      await page.getByRole('banner').getByRole('button', { name: en.actions.exportPdf }).click();
-    }
-    return settled(page.getByRole('dialog'));
+  'export-dialog': async page => settled(await openShareChart(page)),
+  settings: async page => {
+    const settings = await openSettings(page);
+    // The phone page has no slide. The desktop dialog slides as the other dialogs do.
+    return settled(settings);
   },
   'version-dialog': async page => {
     // Legal opens the system tab. The release notes change at each release.
@@ -114,11 +108,8 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
   },
   'welcome-guide': async (page, size) => {
     if (size === 'phone') {
-      await page.getByRole('button', { name: en.menu.moreActionsLabel }).click();
-      await page
-        .getByRole('dialog', { name: en.menu.mobileMenuLabel })
-        .getByRole('button', { name: new RegExp(escapeRegExp(en.welcomeModal.title)) })
-        .click();
+      const settings = await openSettings(page);
+      await settings.getByRole('button', { name: en.settings.welcomeGuide }).click();
     } else {
       await page.getByRole('banner').getByRole('button', { name: en.welcomeModal.title }).click();
     }
