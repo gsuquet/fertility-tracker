@@ -1,6 +1,6 @@
 # Check the layout on real devices
 
-Do these checks before a release that changes the layout, and before step 4b of [RFC 0002](../records/rfcs/0002-phone-first-redesign.md). The automatic tests cannot do them. They need a real phone, a screen reader or an installed application. The automatic checks are in [Layout checks](../reference/layout-checks.md).
+Do these checks before a release that changes the layout. The automatic tests cannot do them. They need a real phone, a screen reader or an installed application. The automatic checks are in [Layout checks](../reference/layout-checks.md).
 
 ## Before you start
 
