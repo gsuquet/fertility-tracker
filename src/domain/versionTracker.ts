@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.46.1',
+    date: '2026-10-30',
+    title: 'No Future Days in the Chart',
+    titleFr: 'Pas de jours futurs dans le graphique',
+    tagline: 'The chart and the observation sheet stop at today',
+    taglineFr: 'Le graphique et la fiche d’observation s’arrêtent à aujourd’hui',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The empty cards after today in the chart are disabled, with no + sign',
+      'The date field of the observation sheet does not go past today',
+      'A saved day after today, from an older version, still opens, so you can fix or delete it',
+    ],
+    highlightsFr: [
+      'Les cartes vides après aujourd’hui dans le graphique sont désactivées, sans signe +',
+      'Le champ de date de la fiche d’observation ne va pas au-delà d’aujourd’hui',
+      'Un jour enregistré après aujourd’hui, d’une ancienne version, s’ouvre encore : vous pouvez le corriger ou le supprimer',
+    ],
+  },
+  {
     version: '1.46.0',
     date: '2026-10-30',
     title: 'Full Weeks in the Calendar',

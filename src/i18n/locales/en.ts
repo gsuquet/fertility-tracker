@@ -263,7 +263,7 @@ export const en = {
     notesTooltip: 'Has notes',
     cycleBadge: 'Cycle',
     blankDays: '(Days 1 - 35)',
-    blankHint: 'Click any cell to log your observation',
+    blankHint: 'Click today to log your observation',
     peakOnDay: '{peak}: Day {day}',
     dayCode: 'Day {day}: {code}',
     scrollLeft: 'Scroll left',

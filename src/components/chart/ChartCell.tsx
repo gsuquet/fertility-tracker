@@ -4,7 +4,7 @@ import { Plus, MessageSquare } from 'lucide-react';
 import { useLanguage } from '../../context/LanguageContext';
 import { formatMessage } from '../../i18n';
 import type { Observation } from '../../types/crms';
-import { formatDayOfWeek } from '../../utils/dateUtils';
+import { formatDayOfWeek, getTodayStr } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 import { ChartCellPopover } from './ChartCellPopover';
 import { showsEmptyStamp } from '../../domain/stampCalculator';
@@ -144,7 +144,10 @@ interface ChartEmptyCellProps {
   onOpen: (date: string, dayNum: number) => void;
 }
 
-/** A day with no observation, in a cycle row or in the blank grid */
+/**
+ * A day with no observation, in a cycle row or in the blank grid. A day after today is disabled:
+ * it has no + sign and does not open.
+ */
 export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
   dayNum,
   dateStr,
@@ -156,21 +159,23 @@ export const ChartEmptyCell: React.FC<ChartEmptyCellProps> = ({
 }) => {
   const { t } = useLanguage();
   const compact = viewMode === 'compact';
+  const isFuture = dateStr > getTodayStr();
   return (
     <button
       type="button"
-      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''} ${selected ? 'is-selected' : ''}`}
+      className={`chart-cell empty-cell paper-cell ${isToday ? 'is-today' : ''} ${isFuture ? 'future-day' : ''} ${selected ? 'is-selected' : ''}`}
       aria-current={isToday ? 'date' : undefined}
-      aria-pressed={selected}
+      aria-pressed={isFuture ? undefined : selected}
+      disabled={isFuture}
       onClick={() => onOpen(dateStr, dayNum)}
-      aria-label={formatMessage(labelTemplate, {
+      aria-label={formatMessage(isFuture ? t.chartStrip.blankCellLabel : labelTemplate, {
         day: dayNum,
         date: dateStr,
         today: isToday ? t.chartStrip.todaySuffix : '',
       })}
     >
       <CellHeader dayNum={dayNum} dateStr={dateStr} compact={compact} />
-      <Plus size={16} className="add-icon" />
+      {!isFuture && <Plus size={16} className="add-icon" />}
     </button>
   );
 };

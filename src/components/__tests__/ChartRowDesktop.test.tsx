@@ -283,8 +283,8 @@ describe('ChartRow on a desktop', () => {
       expect(document.activeElement).toBe(today);
     }
 
-    const [current] = screen.getAllByRole('region', { name: /^Cycle \d$/ });
-    const cards = within(current as HTMLElement).getAllByRole('button', { pressed: false });
+    const [, previous] = screen.getAllByRole('region', { name: /^Cycle \d$/ });
+    const cards = within(previous as HTMLElement).getAllByRole('button', { pressed: false });
     const first = cards[0] as HTMLElement;
     first.focus();
     fireEvent.keyDown(first, { key: 'ArrowLeft' });
@@ -293,6 +293,25 @@ describe('ChartRow on a desktop', () => {
     last.focus();
     fireEvent.keyDown(last, { key: 'ArrowRight' });
     expect(document.activeElement).toBe(last);
+  });
+
+  it('does not move the selection to a day after today', () => {
+    renderChart(buildDemoObservations(TODAY));
+    const today = screen.getByRole('button', { current: 'date' });
+    today.focus();
+    const event = new KeyboardEvent('keydown', {
+      key: 'ArrowRight',
+      bubbles: true,
+      cancelable: true,
+    });
+    today.dispatchEvent(event);
+    expect(event.defaultPrevented).toBe(false);
+    expect(document.activeElement).toBe(today);
+    expect(today).toHaveAttribute('aria-pressed', 'true');
+    // A disabled day after today is not a toggle
+    const later = today.nextElementSibling as HTMLElement;
+    expect(later).toBeDisabled();
+    expect(later).not.toHaveAttribute('aria-pressed');
   });
 
   it('selects today again when the selected day no longer shows', () => {

@@ -19,7 +19,7 @@ import { ProgressiveObservationForm } from './observation/ProgressiveObservation
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { formatMessage } from '../i18n';
 import { X } from 'lucide-react';
-import { addDays, getTodayStr } from '../utils/dateUtils';
+import { addDays, getTodayStr, notAfterToday } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import type { Observation } from '../types/crms';
 
@@ -109,7 +109,9 @@ export const ObservationDrawer: React.FC = () => {
    * Loads the saved observation of the new date. A form with no change follows the date, so the
    * values of a saved day are not copied to another day. A draft stays on a date with no observation.
    */
-  const changeDate = (day: string) => {
+  /** A later date becomes today: the sheet does not log a day after today */
+  const changeDate = (picked: string) => {
+    const day = notAfterToday(picked);
     const next = findSaved(day);
     if (next || !isDraft) show(next);
     setDate(day);
@@ -203,6 +205,7 @@ export const ObservationDrawer: React.FC = () => {
             type="date"
             className="form-input"
             value={date}
+            max={date > getTodayStr() ? undefined : getTodayStr()}
             onChange={e => changeDate(e.target.value)}
             required
           />

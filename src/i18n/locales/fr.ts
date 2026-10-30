@@ -267,7 +267,7 @@ export const fr: TranslationSchema = {
     notesTooltip: 'Contient des notes',
     cycleBadge: 'Cycle',
     blankDays: '(jours 1 à 35)',
-    blankHint: 'Cliquez sur une case pour saisir votre observation',
+    blankHint: 'Cliquez sur aujourd’hui pour saisir votre observation',
     peakOnDay: '{peak} : jour {day}',
     dayCode: 'Jour {day} : {code}',
     scrollLeft: 'Défiler vers la gauche',

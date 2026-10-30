@@ -190,8 +190,8 @@ export const ChartRow: React.FC<ChartRowProps> = ({ onOpenToday, onShare }) => {
     const row = rows.findIndex(cards => cards.includes(card as HTMLElement));
     const col = (rows[row] as HTMLElement[]).indexOf(card as HTMLElement);
     const [dRow, dCol] = step as [number, number];
-    const next = rows[row + dRow]?.[col + dCol];
-    if (!next) return;
+    const next = rows[row + dRow]?.[col + dCol] as HTMLButtonElement | undefined;
+    if (!next || next.disabled) return;
     e.preventDefault();
     next.focus();
     moving.current = true;

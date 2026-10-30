@@ -18,6 +18,7 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 ## Behavior
 
 - The drawer has the date field and the same form as the **Today** page ([Observation form](today.md#observation-form)).
+- The date field has today as its `max`. A later date becomes today. A saved observation after today, from an older version, still opens, so that it can be changed or deleted.
 - From 1024 pixels, the drawer is a panel of 480 pixels at the right. The page behind it has no blur, so that the chart stays visible.
 - The header shows the title, the cycle day and **Saved** or **Not saved**, the ⋮ menu and the close button. The focus starts on the close button.
 - The cycle day comes from the saved observation. A day with no observation gets the cycle day of the **Today** page. A day after today shows no cycle day.

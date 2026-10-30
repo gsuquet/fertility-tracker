@@ -22,7 +22,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 | [ChartStampBar.tsx](../../../src/components/chart/ChartStampBar.tsx)       | The stamp bar: one segment for each day, 6 px high. On a phone, it covers the width of the card and does not scroll. On a desktop, each segment is above its column.                                                                                        |
 | [ChartCell.tsx](../../../src/components/chart/ChartCell.tsx)               | A day card with an observation, or an empty day card. Each card is a native `<button type="button">`.                                                                                                                                                       |
 | [ChartCellPopover.tsx](../../../src/components/chart/ChartCellPopover.tsx) | Details of a day card: code, bleeding, stretch, modifiers, intercourse and notes.                                                                                                                                                                           |
-| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)     | A 35-day grid before the first observation, from today. Each card opens a new observation.                                                                                                                                                                  |
+| [ChartBlankGrid.tsx](../../../src/components/chart/ChartBlankGrid.tsx)     | A 35-day grid before the first observation, from today. Only today opens a new observation.                                                                                                                                                                 |
 | [ChartDayDetail.tsx](../../../src/components/chart/ChartDayDetail.tsx)     | Desktop only. The bar under the rows with the selected day, **Edit** and **Open in Today**. The calendar shows it as a panel, with **Open in Chart** too.                                                                                                   |
 | [ChartLegend.tsx](../../../src/components/chart/ChartLegend.tsx)           | The stamp legend, under the rows. The **Legend** button under the rows and the menu item show it.                                                                                                                                                           |
 
@@ -50,6 +50,7 @@ The first card has the controls. They act on all the rows. Each button is 36 px.
 - Each row has 35 day cards or more. A longer cycle adds cards in groups of 7. All the rows have the same number of cards. **Strip** keeps a card for each day, so that the columns align.
 - The code shows one token on each line, and two lines or less. A token wider than the card ends with an ellipsis. The code does not show the `I` mark and the symptoms. The stamp shows the `I` mark, and the tag shows the symptoms. The accessible name has the full code. A long symptom tag ends with an ellipsis.
 - An empty day card has a dashed border, the weekday, the date and a + sign.
+- An empty day card after today is a disabled button, with a lighter dashed border and no + sign. It does not open, because the app does not log a day after today.
 - Today has a 2 px accent border and `--accent-soft`. The Peak Day has a ring of `--color-warning-ring`.
 - A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 
@@ -91,9 +92,9 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
   - A saved day with no bleeding, mucus or frequency code shows "No bleeding, mucus or frequency code.".
   - **Edit** opens the observation drawer for the day.
   - **Open in Today** opens the **Today** page on that day.
-- The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row. An arrow key with `Alt`, `Ctrl`, `Shift` or the Meta key does not move the selection.
+- The arrow keys on a card move the focus and the selection. Left and right go to the previous and the next day of the row. Up and down go to the same cycle day of the previous and the next row. An arrow key with `Alt`, `Ctrl`, `Shift` or the Meta key does not move the selection. An arrow key toward a day after today does not move the selection.
 - When more than 4 cycles show, each past cycle shows only the cycle day and the stamp, with no stamp bar. The cards keep the columns of the view. The cycle title is a button with `aria-expanded`, which opens or closes the full row. The current cycle always shows its full row.
-- The empty chart (`ChartBlankGrid`) has no selection. A click on its card opens the drawer.
+- The empty chart (`ChartBlankGrid`) has no selection. A click on today opens the drawer. The days after today are disabled.
 - The **Today** tab opens on today, also after **Open in Today**.
 
 ### Other rules
