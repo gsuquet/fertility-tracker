@@ -226,7 +226,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
               isOutside &&
                 !isFutureDay &&
                 formatMessage(t.calendar.opensMonth, {
-                  month: monthNames[Number(dateStr.slice(5, 7)) - 1] as string,
+                  // The month as in a sentence: "August" in English, "août" in French
+                  month: monthOf(dateStr).toLocaleDateString(t.locale, { month: 'long' }),
                 }),
             ].filter(Boolean);
 

@@ -39,6 +39,18 @@ describe('calendar styles', () => {
     expect(base).toMatch(/overflow-wrap:\s*anywhere/);
   });
 
+  it('mutes a day of the month before or after, but keeps its text readable', () => {
+    const [cell] = declarationsOf(calendar, '.calendar-day.outside-month');
+    expect(cell).toMatch(/background:\s*none/);
+    const [text] = declarationsOf(
+      calendar,
+      '.calendar-day.outside-month :is(.calendar-day-num, .calendar-code)'
+    );
+    expect(text).toMatch(/(^|\s)color:\s*var\(--text-muted\)/);
+    const [stamp] = declarationsOf(calendar, '.calendar-day.outside-month .stamp-badge-container');
+    expect(stamp).toMatch(/opacity:\s*0\.5/);
+  });
+
   it('lets a day cell grow to fit its content, from 80 px on a phone', () => {
     for (const cell of declarationsOf(calendar, '.calendar-day')) {
       expect(cell).not.toMatch(/(^|\s)height:\s*\d/);

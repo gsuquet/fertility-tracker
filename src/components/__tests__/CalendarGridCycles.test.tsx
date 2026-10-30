@@ -168,6 +168,19 @@ describe('CalendarGrid on a desktop', () => {
     expect(screen.getByTestId('drawer')).toHaveTextContent('open 2026-09-10');
   });
 
+  it('opens the month of a day before the month, and selects that day', () => {
+    renderCalendar();
+    // September 2026 starts on a Tuesday: Monday is August 31, with no selection state
+    const before = screen.getByRole('button', { name: /^Date 2026-08-31, .*, Opens August$/ });
+    expect(before).not.toHaveAttribute('aria-pressed');
+    expect(before).not.toHaveClass('is-selected');
+    fireEvent.click(before);
+    expect(screen.getByText('August 2026')).toBeInTheDocument();
+    expect(day('2026-08-31')).toHaveAttribute('aria-pressed', 'true');
+    expect(panel()).toHaveTextContent('Mon, Aug 31');
+    expect(screen.getByTestId('drawer')).toHaveTextContent('closed');
+  });
+
   it('opens the selected day in Today or in the chart', () => {
     const onOpenToday = vi.fn();
     const onOpenChart = vi.fn();

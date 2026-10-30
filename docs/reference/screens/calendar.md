@@ -16,10 +16,10 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 ## Behavior
 
 - The grid shows one month in full weeks, from Monday to Sunday. The page has no card around the grid.
-- The first and last weeks show the days of the month before and the month after. Thus, a cycle that crosses two months has no gap. These days:
+- The first and last weeks show the days of the month before and the month after. Thus, the stamps and codes of a cycle that crosses two months have no gap. These days:
   - Have a muted day number and code (`--text-muted`), a stamp at half opacity and no background. They keep their code and their marks.
   - Do not show the cycle tint, the selection or the plus sign.
-  - Open their month on a click. The name of the day ends with "Opens" and the month, for example "Opens August".
+  - Open their month on a click ([Click on a day](#click-on-a-day)). The name of the day ends with "Opens" and the month, for example "Opens August" or "Ouvre août".
   - Are disabled when they are after today, as the other days.
 - Each day shows its number, its stamp and its code. The code has no `I` and no symptom, because the marks show `I` and the drawer shows the symptoms. A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 - A past day with no observation shows a plus sign. A day after today has a dashed edge and is disabled.
@@ -58,7 +58,7 @@ The calendar follows the cycle picker in the top bar.
 | A past cycle      | The first month of the cycle | The days of the cycle             |
 | **All Cycles**    | The month of today           | No tint                           |
 
-The tint is `--accent-light` behind the cell. All the days keep text of full contrast. A line under the grid explains the tint and the marks.
+The tint is `--accent-light` behind the cell. All the days of the month keep text of full contrast. The days of the month before and after have no tint. A line under the grid explains the tint and the marks.
 
 ### Click on a day
 
@@ -66,6 +66,8 @@ The tint is `--accent-light` behind the cell. All the days keep text of full con
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------ |
 | Phone        | The observation drawer opens for that date.                                                                                                |
 | From 1024 px | The click selects the day. The day panel at the right of the grid shows it. A click on the selected day opens the drawer, as on the chart. |
+
+A click on a day of the month before or after opens its month and selects that day. Thus, from 1024 px, the panel shows it. The drawer does not open.
 
 The panel is the day detail of the chart ([Paper Chart Strip page](chart.md)). It shows the stamp, the date, the cycle and the cycle day, the code, the fertility sentence and the saved state.
 
@@ -88,7 +90,7 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 
 - Today (`.calendar-day.is-today`) has a 2-pixel accent border, a round day number and `aria-current="date"`. The date of today comes from `getTodayStr()`.
 - The name of a day gives the date, the code and the facts of the marks. An example is "Date 2026-08-19, Observation H, first day of cycle 2". The row of marks has `aria-hidden="true"`.
-- On a desktop, each day button has `aria-pressed`. The selected day has `aria-pressed="true"`.
+- On a desktop, each day of the month has `aria-pressed`. A day of the month before or after has no `aria-pressed`. The selected day has `aria-pressed="true"`.
 - The month buttons are 44 pixels.
 
 ## Implementation

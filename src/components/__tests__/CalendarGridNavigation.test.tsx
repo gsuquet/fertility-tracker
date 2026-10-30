@@ -102,6 +102,21 @@ describe('CalendarGrid navigation and selection', () => {
     expect(screen.getByText('September 2026')).toBeInTheDocument();
   });
 
+  it('shows the days of December before January, with the month in the language', () => {
+    renderWithProviders(<CalendarGrid />, { language: 'fr' });
+    for (let i = 0; i < 8; i++)
+      fireEvent.click(screen.getByRole('button', { name: 'Mois précédent' }));
+    expect(screen.getByText('Janvier 2026')).toBeInTheDocument();
+    // January 2026 starts on a Thursday and ends on a Saturday
+    expect(
+      screen.getByRole('button', { name: /^Date 2025-12-29, .*, Ouvre décembre$/ })
+    ).toHaveClass('outside-month');
+    expect(
+      screen.getByRole('button', { name: /^Date 2026-02-01, .*, Ouvre février$/ })
+    ).toBeEnabled();
+    expect(screen.queryByRole('button', { name: /^Date 2025-12-28/ })).toBeNull();
+  });
+
   it('allows moving forward from a month two years back', () => {
     renderCalendar();
     for (let i = 0; i < 13; i++) {
