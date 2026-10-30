@@ -114,11 +114,6 @@
     transition: border-color 0.18s ease;
   }
 
-  .calendar-day.empty {
-    border-color: transparent;
-    background: none;
-  }
-
   @media (hover: hover) {
     .calendar-day:hover:not(:disabled) {
       border-color: var(--accent-primary);
@@ -129,6 +124,19 @@
     border-style: dashed;
     background: none;
     cursor: default;
+  }
+
+  /* A day of the month before or after, in the first or last week: muted, with its stamp and code */
+  .calendar-day.outside-month {
+    background: none;
+  }
+
+  .calendar-day.outside-month :is(.calendar-day-num, .calendar-code) {
+    color: var(--text-muted);
+  }
+
+  .calendar-day.outside-month .stamp-badge-container {
+    opacity: 0.5;
   }
 
   /* The days of the selected cycle: a tint behind text of full contrast */

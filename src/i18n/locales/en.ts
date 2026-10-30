@@ -553,6 +553,7 @@ export const en = {
     prevMonth: 'Previous month',
     nextMonth: 'Next month',
     futureDisabled: 'Future months disabled',
+    opensMonth: 'Opens {month}',
     months: [
       'January',
       'February',

@@ -9,7 +9,7 @@ import { ChartDayDetail } from './chart/ChartDayDetail';
 import { cardCodeTokens } from './chart/ChartCell';
 import { useDaySwipe } from '../hooks/useDaySwipe';
 import { DESKTOP_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
-import { getTodayStr } from '../utils/dateUtils';
+import { addDays, getTodayStr } from '../utils/dateUtils';
 import { ChevronLeft, ChevronRight, Plus } from 'lucide-react';
 import { showsEmptyStamp } from '../domain/stampCalculator';
 import { getCycleDayOn } from '../domain/cycleBoundaryDetector';
@@ -82,6 +82,7 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
 
   const firstDayOfMonth = new Date(year, month, 1).getDay();
   const daysInMonth = new Date(year, month + 1, 0).getDate();
+  const monthStart = `${year}-${String(month + 1).padStart(2, '0')}-01`;
 
   const monthNames = t.calendar.months;
 
@@ -117,15 +118,12 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
   const isInSelectedCycle = (date: string) =>
     !!selectedCycle && date <= todayStr && cycleOn(date) === selectedCycle;
 
-  const daysGrid: (number | null)[] = [];
-  // Pad blank start days (Monday = 0)
+  // Full weeks from Monday to Sunday: the first and last weeks show the days of the months around
   const startPadding = (firstDayOfMonth + 6) % 7;
-  for (let i = 0; i < startPadding; i++) {
-    daysGrid.push(null);
-  }
-  for (let day = 1; day <= daysInMonth; day++) {
-    daysGrid.push(day);
-  }
+  const weekCount = Math.ceil((startPadding + daysInMonth) / 7);
+  const daysGrid = Array.from({ length: weekCount * 7 }, (_, idx) =>
+    addDays(monthStart, idx - startPadding)
+  );
 
   const openDrawer = (date: string) => {
     setSelectedObservation(obsMap.get(date) ?? emptyDay(date));
@@ -204,12 +202,10 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
             </div>
           ))}
 
-          {daysGrid.map((dayNum, idx) => {
-            if (dayNum === null) {
-              return <div key={`empty_${idx}`} className="calendar-day empty" />;
-            }
-
-            const dateStr = `${year}-${String(month + 1).padStart(2, '0')}-${String(dayNum).padStart(2, '0')}`;
+          {daysGrid.map(dateStr => {
+            const dayNum = Number(dateStr.slice(8));
+            // A day of the month before or after: muted, and a click opens its month
+            const isOutside = dateStr.slice(0, 7) !== monthStart.slice(0, 7);
             const obs = obsMap.get(dateStr);
             const isFutureDay = dateStr > todayStr;
             const isToday = dateStr === todayStr;
@@ -227,16 +223,23 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
               obs?.isPeakDay && t.calendar.peakDay,
               count && formatMessage(t.calendar.countDay, { number: count }),
               obs?.intercourse && t.calendar.intercourse,
+              isOutside &&
+                !isFutureDay &&
+                formatMessage(t.calendar.opensMonth, {
+                  // The month as in a sentence: "August" in English, "août" in French
+                  month: monthOf(dateStr).toLocaleDateString(t.locale, { month: 'long' }),
+                }),
             ].filter(Boolean);
 
             const classes = [
               'calendar-day',
               obs && 'has-obs',
               isFutureDay && 'future-day',
+              isOutside && 'outside-month',
               isToday && 'is-today',
               startOf !== undefined && 'is-cycle-start',
-              isInSelectedCycle(dateStr) && 'in-cycle',
-              isDesktop && dateStr === selectedDate && 'is-selected',
+              !isOutside && isInSelectedCycle(dateStr) && 'in-cycle',
+              isDesktop && !isOutside && dateStr === selectedDate && 'is-selected',
             ].filter(Boolean);
 
             return (
@@ -245,14 +248,21 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
                 type="button"
                 className={classes.join(' ')}
                 aria-current={isToday ? 'date' : undefined}
-                aria-pressed={isDesktop && !isFutureDay ? dateStr === selectedDate : undefined}
+                aria-pressed={
+                  isDesktop && !isFutureDay && !isOutside ? dateStr === selectedDate : undefined
+                }
                 disabled={isFutureDay}
                 // On a desktop, a second click on the selected day opens the drawer, as on the chart
-                onClick={() =>
-                  isDesktop && dateStr !== selectedDate
-                    ? setSelectedDate(dateStr)
-                    : openDrawer(dateStr)
-                }
+                onClick={() => {
+                  if (isOutside) {
+                    setCurrentMonth(monthOf(dateStr));
+                    setSelectedDate(dateStr);
+                  } else if (isDesktop && dateStr !== selectedDate) {
+                    setSelectedDate(dateStr);
+                  } else {
+                    openDrawer(dateStr);
+                  }
+                }}
                 aria-label={formatMessage(t.calendar.dayLabel, {
                   date: dateStr,
                   status: facts.join(', '),
@@ -273,7 +283,8 @@ export const CalendarGrid: React.FC<CalendarGridProps> = ({ onOpenToday, onOpenC
                     </span>
                   </span>
                 ) : (
-                  !isFutureDay && (
+                  !isFutureDay &&
+                  !isOutside && (
                     <span className="calendar-add-slot" title={t.calendar.clickToAdd}>
                       <Plus size={14} className="add-icon" />
                     </span>
