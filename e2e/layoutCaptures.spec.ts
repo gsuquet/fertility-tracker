@@ -39,32 +39,29 @@ const settle = (page: Page) =>
   page.waitForFunction(() => !document.documentElement.dataset.pageTransition);
 
 /**
- * The browser cannot emulate `display-mode`. Thus, this copies the rules of each
- * `@media (display-mode: …)` block into a style that always applies. The window controls overlay
- * also needs the title bar of the operating system, so the real-device check covers it.
+ * The browser cannot emulate `display-mode`. Thus, this turns on each
+ * `@media (display-mode: standalone, …)` block where it is, in the same layer and order. The window
+ * controls overlay also needs the title bar of the operating system, so the real-device check
+ * covers it.
  */
 const showAsInstalled = (page: Page) =>
   page.evaluate(() => {
-    const rules: string[] = [];
-    for (const sheet of Array.from(document.styleSheets)) {
-      const visit = (list: CSSRuleList) => {
-        for (const rule of Array.from(list)) {
-          if (
-            rule instanceof CSSMediaRule &&
-            rule.conditionText.includes('display-mode: standalone')
-          ) {
-            rules.push(...Array.from(rule.cssRules).map(inner => inner.cssText));
-          } else if ('cssRules' in rule) {
-            visit((rule as CSSGroupingRule).cssRules);
-          }
+    let count = 0;
+    const visit = (list: CSSRuleList) => {
+      for (const rule of Array.from(list)) {
+        if (
+          rule instanceof CSSMediaRule &&
+          rule.conditionText.includes('display-mode: standalone')
+        ) {
+          rule.media.mediaText = 'all';
+          count += 1;
+        } else if ('cssRules' in rule) {
+          visit((rule as CSSGroupingRule).cssRules);
         }
-      };
-      visit(sheet.cssRules);
-    }
-    const style = document.createElement('style');
-    style.textContent = rules.join('\n');
-    document.head.append(style);
-    return rules.length;
+      }
+    };
+    for (const sheet of Array.from(document.styleSheets)) visit(sheet.cssRules);
+    return count;
   });
 
 test.describe('at 1024 px', () => {

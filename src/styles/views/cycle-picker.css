@@ -161,7 +161,7 @@
   }
 
   .current-cycle-badge {
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     font-weight: 700;
     background-color: var(--accent-solid);
     color: var(--color-white);

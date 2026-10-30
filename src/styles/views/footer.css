@@ -4,14 +4,6 @@
    ========================================================================== */
 
 @layer views {
-  /* The installed application has no web page footer. The version dialog shows the legal notice. */
-  @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui),
-    (display-mode: window-controls-overlay) {
-    .app-footer {
-      display: none;
-    }
-  }
-
   /* One line under the last card. The version dialog has the full legal and medical notice. */
   .app-footer {
     display: flex;
@@ -26,6 +18,15 @@
     font-size: var(--font-size-xs);
     color: var(--text-muted);
     text-align: center;
+  }
+
+  /* The installed application has no web page footer. The version dialog shows the legal notice.
+     The block comes after the .app-footer rule, so that it wins in the same layer. */
+  @media (display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui),
+    (display-mode: window-controls-overlay) {
+    .app-footer {
+      display: none;
+    }
   }
 
   .footer-link {

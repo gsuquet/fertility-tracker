@@ -54,10 +54,14 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     highlights: [
       'The I, P and 1, 2, 3 marks on a stamp are 11 pixels, the smallest text of the application',
       'New checks make sure that each phone page fits the screen, in English and in French',
+      'The installed application no longer shows the footer of the web page',
+      'The Current label of the cycle picker is 11 pixels',
     ],
     highlightsFr: [
       'Les marques I, P et 1, 2, 3 sur un timbre font 11 pixels, le plus petit texte de l’application',
       'De nouveaux contrôles vérifient que chaque page tient sur l’écran du téléphone, en anglais et en français',
+      'L’application installée ne montre plus le pied de page du site',
+      'L’étiquette En cours du choix du cycle fait 11 pixels',
     ],
   },
   {
