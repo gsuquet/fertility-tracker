@@ -141,6 +141,8 @@ describe('footer of the installed application', () => {
     const query =
       /@media \(display-mode: standalone\),\s*\(display-mode: fullscreen\),\s*\(display-mode: minimal-ui\),\s*\(display-mode: window-controls-overlay\)\s*\{\s*\.app-footer\s*\{\s*display:\s*none;\s*\}\s*\}/;
     expect(footer).toMatch(query);
+    // In the same layer, the later rule wins: the block must come after the .app-footer rule
+    expect(footer.search(query)).toBeGreaterThan(footer.search(/\n\s*\.app-footer\s*\{/));
   });
 });
 

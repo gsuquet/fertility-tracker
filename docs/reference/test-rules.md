@@ -63,16 +63,17 @@ The setup file `src/setupTests.ts` clears `localStorage` after each test. jsdom 
 
 Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage report does not include them. The settings are in `playwright.config.ts`.
 
-| Item                | Value                                                                                                    |
-| ------------------- | -------------------------------------------------------------------------------------------------------- |
-| Browser             | Chromium                                                                                                 |
-| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                                  |
-| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.                     |
-| Type check          | `npm run typecheck` checks the files with `e2e/tsconfig.json`.                                           |
-| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`, on each page, on the export dialog and on Settings. |
-| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed.                   |
-| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                                       |
-| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                                            |
+| Item                | Value                                                                                                     |
+| ------------------- | --------------------------------------------------------------------------------------------------------- |
+| Browser             | Chromium                                                                                                  |
+| Projects            | `chromium`: a computer screen. `phone`: 390 by 844 pixels with touch, for `e2e/phoneLayout.spec.ts` only. |
+| Application         | The production build: `vite build`, then `vite preview` on port `4173`.                                   |
+| Date in the browser | `2026-10-27T12:00:00Z`, in the `UTC` time zone. `page.clock.setFixedTime()` sets it.                      |
+| Type check          | `npm run typecheck` checks the files with `e2e/tsconfig.json`.                                            |
+| Accessibility tags  | `wcag2a` and `wcag2aa`, with `@axe-core/playwright`, on each page, on the export dialog and on Settings.  |
+| Local browser       | Set `PLAYWRIGHT_CHROMIUM_EXECUTABLE_PATH` to use a Chromium that is already installed.                    |
+| Server reuse        | Set `PW_REUSE=1` to use a server that already runs on port `4173`.                                        |
+| Server port         | Set `PW_PORT` to use a different port. The default is `4173`.                                             |
 
 | Test file                    | Flows                                                                                                                                                                                                                                                                                                                                                                                                                                  |
 | ---------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -89,6 +90,8 @@ Playwright runs the files in `e2e/`. Vitest does not run them, and the coverage 
 | `e2e/haptics.spec.ts`        | On a phone, a save and the Peak Day button vibrate. After the **Vibration** switch of Settings turns the vibrations off, nothing vibrates, also after a reload.                                                                                                                                                                                                                                                                        |
 | `e2e/chartScroll.spec.ts`    | At 390 and 1440 pixels, the chart opens with the cell of today in view, also after a reload and a page change.                                                                                                                                                                                                                                                                                                                         |
 | `e2e/screenLayout.spec.ts`   | At 390 and 1440 pixels, each page and dialog with the demo data matches its ARIA snapshot in `docs/reference/screens/snapshots/`. After a correct change of a screen, run `npx playwright test e2e/screenLayout.spec.ts --update-snapshots`. Then put a pattern back for each value that changes without a screen change, for example the version or the build date. A fixed label, for example a code button, keeps its literal text. |
+| `e2e/phoneLayout.spec.ts`    | On a phone, in English and in French: no page is wider than the screen, and no text is smaller than 11 pixels. The bottom bar marks the open page. The controls of each day are 44 pixels or more. Read [Layout checks](layout-checks.md).                                                                                                                                                                                             |
+| `e2e/layoutCaptures.spec.ts` | Only with `SCREENSHOTS=1`: the captures at 1024 pixels, in French and of the installed application. Read [Layout checks](layout-checks.md).                                                                                                                                                                                                                                                                                            |
 | `e2e/settings.spec.ts`       | On a phone, Settings is a full page over the bottom bar, with the back button at the left. **Back** closes it. The language and the theme stay after a reload.                                                                                                                                                                                                                                                                         |
 
 Each flow in this table must have an end-to-end test.

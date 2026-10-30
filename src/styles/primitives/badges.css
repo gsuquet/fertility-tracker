@@ -118,16 +118,18 @@
     height: 30px;
   }
 
+  /* The I, P and 1, 2, 3 marks: 11 px, the smallest screen text of RFC 0002 */
   .post-peak-number {
     position: absolute;
     top: -5px;
     right: -6px;
     background-color: var(--stamp-light-green-text);
     color: var(--color-white);
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     font-weight: 800;
-    width: 15px;
-    height: 15px;
+    line-height: 1;
+    width: 16px;
+    height: 16px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -141,10 +143,10 @@
     left: 1px;
     background-color: var(--brand-ink);
     color: var(--color-white);
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     font-weight: 800;
-    width: 14px;
-    height: 14px;
+    width: 15px;
+    height: 15px;
     border-radius: 50%;
     display: flex;
     align-items: center;
@@ -157,9 +159,8 @@
   .stamp-sm .intercourse-stamp-overlay {
     top: 1px;
     left: 1px;
-    font-size: var(--font-size-4xs);
-    width: 11px;
-    height: 11px;
+    width: 13px;
+    height: 13px;
   }
 
   .peak-indicator-badge {
@@ -168,10 +169,11 @@
     right: -4px;
     background-color: var(--color-peak);
     color: var(--color-white);
-    font-size: var(--font-size-3xs);
+    font-size: var(--font-size-2xs);
     font-weight: 800;
-    width: 16px;
-    height: 16px;
+    line-height: 1;
+    width: 17px;
+    height: 17px;
     border-radius: 50%;
     display: flex;
     align-items: center;
