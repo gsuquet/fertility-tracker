@@ -94,7 +94,7 @@ The outer line of each colored stamp also has a contrast of 3:1 or more. This li
 
 - The red and the dark green stamps have the border `--stamp-edge-on-fill`. It is transparent in the light theme and a light line in the dark theme.
 - `--stamp-dark-green-light` is `#15913f`, so that the light end of the gradient reaches 3:1 on the tints.
-- In the dark theme, `--stamp-dark-green` is `#168740`. White text on it is 4.59:1, so a lighter value fails the text test.
+- In the dark theme, `--stamp-light-green-border` is `#168740`, so that the light green stamp reaches 3:1 on the dark tints.
 - The yellow stamp has a dark amber border in the light theme, because its fill is too light. In the dark theme, its border is a thin dark line in the fill.
 
 In the dark theme, `--bg-hero` is not lighter than `--bg-surface`. Thus, the status card of the phone does not show as a light panel in a dark page.

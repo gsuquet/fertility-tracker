@@ -178,9 +178,8 @@
 
     --stamp-white-border: #7a8597;
     --stamp-empty: #7a8597;
-    /* The dark green fill is a little lighter, so that it reaches 3:1 on --bg-surface-elevated
-       (popovers). White text on it is 4.59:1: a lighter value fails the 4.5:1 text test. */
-    --stamp-dark-green: #168740;
+    /* The border of the light green stamp is a little lighter, so that it reaches 3:1 on the dark
+       cards and on the calendar tint */
     --stamp-light-green-border: #168740;
     /* On a dark page, a light line makes the red and dark green stamps clearer */
     --stamp-edge-on-fill: rgba(255, 255, 255, 0.2);
