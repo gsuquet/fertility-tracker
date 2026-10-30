@@ -376,6 +376,8 @@ describe('contrast-safe token usage', () => {
     );
     expect(rule?.[1]).toMatch(/border-color:\s*var\(--color-success-border\)/);
     expect(rule?.[1]).toMatch(/opacity:\s*1/);
+    // A disabled button does not lift on hover
+    expect(rule?.[1]).toMatch(/transform:\s*none/);
   });
 
   it('colors the welcome form mode badge with the info tokens', () => {

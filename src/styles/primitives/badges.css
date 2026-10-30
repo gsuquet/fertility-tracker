@@ -193,7 +193,7 @@
     gap: 4px;
   }
 
-  /* The save state of a day: Saved is green, Not saved is amber. The text says it too. */
+  /* Success and warning badges. Today uses them for the save state: Saved and Not saved. */
   .badge-success {
     color: var(--color-success-text);
     background-color: var(--color-success-surface);
