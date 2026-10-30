@@ -4,6 +4,7 @@ import { describe, it, expect } from 'vitest';
 import { CycleAnalyticsView } from '../CycleAnalyticsView';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider, useCycle } from '../../context/CycleContext';
+import { en } from '../../i18n';
 
 const TestAnalyticsApp: React.FC = () => {
   const { loadDemoData } = useCycle();
@@ -30,7 +31,8 @@ const renderAnalyticsView = () => {
 describe('CycleAnalyticsView Component', () => {
   it('renders empty state when no observations are present', () => {
     renderAnalyticsView();
-    expect(screen.getByText('No Observations Logged')).toBeInTheDocument();
+    expect(screen.getByText(en.analytics.emptyTitle)).toBeInTheDocument();
+    expect(screen.getByText(en.analytics.emptyText)).toBeInTheDocument();
     // The analytics tab controls this panel, so the panel id exists also when it is empty
     const panel = screen.getByRole('tabpanel');
     expect(panel).toHaveAttribute('id', 'analytics-panel');
@@ -40,18 +42,21 @@ describe('CycleAnalyticsView Component', () => {
   it('lets the keyboard focus and scroll the mucus trend chart', () => {
     renderAnalyticsView();
     fireEvent.click(screen.getByText('Load Demo Data'));
-    const trend = screen.getByRole('region', { name: 'Creighton Mucus Score Trend (0 to 10)' });
+    const trend = screen.getByRole('region', { name: en.analytics.trendTitle });
     expect(trend).toHaveClass('mucus-trend-wrapper');
     expect(trend).toHaveAttribute('tabindex', '0');
   });
 
-  it('renders cycle phases, stamp distribution, and mucus trend chart when data loaded', () => {
+  it('shows the phases, the trend, the stamps, the summary and the explanation, in this order', () => {
     renderAnalyticsView();
     fireEvent.click(screen.getByText('Load Demo Data'));
-
-    expect(screen.getByText(/Cycle Phases Breakdown/)).toBeInTheDocument();
-    expect(screen.getByText('Mucus & Stamp Score Distribution')).toBeInTheDocument();
-    expect(screen.getByText('Creighton Mucus Score Trend (0 to 10)')).toBeInTheDocument();
-    expect(screen.getByText('Practitioner Clinical Summary (CrMS / NaPro)')).toBeInTheDocument();
+    const headings = screen.getAllByRole('heading', { level: 2 }).map(h => h.textContent);
+    expect(headings).toEqual([
+      en.analytics.phasesTitle,
+      en.analytics.trendTitle,
+      en.analytics.stampsTitle,
+      en.analytics.clinicalTitle,
+      en.analytics.mcsGuideTitle,
+    ]);
   });
 });

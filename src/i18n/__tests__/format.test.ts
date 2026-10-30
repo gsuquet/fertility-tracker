@@ -1,5 +1,5 @@
 import { describe, it, expect } from 'vitest';
-import { formatMessage } from '../format';
+import { formatDays, formatMessage, isSingular } from '../format';
 
 describe('formatMessage', () => {
   it('replaces each placeholder with its value', () => {
@@ -18,5 +18,24 @@ describe('formatMessage', () => {
     expect(formatMessage('{toString} {constructor} {n}', { n: 1 })).toBe(
       '{toString} {constructor} 1'
     );
+  });
+});
+
+describe('formatDays', () => {
+  it('writes at most one decimal, in the format of the locale', () => {
+    expect(formatDays(28, 'en-US')).toBe('28');
+    expect(formatDays(28.5, 'en-US')).toBe('28.5');
+    expect(formatDays(28.5, 'fr-FR')).toBe('28,5');
+    expect(formatDays(2.96, 'en-US')).toBe('3');
+  });
+});
+
+describe('isSingular', () => {
+  it('follows the plural rules of the locale', () => {
+    expect(isSingular(1, 'en-US')).toBe(true);
+    expect(isSingular(0, 'en-US')).toBe(false);
+    expect(isSingular(1.5, 'en-US')).toBe(false);
+    expect(isSingular(1.5, 'fr-FR')).toBe(true);
+    expect(isSingular(2, 'fr-FR')).toBe(false);
   });
 });

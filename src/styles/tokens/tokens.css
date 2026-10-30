@@ -39,6 +39,9 @@
     /* Accent fills behind white text */
     --accent-solid: #1f3a5f;
     --accent-solid-hover: #172c48;
+    /* The phase before the Peak Day, on the phase bars of Analytics and of the chart */
+    --phase-before-peak: #1f3a5f;
+    --phase-before-peak-text: #ffffff;
     --accent-light: #e6ecf4;
     --accent-glow: rgba(31, 58, 95, 0.15);
     --accent-soft: rgba(31, 58, 95, 0.07);
@@ -158,6 +161,9 @@
     --accent-primary: #a9c1e0;
     --accent-solid: #34659e;
     --accent-solid-hover: #2d5b8f;
+    /* A light blue reaches 3:1 on the dark card, so its number is dark */
+    --phase-before-peak: #8fb3dd;
+    --phase-before-peak-text: #10233a;
     --accent-light: rgba(169, 193, 224, 0.16);
     --accent-glow: rgba(169, 193, 224, 0.25);
     --accent-soft: rgba(169, 193, 224, 0.08);

@@ -57,13 +57,15 @@ The first card has the controls. They act on all the rows. Each button is 36 px.
 
 The bar uses the four phases of Analytics ([Cycle and phase rules](../cycle-and-phase-rules.md)), day by day. A day with a bleeding code or a red stamp before the Peak Day is a menses day.
 
-| Phase                          | Color                 |
-| ------------------------------ | --------------------- |
-| Menses, before the Peak Day    | `--stamp-red`         |
-| Follicular, up to the Peak Day | `--color-info`        |
-| Days 1 to 3 after the Peak Day | `--stamp-light-green` |
-| Luteal, after the count        | `--stamp-dark-green`  |
-| No observation                 | `--bg-surface-border` |
+| Phase                                 | Color                 |
+| ------------------------------------- | --------------------- |
+| Menses, before the Peak Day           | `--stamp-red`         |
+| Before Peak Day, up to the Peak Day   | `--phase-before-peak` |
+| Post-Peak count: days 1 to 3 after it | `--stamp-light-green` |
+| After the count                       | `--stamp-dark-green`  |
+| No observation                        | `--bg-surface-border` |
+
+The colors and the names are the same as on the **Cycle phases** bar of Analytics.
 
 ### Shared scroll
 

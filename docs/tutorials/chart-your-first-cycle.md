@@ -55,9 +55,9 @@ The row shows five stamps: red, white, then three light green stamps. The white 
 ## Look at the statistics
 
 1. Click **Cycle Analytics**. On a phone, click **Analytics**.
-2. Find **Cycle Phases Breakdown**.
+2. Find **Cycle phases**.
 
-The follicular phase is 2 days: day 1 to the Peak Day. The luteal phase is 3 days: the days after the Peak Day.
+The bar shows 1 day of menses, 1 day before the Peak Day with the Peak Day, and the 3 days of the Post-Peak count.
 
 ## What you did
 

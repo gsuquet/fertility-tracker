@@ -23,7 +23,7 @@ All the text that the user sees comes from the dictionary. This includes:
 - JSX text and the `aria-label`, `aria-description`, `title`, `placeholder` and `alt` attributes.
 - The chart cell labels, the details, the legends, the calendar month and day names, the cycle picker and the footer.
 - The empty analytics page, the printed report, the chart subtitle (`chartStrip.subtitle`, `chartStrip.subtitleBlank`) and the cycle start state (`cycleStartModal.isCycleStartYes`, `isCycleStartNo`).
-- The average values of the statistics bar (`stats.averageDays`, `{value} days (avg)`).
+- The details of the statistics tiles, for example `stats.averageOf` (`Average of {count} cycles`).
 
 Some texts are the same in each language: the CrMS codes (`10KLX3 I AP`, `P`, `I`), the stamp names in cell labels and the prefix `v`. The cycle day abbreviation is `CD` in English and `JC` (_jour du cycle_) in French.
 

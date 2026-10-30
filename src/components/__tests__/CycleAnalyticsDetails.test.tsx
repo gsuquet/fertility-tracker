@@ -1,4 +1,4 @@
-import { screen, fireEvent, within } from '@testing-library/react';
+import { screen, fireEvent } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CycleAnalyticsView } from '../CycleAnalyticsView';
 import { renderWithProviders } from '../../test/render';
@@ -31,14 +31,20 @@ const shortCycle = [
   day('2026-09-13'),
 ];
 
-const summary = () => screen.getByText(`${en.analytics.lutealHealth}:`).closest('div');
+const demo = () => buildDemoObservations('2026-09-30');
+const summaryValue = (label: string) => screen.getByText(label).nextElementSibling;
+const phaseBar = () => document.querySelector('.phase-stack') as HTMLElement;
 const scoreOf = (cycleDay: number) =>
   screen
     .getByTitle(new RegExp(`^CD ${cycleDay}: .*\\(Score: (\\d+)\\)$`))
     .title.match(/Score: (\d+)/)?.[1];
+const stampCount = (label: string) =>
+  [...document.querySelectorAll('.stamp-count')]
+    .find(row => row.querySelector('.stamp-count-label')?.textContent === label)
+    ?.querySelector('.stamp-count-value')?.textContent;
 
 describe('CycleAnalyticsView details', () => {
-  it('scores every stretch and modifier on the trend chart', () => {
+  it('scores every stretch and modifier on the trend chart, with a bar height of 10 % a point', () => {
     renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle });
     expect([2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 13].map(scoreOf)).toEqual([
       '2',
@@ -53,67 +59,82 @@ describe('CycleAnalyticsView details', () => {
       '0',
       '0',
     ]);
-    expect(screen.getByText('(Cycle 1)', { exact: false })).toBeInTheDocument();
+    const bar = (cycleDay: number) =>
+      screen.getByTitle(new RegExp(`^CD ${cycleDay}: `)).querySelector('.trend-bar');
+    expect(bar(5)).toHaveStyle({ height: '60%' });
+    expect(bar(5)).toHaveClass('bar-fertile');
+    expect(bar(4)).toHaveClass('bar-dry');
+    expect(bar(10)).toHaveClass('bar-peak');
   });
 
-  it('flags a short luteal phase', () => {
+  it('names day 1 and each fifth day on the trend axis', () => {
     renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle });
-    expect(summary()).toHaveTextContent(en.analytics.abnormalLuteal);
+    const labels = [...document.querySelectorAll('.trend-bar-label')].map(l => l.textContent);
+    expect(labels.filter(Boolean)).toEqual(['1', '5', '10']);
   });
 
-  it('shows a pending peak when the cycle has no peak yet', () => {
-    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
-    expect(summary()).toHaveTextContent(en.analytics.pendingPeak);
-  });
-
-  it('shows a normal luteal phase for a full cycle', () => {
-    renderWithProviders(<CycleAnalyticsView />, {
-      observations: buildDemoObservations('2026-09-30'),
-    });
-    expect(summary()).toHaveTextContent(en.analytics.normalLuteal);
-  });
-
-  it('shows every cycle in the combined view', () => {
-    renderWithProviders(<CycleAnalyticsView />, {
-      observations: buildDemoObservations('2026-09-30'),
-      selectedCycleId: 'all',
-    });
-    expect(screen.getByText(/All Cycles Combined/)).toBeInTheDocument();
-    expect(screen.getByText('Cycle 2 (Started 2026-09-03)')).toBeInTheDocument();
-    expect(screen.getByText('Cycle 1 (Started 2026-08-06)')).toBeInTheDocument();
-  });
-
-  it('opens and closes the mucus score guide', () => {
-    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle });
-    const toggle = screen.getByRole('button', { name: en.analytics.mcsGuideTitle });
-    fireEvent.click(toggle);
-    expect(
-      within(toggle.parentElement as HTMLElement).getByText(en.analytics.mcsGuideText)
-    ).toBeInTheDocument();
-    fireEvent.click(toggle);
-    expect(screen.queryByText(en.analytics.mcsGuideText)).toBeNull();
-  });
-
-  const phaseValue = (label: string) => screen.getByText(label).nextElementSibling?.textContent;
-
-  it('counts the follicular phase so far before the Peak Day', () => {
-    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
-    expect(phaseValue(en.analytics.follicularPhase)).toBe(`4 days (${en.analytics.inProgress})`);
-    expect(phaseValue(en.analytics.lutealPhase)).toBe('0 days');
-  });
-
-  it('averages the phases per cycle in the combined view', () => {
-    renderWithProviders(<CycleAnalyticsView />, {
-      observations: buildDemoObservations('2026-09-30'),
-      selectedCycleId: 'all',
-    });
-    expect(phaseValue(en.analytics.mensesPhase)).toBe('4 days');
-    expect(phaseValue(en.analytics.follicularPhase)).toBe('13 days');
-    expect(phaseValue(en.analytics.lutealPhase)).toBe('15 days');
-    expect(summary()).toHaveTextContent(en.analytics.normalLuteal);
-    expect(screen.getByText(`${en.labels.peakDay}:`).parentElement).toHaveTextContent(
-      'CD 13 (2026-09-15)'
+  it('shows the four phases in one bar, with the days of each', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: demo() });
+    expect(phaseBar()).toHaveAccessibleName(
+      'Menses: 4 days, Before Peak Day: 9 days, Post-Peak count: 3 days, After the count: 12 days'
     );
+    expect([...phaseBar().children].map(part => part.textContent)).toEqual(['4', '9', '3', '12']);
+    expect(screen.queryByText(en.analytics.noPeakYet)).toBeNull();
+  });
+
+  it('leaves out the empty phases and says that the Peak Day is not there yet', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
+    expect([...phaseBar().children].map(part => part.textContent)).toEqual(['1', '3']);
+    expect(screen.getByText(en.analytics.noPeakYet)).toBeInTheDocument();
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(en.analytics.pendingPeak);
+  });
+
+  it('counts the stamps of the cycle', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: demo() });
+    expect(stampCount(en.analytics.stampBleeding)).toBe('4');
+    expect(stampCount(en.analytics.stampDry)).toBe('18');
+    expect(stampCount(en.analytics.stampFertile)).toBe('3');
+    expect(stampCount(en.analytics.stampCount)).toBe('3');
+  });
+
+  it('flags a short luteal phase of an ended cycle', () => {
+    // A new cycle starts the day after, so the short cycle has ended
+    renderWithProviders(<CycleAnalyticsView />, {
+      observations: [...shortCycle, makeObservation({ date: '2026-09-14', bleeding: 'H' })],
+      selectedCycleId: 'all',
+    });
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(en.analytics.abnormalLuteal);
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveClass('is-abnormal');
+  });
+
+  it('does not judge the luteal phase of the cycle in progress', () => {
+    // Three days after the Peak Day, and a Peak Day on the last day
+    for (const observations of [shortCycle, shortCycle.slice(0, 10)]) {
+      const { unmount } = renderWithProviders(<CycleAnalyticsView />, { observations });
+      expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(
+        en.analytics.inProgressLuteal
+      );
+      expect(summaryValue(en.analytics.lutealHealth)?.className).toBe('');
+      unmount();
+    }
+  });
+
+  it('shows a normal luteal phase and the average mucus score, without the numbers of the tiles', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: demo(), selectedCycleId: 'all' });
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(en.analytics.normalLuteal);
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveClass('is-normal');
+    expect(summaryValue(en.analytics.avgMucusScore)?.textContent).toMatch(/^\d+\.\d$/);
+    expect(screen.queryByText(en.labels.peakDay)).toBeNull();
+    expect(screen.queryByText(en.stats.intercourseCount)).toBeNull();
+  });
+
+  it('shows every cycle and the averages in the combined view', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: demo(), selectedCycleId: 'all' });
+    expect(screen.getByRole('heading', { name: en.analytics.stampsTitleAll })).toBeInTheDocument();
+    expect(screen.getByText('Cycle 2 (Started Sep 3)')).toBeInTheDocument();
+    expect(screen.getByText('Cycle 1 (Started Aug 6)')).toBeInTheDocument();
+    expect([...phaseBar().children].map(part => part.textContent)).toEqual(['4', '9', '3', '12']);
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(en.analytics.normalLuteal);
   });
 
   it('shows decimals and a pending peak when the combined averages need them', () => {
@@ -126,9 +147,49 @@ describe('CycleAnalyticsView details', () => {
       ],
       selectedCycleId: 'all',
     });
-    expect(phaseValue(en.analytics.follicularPhase)).toBe(`1.5 days (${en.analytics.inProgress})`);
-    expect(screen.getByText(`${en.labels.peakDay}:`).parentElement).toHaveTextContent(
-      en.analytics.pendingPeak
+    expect([...phaseBar().children].map(part => part.textContent)).toEqual(['1', '0.5']);
+    expect(summaryValue(en.analytics.lutealHealth)).toHaveTextContent(en.analytics.pendingPeak);
+  });
+
+  it('opens and closes the mucus score guide', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle });
+    const toggle = screen.getByRole('button', { name: en.analytics.mcsGuideTitle });
+    expect(toggle).toHaveAttribute('aria-expanded', 'false');
+    fireEvent.click(toggle);
+    expect(toggle).toHaveAttribute('aria-expanded', 'true');
+    expect(screen.getByText(en.analytics.mcsGuideText).closest('#mcs-guide-body')).not.toBeNull();
+    fireEvent.click(toggle);
+    expect(screen.getByText(en.analytics.mcsGuideText)).not.toBeVisible();
+  });
+
+  it('describes each trend row with its Peak Day and its highest score', () => {
+    const { unmount } = renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle });
+    expect(
+      screen.getByRole('img', { name: 'Peak Day on cycle day 10. Highest score: 10.' })
+    ).toBeInTheDocument();
+    unmount();
+    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
+    expect(
+      screen.getByRole('img', { name: 'No Peak Day yet. Highest score: 4.' })
+    ).toBeInTheDocument();
+  });
+
+  it('keeps an empty column for a missing day, so each day stays in its column', () => {
+    // Day 3 is missing
+    renderWithProviders(<CycleAnalyticsView />, {
+      observations: [...shortCycle.slice(0, 2), ...shortCycle.slice(3, 6)],
+    });
+    const columns = [...document.querySelectorAll('.trend-bar-col')];
+    expect(columns).toHaveLength(6);
+    expect(columns[2]?.querySelector('.trend-bar')).toBeNull();
+    expect(columns[2]).not.toHaveAttribute('title');
+    expect(columns[4]?.textContent).toBe('5');
+  });
+
+  it('uses the singular for a phase of one day', () => {
+    renderWithProviders(<CycleAnalyticsView />, { observations: shortCycle.slice(0, 4) });
+    expect(phaseBar()).toHaveAccessibleName(
+      'Menses: 1 day, Before Peak Day: 3 days, Post-Peak count: 0 days, After the count: 0 days'
     );
   });
 });

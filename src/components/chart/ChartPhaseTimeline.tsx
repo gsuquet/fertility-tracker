@@ -1,5 +1,7 @@
 import type React from 'react';
-import type { Cycle, Observation } from '../../types/crms';
+import type { Cycle } from '../../types/crms';
+import type { DayPhase } from '../../domain/cyclePhases';
+import { dayPhase } from '../../domain/cyclePhases';
 import type { TranslationSchema } from '../../i18n';
 import { formatMessage } from '../../i18n';
 
@@ -9,20 +11,7 @@ interface ChartPhaseTimelineProps {
   t: TranslationSchema;
 }
 
-type Phase = 'menses' | 'follicular' | 'peak' | 'post-peak' | 'luteal' | 'unknown';
-
-/**
- * The phase of a day, with the four phases of Analytics: menses, then the follicular phase up to the Peak
- * Day, then the 3 days of the count, then the luteal phase. A cycle with no Peak Day has no count.
- * The Peak Day is the last day of the follicular phase, with its own name.
- */
-const phaseOf = (obs: Observation | undefined, peakDay: number | undefined): Phase => {
-  if (!obs) return 'unknown';
-  if (obs.cycleDay === peakDay) return 'peak';
-  const afterPeak = peakDay !== undefined && obs.cycleDay > peakDay;
-  if (!afterPeak) return obs.stamp === 'RED' || obs.bleeding ? 'menses' : 'follicular';
-  return obs.cycleDay - (peakDay as number) <= 3 ? 'post-peak' : 'luteal';
-};
+type Phase = DayPhase | 'unknown';
 
 /** The phase bar of a cycle: one segment for each day, over the full width of the card */
 export const ChartPhaseTimeline: React.FC<ChartPhaseTimelineProps> = ({ cycle, totalSlots, t }) => {
@@ -41,7 +30,8 @@ export const ChartPhaseTimeline: React.FC<ChartPhaseTimelineProps> = ({ cycle, t
     <div className="cycle-phase-bar" aria-hidden="true">
       {Array.from({ length: totalSlots }, (_, idx) => {
         const dayNum = idx + 1;
-        const phase = phaseOf(byDay.get(dayNum), peakDay);
+        const obs = byDay.get(dayNum);
+        const phase: Phase = obs ? dayPhase(obs, peakDay) : 'unknown';
         const title =
           phase === 'unknown'
             ? formatMessage(t.common.dayNumber, { day: dayNum })

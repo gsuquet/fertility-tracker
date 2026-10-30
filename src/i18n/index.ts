@@ -11,4 +11,4 @@ export const supportedLanguages: readonly SupportedLanguage[] = ['en', 'fr'] as 
 
 export * from './types';
 export { en, fr };
-export { formatMessage } from './format';
+export { formatDays, formatMessage, isSingular } from './format';

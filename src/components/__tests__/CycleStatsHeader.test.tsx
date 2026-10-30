@@ -1,4 +1,4 @@
-import { screen } from '@testing-library/react';
+import { screen, within } from '@testing-library/react';
 import { describe, it, expect } from 'vitest';
 import { CycleStatsHeader } from '../CycleStatsHeader';
 import { renderWithProviders } from '../../test/render';
@@ -12,15 +12,12 @@ const dryDays = [
   makeObservation({ date: '2026-09-02', stretch: '0', intercourse: true }),
 ];
 
-const LABELS = {
-  'Cycle Length': en.stats.cycleLength,
-  'Peak Day': en.stats.peakDay,
-  'Luteal Phase': en.stats.lutealPhase,
-  Intercourse: en.stats.intercourseCount,
-};
-
-const statValue = (stat: keyof typeof LABELS) =>
-  screen.getByTitle(new RegExp(`^${LABELS[stat]}: `)).querySelector('.stat-value')?.textContent;
+/** The text of the tile with this label: the label, the value with its unit and the detail */
+const tile = (label: string) =>
+  within(screen.getByRole('list', { name: en.stats.label }))
+    .getByText(label)
+    .closest('li')
+    ?.textContent?.replace(label, '');
 
 describe('CycleStatsHeader', () => {
   it('renders nothing without observations', () => {
@@ -28,33 +25,57 @@ describe('CycleStatsHeader', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows the stats of the selected cycle', () => {
+  it('shows four tiles with the values and the details of the selected cycle', () => {
     renderWithProviders(<CycleStatsHeader />, { observations: demo });
-    expect(statValue('Cycle Length')).toBe('28 days');
-    expect(statValue('Peak Day')).toBe('CD 13 (2026-09-15)');
-    expect(statValue('Luteal Phase')).toBe('15 days');
-    expect(statValue('Intercourse')).toBe('3');
+    expect(screen.getAllByRole('listitem')).toHaveLength(4);
+    expect(tile(en.stats.cycleLength)).toBe('28 daysSep 3 – Sep 30');
+    expect(tile(en.stats.peakDay)).toBe('CD 13Sep 15');
+    expect(tile(en.stats.lutealPhase)).toBe(`15 days${en.stats.afterPeak}`);
+    expect(tile(en.stats.intercourseCount)).toBe(`3 days${en.stats.inThisCycle}`);
   });
 
-  it('shows placeholders for a selected cycle without a peak', () => {
+  it('shows no Peak Day and no luteal phase before the Peak Day', () => {
     renderWithProviders(<CycleStatsHeader />, { observations: dryDays });
-    expect(statValue('Peak Day')).toBe('---');
-    expect(statValue('Luteal Phase')).toBe('0 days');
-    expect(statValue('Intercourse')).toBe('1');
+    expect(tile(en.stats.peakDay)).toBe(`---${en.stats.notYet}`);
+    expect(tile(en.stats.lutealPhase)).toBe(`---${en.stats.afterPeak}`);
+    expect(tile(en.stats.intercourseCount)).toBe(`1 day${en.stats.inThisCycle}`);
   });
 
-  it('shows averages and the latest peak for all cycles', () => {
+  it('shows the averages and the latest Peak Day for all cycles', () => {
     renderWithProviders(<CycleStatsHeader />, { observations: demo, selectedCycleId: 'all' });
-    expect(statValue('Cycle Length')).toBe('28.0 days (avg)');
-    expect(statValue('Peak Day')).toBe('CD 13 (2026-09-15)');
-    expect(statValue('Luteal Phase')).toBe('15.0 days (avg)');
-    expect(statValue('Intercourse')).toBe(String(demo.filter(o => o.intercourse).length));
+    expect(tile(en.stats.cycleLength)).toBe('28 daysAverage of 2 cycles');
+    expect(tile(en.stats.peakDay)).toBe('CD 13Latest: Sep 15');
+    expect(tile(en.stats.lutealPhase)).toBe('15 daysAverage of 2 cycles');
+    expect(tile(en.stats.intercourseCount)).toBe(
+      `${demo.filter(o => o.intercourse).length} days${en.stats.inAllCycles}`
+    );
   });
 
-  it('shows placeholders for all cycles without a peak', () => {
-    renderWithProviders(<CycleStatsHeader />, { observations: dryDays, selectedCycleId: 'all' });
-    expect(statValue('Cycle Length')).toBe('2.0 days (avg)');
-    expect(statValue('Peak Day')).toBe('---');
-    expect(statValue('Luteal Phase')).toBe('0 days');
+  it('uses the singular for an average of one cycle', () => {
+    renderWithProviders(<CycleStatsHeader />, {
+      observations: [
+        ...demo.filter(o => o.date >= '2026-09-03'),
+        makeObservation({ date: '2026-10-01', bleeding: 'H' }),
+      ],
+      selectedCycleId: 'all',
+    });
+    expect(tile(en.stats.lutealPhase)).toBe('15 daysAverage of 1 cycle');
+  });
+
+  it('shows one date for a cycle of one day', () => {
+    renderWithProviders(<CycleStatsHeader />, {
+      observations: [makeObservation({ date: '2026-09-01', bleeding: 'H' })],
+    });
+    expect(tile(en.stats.cycleLength)).toBe('1 daySep 1');
+  });
+
+  it('shows decimals, and no luteal phase, for all cycles without a Peak Day', () => {
+    renderWithProviders(<CycleStatsHeader />, {
+      observations: [...dryDays, makeObservation({ date: '2026-09-03', bleeding: 'H' })],
+      selectedCycleId: 'all',
+    });
+    expect(tile(en.stats.cycleLength)).toBe('1.5 daysAverage of 2 cycles');
+    expect(tile(en.stats.peakDay)).toBe(`---${en.stats.notYet}`);
+    expect(tile(en.stats.lutealPhase)).toBe(`---${en.stats.afterPeak}`);
   });
 });
