@@ -127,7 +127,7 @@ describe('TodayView on a desktop', () => {
     renderWithProviders(<TodayView />, {
       observations: [
         makeObservation({ date: '2026-08-01', bleeding: 'H' }),
-        makeObservation({ date: '2026-08-02', mucus: '0' }),
+        makeObservation({ date: '2026-08-02', stretch: '0' }),
         makeObservation({ date: '2026-08-20', bleeding: 'H' }),
       ],
     });
