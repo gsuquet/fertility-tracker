@@ -559,6 +559,7 @@ export const fr: TranslationSchema = {
     prevMonth: 'Mois précédent',
     nextMonth: 'Mois suivant',
     futureDisabled: 'Mois futurs désactivés',
+    opensMonth: 'Ouvre {month}',
     months: [
       'Janvier',
       'Février',

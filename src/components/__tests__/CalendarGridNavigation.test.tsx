@@ -14,13 +14,15 @@ const DrawerProbe = () => {
   );
 };
 
-const renderCalendar = () =>
+const renderCalendar = (
+  observations = [makeObservation({ date: '2026-09-10', stretch: '0', codeString: '0' })]
+) =>
   renderWithProviders(
     <>
       <CalendarGrid />
       <DrawerProbe />
     </>,
-    { observations: [makeObservation({ date: '2026-09-10', stretch: '0', codeString: '0' })] }
+    { observations }
   );
 
 describe('CalendarGrid navigation and selection', () => {
@@ -64,6 +66,40 @@ describe('CalendarGrid navigation and selection', () => {
     renderCalendar();
     fireEvent.click(screen.getByRole('button', { name: 'Date 2026-09-11, No observation' }));
     expect(screen.getByTestId('drawer')).toHaveTextContent('2026-09-11');
+  });
+
+  it('fills the first and last weeks with the days of the months around', () => {
+    renderCalendar([
+      makeObservation({ date: '2026-08-20', bleeding: 'H', codeString: 'H' }),
+      makeObservation({ date: '2026-09-03', stretch: '0', codeString: '0' }),
+    ]);
+    // September 2026 starts on a Tuesday and ends on a Wednesday
+    const before = screen.getByRole('button', {
+      name: 'Date 2026-08-31, No observation, Opens August',
+    });
+    expect(before).toHaveClass('outside-month');
+    expect(before.querySelector('.calendar-add-slot')).toBeNull();
+    const after = screen.getByRole('button', { name: 'Date 2026-10-04, No observation' });
+    expect(after).toHaveClass('outside-month', 'future-day');
+    expect(after).toBeDisabled();
+    expect(screen.queryByRole('button', { name: /^Date 2026-10-05/ })).toBeNull();
+    expect(screen.queryByRole('button', { name: /^Date 2026-08-30/ })).toBeNull();
+
+    // A click opens the month of the day, and not the drawer
+    fireEvent.click(before);
+    expect(screen.getByText('August 2026')).toBeInTheDocument();
+    expect(screen.getByTestId('drawer')).toHaveTextContent('closed');
+
+    // August ends on a Monday: the last week shows the days of September up to Sunday, muted
+    expect(screen.queryByRole('button', { name: /^Date 2026-09-07/ })).toBeNull();
+    const saved = screen.getByRole('button', {
+      name: 'Date 2026-09-03, Observation 0, Opens September',
+    });
+    expect(saved).toHaveClass('outside-month');
+    expect(saved).not.toHaveClass('in-cycle');
+    expect(saved.querySelector('.calendar-code')).toHaveTextContent('0');
+    fireEvent.click(saved);
+    expect(screen.getByText('September 2026')).toBeInTheDocument();
   });
 
   it('allows moving forward from a month two years back', () => {

@@ -15,7 +15,12 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
-- The grid shows one month, from Monday to Sunday. The page has no card around the grid.
+- The grid shows one month in full weeks, from Monday to Sunday. The page has no card around the grid.
+- The first and last weeks show the days of the month before and the month after. Thus, a cycle that crosses two months has no gap. These days:
+  - Have a muted day number and code (`--text-muted`), a stamp at half opacity and no background. They keep their code and their marks.
+  - Do not show the cycle tint, the selection or the plus sign.
+  - Open their month on a click. The name of the day ends with "Opens" and the month, for example "Opens August".
+  - Are disabled when they are after today, as the other days.
 - Each day shows its number, its stamp and its code. The code has no `I` and no symptom, because the marks show `I` and the drawer shows the symptoms. A saved day with no bleeding, mucus or frequency code and the `DARK_GREEN` stamp shows the empty stamp ([Day with no code](../stamp-and-peak-rules.md#day-with-no-code)).
 - A past day with no observation shows a plus sign. A day after today has a dashed edge and is disabled.
 - The next-month button is disabled in the current month. Thus, the user cannot go to a month after the current month.

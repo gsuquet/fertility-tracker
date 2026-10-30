@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.46.0',
+    date: '2026-10-30',
+    title: 'Full Weeks in the Calendar',
+    titleFr: 'Des semaines complètes dans le calendrier',
+    tagline: 'The first and last weeks of a month show the days of the months around it',
+    taglineFr: 'La première et la dernière semaine d’un mois montrent les jours des mois voisins',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The calendar fills the first and last weeks with the days of the month before and after',
+      'These days are muted, but keep their stamp and code, so a cycle shows with no gap',
+      'A click on one of these days opens its month',
+    ],
+    highlightsFr: [
+      'Le calendrier remplit la première et la dernière semaine avec les jours du mois avant et après',
+      'Ces jours sont atténués, mais gardent leur timbre et leur code : un cycle s’affiche sans trou',
+      'Un clic sur l’un de ces jours ouvre son mois',
+    ],
+  },
+  {
     version: '1.45.1',
     date: '2026-10-30',
     title: 'Phone Corrections',
