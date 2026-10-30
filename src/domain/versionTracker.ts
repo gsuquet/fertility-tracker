@@ -44,6 +44,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.43.0',
+    date: '2026-10-30',
+    title: 'Clearer Stamp Edges',
+    titleFr: 'Des bords de timbres plus nets',
+    tagline:
+      'The stamps have a clear edge on the pages, the cards and the calendar, in both themes',
+    taglineFr:
+      'Les timbres ont un bord net sur les pages, les cartes et le calendrier, dans les deux thèmes',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The dark green stamp is a little darker at its light end, so it stays clear on the calendar tint',
+      'On a light page, the red and dark green stamps have no light line at their edge. On a dark page, the light line stays',
+      'The yellow stamp has a dark amber edge, so it is easy to see on a light page',
+      'A test checks that the status card is never lighter than the other cards',
+    ],
+    highlightsFr: [
+      'Le timbre vert foncé est un peu plus foncé à son extrémité claire, et il reste net sur la teinte du calendrier',
+      'Sur une page claire, les timbres rouge et vert foncé n’ont plus de ligne claire sur leur bord. Sur une page sombre, la ligne claire reste',
+      'Le timbre jaune a un bord ambre foncé, et il est facile à voir sur une page claire',
+      'Un test vérifie que la carte d’état n’est jamais plus claire que les autres cartes',
+    ],
+  },
+  {
     version: '1.42.0',
     date: '2026-10-30',
     title: 'Today Uses the Full Desktop Width',
