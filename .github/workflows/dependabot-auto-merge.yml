@@ -17,7 +17,8 @@ concurrency:
 
 jobs:
   enable-auto-merge:
-    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && github.repository == 'gsuquet/fertility-tracker' }}
+    # The actor check skips a run after another person pushes to the branch.
+    if: ${{ github.event.pull_request.user.login == 'dependabot[bot]' && github.actor == 'dependabot[bot]' && github.repository == 'gsuquet/fertility-tracker' }}
     runs-on: ubuntu-24.04
     timeout-minutes: 5
     permissions:

@@ -60,7 +60,9 @@ The commit message check accepts these messages without a type. The pull request
 
 Dependabot writes `build(deps)` titles for npm and `ci(deps)` titles for GitHub Actions. The prefixes are in `commit-message.prefix` in `.github/dependabot.yml`.
 
-Each week, Dependabot opens one pull request for the patch and minor updates of each ecosystem. Each major update has its own pull request. The `dependabot-auto-merge` workflow merges the patch and minor pull requests when CI passes. Read [Commands](commands.md#ci-workflow).
+Each week, Dependabot opens one pull request for the patch and minor updates of each ecosystem. Each major update has its own pull request. Security updates can come at any time, in separate pull requests. The `dependabot-auto-merge` workflow merges the patch and minor pull requests when CI passes. Read [Commands](commands.md#ci-workflow).
+
+For a package with a `0.x` version, Dependabot gives the type minor to a change from `0.3` to `0.4`. This change can break the code, but it merges automatically when CI passes.
 
 ## Examples
 
