@@ -46,20 +46,26 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
     version: '1.43.0',
     date: '2026-10-30',
-    title: 'Clearer Stamps in the Dark Theme',
-    titleFr: 'Des timbres plus nets dans le thème sombre',
-    tagline: 'Each stamp has a clear edge on each surface, in both themes',
-    taglineFr: 'Chaque timbre a un bord net sur chaque surface, dans les deux thèmes',
+    title: 'Clearer Stamp Edges',
+    titleFr: 'Des bords de timbres plus nets',
+    tagline:
+      'The stamps have a clear edge on the pages, the cards and the calendar, in both themes',
+    taglineFr:
+      'Les timbres ont un bord net sur les pages, les cartes et le calendrier, dans les deux thèmes',
     crmsSpecVersion: '1.1.0',
     highlights: [
-      'In the dark theme, the green stamp is a little lighter, so its edge stays clear on the menus',
+      'The dark green stamp is a little darker at its light end, so it stays clear on the calendar tint',
+      'On a light page, the red and dark green stamps have no light line at their edge',
+      'In the dark theme, the dark green stamp is a little lighter, so its edge stays clear in the popovers',
       'The yellow stamp has a dark amber edge, so it is easy to see on a light page',
-      'In the dark theme, the status card has the same color as the other cards',
+      'A test checks that the status card is never lighter than the other cards',
     ],
     highlightsFr: [
-      'Dans le thème sombre, le timbre vert est un peu plus clair, et son bord reste net sur les menus',
+      'Le timbre vert foncé est un peu plus foncé à son extrémité claire, et il reste net sur la teinte du calendrier',
+      'Sur une page claire, les timbres rouge et vert foncé n’ont plus de ligne claire sur leur bord',
+      'Dans le thème sombre, le timbre vert foncé est un peu plus clair, et son bord reste net dans les infobulles',
       'Le timbre jaune a un bord ambre foncé, et il est facile à voir sur une page claire',
-      'Dans le thème sombre, la carte d’état a la même couleur que les autres cartes',
+      'Un test vérifie que la carte d’état n’est jamais plus claire que les autres cartes',
     ],
   },
   {

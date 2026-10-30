@@ -75,10 +75,14 @@ const textTokens = [
   '--color-success-text',
   '--color-warning-text',
 ];
-/** The fill gradient of each stamp, and its opaque border if it has one */
-const stampEdges: { stamp: string; fills: string[]; border: string | null }[] = [
-  { stamp: 'red', fills: ['--stamp-red-light', '--stamp-red'], border: null },
-  { stamp: 'dark green', fills: ['--stamp-dark-green-light', '--stamp-dark-green'], border: null },
+/** The fill gradient of each stamp (badges.css) and its 1 or 2 px border */
+const stampEdges: { stamp: string; fills: string[]; border: string }[] = [
+  { stamp: 'red', fills: ['--stamp-red-light', '--stamp-red'], border: '--stamp-edge-on-fill' },
+  {
+    stamp: 'dark green',
+    fills: ['--stamp-dark-green-light', '--stamp-dark-green'],
+    border: '--stamp-edge-on-fill',
+  },
   {
     stamp: 'light green',
     fills: ['--stamp-light-green-light', '--stamp-light-green'],
@@ -166,19 +170,23 @@ describe('design token contrast (WCAG 2 AA)', () => {
       expect(contrast(color(text), color(fill))).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
     });
 
-    // WCAG 1.4.11: a stamp is seen by its fill or by an opaque border. On each surface, the two
-    // ends of the fill gradient reach 3:1, or else the border does.
+    // WCAG 1.4.11: the outer line of a stamp is its border, seen over each end of the fill
+    // gradient. It reaches 3:1 on each surface, and on the tints behind a stamp: the selected cycle
+    // of the calendar and the hover and today cells (--accent-soft).
+    const stampBackdrops: [string, () => Rgba][] = [
+      ...surfaces.map(surface => [surface, () => color(surface)] as [string, () => Rgba]),
+      ['--calendar-cycle-tint', () => over(color('--calendar-cycle-tint'), color('--bg-surface'))],
+      ['--accent-soft', () => over(color('--accent-soft'), color('--bg-surface'))],
+    ];
     it.each(
       stampEdges.flatMap(({ stamp, fills, border }) =>
-        surfaces.map(surface => [stamp, surface, fills, border] as const)
+        stampBackdrops.map(([name, backdrop]) => [stamp, name, fills, border, backdrop] as const)
       )
-    )('the %s stamp has an edge of 3:1 on %s', (_stamp, surface, fills, border) => {
-      const backdrop = color(surface);
-      const fillReaches = fills.every(fill => contrast(color(fill), backdrop) >= AA_NON_TEXT);
-      // A translucent border is seen over the fill
-      const edge = border === null ? null : over(color(border), color(fills.at(-1) as string));
-      const borderReaches = edge !== null && contrast(edge, backdrop) >= AA_NON_TEXT;
-      expect(fillReaches || borderReaches).toBe(true);
+    )('the %s stamp has an edge of 3:1 on %s', (_stamp, _name, fills, border, backdrop) => {
+      for (const fill of fills) {
+        const edge = over(color(border), color(fill));
+        expect(contrast(edge, backdrop()), fill).toBeGreaterThanOrEqual(AA_NON_TEXT);
+      }
     });
 
     it('--bg-hero is not lighter than --bg-surface', () => {

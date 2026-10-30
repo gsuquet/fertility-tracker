@@ -23,7 +23,7 @@
     /* Light Theme Variables */
     --bg-primary: #f8f6f1;
     --bg-surface: #fffefb;
-    /* Background of the status card of Today. Step 9 of RFC 0002 sets the dark value. */
+    /* Background of the status card of Today. It is never lighter than --bg-surface (test). */
     --bg-hero: #fffefb;
     --bg-surface-elevated: #ffffff;
     --bg-surface-border: #e4dfd4;
@@ -63,7 +63,8 @@
     --stamp-light-green-border: #15803d;
     /* Light ends of the stamp gradients */
     --stamp-red-light: #f43f5e;
-    --stamp-dark-green-light: #16a34a;
+    /* 3:1 or more on the calendar cycle tint and on --accent-soft (WCAG 1.4.11) */
+    --stamp-dark-green-light: #15913f;
     --stamp-light-green-light: #86efac;
     --stamp-yellow: #eab308;
     --stamp-yellow-light: #facc15;
@@ -71,8 +72,11 @@
     /* The yellow fill is light: its edge is a dark amber line of 3:1 or more (WCAG 1.4.11) */
     --stamp-yellow-border: #a16207;
     --stamp-white-text: #0f172a;
-    /* Thin light edge of a dark fill: stamps and dark buttons */
+    /* Thin light edge of a dark fill: dark buttons */
     --border-on-fill: rgba(255, 255, 255, 0.2);
+    /* Edge of the red and dark green stamps. None on a light page: a light line lowers the contrast
+       of the fill. */
+    --stamp-edge-on-fill: rgba(255, 255, 255, 0);
 
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;
@@ -174,10 +178,14 @@
 
     --stamp-white-border: #7a8597;
     --stamp-empty: #7a8597;
-    /* The dark green fill is a little lighter, so that its edge reaches 3:1 on the menus and the
-       popovers. White text on it stays at 4.5:1 or more. */
+    /* The dark green fill is a little lighter, so that it reaches 3:1 on --bg-surface-elevated
+       (popovers). White text on it is 4.59:1: a lighter value fails the 4.5:1 text test. */
     --stamp-dark-green: #168740;
     --stamp-light-green-border: #168740;
+    /* On a dark page, a light line makes the red and dark green stamps clearer */
+    --stamp-edge-on-fill: rgba(255, 255, 255, 0.2);
+    /* The yellow fill is light on a dark page: a dark line in the fill keeps its edge */
+    --stamp-yellow-border: rgba(0, 0, 0, 0.15);
 
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;

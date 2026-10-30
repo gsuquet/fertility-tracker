@@ -90,7 +90,12 @@ Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes 
 
 The edge of a stamp has a contrast of 3:1 or more (WCAG 2 SC 1.4.11), in both themes. `--stamp-white-border` reaches 3:1 on `--stamp-white`, `--bg-surface` and `--bg-primary`. `--stamp-light-green-border` reaches 3:1 on `--bg-surface` and `--bg-primary`. `--stamp-empty`, the dashed edge of the empty stamp of a day with no code, reaches 3:1 on `--bg-surface` and `--bg-primary`. The three edges also reach 3:1 on `--bg-hero`.
 
-A stamp is also seen by its fill. On each surface of both themes, the two ends of the fill gradient reach 3:1, or else the opaque border does. The red and the dark green stamps have no opaque border, so their fills must reach 3:1. In the dark theme, `--stamp-dark-green` is `#168740`, so that the stamp reaches 3:1 on `--bg-surface-elevated`. The yellow stamp has the dark amber border `--stamp-yellow-border`, because its fill is too light on the light surfaces.
+The outer line of each colored stamp also has a contrast of 3:1 or more. This line is the border, seen over each end of the fill gradient. The test checks it on `--bg-primary`, `--bg-surface`, `--bg-surface-elevated` and `--bg-hero`. It also checks the tints behind a stamp: `--calendar-cycle-tint` and `--accent-soft` over `--bg-surface`.
+
+- The red and the dark green stamps have the border `--stamp-edge-on-fill`. It is transparent in the light theme and a light line in the dark theme.
+- `--stamp-dark-green-light` is `#15913f`, so that the light end of the gradient reaches 3:1 on the tints.
+- In the dark theme, `--stamp-dark-green` is `#168740`. White text on it is 4.59:1, so a lighter value fails the text test.
+- The yellow stamp has a dark amber border in the light theme, because its fill is too light. In the dark theme, its border is a thin dark line in the fill.
 
 In the dark theme, `--bg-hero` is not lighter than `--bg-surface`. Thus, the status card of the phone does not show as a light panel in a dark page.
 

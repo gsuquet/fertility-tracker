@@ -43,7 +43,7 @@
   .stamp-red {
     background: linear-gradient(135deg, var(--stamp-red-light) 0%, var(--stamp-red) 100%);
     color: var(--color-white);
-    border: 1px solid var(--border-on-fill);
+    border: 1px solid var(--stamp-edge-on-fill);
   }
 
   .stamp-dark_green {
@@ -53,7 +53,7 @@
       var(--stamp-dark-green) 100%
     );
     color: var(--color-white);
-    border: 1px solid var(--border-on-fill);
+    border: 1px solid var(--stamp-edge-on-fill);
   }
 
   .stamp-yellow {
