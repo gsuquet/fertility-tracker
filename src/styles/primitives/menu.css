@@ -46,9 +46,14 @@
     cursor: pointer;
   }
 
-  .menu-item:hover:not(:disabled),
   .menu-item:focus-visible {
     background-color: var(--accent-soft);
+  }
+
+  @media (hover: hover) {
+    .menu-item:hover:not(:disabled) {
+      background-color: var(--accent-soft);
+    }
   }
 
   .menu-item:disabled {

@@ -53,9 +53,11 @@
     transition: transform 0.2s ease;
   }
 
-  .header-brand-btn:hover .brand-logo,
-  .header-brand:hover .brand-logo {
-    transform: scale(1.06);
+  @media (hover: hover) {
+    .header-brand-btn:hover .brand-logo,
+    .header-brand:hover .brand-logo {
+      transform: scale(1.06);
+    }
   }
 
   .brand-text {
@@ -125,8 +127,10 @@
     white-space: nowrap;
   }
 
-  .tab-btn:hover {
-    color: var(--text-primary);
+  @media (hover: hover) {
+    .tab-btn:hover {
+      color: var(--text-primary);
+    }
   }
 
   .tab-btn:active {

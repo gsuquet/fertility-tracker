@@ -49,10 +49,12 @@
     box-shadow: var(--shadow-sm), var(--accent-glow);
   }
 
-  .btn-primary:hover {
-    background-color: var(--accent-solid-hover);
-    box-shadow: var(--shadow-md), var(--shadow-glow);
-    transform: translateY(-1px);
+  @media (hover: hover) {
+    .btn-primary:hover {
+      background-color: var(--accent-solid-hover);
+      box-shadow: var(--shadow-md), var(--shadow-glow);
+      transform: translateY(-1px);
+    }
   }
 
   /* Secondary / Surface Button */
@@ -62,10 +64,12 @@
     border-color: var(--bg-surface-border);
   }
 
-  .btn-secondary:hover {
-    background-color: var(--bg-primary);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+  @media (hover: hover) {
+    .btn-secondary:hover {
+      background-color: var(--bg-primary);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
   }
 
   /* Outline / Subtle Border Button */
@@ -76,10 +80,12 @@
     box-shadow: none;
   }
 
-  .btn-outline:hover {
-    background-color: var(--bg-surface);
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+  @media (hover: hover) {
+    .btn-outline:hover {
+      background-color: var(--bg-surface);
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
   }
 
   /* Ghost / Borderless Button */
@@ -90,9 +96,11 @@
     box-shadow: none;
   }
 
-  .btn-ghost:hover {
-    background-color: var(--bg-primary);
-    color: var(--text-primary);
+  @media (hover: hover) {
+    .btn-ghost:hover {
+      background-color: var(--bg-primary);
+      color: var(--text-primary);
+    }
   }
 
   /* Danger Button */
@@ -102,8 +110,10 @@
     border-color: transparent;
   }
 
-  .btn-danger:hover {
-    background-color: var(--color-danger-hover);
+  @media (hover: hover) {
+    .btn-danger:hover {
+      background-color: var(--color-danger-hover);
+    }
   }
 
   /* Icon Button */
@@ -123,10 +133,12 @@
     flex-shrink: 0;
   }
 
-  .icon-button:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-    transform: translateY(-1px);
+  @media (hover: hover) {
+    .icon-button:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+      transform: translateY(-1px);
+    }
   }
 
   .icon-button:active {

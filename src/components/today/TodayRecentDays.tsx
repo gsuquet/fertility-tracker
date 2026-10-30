@@ -5,7 +5,7 @@ import { formatMessage } from '../../i18n';
 import type { Cycle, Observation } from '../../types/crms';
 import { getCycleDayOn } from '../../domain/cycleBoundaryDetector';
 import { showsEmptyStamp } from '../../domain/stampCalculator';
-import { addDays, formatDateDisplay, getTodayStr } from '../../utils/dateUtils';
+import { addDays, formatDateDisplay } from '../../utils/dateUtils';
 import { StampBadge } from '../StampBadge';
 
 interface TodayRecentDaysProps {
@@ -34,8 +34,8 @@ export const TodayRecentDays: React.FC<TodayRecentDaysProps> = ({
       <ul>
         {days.map(date => {
           const obs = observations.find(o => o.date === date);
-          // A day after today has no cycle day
-          const cycleDay = date <= getTodayStr() ? getCycleDayOn(cycles, date) : undefined;
+          // The selected date is never after today, so each of these days has a cycle day
+          const cycleDay = getCycleDayOn(cycles, date);
           return (
             <li key={date}>
               <button type="button" className="recent-day-row" onClick={() => onSelectDate(date)}>

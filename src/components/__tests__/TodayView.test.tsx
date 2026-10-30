@@ -26,15 +26,13 @@ describe('TodayView Component (Dedicated Today Page)', () => {
     expect(screen.getByText('Recent 5-Day Observation History')).toBeInTheDocument();
   });
 
-  it('allows stepping to previous and next days', () => {
+  it('allows stepping to previous and next days, up to today', () => {
     renderTodayView();
     const todayStr = getTodayStr();
     const prevDayStr = addDays(todayStr, -1);
-    const nextDayStr = addDays(todayStr, 1);
 
     const prevTitleText = formatDateDisplay(prevDayStr, 'en-US');
     const todayTitleText = formatDateDisplay(todayStr, 'en-US');
-    const nextTitleText = formatDateDisplay(nextDayStr, 'en-US');
 
     expect(screen.getByText(todayTitleText)).toBeInTheDocument();
 
@@ -49,9 +47,8 @@ describe('TodayView Component (Dedicated Today Page)', () => {
     fireEvent.click(nextBtn);
     expect(screen.getByText(todayTitleText)).toBeInTheDocument();
 
-    // Click Next Day again -> moves to tomorrow
-    fireEvent.click(nextBtn);
-    expect(screen.getByText(nextTitleText)).toBeInTheDocument();
+    // Today is the last day: Next Day is disabled
+    expect(nextBtn).toBeDisabled();
   });
 
   it('updates form and code string when direct input text is typed', () => {
@@ -111,15 +108,19 @@ describe('TodayView Component (Dedicated Today Page)', () => {
         fireEvent.pointerUp(page, { pointerId: 1, clientX: 400 + dx, clientY: 300 });
       };
       const todayStr = getTodayStr();
-      swipe(-100);
+      swipe(100);
+      swipe(100);
       expect(
-        screen.getByText(formatDateDisplay(addDays(todayStr, 1), 'en-US'))
+        screen.getByText(formatDateDisplay(addDays(todayStr, -2), 'en-US'))
       ).toBeInTheDocument();
-      swipe(100);
-      swipe(100);
+      swipe(-100);
       expect(
         screen.getByText(formatDateDisplay(addDays(todayStr, -1), 'en-US'))
       ).toBeInTheDocument();
+      // Today is the last day: a swipe to the left does nothing
+      swipe(-100);
+      swipe(-100);
+      expect(screen.getByText(formatDateDisplay(todayStr, 'en-US'))).toBeInTheDocument();
     } finally {
       vi.mocked(window.matchMedia).mockImplementation(media as typeof window.matchMedia);
     }

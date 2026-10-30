@@ -4,7 +4,7 @@ import type { TranslationSchema } from '../../i18n';
 import { formatMessage } from '../../i18n';
 import { addDays, formatDateDisplay } from '../../utils/dateUtils';
 import { getCycleEndDate } from '../../domain/cycleBoundaryDetector';
-import { ChartPhaseTimeline } from './ChartPhaseTimeline';
+import { ChartStampBar } from './ChartStampBar';
 import { ChartEmptyCell, ChartFilledCell } from './ChartCell';
 import type { ChartViewMode } from './ChartToolbar';
 
@@ -14,7 +14,7 @@ interface ChartCycleRowProps {
   /** The number of day slots of each row, so that the rows align by cycle day */
   totalSlots: number;
   viewMode: ChartViewMode;
-  showPhaseBar: boolean;
+  showStampBar: boolean;
   /** Today, for the cycle that holds it only */
   todayStr: string | undefined;
   /** The jump and scroll buttons, on the first row only */
@@ -39,13 +39,13 @@ interface ChartCycleRowProps {
 const shortDate = (date: string, locale: string) =>
   formatDateDisplay(date, locale, { month: 'short', day: 'numeric' });
 
-/** One cycle of the paper chart: the cycle line, the phase bar and one row of day cards */
+/** One cycle of the paper chart: the cycle line, the stamp bar and one row of day cards */
 export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
   cycle,
   cycleNum,
   totalSlots,
   viewMode,
-  showPhaseBar,
+  showStampBar,
   todayStr,
   controls,
   selectedDate,
@@ -109,8 +109,8 @@ export const ChartCycleRow: React.FC<ChartCycleRowProps> = ({
 
       <div className="chart-row-scroll" onScroll={onStripScroll}>
         {/* Phone: one bar over the card, which does not scroll. Desktop: one segment for each column. */}
-        {showPhaseBar && !collapsed && (
-          <ChartPhaseTimeline cycle={cycle} totalSlots={totalSlots} t={t} />
+        {showStampBar && !collapsed && (
+          <ChartStampBar cycle={cycle} totalSlots={totalSlots} t={t} />
         )}
         <div className="chart-row-strip">
           {Array.from({ length: totalSlots }, (_, idx) => {

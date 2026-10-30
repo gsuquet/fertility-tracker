@@ -162,11 +162,20 @@
     transition: all 0.18s ease;
   }
 
-  .date-nav-btn:hover {
-    background-color: var(--accent-solid);
-    color: var(--color-white);
-    border-color: var(--accent-primary);
-    transform: scale(1.05);
+  @media (hover: hover) {
+    .date-nav-btn:hover:not(:disabled) {
+      background-color: var(--accent-solid);
+      color: var(--color-white);
+      border-color: var(--accent-primary);
+      transform: scale(1.05);
+    }
+  }
+
+  /* The next day is disabled on today: the page never shows a day after today */
+  .date-nav-btn:disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+    transform: none;
   }
 
   .today-date-title-group {
@@ -438,8 +447,10 @@
     cursor: pointer;
   }
 
-  .recent-day-row:hover {
-    background-color: var(--accent-soft);
+  @media (hover: hover) {
+    .recent-day-row:hover {
+      background-color: var(--accent-soft);
+    }
   }
 
   .recent-day-stamp {
@@ -512,10 +523,16 @@
     width: 100%;
   }
 
-  .recent-day-item:hover,
   .recent-day-item.active {
     border-color: var(--accent-primary);
     background-color: var(--accent-soft);
+  }
+
+  @media (hover: hover) {
+    .recent-day-item:hover {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-soft);
+    }
   }
 
   .recent-date-label {
@@ -617,7 +634,7 @@
     }
 
     .today-header-card.compact-date-bar {
-      padding: 0.35rem 0.5rem;
+      padding: var(--space-xs) var(--space-sm);
       min-height: var(--control-size-lg);
       gap: 0.35rem;
     }
@@ -632,11 +649,20 @@
       flex-wrap: nowrap;
     }
 
+    /* The button is 32 px high, so the bar keeps its height on each day. Its tap area is 44 px. */
     .jump-today-btn {
+      position: relative;
       order: 1;
       margin-left: auto;
-      min-height: var(--control-size-lg);
+      min-height: var(--control-size-sm);
       padding-inline: var(--space-sm);
+    }
+
+    /* The inset starts inside the 1 px border, so it adds 1 px */
+    .jump-today-btn::before {
+      content: '';
+      position: absolute;
+      inset: calc((var(--control-size-sm) - var(--control-size-lg)) / 2 - 1px) -1px;
     }
 
     .today-formatted-date {

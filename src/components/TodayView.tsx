@@ -19,7 +19,7 @@ import { TodayRecentDays } from './today/TodayRecentDays';
 import { TodayCycleStrip } from './today/TodayCycleStrip';
 import { DESKTOP_QUERY, WIDE_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
-import { getTodayStr, addDays } from '../utils/dateUtils';
+import { getTodayStr, addDays, notAfterToday } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { useTopDialog } from './Modal';
@@ -55,9 +55,9 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
   const isDesktop = useMediaQuery(DESKTOP_QUERY);
   const isWide = useMediaQuery(WIDE_QUERY);
 
-  // Selected date state (defaults to Today, but user can navigate)
-  const [selectedDate, setSelectedDate] = useState<string>(
-    () => selectedObservation?.date ?? getTodayStr()
+  // Selected date state (defaults to Today, but user can navigate). It is never after today.
+  const [selectedDate, setSelectedDate] = useState<string>(() =>
+    notAfterToday(selectedObservation?.date ?? getTodayStr())
   );
 
   const form = useObservationForm();
@@ -77,17 +77,16 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
   // Handle selectedObservation external overrides
   useEffect(() => {
     if (selectedObservation) {
-      setSelectedDate(selectedObservation.date);
+      setSelectedDate(notAfterToday(selectedObservation.date));
     }
   }, [selectedObservation]);
 
   const isToday = selectedDate === getTodayStr();
-  // A day after today has no cycle day yet
-  const cycleDay = selectedDate <= getTodayStr() ? getCycleDayOn(cycles, selectedDate) : undefined;
+  const cycleDay = getCycleDayOn(cycles, selectedDate);
 
   // Navigation handlers
   const handlePrevDay = () => setSelectedDate(prev => addDays(prev, -1));
-  const handleNextDay = () => setSelectedDate(prev => addDays(prev, 1));
+  const handleNextDay = () => setSelectedDate(prev => notAfterToday(addDays(prev, 1)));
   const handleGoToToday = () => setSelectedDate(getTodayStr());
 
   // The arrow keys and T call the same functions as the buttons
@@ -100,13 +99,14 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
     handlers: swipeHandlers,
     pageRef: swipePageRef,
     contentRef: swipeContentRef,
-  } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
+  } = useDaySwipe(
+    direction => (direction === 'next' ? handleNextDay() : handlePrevDay()),
+    direction => direction === 'prev' || !isToday
+  );
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
-  // The cycle of the selected day: the newest cycle that starts on or before it. A day after today
-  // has no cycle.
-  const selectedCycle =
-    selectedDate <= getTodayStr() ? cycles.find(c => c.startDate <= selectedDate) : undefined;
+  // The cycle of the selected day: the newest cycle that starts on or before it
+  const selectedCycle = cycles.find(c => c.startDate <= selectedDate);
   const yesterdayObs = observations.find(o => o.date === addDays(selectedDate, -1));
 
   const status = formStatus(
@@ -193,7 +193,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
         onPrevDay={handlePrevDay}
         onNextDay={handleNextDay}
         onGoToToday={handleGoToToday}
-        onDateChange={setSelectedDate}
+        onDateChange={date => setSelectedDate(notAfterToday(date))}
       />
 
       {/* Status card (phone): the stamp, the code, the fertility text and the actions menu */}

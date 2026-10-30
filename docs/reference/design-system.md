@@ -70,6 +70,12 @@ The brand is **Paper and ink**: chart ink on warm paper, like a printed CrMS cha
 - A token has the values of both themes. Thus, a view has no `[data-theme='dark']` rule.
 - The test `src/styles/__tests__/tokenUsage.test.ts` checks these rules.
 
+## Hover styles
+
+- Each `:hover` rule is in a `@media (hover: hover)` query. A touch screen keeps `:hover` on the last element that the finger touched. Without the query, a tapped button keeps its hover color until the next tap. `:active` and `:focus-visible` give the feedback of a touch screen and a keyboard.
+- A rule that also has a state selector, for example `.active`, splits into two rules: the state rule, and the hover rule in the query.
+- The test `src/styles/__tests__/nativeFeel.test.ts` checks this rule.
+
 ## Text contrast
 
 Each text token has a contrast of 4.5:1 or more on its surfaces, in both themes (WCAG 2 AA). The test `src/styles/__tests__/tokenContrast.test.ts` calculates these ratios from `tokens.css`.

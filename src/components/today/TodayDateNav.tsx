@@ -62,14 +62,12 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
   );
   const shownCycleDay = currentObs?.cycleDay ?? cycleDay;
 
-  /** "Yesterday", "3 days ago", "Tomorrow" or "In 2 days" for a day that is not today. */
+  /** "Yesterday" or "3 days ago" for a day before today. The page never shows a later day. */
   const relativeDay = () => {
     const daysAgo = getDaysDifference(selectedDate, getTodayStr());
-    if (daysAgo === 1) return t.todayView.yesterday;
-    if (daysAgo === -1) return t.todayView.tomorrow;
-    return daysAgo > 0
-      ? formatMessage(t.todayView.daysAgo, { count: daysAgo })
-      : formatMessage(t.todayView.daysAhead, { count: -daysAgo });
+    return daysAgo === 1
+      ? t.todayView.yesterday
+      : formatMessage(t.todayView.daysAgo, { count: daysAgo });
   };
 
   return (
@@ -94,6 +92,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
               onClick={e => handleOpenPicker(e.currentTarget)}
               className="today-date-picker-input compact-picker-input"
               value={selectedDate}
+              max={getTodayStr()}
               onChange={e => {
                 if (e.target.value) {
                   onDateChange(e.target.value);
@@ -107,6 +106,7 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
             type="button"
             className="icon-button date-nav-btn compact-nav-btn"
             onClick={onNextDay}
+            disabled={isToday}
             {...hint(t.todayView.nextDay, 'nextDay')}
             aria-label={t.todayView.nextDay}
           >

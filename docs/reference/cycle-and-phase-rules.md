@@ -68,10 +68,6 @@ The four phases add up to the length. The count and the days after it add up to 
 
 The **All Cycles** view shows the average of each phase per cycle (`averageSegments()`). The menses average uses all the cycles. The other averages use the same cycles as the luteal average.
 
-## Phase bar of the chart
-
-The phase bar of the chart has one segment for each cycle day. It uses the four phases and the colors of Analytics. The source is `dayPhase()`. A day without an observation has a gray segment.
-
 ## Luteal phase health
 
 The newest cycle is in progress, so its luteal phase is not complete. The **Clinical summary** judges only the cycles that have ended and have a Peak Day. The **All Cycles** view judges the average of these cycles.

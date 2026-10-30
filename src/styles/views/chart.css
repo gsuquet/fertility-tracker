@@ -228,18 +228,20 @@
     cursor: pointer;
   }
 
-  .chart-jump-btn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
+  @media (hover: hover) {
+    .chart-jump-btn:hover {
+      border-color: var(--accent-primary);
+      color: var(--accent-primary);
+    }
   }
 
   .chart-jump-btn.peak-btn {
     color: var(--color-peak-text);
   }
 
-  /* The phase bar: one segment for each day, which does not scroll */
+  /* The stamp bar: one segment for each day, in the color of its stamp, which does not scroll */
   /* Phone: one bar over the width of the card. It stays in place while the strip scrolls. */
-  .cycle-phase-bar {
+  .cycle-stamp-bar {
     position: sticky;
     left: 0;
     display: flex;
@@ -249,30 +251,43 @@
     margin-bottom: 6px;
   }
 
-  .phase-segment {
+  .stamp-segment {
     flex: 1;
     border-radius: var(--radius-full);
   }
 
-  .phase-menses {
+  /* The fill of each stamp (badges.css). A light stamp has the edge of its badge. */
+  .segment-red {
     background-color: var(--stamp-red);
   }
 
-  /* The same colors as the phase bar of Analytics */
-  .phase-follicular,
-  .phase-peak {
-    background-color: var(--phase-before-peak);
-  }
-
-  .phase-post-peak {
-    background-color: var(--stamp-light-green);
-  }
-
-  .phase-luteal {
+  .segment-dark_green {
     background-color: var(--stamp-dark-green);
   }
 
-  .phase-unknown {
+  .segment-yellow {
+    background-color: var(--stamp-yellow);
+    box-shadow: inset 0 0 0 1px var(--stamp-yellow-border);
+  }
+
+  .segment-white_baby {
+    background-color: var(--stamp-white);
+    box-shadow: inset 0 0 0 1px var(--stamp-white-border);
+  }
+
+  .segment-light_green_baby_1,
+  .segment-light_green_baby_2,
+  .segment-light_green_baby_3 {
+    background-color: var(--stamp-light-green);
+    box-shadow: inset 0 0 0 1px var(--stamp-light-green-border);
+  }
+
+  /* A day with no code: the dashed empty stamp of its card is an outline here */
+  .segment-empty {
+    box-shadow: inset 0 0 0 1px var(--stamp-empty);
+  }
+
+  .segment-none {
     background-color: var(--bg-surface-border);
   }
 
@@ -391,8 +406,10 @@
     flex-shrink: 0;
   }
 
-  .chart-cell.paper-cell:hover {
-    border-color: var(--accent-primary);
+  @media (hover: hover) {
+    .chart-cell.paper-cell:hover {
+      border-color: var(--accent-primary);
+    }
   }
 
   .chart-cell.paper-cell:focus-visible {
@@ -490,9 +507,11 @@
     background-color: transparent;
   }
 
-  .empty-cell.paper-cell:hover {
-    border-color: var(--accent-primary);
-    background-color: var(--accent-light);
+  @media (hover: hover) {
+    .empty-cell.paper-cell:hover {
+      border-color: var(--accent-primary);
+      background-color: var(--accent-light);
+    }
   }
 
   .empty-cell .add-icon {
@@ -541,7 +560,7 @@
 
   /*
    * Desktop: 44 px columns with 2 px between them (RFC 0002). 28 days fit at 1440 px. The controls
-   * go at the end of the cycle line, and the phase bar has one segment above each column.
+   * go at the end of the cycle line, and the stamp bar has one segment above each column.
    */
   @media (min-width: 1024px) {
     .chart-footer-actions .btn {
@@ -564,7 +583,7 @@
       gap: 2px;
     }
 
-    .cycle-phase-bar {
+    .cycle-stamp-bar {
       position: static;
       display: grid;
       grid-auto-flow: column;
@@ -572,7 +591,7 @@
       width: max-content;
     }
 
-    .view-compact .cycle-phase-bar {
+    .view-compact .cycle-stamp-bar {
       grid-auto-columns: 34px;
     }
 

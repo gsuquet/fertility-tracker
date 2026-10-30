@@ -34,11 +34,14 @@ test.describe('Swipe between days', () => {
     };
     const swipe = (dx: number, dy = 0) => drag([[dx, dy]]);
 
+    // Today is the last day: a swipe to the left keeps it
     await swipe(-150);
-    await expect(date).toHaveValue('2026-10-28');
-    await swipe(150);
+    await page.waitForTimeout(400);
     await expect(date).toHaveValue('2026-10-27');
     await swipe(150);
+    await swipe(150);
+    await expect(date).toHaveValue('2026-10-25');
+    await swipe(-150);
     await expect(date).toHaveValue('2026-10-26');
 
     // A vertical drag scrolls the page and keeps the day

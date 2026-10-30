@@ -13,6 +13,12 @@ export const getTodayStr = (): string => {
   return `${year}-${month}-${day}`;
 };
 
+/** The date, or today when the date is after today. */
+export const notAfterToday = (dateStr: string): string => {
+  const today = getTodayStr();
+  return dateStr > today ? today : dateStr;
+};
+
 /**
  * Splits a YYYY-MM-DD string into numeric parts. Returns null when a part is missing or not a number.
  */

@@ -136,16 +136,13 @@ describe('TodayView on a desktop', () => {
     expect(screen.getByRole('img', { name: 'This cycle: Day 10 of 19' })).toBeInTheDocument();
   });
 
-  it('shows no cycle and no cycle day after today', () => {
+  it('shows today for a date after today', () => {
     mockWidth(1440);
     renderWithProviders(<TodayView />, { observations: buildDemoObservations(TODAY) });
     fireEvent.change(screen.getByLabelText(en.labels.date), { target: { value: '2026-09-18' } });
-    expect(screen.queryByRole('img', { name: /^This cycle/ })).toBeNull();
+    expect(screen.getByRole('img', { name: /^This cycle: Day 28/ })).toBeInTheDocument();
     const rows = within(recentDays(7)).getAllByRole('button');
-    // Sep 17 and Sep 16 are after today. Sep 15 is today, day 28.
-    expect(rows[0]).not.toHaveTextContent(/Day \d/);
-    expect(rows[1]).not.toHaveTextContent(/Day \d/);
-    expect(rows[2]).toHaveTextContent(/^Tue, Sep 15Day 28/);
+    expect(rows[0]).toHaveTextContent(/^Mon, Sep 14Day 27/);
   });
 });
 

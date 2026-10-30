@@ -12,11 +12,14 @@ test.describe('Keyboard shortcuts', () => {
     await expect(date).toHaveValue('2026-10-27');
 
     await page.keyboard.press('ArrowLeft');
+    await page.keyboard.press('ArrowLeft');
+    await expect(date).toHaveValue('2026-10-25');
+    await page.keyboard.press('ArrowRight');
     await expect(date).toHaveValue('2026-10-26');
-    await page.keyboard.press('ArrowRight');
-    await page.keyboard.press('ArrowRight');
-    await expect(date).toHaveValue('2026-10-28');
     await page.keyboard.press('t');
+    await expect(date).toHaveValue('2026-10-27');
+    // Today is the last day
+    await page.keyboard.press('ArrowRight');
     await expect(date).toHaveValue('2026-10-27');
 
     await page.keyboard.press('2');

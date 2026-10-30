@@ -196,11 +196,11 @@ describe('ChartRow on a desktop', () => {
 
     const toggle = within(past).getByRole('button', { name: 'Cycle 5', expanded: false });
     expect(toggle).toHaveAttribute('title', 'Show all the days of cycle 5');
-    expect(past.querySelector('.cycle-phase-bar')).toBeNull();
+    expect(past.querySelector('.cycle-stamp-bar')).toBeNull();
     fireEvent.click(toggle);
     expect(toggle).toHaveAttribute('aria-expanded', 'true');
     expect(toggle).toHaveAttribute('title', 'Show only the stamps of cycle 5');
-    expect(past.querySelector('.cycle-phase-bar')).toBeInTheDocument();
+    expect(past.querySelector('.cycle-stamp-bar')).toBeInTheDocument();
     expect(past.querySelector('.cell-code')).toBeInTheDocument();
     fireEvent.click(toggle);
     expect(past.querySelector('.cell-code')).toBeNull();
