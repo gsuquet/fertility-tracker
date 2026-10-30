@@ -39,7 +39,7 @@ From 641 pixels, the header has the logo, the page tabs, the cycle picker, the c
 - The controls of the bar are in the reading order in the DOM too. On 2 rows, the controls of the page come after the gear. The element of the page controls keeps its place in the DOM. Thus, the focus and an open menu stay when the window crosses 1360 pixels.
 - The bar has the same side margins as the page: 24 pixels, and the content is 1392 pixels wide or less.
 - On Today, the day status (**Today**, the cycle day and **Saved**) stays in the page, as one line above the form.
-- In the installed application with the window controls overlay, row 1 is the title bar ([Application behavior](../application-behavior.md#title-bar)). The rows under it do not move the window. The header does not center its content in this mode, because the window controls set its side padding.
+- In the installed application with the window controls overlay, row 1 is the title bar ([Application behavior](../application-behavior.md#title-bar)). The tabs and the row of the page controls under it do not move the window. The header does not center its content in this mode, because the window controls set its side padding.
 - The test `e2e/topBar.spec.ts` checks the bar in French at 800, 1024, 1359, 1360 and 1440 pixels. It checks the side scroll, the height of the rows and the order of the controls.
 
 ### Top bar on a phone

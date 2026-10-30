@@ -464,12 +464,19 @@
         -webkit-app-region: no-drag;
         app-region: no-drag;
         margin-right: calc(env(titlebar-area-x, 0px) + env(titlebar-area-width, 100vw) - 100vw);
+        margin-left: calc(-1 * env(titlebar-area-x, 0px));
       }
     }
 
     @media (min-width: 641px) and (max-width: 1023px) {
       .app-header {
         grid-template-rows: max(60px, env(titlebar-area-height, 0px)) auto auto;
+      }
+
+      /* The row of the tabs is under the title bar too: it does not move the window */
+      .app-header > .header-tabs {
+        -webkit-app-region: no-drag;
+        app-region: no-drag;
       }
     }
 
