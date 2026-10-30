@@ -155,7 +155,10 @@ describe('TodayView flows', () => {
     renderToday([makeObservation({ date: TODAY, stretch: '0', frequency: 'AD' })]);
     expect(screen.getByLabelText(en.labels.directInput)).toHaveValue('0AD');
     expect(saveButton()).toHaveTextContent('Saved');
+    // The Saved button is green, the Save button keeps the accent fill
+    expect(saveButton()).toHaveClass('is-saved');
     typeCode('0AD I');
+    expect(saveButton()).not.toHaveClass('is-saved');
     fireEvent.click(saveButton());
     expect(saved()).toBe(`${TODAY}:0AD I:undefined`);
   });

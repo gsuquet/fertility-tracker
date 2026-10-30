@@ -85,7 +85,8 @@
     --color-danger-text: #b91c1c;
     --color-success: #10b981;
     --color-success-solid: #047857;
-    --color-success-text: #047857;
+    /* 4.5:1 on --color-success-surface over each surface: the Saved badge of Today */
+    --color-success-text: #046c4e;
     --color-success-surface: rgba(16, 185, 129, 0.15);
     --color-success-border: rgba(16, 185, 129, 0.3);
     --color-warning: #f59e0b;

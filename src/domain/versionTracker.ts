@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.48.0',
+    date: '2026-10-30',
+    title: 'Colors of the Save State',
+    titleFr: 'Couleurs de l’état d’enregistrement',
+    tagline: 'On the Today page, Saved is green and Not saved is amber',
+    taglineFr: 'Sur la page Aujourd’hui, Enregistrée est en vert et Non enregistrée en orange',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The Saved and Not saved badges of the day status and of the status card have a color',
+      'The Saved button is green when the day is saved with no change',
+      'The colors work in the light theme and in the dark theme, with a contrast of 4.5:1 or more',
+    ],
+    highlightsFr: [
+      'Les badges Enregistrée et Non enregistrée de l’état du jour et de la carte d’état ont une couleur',
+      'Le bouton Enregistrée est vert quand le jour est enregistré sans modification',
+      'Les couleurs fonctionnent dans le thème clair et dans le thème sombre, avec un contraste de 4,5:1 ou plus',
+    ],
+  },
+  {
     version: '1.47.0',
     date: '2026-10-30',
     title: 'Commit of the Build',

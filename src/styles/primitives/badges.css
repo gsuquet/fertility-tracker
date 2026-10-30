@@ -186,9 +186,23 @@
     font-size: var(--font-size-2xs);
     font-weight: 700;
     padding: 2px 8px;
+    border: 1px solid transparent;
     border-radius: var(--radius-full);
     display: inline-flex;
     align-items: center;
     gap: 4px;
+  }
+
+  /* The save state of a day: Saved is green, Not saved is amber. The text says it too. */
+  .badge-success {
+    color: var(--color-success-text);
+    background-color: var(--color-success-surface);
+    border-color: var(--color-success-border);
+  }
+
+  .badge-warning {
+    color: var(--color-warning-text);
+    background-color: var(--color-warning-surface);
+    border-color: var(--color-warning-border);
   }
 }

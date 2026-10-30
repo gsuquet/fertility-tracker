@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { fertilityGuidance } from './fertilityGuidance';
-import { Check } from 'lucide-react';
+import { AlertCircle, Check } from 'lucide-react';
 
 interface TodayFertilityGuidanceProps {
   stamp: StampType;
@@ -75,8 +75,14 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
         </div>
         {!isEmpty && <p className="status-card-guidance">{getFertilityGuidance()}</p>}
       </div>
-      <span className={`status-card-saved ${saved ? 'is-saved' : ''}`}>
-        {saved && <Check size={16} aria-hidden="true" />}
+      <span
+        className={`status-card-saved badge badge-sm ${saved ? 'badge-success' : 'badge-warning'}`}
+      >
+        {saved ? (
+          <Check size={14} aria-hidden="true" />
+        ) : (
+          <AlertCircle size={14} aria-hidden="true" />
+        )}
         {saved ? t.todayView.loggedStatus : t.todayView.notLoggedStatus}
       </span>
       {menu}

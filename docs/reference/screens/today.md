@@ -28,6 +28,7 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 - The page never shows a day after today. On today, the next-day button is disabled, and the next-day swipe and shortcut do nothing. When the next-day button has the focus and becomes disabled, the focus goes to the previous-day button. The date picker stops at today (`max`). A later date from the picker or from another page shows today.
 - **Ctrl+S** or **⌘S** saves the form, also from a field. A dialog on top of the page keeps these keys.
 - On a computer (`pointer: fine`), **Done** does not show. It closes the keyboard of a touch screen.
+- The save state has a color, and also a text and an icon. **Saved** is green (`--color-success-text` on `--color-success-surface`, with a check). **Not saved** is amber (`--color-warning-text` on `--color-warning-surface`, with an alert icon). The day status and the status card show it as a badge (`.badge-success` or `.badge-warning`). When the day is saved with no change, the **Saved** button is green too, with the tint on `--bg-surface`. The texts reach 4.5:1 on each surface, in the light theme and in the dark theme (`tokenContrast.test.ts`).
 - The cycle day of the day status comes from the saved observation. A day with no observation gets the cycle day from the start date of the last cycle that starts on or before that day. A day before the first cycle shows no cycle day.
 
 ### Desktop columns
