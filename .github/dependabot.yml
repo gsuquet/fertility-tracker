@@ -1,5 +1,8 @@
 version: 2
 updates:
+  # Patch and minor updates come in one grouped pull request, which the
+  # dependabot-auto-merge workflow merges when CI passes. Each major update
+  # comes in its own pull request, for a manual review.
   - package-ecosystem: npm
     directory: /
     schedule:
@@ -9,9 +12,10 @@ updates:
       prefix: build
       include: scope
     groups:
-      npm-dependencies:
-        patterns:
-          - '*'
+      npm-minor-patch:
+        update-types:
+          - minor
+          - patch
 
   - package-ecosystem: github-actions
     directory: /
@@ -21,6 +25,7 @@ updates:
       prefix: ci
       include: scope
     groups:
-      github-actions:
-        patterns:
-          - '*'
+      actions-minor-patch:
+        update-types:
+          - minor
+          - patch
