@@ -12,6 +12,8 @@ interface TodayCycleStripProps {
   /** The cycle of the selected day */
   cycle: Cycle;
   selectedDate: string;
+  /** The start of the next cycle, for a past cycle: it gives the length of the cycle */
+  nextStartDate?: string | undefined;
   onOpenChart?: (() => void) | undefined;
 }
 
@@ -22,12 +24,15 @@ interface TodayCycleStripProps {
 export const TodayCycleStrip: React.FC<TodayCycleStripProps> = ({
   cycle,
   selectedDate,
+  nextStartDate,
   onOpenChart,
 }) => {
   const { t } = useLanguage();
   const { lengthDays, peak } = getCyclePhases(cycle);
   const selectedDay = getDaysDifference(cycle.startDate, selectedDate) + 1;
-  const length = Math.max(lengthDays, selectedDay);
+  const length = nextStartDate
+    ? getDaysDifference(cycle.startDate, nextStartDate)
+    : Math.max(lengthDays, selectedDay);
   const byDay = new Map(cycle.observations.map(o => [o.cycleDay, o]));
 
   const summary = [

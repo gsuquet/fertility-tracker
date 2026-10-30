@@ -59,7 +59,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
     );
   }
 
-  // Desktop: the stamp of 56 px, the code, one sentence, the saved state and the menu
+  // Desktop: the stamp of 40 px, the code, one sentence, the saved state and the menu
   return (
     <div className="today-status-card">
       <StampBadge

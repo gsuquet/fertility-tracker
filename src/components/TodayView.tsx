@@ -263,6 +263,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
               <TodayCycleStrip
                 cycle={selectedCycle}
                 selectedDate={selectedDate}
+                nextStartDate={cycles[cycles.indexOf(selectedCycle) - 1]?.startDate}
                 onOpenChart={
                   onOpenChart &&
                   (() => {

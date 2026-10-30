@@ -261,7 +261,7 @@
     box-shadow: var(--shadow-sm);
   }
 
-  /* The status card: the stamp (56 px), the code, one sentence, the saved state and the menu */
+  /* The status card: the stamp (40 px), the code, one sentence, the saved state and the menu */
   .today-status-card {
     display: flex;
     flex-wrap: wrap;

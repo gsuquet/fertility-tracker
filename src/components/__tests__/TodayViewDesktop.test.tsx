@@ -122,6 +122,20 @@ describe('TodayView on a desktop', () => {
     );
   });
 
+  it('gives a past cycle its length up to the next cycle', () => {
+    mockWidth(1440);
+    renderWithProviders(<TodayView />, {
+      observations: [
+        makeObservation({ date: '2026-08-01', bleeding: 'H' }),
+        makeObservation({ date: '2026-08-02', mucus: '0' }),
+        makeObservation({ date: '2026-08-20', bleeding: 'H' }),
+      ],
+    });
+    // Aug 10 has no observation: cycle 1 runs from Aug 1 to Aug 19
+    fireEvent.change(screen.getByLabelText(en.labels.date), { target: { value: '2026-08-10' } });
+    expect(screen.getByRole('img', { name: 'This cycle: Day 10 of 19' })).toBeInTheDocument();
+  });
+
   it('shows no cycle and no cycle day after today', () => {
     mockWidth(1440);
     renderWithProviders(<TodayView />, { observations: buildDemoObservations(TODAY) });
