@@ -230,7 +230,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
           <div className={`today-save-bar ${typing ? 'typing' : ''}`}>
             <button
               type="submit"
-              className="btn btn-primary btn-lg submit-save-btn"
+              className={`btn btn-primary btn-lg submit-save-btn ${!hasUnsavedChanges && currentObs ? 'is-saved' : ''}`}
               disabled={!hasUnsavedChanges}
             >
               {!hasUnsavedChanges && currentObs ? (

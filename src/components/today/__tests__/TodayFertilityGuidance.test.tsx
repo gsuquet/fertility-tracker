@@ -47,4 +47,26 @@ describe('TodayFertilityGuidance', () => {
     renderGuidance('DARK_GREEN', variant, '0AD');
     expect(screen.getByText('0AD')).toBeInTheDocument();
   });
+
+  it.each([
+    [true, en.todayView.loggedStatus, 'badge-success'],
+    [false, en.todayView.notLoggedStatus, 'badge-warning'],
+  ] as const)('colors the saved state of the card (saved: %s)', (saved, text, badge) => {
+    renderWithProviders(
+      <TodayFertilityGuidance
+        menu={null}
+        stamp="DARK_GREEN"
+        currentCode="0AD"
+        isEmpty={false}
+        isManualPeak={false}
+        intercourse={false}
+        variant="card"
+        saved={saved}
+      />
+    );
+    const status = screen.getByText(text);
+    expect(status).toHaveClass('status-card-saved', 'badge', 'badge-sm', badge);
+    // The text and the icon also tell the state, not only the color (WCAG 1.4.1)
+    expect(status.querySelector('svg')).toBeInTheDocument();
+  });
 });

@@ -264,6 +264,18 @@
     min-height: var(--row-height);
   }
 
+  /* The day is saved with no change: a green button, not a faded one. The tint is on an opaque
+     surface, because the page scrolls under the sticky bar of a phone. */
+  .today-save-bar .submit-save-btn.is-saved {
+    opacity: 1;
+    transform: none;
+    color: var(--color-success-text);
+    background-color: var(--bg-surface);
+    background-image: linear-gradient(var(--color-success-surface), var(--color-success-surface));
+    border-color: var(--color-success-border);
+    box-shadow: var(--shadow-sm);
+  }
+
   /* Desktop: the status, the current cycle and the last days, in one column */
   .today-side {
     display: flex;
@@ -329,18 +341,11 @@
     color: var(--text-secondary);
   }
 
+  /* A badge (badges.css), a little larger than the badges of the day status */
   .status-card-saved {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
     flex-shrink: 0;
-    color: var(--text-secondary);
     font-size: var(--font-size-sm);
-    font-weight: 700;
-  }
-
-  .status-card-saved.is-saved {
-    color: var(--color-success-text);
+    padding: 2px 10px;
   }
 
   .today-cycle-card,

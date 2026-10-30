@@ -153,12 +153,12 @@ export const TodayDateNav: React.FC<TodayDateNavProps> = ({
         )}
         {currentObs ? (
           <span className="badge badge-success badge-sm">
-            <CheckCircle2 size={11} />
+            <CheckCircle2 size={11} aria-hidden="true" />
             {t.todayView.loggedStatus}
           </span>
         ) : (
           <span className="badge badge-warning badge-sm">
-            <AlertCircle size={11} />
+            <AlertCircle size={11} aria-hidden="true" />
             {t.todayView.notLoggedStatus}
           </span>
         )}

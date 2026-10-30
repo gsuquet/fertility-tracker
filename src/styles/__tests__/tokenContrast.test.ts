@@ -218,6 +218,17 @@ describe('design token contrast (WCAG 2 AA)', () => {
       }
     );
 
+    // The Saved and Not saved badges of Today: on the date bar of a phone (--bg-surface), on the
+    // page from 641 px (--bg-primary) and on the status card of the desktop (--bg-hero)
+    it.each(
+      ['success', 'warning'].flatMap(state => surfaces.map(surface => [state, surface] as const))
+    )('the %s badge text reaches 4.5:1 on its surface over %s', (state, surface) => {
+      const badge = over(color(`--color-${state}-surface`), color(surface));
+      expect(contrast(color(`--color-${state}-text`), badge)).toBeGreaterThanOrEqual(
+        AA_NORMAL_TEXT
+      );
+    });
+
     it.each(['--bg-surface', '--bg-surface-elevated'])(
       '--color-info-text on --color-info-surface over %s reaches 4.5:1',
       surface => {
@@ -344,6 +355,31 @@ describe('contrast-safe token usage', () => {
     expect(readCss('views/print.css')).toMatch(
       /\.print-badge-sample \.baby-svg\s*\{\s*width:\s*10px;\s*height:\s*10px;/
     );
+  });
+
+  it.each(['success', 'warning'])('colors .badge-%s with its color tokens', state => {
+    const rule = new RegExp(`\\.badge-${state}\\s*\\{([^}]*)\\}`).exec(
+      readCss('primitives/badges.css')
+    );
+    expect(rule?.[1]).toMatch(new RegExp(`(^|\\s)color:\\s*var\\(--color-${state}-text\\)`));
+    expect(rule?.[1]).toMatch(new RegExp(`background-color:\\s*var\\(--color-${state}-surface\\)`));
+    expect(rule?.[1]).toMatch(
+      new RegExp(`box-shadow:\\s*inset 0 0 0 1px var\\(--color-${state}-border\\)`)
+    );
+  });
+
+  it('colors the Saved button of Today with the success tokens, over an opaque surface', () => {
+    const rule = /\.submit-save-btn\.is-saved\s*\{([^}]*)\}/.exec(readCss('views/today.css'));
+    expect(rule?.[1]).toMatch(/(^|\s)color:\s*var\(--color-success-text\)/);
+    // The bar is sticky on a phone: the page scrolls under it
+    expect(rule?.[1]).toMatch(/background-color:\s*var\(--bg-surface\)/);
+    expect(rule?.[1]).toMatch(
+      /background-image:\s*linear-gradient\(var\(--color-success-surface\), var\(--color-success-surface\)\)/
+    );
+    expect(rule?.[1]).toMatch(/border-color:\s*var\(--color-success-border\)/);
+    expect(rule?.[1]).toMatch(/opacity:\s*1/);
+    // A disabled button does not lift on hover
+    expect(rule?.[1]).toMatch(/transform:\s*none/);
   });
 
   it('colors the welcome form mode badge with the info tokens', () => {
