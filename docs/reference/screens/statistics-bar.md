@@ -1,10 +1,10 @@
 # Statistics bar
 
-This page gives the rules for the four statistics tiles above the pages.
+This page gives the rules for the four statistics tiles of the **Cycle Analytics** page.
 
 ## Layout
 
-This part shows on each page. Its layout is in the screenshots and the ARIA snapshots of the pages, for example [Today page](today.md#layout).
+This part shows on the **Cycle Analytics** page only (RFC 0002). Its layout is in the screenshots and the ARIA snapshots of [Analytics](analytics.md#layout).
 
 ## Behavior
 
@@ -22,7 +22,6 @@ The bar shows four tiles for the selected cycle, or for all cycles. Each tile ha
 - A cycle of one day shows only one date.
 - The bar is a list with the name **Cycle statistics**. Each tile is a list item.
 - On a phone, the tiles are in 2 rows of 2. From 768 pixels, they are in 1 row of 4.
-- On a screen of 768 pixels or less, the bar shows only on the **Cycle Analytics** page.
 
 ## Accessibility
 

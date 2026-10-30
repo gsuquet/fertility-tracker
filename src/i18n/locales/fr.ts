@@ -2,7 +2,6 @@ import type { TranslationSchema } from '../types';
 
 export const fr: TranslationSchema = {
   appTitle: 'Fertility Tracker',
-  subtitle: 'Modèle Creighton (CrMS)',
   locale: 'fr-FR',
   tabs: {
     today: "Aujourd'hui",
@@ -393,7 +392,6 @@ export const fr: TranslationSchema = {
   install: {
     menuEntry: 'Installer l’application',
     menuHint: 'Plein écran, hors ligne, et vos données mieux protégées',
-    headerLabel: 'Installer l’application',
     bannerTitle: 'Installer Fertility Tracker',
     bannerText: 'Plein écran, hors ligne, et vos données mieux protégées.',
     bannerInstall: 'Installer',

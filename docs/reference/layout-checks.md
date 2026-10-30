@@ -23,7 +23,7 @@ The `phone` project of `playwright.config.ts` runs `e2e/phoneLayout.spec.ts` on 
 | Each page at 1024 by 768 pixels | [today-1024.png](screens/images/checks/today-1024.png), [chart-1024.png](screens/images/checks/chart-1024.png), [calendar-1024.png](screens/images/checks/calendar-1024.png), [analytics-1024.png](screens/images/checks/analytics-1024.png)                                 |
 | Each phone page in French       | [today-phone-fr.png](screens/images/checks/today-phone-fr.png), [chart-phone-fr.png](screens/images/checks/chart-phone-fr.png), [calendar-phone-fr.png](screens/images/checks/calendar-phone-fr.png), [analytics-phone-fr.png](screens/images/checks/analytics-phone-fr.png) |
 | The installed application       | [today-installed-phone.png](screens/images/checks/today-installed-phone.png), [chart-installed-wide.png](screens/images/checks/chart-installed-wide.png)                                                                                                                     |
-- At 1024 pixels, the top bar is wider than the screen. Step 4b of RFC 0002 changes the top bar. These captures show the layout before that step.
+- At 1024 pixels, the top bar has two rows and fits in the screen (step 4b of RFC 0002). The test `e2e/topBar.spec.ts` checks it in French.
 - The browser cannot emulate `display-mode`. Thus, the test turns on each `@media (display-mode: standalone)` block where it is, in the same layer and order. The window controls overlay needs the title bar of the operating system, so only a real device can show it.
 
 ## Related documents

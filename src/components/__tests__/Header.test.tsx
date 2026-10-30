@@ -17,9 +17,6 @@ const renderHeader = (
   const props = {
     activeTab,
     setActiveTab: vi.fn(),
-    onOpenExport: vi.fn(),
-    onOpenVersion: vi.fn(),
-    onOpenWelcome: vi.fn(),
     onOpenSettings: vi.fn(),
   };
   renderWithProviders(
@@ -68,36 +65,35 @@ describe('Header', () => {
 
   it('clears the selection and opens Today for a new entry', () => {
     const { setActiveTab } = renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Log Observation' }));
+    const log = screen.getByRole('button', { name: 'Log' });
+    expect(log).toHaveAttribute('title', 'Log Observation (N)');
+    fireEvent.click(log);
     expect(setActiveTab).toHaveBeenCalledWith('today');
     expect(screen.getByTestId('selection')).toHaveTextContent('none');
   });
 
-  it('opens the export, guide and version dialogs from the desktop buttons', () => {
-    const props = renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Practitioner PDF / PNG' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Welcome to Fertility Tracker' }));
-    fireEvent.click(screen.getByRole('button', { name: 'About & Version Tracker' }));
-    expect(props.onOpenExport).toHaveBeenCalledOnce();
-    expect(props.onOpenWelcome).toHaveBeenCalledOnce();
-    expect(props.onOpenVersion).toHaveBeenCalledOnce();
+  it('shows the short tab names and keeps the full names as the accessible names', () => {
+    renderHeader();
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map(tab => tab.textContent)).toEqual(['Today', 'Chart', 'Calendar', 'Analytics']);
+    // Label in name: each full name contains the visible short name
+    for (const tab of tabs) {
+      expect(tab.getAttribute('aria-label')).toContain(tab.textContent);
+    }
+    expect(screen.queryByText('Creighton Model System (CrMS)')).toBeNull();
   });
 
-  it('toggles the language in both directions', () => {
+  it('has no icon buttons other than the gear (RFC 0002)', () => {
     renderHeader();
-    const langBtn = screen.getByRole('button', { name: 'Switch Language' });
-    fireEvent.click(langBtn);
-    expect(langBtn).toHaveTextContent('FR');
-    fireEvent.click(langBtn);
-    expect(langBtn).toHaveTextContent('EN');
-  });
-
-  it('toggles the theme from the desktop button', () => {
-    renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Toggle Dark/Light Mode' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-    fireEvent.click(screen.getByRole('button', { name: 'Toggle Dark/Light Mode' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    for (const name of [
+      'Practitioner PDF / PNG',
+      'Welcome to Fertility Tracker',
+      'About & Version Tracker',
+      'Switch Language',
+      'Toggle Dark/Light Mode',
+    ]) {
+      expect(screen.queryByRole('button', { name })).toBeNull();
+    }
   });
 
   it('opens Settings from the gear, on each screen width', () => {

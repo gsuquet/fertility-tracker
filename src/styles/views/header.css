@@ -5,18 +5,19 @@
 
 @layer views {
   .app-header {
-    /* The header stays under the status bar and away from the notch */
-    height: calc(68px + env(safe-area-inset-top, 0px));
+    /* The header stays under the status bar and away from the notch. One row of 60 px. */
+    height: calc(60px + env(safe-area-inset-top, 0px));
     /* Opaque, so the page does not show through the bar (RFC 0002) */
     background-color: var(--bg-surface);
     border-bottom: 1px solid var(--bg-surface-border);
     display: flex;
     align-items: center;
-    justify-content: space-between;
-    padding: 0 1.25rem;
+    gap: var(--space-md);
+    padding: 0 1.5rem;
     padding-top: env(safe-area-inset-top, 0px);
-    padding-left: max(1.25rem, env(safe-area-inset-left, 0px));
-    padding-right: max(1.25rem, env(safe-area-inset-right, 0px));
+    /* The bar lines up with the page: content of 1392 px or less, with a margin of 24 px */
+    padding-left: max(1.5rem, env(safe-area-inset-left, 0px), calc((100% - 1392px) / 2));
+    padding-right: max(1.5rem, env(safe-area-inset-right, 0px), calc((100% - 1392px) / 2));
     -webkit-user-select: none;
     user-select: none;
     -webkit-touch-callout: none;
@@ -97,13 +98,6 @@
     -webkit-text-fill-color: transparent;
   }
 
-  .brand-subtitle {
-    font-size: var(--font-size-2xs);
-    font-weight: 600;
-    color: var(--text-muted);
-    letter-spacing: 0.01em;
-  }
-
   .header-tabs {
     display: flex;
     background-color: var(--bg-primary);
@@ -118,7 +112,7 @@
     display: flex;
     align-items: center;
     gap: 0.5rem;
-    padding: 0.5rem 1.1rem;
+    padding: 0.5rem 0.9rem;
     border: none;
     background: none;
     color: var(--text-secondary);
@@ -128,6 +122,7 @@
     cursor: pointer;
     transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
     user-select: none;
+    white-space: nowrap;
   }
 
   .tab-btn:hover {
@@ -157,9 +152,86 @@
     display: inline-flex;
   }
 
-  /* The page controls of the phone top bar. A wider screen keeps them in the page. */
+  /* The page controls: the date of Today or the chart controls */
   .header-page-slot {
+    display: flex;
+    align-items: center;
+    gap: var(--space-sm);
+    min-width: 0;
+  }
+
+  .header-page-slot:empty {
     display: none;
+  }
+
+  /* One row: the cycle picker and the controls after it go to the right */
+  .app-header > .cycle-picker-container {
+    margin-left: auto;
+  }
+
+  /* From 641 px to 1359 px, the page controls are on a second row of 44 px. Thus, the French
+     labels fit, and the page does not scroll to the side (RFC 0002). */
+  @media (min-width: 641px) and (max-width: 1359px) {
+    .app-header {
+      display: grid;
+      grid-template-columns: auto auto minmax(0, 1fr) auto auto;
+      grid-template-rows: 60px auto;
+      grid-template-areas:
+        'brand tabs . picker controls'
+        'slot slot slot slot slot';
+      gap: 0 var(--space-md);
+      height: auto;
+    }
+
+    .app-header > .header-brand-btn {
+      grid-area: brand;
+    }
+
+    .app-header > .header-tabs {
+      grid-area: tabs;
+    }
+
+    .app-header > .cycle-picker-container {
+      grid-area: picker;
+      margin-left: 0;
+    }
+
+    .app-header > .header-controls {
+      grid-area: controls;
+    }
+
+    .tab-btn {
+      padding-inline: 0.7rem;
+    }
+
+    .header-page-slot {
+      grid-area: slot;
+      min-height: var(--control-size-lg);
+    }
+  }
+
+  /* Below 1200 px, the brand shows its logo only, so that the French tabs fit */
+  @media (min-width: 641px) and (max-width: 1199px) {
+    .brand-text {
+      display: none;
+    }
+  }
+
+  /* From 641 px to 1023 px, the tabs also get their own row */
+  @media (min-width: 641px) and (max-width: 1023px) {
+    .app-header {
+      grid-template-columns: auto minmax(0, 1fr) auto auto;
+      grid-template-rows: 60px auto auto;
+      grid-template-areas:
+        'brand . picker controls'
+        'tabs tabs tabs tabs'
+        'slot slot slot slot';
+    }
+
+    .app-header > .header-tabs {
+      justify-self: start;
+      margin-bottom: var(--space-sm);
+    }
   }
 
   /* Responsive Mobile Header */
@@ -189,11 +261,12 @@
     }
 
     .header-page-slot {
-      display: flex;
       flex: 1;
-      align-items: center;
-      gap: var(--space-sm);
-      min-width: 0;
+    }
+
+    /* The phone title is in the slot: the slot is never empty on a phone */
+    .app-header > .cycle-picker-container {
+      margin-left: 0;
     }
 
     /* On Chart, the cycle picker shrinks first: its label ends in an ellipsis on a narrow phone */
@@ -308,7 +381,7 @@
      change when the window changes, and the rules end when the user turns the overlay off. */
   @media (display-mode: window-controls-overlay) {
     .app-header {
-      height: max(68px, env(titlebar-area-height, 0px));
+      height: max(60px, env(titlebar-area-height, 0px));
       padding-left: calc(env(titlebar-area-x, 0px) + 0.75rem);
       /* 100vw, not 100%: the window controls also cover the scrollbar */
       padding-right: calc(
@@ -343,6 +416,20 @@
     .modal-overlay,
     .drawer-overlay {
       top: calc(env(titlebar-area-y, 0px) + env(titlebar-area-height, 0px));
+    }
+
+    /* The first row is the title bar. The second row of the page controls is under it. */
+    @media (min-width: 641px) and (max-width: 1359px) {
+      .app-header {
+        height: auto;
+        grid-template-rows: max(60px, env(titlebar-area-height, 0px)) auto;
+      }
+    }
+
+    @media (min-width: 641px) and (max-width: 1023px) {
+      .app-header {
+        grid-template-rows: max(60px, env(titlebar-area-height, 0px)) auto auto;
+      }
     }
 
     /* A narrow window keeps the height of the phone header */

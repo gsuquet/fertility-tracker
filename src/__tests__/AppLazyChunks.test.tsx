@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { en } from '../i18n';
+import { openShareChart, openVersionNotes } from '../test/appActions';
 
 // Chunks that arrive only when the test releases them, as on a slow network
 const chunks = vi.hoisted(() => {
@@ -33,9 +34,7 @@ describe('App lazy chunks', () => {
   it('announces a dialog that loads, then shows it', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     render(<App />);
-    fireEvent.click(
-      within(screen.getByRole('banner')).getByRole('button', { name: en.versionTracker.title })
-    );
+    openVersionNotes();
     expect(screen.getByRole('status')).toHaveTextContent(en.common.loading);
     expect(screen.queryByRole('dialog')).toBeNull();
 
@@ -53,7 +52,7 @@ describe('App lazy chunks', () => {
       printedReport = document.querySelector('.print-export-container');
     });
     render(<App />);
-    fireEvent.click(screen.getByRole('button', { name: en.actions.exportPdf }));
+    await openShareChart();
     const dialog = await screen.findByRole(
       'dialog',
       { name: en.exportModal.title },

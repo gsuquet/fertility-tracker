@@ -1,6 +1,5 @@
 export const en = {
   appTitle: 'Fertility Tracker',
-  subtitle: 'Creighton Model System (CrMS)',
   locale: 'en-US',
   tabs: {
     today: 'Today',
@@ -388,7 +387,6 @@ export const en = {
   install: {
     menuEntry: 'Install app',
     menuHint: 'Full screen, offline, and your data kept safer',
-    headerLabel: 'Install the app',
     bannerTitle: 'Install Fertility Tracker',
     bannerText: 'Full screen, offline, and your data kept safer.',
     bannerInstall: 'Install',

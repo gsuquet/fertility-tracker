@@ -28,22 +28,31 @@ const loadDemo = async (page: Page) => {
 
 const banner = (page: Page) => page.getByRole('complementary', { name: en.install.bannerTitle });
 
+/** Checks the install row of Settings, then closes Settings */
+const expectInstallInSettings = async (page: Page, shown: boolean) => {
+  await page.getByRole('button', { name: en.settings.open }).click();
+  const settings = page.getByRole('dialog', { name: en.settings.title });
+  await expect(settings).toBeVisible();
+  await expect(settings.getByText(en.install.menuEntry)).toHaveCount(shown ? 1 : 0);
+  await page.keyboard.press('Escape');
+  await expect(settings).toBeHidden();
+};
+
 test.describe('Install offer', () => {
-  // The header has the install button on a screen of 1440 pixels or more
   test.use({ viewport: { width: 1500, height: 900 } });
 
   test('shows no banner and no install button before the browser can install', async ({ page }) => {
     await openApp(page);
     await loadDemo(page);
     await expect(banner(page)).toBeHidden();
-    await expect(page.getByRole('button', { name: en.install.headerLabel })).toBeHidden();
+    await expectInstallInSettings(page, false);
   });
 
   test('offers the install one time, after the app has data', async ({ page }) => {
     await openApp(page);
     await offerInstall(page);
-    // No banner without data, but the header button is there
-    await expect(page.getByRole('button', { name: en.install.headerLabel })).toBeVisible();
+    // No banner without data, but Settings has Install
+    await expectInstallInSettings(page, true);
     await expect(banner(page)).toBeHidden();
 
     await loadDemo(page);
@@ -56,7 +65,7 @@ test.describe('Install offer', () => {
     // The banner never comes back, also after a new install offer
     await page.reload();
     await offerInstall(page);
-    await expect(page.getByRole('button', { name: en.install.headerLabel })).toBeVisible();
+    await expectInstallInSettings(page, true);
     await expect(banner(page)).toBeHidden();
   });
 

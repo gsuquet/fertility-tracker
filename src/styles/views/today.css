@@ -59,6 +59,17 @@
     min-height: var(--control-size-lg);
   }
 
+  /* The date control is in the top bar. The day status stays in the page as one line. */
+  @media (min-width: 641px) {
+    .today-header-card.compact-date-bar {
+      min-height: 0;
+      padding: 0 var(--space-xs);
+      border: 0;
+      background: none;
+      box-shadow: none;
+    }
+  }
+
   .compact-date-nav-controls {
     display: flex;
     align-items: center;
@@ -598,14 +609,6 @@
     font-size: var(--font-size-sm);
     line-height: 1.35;
     color: var(--text-secondary);
-  }
-
-  @media (max-width: 768px) {
-    .tab-today .stats-dashboard,
-    .tab-chart .stats-dashboard,
-    .tab-calendar .stats-dashboard {
-      display: none !important;
-    }
   }
 
   @media (max-width: 600px) {

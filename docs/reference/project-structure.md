@@ -76,9 +76,9 @@ fertility-tracker/
 
 | Component                                    | Content                                                                                                                            |
 | -------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------- |
-| `Header.tsx`                                 | Page buttons, cycle picker, header buttons and the **Settings** gear.                                                              |
+| `Header.tsx`                                 | Page tabs, cycle picker, the controls of the page, **Log** and the **Settings** gear.                                              |
 | `MobileNav.tsx`                              | Page buttons at the bottom of a phone screen.                                                                                      |
-| `CycleStatsHeader.tsx`                       | Four statistics cards above the pages.                                                                                             |
+| `CycleStatsHeader.tsx`                       | Four statistics cards at the top of **Cycle Analytics**.                                                                           |
 | `CyclePicker.tsx`                            | Selects one cycle or all cycles.                                                                                                   |
 | `TodayView.tsx`                              | The **Today** page. Uses the files in `today/`.                                                                                    |
 | `ChartRow.tsx`                               | The **Paper Chart Strip** page.                                                                                                    |
@@ -104,7 +104,7 @@ fertility-tracker/
 | `WelcomeModal.tsx`                           | The welcome guide.                                                                                                                 |
 | `KeyboardShortcutsModal.tsx`                 | The list of the keyboard shortcuts, with the switch that turns them off.                                                           |
 | `Footer.tsx`                                 | One line: the copyright, **Legal** and the version. Not in the installed app.                                                      |
-| `shell/TopBar.tsx`                           | Puts the controls and the title of a page in the top bar of a phone.                                                               |
+| `shell/TopBar.tsx`                           | Puts the controls of a page in the top bar, and the title of a page in the top bar of a phone.                                     |
 | `LegalNotice.tsx`                            | The trademark text, the medical text and the copyright.                                                                            |
 | `ErrorBoundary.tsx`                          | Message and **Reload** button when a part cannot load.                                                                             |
 | `LoadingStatus.tsx`                          | The loading text for a screen reader while a lazy part loads.                                                                      |

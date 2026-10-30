@@ -246,7 +246,7 @@
     /* The panel stays in view while the page scrolls, under the sticky header */
     .calendar-view .chart-day-detail.is-panel {
       position: sticky;
-      top: calc(68px + env(safe-area-inset-top, 0px) + var(--space-md));
+      top: calc(60px + env(safe-area-inset-top, 0px) + var(--space-md));
     }
   }
 }

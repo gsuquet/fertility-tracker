@@ -4,16 +4,7 @@ import type { Page } from '@playwright/test';
 import { STORAGE_OBSERVATIONS_KEY } from '../src/utils/storageKeys';
 import { en } from '../src/i18n/locales/en';
 import { formatMessage } from '../src/i18n/format';
-import { formatDateDisplay } from '../src/utils/dateUtils';
-import {
-  TODAY,
-  escapeRegExp,
-  fixClock,
-  labelPattern,
-  loadDemoData,
-  openApp,
-  openSettings,
-} from './fixtures';
+import { TODAY, fixClock, labelPattern, loadDemoData, openApp, openSettings } from './fixtures';
 
 const directCode = (page: Page) => page.getByRole('textbox', { name: en.labels.directInput });
 
@@ -172,16 +163,11 @@ test.describe('Fertility Tracker in a browser', () => {
     await loadDemoData(page);
     await page.getByRole('tab', { name: en.tabs.chart }).click();
     const chart = page.getByRole('tabpanel', { name: en.tabs.chart });
-    // The Peak Day tile: its label, CD and the cycle day, then the short date
-    const peakStat = (day: number, date: string) =>
-      page
-        .getByRole('list', { name: en.stats.label })
-        .getByRole('listitem')
-        .filter({
-          hasText: new RegExp(
-            `^${escapeRegExp(en.stats.peakDay)}CD ${day}${escapeRegExp(formatDateDisplay(date, 'en-US', { month: 'short', day: 'numeric' }))}$`
-          ),
-        });
+    // The Peak Day of the last cycle, in the line over its chart row. The statistics bar is on
+    // Analytics only.
+    const peakLine = chart.getByRole('region', { name: /^Cycle 2\b/ }).locator('.cycle-line-peak');
+    const peakStat = (day: number) =>
+      expect(peakLine).toHaveText(formatMessage(en.chartStrip.peakShort, { day }));
     const cell = (date: string, stamp: string) =>
       chart.getByRole('button', {
         name: labelPattern(en.chartStrip.filledCellLabel, { date, stamp }),
@@ -189,7 +175,7 @@ test.describe('Fertility Tracker in a browser', () => {
     const drawer = page.getByRole('dialog', { name: en.drawer.editTitle });
 
     // The detected Peak Day is cycle day 13. Cycle day 18 is a dry day after the post-peak days.
-    await expect(peakStat(13, '2026-10-12')).toBeVisible();
+    await peakStat(13);
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await cell('2026-10-16', 'DARK_GREEN').click();
@@ -197,7 +183,7 @@ test.describe('Fertility Tracker in a browser', () => {
     await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
-    await expect(peakStat(17, '2026-10-16')).toBeVisible();
+    await peakStat(17);
     await expect(cell('2026-10-17', 'LIGHT_GREEN_BABY_1')).toBeVisible();
 
     // The day is still selected, so a click opens the drawer
@@ -205,11 +191,11 @@ test.describe('Fertility Tracker in a browser', () => {
     await drawer.getByRole('switch', { name: en.actions.setPeak }).click();
     await drawer.getByRole('button', { name: en.actions.save }).click();
     await expect(drawer).toBeHidden();
-    await expect(peakStat(13, '2026-10-12')).toBeVisible();
+    await peakStat(13);
     await expect(cell('2026-10-17', 'DARK_GREEN')).toBeVisible();
 
     await page.reload();
-    await expect(peakStat(13, '2026-10-12')).toBeVisible();
+    await peakStat(13);
   });
 
   test('keeps the undo toast usable in the drawer dialog', async ({ page }) => {
