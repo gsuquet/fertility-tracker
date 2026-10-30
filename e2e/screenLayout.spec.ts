@@ -106,13 +106,9 @@ const openDialog: Record<string, (page: Page, size: Size) => Promise<Locator>> =
     await page.getByRole('contentinfo').getByRole('button', { name: en.footer.legal }).click();
     return settled(page.getByRole('dialog', { name: en.errorBoundary.title }));
   },
-  'welcome-guide': async (page, size) => {
-    if (size === 'phone') {
-      const settings = await openSettings(page);
-      await settings.getByRole('button', { name: en.settings.welcomeGuide }).click();
-    } else {
-      await page.getByRole('banner').getByRole('button', { name: en.welcomeModal.title }).click();
-    }
+  'welcome-guide': async page => {
+    const settings = await openSettings(page);
+    await settings.getByRole('button', { name: en.settings.welcomeGuide }).click();
     return settled(page.getByRole('dialog', { name: en.welcomeModal.title }));
   },
 };

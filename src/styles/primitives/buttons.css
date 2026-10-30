@@ -154,32 +154,4 @@
     min-height: 48px;
     border-radius: var(--radius-lg);
   }
-
-  /* Language Switcher Button */
-  .lang-toggle-btn {
-    display: inline-flex;
-    align-items: center;
-    gap: 0.35rem;
-    padding: 0.4rem 0.65rem;
-    border-radius: var(--radius-md);
-    border: 1px solid var(--bg-surface-border);
-    background-color: var(--bg-surface);
-    color: var(--text-primary);
-    font-weight: 800;
-    font-size: var(--font-size-xs);
-    cursor: pointer;
-    min-height: 42px;
-    transition: all 0.18s ease;
-    box-shadow: var(--shadow-sm);
-    flex-shrink: 0;
-  }
-
-  .lang-toggle-btn:hover {
-    border-color: var(--accent-primary);
-    color: var(--accent-primary);
-  }
-
-  .lang-toggle-btn:active {
-    transform: scale(0.95);
-  }
 }

@@ -1,6 +1,5 @@
 export const en = {
   appTitle: 'Fertility Tracker',
-  subtitle: 'Creighton Model System (CrMS)',
   locale: 'en-US',
   tabs: {
     today: 'Today',
@@ -110,9 +109,6 @@ export const en = {
   menu: {
     homeLabel: 'Creighton FertilityCare System Home',
     mainNavLabel: 'Main Navigation Views',
-    languageTitle: 'Switch Language / Changer de langue',
-    languageLabel: 'Switch Language',
-    themeToggleLabel: 'Toggle Dark/Light Mode',
   },
   settings: {
     title: 'Settings',
@@ -142,7 +138,6 @@ export const en = {
   },
   actions: {
     newEntry: 'Log Observation',
-    exportPdf: 'Practitioner PDF / PNG',
     save: 'Save Observation',
     cancel: 'Cancel',
     close: 'Close',
@@ -388,7 +383,6 @@ export const en = {
   install: {
     menuEntry: 'Install app',
     menuHint: 'Full screen, offline, and your data kept safer',
-    headerLabel: 'Install the app',
     bannerTitle: 'Install Fertility Tracker',
     bannerText: 'Full screen, offline, and your data kept safer.',
     bannerInstall: 'Install',

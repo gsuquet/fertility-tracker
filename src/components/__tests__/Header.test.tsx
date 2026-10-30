@@ -1,4 +1,4 @@
-import { screen, fireEvent } from '@testing-library/react';
+import { screen, fireEvent, within } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { Header } from '../Header';
 import { useCycleUi } from '../../context/CycleContext';
@@ -17,9 +17,6 @@ const renderHeader = (
   const props = {
     activeTab,
     setActiveTab: vi.fn(),
-    onOpenExport: vi.fn(),
-    onOpenVersion: vi.fn(),
-    onOpenWelcome: vi.fn(),
     onOpenSettings: vi.fn(),
   };
   renderWithProviders(
@@ -68,36 +65,32 @@ describe('Header', () => {
 
   it('clears the selection and opens Today for a new entry', () => {
     const { setActiveTab } = renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Log Observation' }));
+    const log = screen.getByRole('button', { name: 'Log' });
+    expect(log).toHaveAttribute('title', 'Log Observation (N)');
+    fireEvent.click(log);
     expect(setActiveTab).toHaveBeenCalledWith('today');
     expect(screen.getByTestId('selection')).toHaveTextContent('none');
   });
 
-  it('opens the export, guide and version dialogs from the desktop buttons', () => {
-    const props = renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Practitioner PDF / PNG' }));
-    fireEvent.click(screen.getByRole('button', { name: 'Welcome to Fertility Tracker' }));
-    fireEvent.click(screen.getByRole('button', { name: 'About & Version Tracker' }));
-    expect(props.onOpenExport).toHaveBeenCalledOnce();
-    expect(props.onOpenWelcome).toHaveBeenCalledOnce();
-    expect(props.onOpenVersion).toHaveBeenCalledOnce();
+  it('shows the short tab names and keeps the full names as the accessible names', () => {
+    renderHeader();
+    const tabs = screen.getAllByRole('tab');
+    expect(tabs.map(tab => tab.textContent)).toEqual(['Today', 'Chart', 'Calendar', 'Analytics']);
+    // Label in name: each full name contains the visible short name
+    for (const tab of tabs) {
+      expect(tab.getAttribute('aria-label')).toContain(tab.textContent);
+    }
+    expect(screen.queryByText('Creighton Model System (CrMS)')).toBeNull();
   });
 
-  it('toggles the language in both directions', () => {
+  it('has no buttons other than the brand, Log and the gear (RFC 0002)', () => {
     renderHeader();
-    const langBtn = screen.getByRole('button', { name: 'Switch Language' });
-    fireEvent.click(langBtn);
-    expect(langBtn).toHaveTextContent('FR');
-    fireEvent.click(langBtn);
-    expect(langBtn).toHaveTextContent('EN');
-  });
-
-  it('toggles the theme from the desktop button', () => {
-    renderHeader();
-    fireEvent.click(screen.getByRole('button', { name: 'Toggle Dark/Light Mode' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'dark');
-    fireEvent.click(screen.getByRole('button', { name: 'Toggle Dark/Light Mode' }));
-    expect(document.documentElement).toHaveAttribute('data-theme', 'light');
+    // The tabs have the role tab. With no cycles, the cycle picker does not show.
+    expect(
+      within(screen.getByRole('banner'))
+        .getAllByRole('button')
+        .map(button => button.getAttribute('aria-label') ?? button.textContent)
+    ).toEqual(['Creighton FertilityCare System Home', 'Log', 'Settings']);
   });
 
   it('opens Settings from the gear, on each screen width', () => {

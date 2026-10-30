@@ -1,17 +1,12 @@
 - banner:
-  - button "Creighton FertilityCare System Home": Fertility Tracker Creighton Model System (CrMS)
+  - button "Creighton FertilityCare System Home": Fertility Tracker
   - tablist "Main Navigation Views":
     - tab "Today"
     - tab "Paper Chart Strip"
     - tab "Monthly Calendar"
     - tab "Cycle Analytics" [selected]
   - button "Filter cycle view": /Cycle 2 \(\d+-\d+-\d+\)/
-  - button "Log Observation"
-  - button "Practitioner PDF / PNG"
-  - button "Welcome to Fertility Tracker"
-  - button "About & Version Tracker"
-  - button "Switch Language": EN
-  - button "Toggle Dark/Light Mode"
+  - button "Log"
   - button "Settings"
 - main:
   - list "Cycle statistics":

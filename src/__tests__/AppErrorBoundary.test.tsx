@@ -3,6 +3,7 @@ import { afterEach, describe, expect, it, vi } from 'vitest';
 import { App } from '../App';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { en } from '../i18n';
+import { openFromSettings, openVersionNotes } from '../test/appActions';
 
 // Simulates lazy chunks that fail to load, for example offline before the service worker cached them.
 vi.mock('../components/CycleAnalyticsView', () => ({
@@ -62,14 +63,15 @@ describe('App error boundaries', () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
     vi.spyOn(console, 'error').mockImplementation(() => {});
     render(<App />);
-    const header = within(screen.getByRole('banner'));
 
-    fireEvent.click(header.getByRole('button', { name: en.welcomeModal.title }));
+    await openFromSettings(en.settings.welcomeGuide);
     const failed = await screen.findByRole('dialog', { name: en.errorBoundary.title });
     fireEvent.keyDown(failed, { key: 'Escape' });
+    expect(screen.queryByRole('dialog', { name: en.errorBoundary.title })).toBeNull();
+    fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
     expect(screen.queryByRole('dialog')).toBeNull();
 
-    fireEvent.click(header.getByRole('button', { name: en.versionTracker.title }));
+    openVersionNotes();
     const notes = await screen.findByRole(
       'dialog',
       { name: en.versionTracker.title },
@@ -79,7 +81,7 @@ describe('App error boundaries', () => {
     expect(screen.queryByRole('dialog')).toBeNull();
 
     // The next opening tries again
-    fireEvent.click(header.getByRole('button', { name: en.welcomeModal.title }));
+    await openFromSettings(en.settings.welcomeGuide);
     expect(await screen.findByRole('dialog', { name: en.errorBoundary.title })).toBeInTheDocument();
   });
 });

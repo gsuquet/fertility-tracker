@@ -1,42 +1,20 @@
 - banner:
-  - button "Creighton FertilityCare System Home": Fertility Tracker Creighton Model System (CrMS)
+  - button "Creighton FertilityCare System Home": Fertility Tracker
   - tablist "Main Navigation Views":
     - tab "Today" [selected]
     - tab "Paper Chart Strip"
     - tab "Monthly Calendar"
     - tab "Cycle Analytics"
   - button "Filter cycle view": /Cycle 2 \(\d+-\d+-\d+\)/
-  - button "Log Observation"
-  - button "Practitioner PDF / PNG"
-  - button "Welcome to Fertility Tracker"
-  - button "About & Version Tracker"
-  - button "Switch Language": EN
-  - button "Toggle Dark/Light Mode"
+  - button "Previous Day"
+  - text: /Tue, Oct \d+/
+  - textbox "Date": /\d+-\d+-\d+/
+  - button "Next Day"
+  - button "Log"
   - button "Settings"
 - main:
-  - list "Cycle statistics":
-    - listitem:
-      - text: Cycle length
-      - strong: /\d+/
-      - text: /days Sep \d+ – Oct \d+/
-    - listitem:
-      - text: Peak Day
-      - strong: /CD \d+/
-      - text: /Oct \d+/
-    - listitem:
-      - text: Luteal phase
-      - strong: /\d+/
-      - text: days After Peak Day
-    - listitem:
-      - text: Intercourse
-      - strong: "3"
-      - text: days In this cycle
   - tabpanel "Today":
     - heading "Today" [level=1]
-    - button "Previous Day"
-    - text: /Tuesday, October \d+, \d+/
-    - textbox "Date": /\d+-\d+-\d+/
-    - button "Next Day"
     - text: /Today Day \d+ Saved/
     - heading "Today's Observation" [level=2]
     - text: Direct Code Entry

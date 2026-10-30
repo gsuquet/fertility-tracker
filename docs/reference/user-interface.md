@@ -17,16 +17,13 @@ The address shows the open page: `#today`, `#chart`, `#calendar` or `#analytics`
 
 ## Header buttons
 
-| Button                             | Phone location                      | Action                                              |
-| ---------------------------------- | ----------------------------------- | --------------------------------------------------- |
-| Cycle picker                       | Header                              | Selects one cycle or **All Cycles**.                |
-| **Log Observation**                | **+** at the bottom                 | Opens the observation drawer on today.              |
-| **Practitioner PDF / PNG**         | **Chart options** > **Share chart** | Opens the **Share chart** dialog.                   |
-| **Welcome to Fertility Tracker**   | Settings                            | Opens the welcome guide.                            |
-| **About & Version Tracker**        | Settings                            | Opens the release notes and the storage data.       |
-| Language button (**EN** or **FR**) | Settings                            | Changes the language.                               |
-| Theme button                       | Settings                            | Changes between the light theme and the dark theme. |
-| **Settings** (a gear)              | Top bar                             | Opens Settings.                                     |
+| Button                | Phone location      | Action                                 |
+| --------------------- | ------------------- | -------------------------------------- |
+| Cycle picker          | Top bar             | Selects one cycle or **All Cycles**.   |
+| **Log**               | **+** at the bottom | Opens the observation drawer on today. |
+| **Settings** (a gear) | Top bar             | Opens Settings.                        |
+
+**Share chart** is in the **Chart options** menu (`⋮`) of Chart. The welcome guide, **About & Version Tracker**, the language and the theme are in Settings.
 
 ## App icon badge
 
@@ -53,7 +50,7 @@ On a computer, one key starts an action. A shortcut does nothing while a dialog 
 | Key             | Action                                                     |
 | --------------- | ---------------------------------------------------------- |
 | `1` `2` `3` `4` | Opens **Today**, **Chart**, **Calendar** or **Analytics**. |
-| `N`             | Logs a new observation, as **Log Observation**.            |
+| `N`             | Logs a new observation, as **Log**.                        |
 | `←` `→`         | Opens the previous day or the next day on **Today**.       |
 | `T`             | Opens the date of today on **Today**.                      |
 | `?`             | Opens the **Keyboard shortcuts** dialog.                   |
@@ -108,7 +105,7 @@ If the file is not a valid backup, Settings shows an error. The observations do 
 
 ## Share chart dialog
 
-**Share chart** in the **Chart options** menu (`⋮`) of the chart page opens this dialog. On a wide screen, the export button of the header opens it too.
+**Share chart** in the **Chart options** menu (`⋮`) of the chart page opens this dialog.
 
 Select the cycles in **Cycles**. Each opening selects the cycle of the cycle picker, or the newest cycle.
 
@@ -151,11 +148,11 @@ The notice shows above the pages when the application cannot read the saved obse
 
 ## Dialogs
 
-| Dialog                      | When it opens                                                                  |
-| --------------------------- | ------------------------------------------------------------------------------ |
-| Welcome guide               | At the first visit, and from the header or Settings.                           |
-| **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding.          |
-| **About & Version Tracker** | From the header or Settings, and from **Legal** and the version in the footer. |
+| Dialog                      | When it opens                                                         |
+| --------------------------- | --------------------------------------------------------------------- |
+| Welcome guide               | At the first visit, and from Settings.                                |
+| **New Cycle Start?**        | When you save the first day of bleeding after a day without bleeding. |
+| **About & Version Tracker** | From Settings, and from **Legal** and the version in the footer.      |
 
 All the dialogs, Settings, the observation drawer and the cycle menu use the same keyboard rules:
 
@@ -185,7 +182,7 @@ Touch and hold the app icon (or right-click it on a computer) to see the shortcu
 
 ### Install the application
 
-When the browser can install the application, **Settings** has **Install app** at the top. On a screen of 1440 pixels or more, the header also has an **Install the app** button (a phone icon). After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
+When the browser can install the application, **Settings** has **Install app** at the top. After you save 3 observations, a small message at the bottom of the screen also offers the installation. The message shows one time only. Its close button (`×`) and **Install** remove it.
 
 | Browser                                                     | **Install** does                                                                                                 |
 | ----------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------- |

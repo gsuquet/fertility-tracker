@@ -9,7 +9,7 @@ Use this procedure to make a PDF file or a paper copy of your chart. The file ha
 ## Procedure
 
 1. Open the **Chart** page.
-2. Click **Chart options** (⋮) and then **Share chart**. On a wide screen, you can also click **Practitioner PDF / PNG** in the header.
+2. Click **Chart options** (⋮) and then **Share chart**.
 3. In **Cycles**, select the cycles that you want to print. The cycle of the cycle picker is selected at the start.
 4. Click **Print or PDF**. The print dialog of your browser opens.
 5. Select the printer, or select **Save as PDF**.

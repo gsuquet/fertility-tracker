@@ -57,3 +57,85 @@ test.describe('Top bar of a narrow phone in French', () => {
     }
   });
 });
+
+// RFC 0002, desktop shell: one row of 60 px from 1360 px, and a second row of 44 px below it.
+// From 641 to 1023 px, the tabs also have their own row. The heights include the line under the bar.
+test.describe('Top bar of a computer in French', () => {
+  for (const { width, rows, withControls, withoutControls } of [
+    { width: 1440, rows: 1, withControls: 60, withoutControls: 60 },
+    { width: 1360, rows: 1, withControls: 60, withoutControls: 60 },
+    { width: 1359, rows: 2, withControls: 105, withoutControls: 61 },
+    { width: 1024, rows: 2, withControls: 105, withoutControls: 61 },
+    { width: 800, rows: 3, withControls: 160, withoutControls: 116 },
+  ]) {
+    test(`fits at ${width} px, with ${rows} row(s) on Today and Chart`, async ({ page }) => {
+      await page.setViewportSize({ width, height: 800 });
+      await page.addInitScript(
+        ([obsKey, obs, langKey]) => {
+          window.localStorage.setItem(obsKey, obs);
+          window.localStorage.setItem(langKey, 'fr');
+        },
+        [
+          STORAGE_OBSERVATIONS_KEY,
+          JSON.stringify(buildDemoObservations(TODAY)),
+          STORAGE_LANGUAGE_KEY,
+        ] as const
+      );
+      await openApp(page);
+      const bar = page.getByRole('banner');
+      const tabs = bar.getByRole('tablist', { name: fr.menu.mainNavLabel });
+
+      for (const tab of ['today', 'chart', 'calendar', 'analytics'] as const) {
+        await tabs.getByRole('tab', { name: fr.tabs[tab] }).click();
+        await expect(tabs.getByRole('tab', { name: fr.tabs[tab] })).toHaveAttribute(
+          'aria-selected',
+          'true'
+        );
+        // The page does not scroll to the side (F11)
+        expect(await page.evaluate(() => document.documentElement.scrollWidth)).toBe(width);
+        const box = await bar.boundingBox();
+        const height = tab === 'today' || tab === 'chart' ? withControls : withoutControls;
+        expect(Math.abs(Math.round(box?.height ?? 0) - height)).toBeLessThanOrEqual(1);
+        // The statistics bar is on Analytics only
+        await expect(page.getByRole('list', { name: fr.stats.label })).toHaveCount(
+          tab === 'analytics' ? 1 : 0
+        );
+      }
+
+      // The page controls of Today are in the bar, and the controls of the bar do not overlap
+      await tabs.getByRole('tab', { name: fr.tabs.today }).click();
+      const controls = [
+        tabs,
+        bar.getByRole('button', { name: fr.cyclePicker.buttonLabel }),
+        bar.getByRole('button', { name: fr.todayView.prevDay }),
+        bar.getByRole('button', { name: fr.mobileTabs.log, exact: true }),
+        bar.getByRole('button', { name: fr.settings.open }),
+      ];
+      const boxes: { x: number; y: number; width: number; height: number }[] = [];
+      for (const control of controls) {
+        await expect(control).toBeVisible();
+        const box = await control.boundingBox();
+        expect(box).not.toBeNull();
+        boxes.push(box as NonNullable<typeof box>);
+      }
+      for (const box of boxes) {
+        expect(box.x + box.width).toBeLessThanOrEqual(width);
+      }
+      // The cycle picker, Log and the gear are in this order on the first row. On one or two rows,
+      // the tabs come before them. On two or three rows, the day buttons are under the first row.
+      const [tabList, picker, prevDay, log, gear] = boxes as [
+        (typeof boxes)[number],
+        (typeof boxes)[number],
+        (typeof boxes)[number],
+        (typeof boxes)[number],
+        (typeof boxes)[number],
+      ];
+      if (rows < 3) expect(picker.x).toBeGreaterThanOrEqual(tabList.x + tabList.width);
+      else expect(tabList.y).toBeGreaterThanOrEqual(60);
+      if (rows > 1) expect(prevDay.y).toBeGreaterThanOrEqual(tabList.y + tabList.height);
+      else expect(prevDay.x).toBeGreaterThanOrEqual(picker.x + picker.width);
+      expect(log.x).toBeGreaterThanOrEqual(picker.x + picker.width);
+      expect(gear.x).toBeGreaterThanOrEqual(log.x + log.width);
+    });
+  }
+});

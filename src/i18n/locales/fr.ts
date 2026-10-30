@@ -2,7 +2,6 @@ import type { TranslationSchema } from '../types';
 
 export const fr: TranslationSchema = {
   appTitle: 'Fertility Tracker',
-  subtitle: 'Modèle Creighton (CrMS)',
   locale: 'fr-FR',
   tabs: {
     today: "Aujourd'hui",
@@ -112,9 +111,6 @@ export const fr: TranslationSchema = {
   menu: {
     homeLabel: 'Accueil Creighton FertilityCare System',
     mainNavLabel: 'Vues de navigation principales',
-    languageTitle: 'Changer de langue / Switch Language',
-    languageLabel: 'Changer de langue',
-    themeToggleLabel: 'Basculer entre mode sombre et clair',
   },
   settings: {
     title: 'Réglages',
@@ -144,7 +140,6 @@ export const fr: TranslationSchema = {
   },
   actions: {
     newEntry: 'Saisir une observation',
-    exportPdf: 'Export Praticien PDF / PNG',
     save: 'Enregistrer',
     cancel: 'Annuler',
     close: 'Fermer',
@@ -393,7 +388,6 @@ export const fr: TranslationSchema = {
   install: {
     menuEntry: 'Installer l’application',
     menuHint: 'Plein écran, hors ligne, et vos données mieux protégées',
-    headerLabel: 'Installer l’application',
     bannerTitle: 'Installer Fertility Tracker',
     bannerText: 'Plein écran, hors ligne, et vos données mieux protégées.',
     bannerInstall: 'Installer',

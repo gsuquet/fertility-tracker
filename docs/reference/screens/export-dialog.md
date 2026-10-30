@@ -19,10 +19,7 @@ The dialog has the title **Share chart**. It holds the list of cycles, **Downloa
 
 On a phone, the dialog is a bottom sheet. On a wider screen, it is a dialog of 480 pixels.
 
-These buttons open the dialog:
-
-- **Share chart** in the **Chart options** menu (`⋮`) of the chart page, after **Phase bar** and **Legend** ([Paper Chart Strip page](chart.md)).
-- The export icon button of the header on a wide screen ([Navigation](navigation.md)).
+**Share chart** in the **Chart options** menu (`⋮`) of the chart page opens the dialog. It is after **Phase bar** and **Legend** ([Paper Chart Strip page](chart.md)). The header has no export button ([Navigation](navigation.md)).
 
 ### Cycles
 

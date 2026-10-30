@@ -26,6 +26,7 @@
     font-size: var(--font-size-xs);
     cursor: pointer;
     min-height: 42px;
+    white-space: nowrap;
   }
 
   .cycle-selector-btn:hover,

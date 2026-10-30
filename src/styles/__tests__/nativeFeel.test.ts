@@ -93,10 +93,15 @@ describe('safe areas and the space of the page buttons', () => {
 
   it('keeps the header under the status bar and away from the notch', () => {
     const header = ruleBody(readCss('views/header.css'), /\.app-header/);
-    expect(header).toMatch(/height:\s*calc\(68px \+ env\(safe-area-inset-top, 0px\)\);/);
+    expect(header).toMatch(/height:\s*calc\(60px \+ env\(safe-area-inset-top, 0px\)\);/);
     expect(header).toMatch(/padding-top:\s*env\(safe-area-inset-top, 0px\);/);
-    expect(header).toMatch(/padding-left:\s*max\(1\.25rem, env\(safe-area-inset-left, 0px\)\);/);
-    expect(header).toMatch(/padding-right:\s*max\(1\.25rem, env\(safe-area-inset-right, 0px\)\);/);
+    // The bar also lines up with the content of the page: 1392 px or less (RFC 0002)
+    expect(header).toMatch(
+      /padding-left:\s*max\(1\.5rem, env\(safe-area-inset-left, 0px\), calc\(\(100% - 1392px\) \/ 2\)\);/
+    );
+    expect(header).toMatch(
+      /padding-right:\s*max\(1\.5rem, env\(safe-area-inset-right, 0px\), calc\(\(100% - 1392px\) \/ 2\)\);/
+    );
   });
 
   it('keeps the safe areas in the shorter phone header', () => {
@@ -154,7 +159,7 @@ describe('header in the title bar of an installed app on a computer', () => {
   it('uses the free area of the title bar only when the overlay is on', () => {
     expect(overlayStart).toBeGreaterThan(-1);
     const rule = ruleBody(overlay, /\.app-header/);
-    expect(rule).toMatch(/height:\s*max\(68px,\s*env\(titlebar-area-height, 0px\)\);/);
+    expect(rule).toMatch(/height:\s*max\(60px,\s*env\(titlebar-area-height, 0px\)\);/);
     expect(rule).toMatch(/padding-left:\s*calc\(env\(titlebar-area-x, 0px\)/);
     expect(rule).toMatch(
       /padding-right:\s*calc\(\s*100vw\s*-\s*env\(titlebar-area-x, 0px\)\s*-\s*env\(titlebar-area-width, 100vw\)/

@@ -2,6 +2,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, beforeEach } from 'vitest';
 import { App } from '../../App';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../../utils/storageKeys';
+import { openVersionNotes } from '../../test/appActions';
 
 describe('App Root Component Integration', () => {
   beforeEach(() => {
@@ -42,11 +43,10 @@ describe('App Root Component Integration', () => {
     expect(screen.getByText(/Today's Observation/i)).toBeInTheDocument();
   });
 
-  it('opens and closes version modal from header', async () => {
+  it('opens and closes version modal from the footer', async () => {
     render(<App />);
 
-    const versionBtns = screen.getAllByLabelText(/About & Version Tracker/i);
-    fireEvent.click(versionBtns[0]!);
+    openVersionNotes();
 
     await waitFor(() => {
       expect(screen.getByRole('dialog')).toBeInTheDocument();

@@ -17,7 +17,7 @@ The release notes change at each release. Thus, the snapshots and the screenshot
 
 ## Behavior
 
-- The info button of the header on a wide screen, **About Fertility Tracker** in [Settings](settings.md) and the version in the footer open the dialog. It then shows the **Release Notes** tab.
+- **About Fertility Tracker** in [Settings](settings.md) and the version in the footer open the dialog. It then shows the **Release Notes** tab.
 - **Legal** in the footer and **Legal and medical notice** in Settings open the dialog on the **System Information** tab, with the legal notice.
 - From Settings, the dialog opens over Settings. When it closes, Settings shows again.
 - The **Release Notes** tab shows the newest release and the full history. Each old release opens and closes. Its header shows only the version and the date.

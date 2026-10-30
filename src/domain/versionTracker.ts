@@ -44,6 +44,29 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.45.0',
+    date: '2026-10-30',
+    title: 'A Simpler Header on a Computer',
+    titleFr: 'Un en-tête plus simple sur ordinateur',
+    tagline: 'The header has the tabs, the page controls, Log and the gear',
+    taglineFr: 'L’en-tête a les onglets, les commandes de la page, Saisie et la roue dentée',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The tabs show short names: Today, Chart, Calendar and Analytics',
+      'The date of Today and the chart controls are in the header',
+      'Below 1360 pixels, these controls are on a second row, so the header fits the screen',
+      'The statistics bar shows on Analytics only',
+      'Share chart, the guide, About, the language and the theme are in Settings or in the chart menu',
+    ],
+    highlightsFr: [
+      'Les onglets ont des noms courts : Aujourd’hui, Graphique, Calendrier et Analyses',
+      'La date d’Aujourd’hui et les commandes du graphique sont dans l’en-tête',
+      'Sous 1360 pixels, ces commandes sont sur une deuxième ligne, et l’en-tête tient sur l’écran',
+      'La barre de statistiques est seulement sur Analyses',
+      'Partager le graphique, le guide, À propos, la langue et le thème sont dans Réglages ou dans le menu du graphique',
+    ],
+  },
+  {
     version: '1.44.0',
     date: '2026-10-30',
     title: 'Larger Stamp Marks',
