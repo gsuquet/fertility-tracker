@@ -274,7 +274,7 @@ const MainApp: React.FC = () => {
             {/* The key resets the alert of a failed page when the tab changes */}
             <ErrorBoundary key={activeTab}>
               <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
-                {activeTab === 'today' && <TodayView />}
+                {activeTab === 'today' && <TodayView onOpenChart={() => setActiveTab('chart')} />}
                 {activeTab === 'chart' && (
                   <ChartRow
                     onOpenToday={() => setActiveTab('today')}

@@ -10,12 +10,6 @@
     - heading "Today" [level=1]
     - text: /Today Day \d+ Saved 0AD Dry day\. Infertile under the CrMS rules\./
     - button "Observation actions"
-    - heading "Recent 5-Day Observation History" [level=3]
-    - button /Fri, \d+\/\d+ 0AD/
-    - button /Sat, \d+\/\d+ 0AD/
-    - button /Sun, \d+\/\d+ 0AD/
-    - button /Mon, \d+\/\d+ 0AD/
-    - button /Tue, \d+\/\d+ 0AD/
     - heading "Today's Observation" [level=2]
     - text: Direct Code Entry
     - textbox "Direct Code Entry":
@@ -30,6 +24,12 @@
     - switch "Designate Peak Day (P)"
     - button "Notes None"
     - button "Saved" [disabled]
+    - heading "Recent 5-Day Observation History" [level=3]
+    - button /Fri, \d+\/\d+ 0AD/
+    - button /Sat, \d+\/\d+ 0AD/
+    - button /Sun, \d+\/\d+ 0AD/
+    - button /Mon, \d+\/\d+ 0AD/
+    - button /Tue, \d+\/\d+ 0AD/
 - contentinfo "Legal and Trademark Disclaimers":
   - text: /© \d+ Fertility Tracker/
   - button "Legal"

@@ -15,6 +15,9 @@ import { useObservationForm } from '../hooks/useObservationForm';
 import { CycleStartModal } from './CycleStartModal';
 import { TodayDateNav } from './today/TodayDateNav';
 import { TodayHistoryList } from './today/TodayHistoryList';
+import { TodayRecentDays } from './today/TodayRecentDays';
+import { TodayCycleStrip } from './today/TodayCycleStrip';
+import { DESKTOP_QUERY, WIDE_QUERY, useMediaQuery } from '../hooks/useMediaQuery';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { getTodayStr, addDays } from '../utils/dateUtils';
 import { haptic } from '../utils/haptics';
@@ -26,7 +29,12 @@ import { useToast } from '../hooks/useToast';
 import { PageTitle } from './shell/TopBar';
 import { Check, CheckCircle2 } from 'lucide-react';
 
-export const TodayView: React.FC = () => {
+interface TodayViewProps {
+  /** Opens the chart page, from the current cycle of the desktop */
+  onOpenChart?: (() => void) | undefined;
+}
+
+export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
   const {
     observations,
     cycles,
@@ -34,6 +42,7 @@ export const TodayView: React.FC = () => {
     deleteObservation,
     selectedObservation,
     setSelectedObservation,
+    setSelectedCycleId,
   } = useCycle();
   const { t } = useLanguage();
 
@@ -42,6 +51,9 @@ export const TodayView: React.FC = () => {
   const [typing, setTyping] = useState(false);
   const formRef = useRef<HTMLFormElement>(null);
   const topDialog = useTopDialog();
+  // From 1024 px: two columns. From 1360 px, the right column adds the current cycle.
+  const isDesktop = useMediaQuery(DESKTOP_QUERY);
+  const isWide = useMediaQuery(WIDE_QUERY);
 
   // Selected date state (defaults to Today, but user can navigate)
   const [selectedDate, setSelectedDate] = useState<string>(
@@ -91,6 +103,10 @@ export const TodayView: React.FC = () => {
   } = useDaySwipe(direction => (direction === 'next' ? handleNextDay() : handlePrevDay()));
 
   const hasUnsavedChanges = hasFieldChanges(fields, currentObs);
+  // The cycle of the selected day: the newest cycle that starts on or before it. A day after today
+  // has no cycle.
+  const selectedCycle =
+    selectedDate <= getTodayStr() ? cycles.find(c => c.startDate <= selectedDate) : undefined;
   const yesterdayObs = observations.find(o => o.date === addDays(selectedDate, -1));
 
   const status = formStatus(
@@ -181,26 +197,21 @@ export const TodayView: React.FC = () => {
       />
 
       {/* Status card (phone): the stamp, the code, the fertility text and the actions menu */}
-      <TodayFertilityGuidance
-        stamp={status.stamp}
-        currentCode={form.currentCode}
-        isEmpty={status.isEmpty}
-        isManualPeak={status.isPeak}
-        intercourse={fields.intercourse}
-        variant="banner"
-        menu={actionsMenu('banner')}
-      />
-
-      {/* Main Grid: 3-column Layout */}
-      <div className="today-main-grid" ref={swipeContentRef}>
-        {/* Column 1: Recent 5-Day Observation History Card */}
-        <TodayHistoryList
-          selectedDate={selectedDate}
-          observations={observations}
-          onSelectDate={setSelectedDate}
+      {!isDesktop && (
+        <TodayFertilityGuidance
+          stamp={status.stamp}
+          currentCode={form.currentCode}
+          isEmpty={status.isEmpty}
+          isManualPeak={status.isPeak}
+          intercourse={fields.intercourse}
+          variant="banner"
+          menu={actionsMenu('banner')}
         />
+      )}
 
-        {/* Column 2: the progressive observation form and the Save bar */}
+      {/* One column on a phone. From 1024 px: the form at the left, the day at the right. */}
+      <div className="today-main-grid" ref={swipeContentRef}>
+        {/* The progressive observation form and the Save bar */}
         <form ref={formRef} onSubmit={handleSave} className="today-form-card">
           <h2 className="sr-only">{t.todayView.title}</h2>
           <ProgressiveObservationForm
@@ -227,16 +238,51 @@ export const TodayView: React.FC = () => {
           </div>
         </form>
 
-        {/* Column 3: the status card (desktop) */}
-        <TodayFertilityGuidance
-          stamp={status.stamp}
-          currentCode={form.currentCode}
-          isEmpty={status.isEmpty}
-          isManualPeak={status.isPeak}
-          intercourse={fields.intercourse}
-          variant="card"
-          menu={actionsMenu('card')}
-        />
+        {/* Phone: the 5 days before the selected day, under the form */}
+        {!isDesktop && (
+          <TodayHistoryList
+            selectedDate={selectedDate}
+            observations={observations}
+            onSelectDate={setSelectedDate}
+          />
+        )}
+
+        {isDesktop && (
+          <div className="today-side">
+            <TodayFertilityGuidance
+              stamp={status.stamp}
+              currentCode={form.currentCode}
+              isEmpty={status.isEmpty}
+              isManualPeak={status.isPeak}
+              intercourse={fields.intercourse}
+              variant="card"
+              menu={actionsMenu('card')}
+              saved={!!currentObs && !hasUnsavedChanges}
+            />
+            {isWide && selectedCycle && (
+              <TodayCycleStrip
+                cycle={selectedCycle}
+                selectedDate={selectedDate}
+                nextStartDate={cycles[cycles.indexOf(selectedCycle) - 1]?.startDate}
+                onOpenChart={
+                  onOpenChart &&
+                  (() => {
+                    // The chart opens on the cycle of the strip
+                    setSelectedCycleId(selectedCycle.id);
+                    onOpenChart();
+                  })
+                }
+              />
+            )}
+            <TodayRecentDays
+              selectedDate={selectedDate}
+              count={isWide ? 7 : 5}
+              observations={observations}
+              cycles={cycles}
+              onSelectDate={setSelectedDate}
+            />
+          </div>
+        )}
       </div>
 
       <CycleStartModal

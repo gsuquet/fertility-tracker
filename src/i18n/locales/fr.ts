@@ -30,7 +30,6 @@ export const fr: TranslationSchema = {
     loggedStatus: 'Enregistrée',
     notLoggedStatus: 'Non enregistrée',
     noObservation: "Pas encore d'observation",
-    fertilityStatus: 'Statut de fertilité & Conseils',
     recentHistory: 'Historique des 5 derniers jours',
     prevDay: 'Jour précédent',
     nextDay: 'Jour suivant',
@@ -46,6 +45,11 @@ export const fr: TranslationSchema = {
     modeDetailed: 'Lignes de groupes',
     notesPlaceholder: 'Ajoutez des notes utiles (ex. : stress, médicaments, voyage)...',
     savedLabel: 'Enregistrée',
+    lastDays: '{count} derniers jours',
+    thisCycle: 'Ce cycle',
+    cycleDayOf: 'Jour {day} sur {length}',
+    peakOnDay: 'Jour Sommet {day}',
+    openChart: 'Ouvrir le graphique',
   },
   observationForm: {
     groups: {
@@ -153,7 +157,6 @@ export const fr: TranslationSchema = {
     notes: 'Notes / Remarques',
     directInput: 'Saisie Directe de Code',
     directInputPlaceholder: 'ex: 10KLX3 I AP',
-    stampPreview: 'Aperçu du Timbre',
     peakDay: 'Jour Sommet (P)',
     postPeakCount: 'Compte Post-Sommet',
   },

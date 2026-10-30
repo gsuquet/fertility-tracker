@@ -3,7 +3,7 @@ import { useLanguage } from '../../context/LanguageContext';
 import type { StampType } from '../../types/crms';
 import { StampBadge } from '../StampBadge';
 import { fertilityGuidance } from './fertilityGuidance';
-import { Info, Sparkles } from 'lucide-react';
+import { Check } from 'lucide-react';
 
 interface TodayFertilityGuidanceProps {
   stamp: StampType;
@@ -16,6 +16,8 @@ interface TodayFertilityGuidanceProps {
   variant: 'banner' | 'sheet' | 'card';
   /** The observation actions menu, at the right of the status. */
   menu: React.ReactNode;
+  /** The card of the desktop Today page: true when the day is saved with no change */
+  saved?: boolean | undefined;
 }
 
 export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
@@ -26,6 +28,7 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
   intercourse,
   variant,
   menu,
+  saved = false,
 }) => {
   const { t } = useLanguage();
 
@@ -33,9 +36,8 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
 
   if (variant !== 'card') {
     // The banner of Today shows only on a phone. The banner of the sheet shows at each width.
-    const phoneOnly = variant === 'banner' ? 'mobile-only-stamp-banner' : '';
     return (
-      <div className={`today-top-status-banner ${phoneOnly}`}>
+      <div className="today-top-status-banner">
         <div className="status-stamp-hero">
           <StampBadge
             stamp={stamp}
@@ -57,33 +59,27 @@ export const TodayFertilityGuidance: React.FC<TodayFertilityGuidanceProps> = ({
     );
   }
 
+  // Desktop: the stamp of 40 px, the code, one sentence, the saved state and the menu
   return (
-    <div className="today-status-card desktop-only-stamp-card">
-      <div className="status-card-header">
-        <Sparkles size={18} className="status-header-icon" />
-        <h3>{t.labels.stampPreview}</h3>
-        {menu}
-      </div>
-
-      <div className="status-stamp-wrapper" aria-live="polite">
-        <StampBadge
-          stamp={stamp}
-          isPeakDay={isManualPeak}
-          intercourse={intercourse}
-          size="lg"
-          isEmpty={isEmpty}
-        />
+    <div className="today-status-card">
+      <StampBadge
+        stamp={stamp}
+        isPeakDay={isManualPeak}
+        intercourse={intercourse}
+        size="lg"
+        isEmpty={isEmpty}
+      />
+      <div className="status-card-info" aria-live="polite">
         <div className={isEmpty ? 'stamp-empty-text' : 'status-code-text'}>
           {isEmpty ? t.todayView.noObservation : currentCode}
         </div>
+        {!isEmpty && <p className="status-card-guidance">{getFertilityGuidance()}</p>}
       </div>
-
-      {!isEmpty && (
-        <div className="status-guidance-box" aria-live="polite">
-          <Info size={16} className="guidance-icon" />
-          <p>{getFertilityGuidance()}</p>
-        </div>
-      )}
+      <span className={`status-card-saved ${saved ? 'is-saved' : ''}`}>
+        {saved && <Check size={16} aria-hidden="true" />}
+        {saved ? t.todayView.loggedStatus : t.todayView.notLoggedStatus}
+      </span>
+      {menu}
     </div>
   );
 };

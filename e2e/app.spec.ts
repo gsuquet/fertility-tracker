@@ -52,14 +52,10 @@ test.describe('Fertility Tracker in a browser', () => {
     await page.reload();
 
     await expect(directCode(page)).toHaveValue('10KLX3');
-    const dayLabel = formatDateDisplay(TODAY, en.locale, {
-      weekday: 'short',
-      month: 'numeric',
-      day: 'numeric',
-    });
-    await expect(
-      page.getByRole('button', { name: new RegExp(`^${escapeRegExp(dayLabel)} .*10KLX3`) })
-    ).toBeVisible();
+    // The next day lists the saved day first in the last days of the desktop
+    await page.getByRole('button', { name: en.todayView.nextDay }).click();
+    const lastDays = page.getByRole('region', { name: /^Last \d days$/ });
+    await expect(lastDays.getByRole('button').first()).toHaveText(/10KLX3/);
   });
 
   test('restores the observations from a .ftbackup file', async ({ page }) => {
