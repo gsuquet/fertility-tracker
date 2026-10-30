@@ -82,6 +82,8 @@ The job `e2e` runs at the same time. It does these steps:
 
 The workflow `.github/workflows/pr-title.yml` checks that the pull request title follows [Conventional Commits](commit-messages.md). It runs `.mise/tasks/commit-msg --strict`. It runs when a pull request opens, changes or gets new commits.
 
+The workflow `.github/workflows/dependabot-auto-merge.yml` runs on the Dependabot pull requests only. It reads the update type with `dependabot/fetch-metadata`. For a patch or minor update, it turns on auto-merge with a squash merge. GitHub merges the pull request when the required checks `validate` and `e2e` pass. A major update stays open for a manual review.
+
 Each workflow pins its actions to a full commit SHA, with the release tag in a comment.
 
 ## Related documents
