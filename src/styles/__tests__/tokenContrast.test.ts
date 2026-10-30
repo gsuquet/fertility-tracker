@@ -75,6 +75,22 @@ const textTokens = [
   '--color-success-text',
   '--color-warning-text',
 ];
+/** The fill gradient of each stamp, and its opaque border if it has one */
+const stampEdges: { stamp: string; fills: string[]; border: string | null }[] = [
+  { stamp: 'red', fills: ['--stamp-red-light', '--stamp-red'], border: null },
+  { stamp: 'dark green', fills: ['--stamp-dark-green-light', '--stamp-dark-green'], border: null },
+  {
+    stamp: 'light green',
+    fills: ['--stamp-light-green-light', '--stamp-light-green'],
+    border: '--stamp-light-green-border',
+  },
+  {
+    stamp: 'yellow',
+    fills: ['--stamp-yellow-light', '--stamp-yellow'],
+    border: '--stamp-yellow-border',
+  },
+  { stamp: 'white', fills: ['--stamp-white'], border: '--stamp-white-border' },
+];
 const whiteTextFills = [
   '--accent-solid',
   '--accent-solid-hover',
@@ -148,6 +164,25 @@ describe('design token contrast (WCAG 2 AA)', () => {
       ['--color-white', '--stamp-dark-green'],
     ])('stamp text %s on %s reaches 4.5:1', (text, fill) => {
       expect(contrast(color(text), color(fill))).toBeGreaterThanOrEqual(AA_NORMAL_TEXT);
+    });
+
+    // WCAG 1.4.11: a stamp is seen by its fill or by an opaque border. On each surface, the two
+    // ends of the fill gradient reach 3:1, or else the border does.
+    it.each(
+      stampEdges.flatMap(({ stamp, fills, border }) =>
+        surfaces.map(surface => [stamp, surface, fills, border] as const)
+      )
+    )('the %s stamp has an edge of 3:1 on %s', (_stamp, surface, fills, border) => {
+      const backdrop = color(surface);
+      const fillReaches = fills.every(fill => contrast(color(fill), backdrop) >= AA_NON_TEXT);
+      // A translucent border is seen over the fill
+      const edge = border === null ? null : over(color(border), color(fills.at(-1) as string));
+      const borderReaches = edge !== null && contrast(edge, backdrop) >= AA_NON_TEXT;
+      expect(fillReaches || borderReaches).toBe(true);
+    });
+
+    it('--bg-hero is not lighter than --bg-surface', () => {
+      expect(luminance(color('--bg-hero'))).toBeLessThanOrEqual(luminance(color('--bg-surface')));
     });
 
     it('--color-warning-text on --color-warning-surface reaches 4.5:1', () => {

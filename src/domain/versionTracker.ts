@@ -44,6 +44,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.43.0',
+    date: '2026-10-30',
+    title: 'Clearer Stamps in the Dark Theme',
+    titleFr: 'Des timbres plus nets dans le thème sombre',
+    tagline: 'Each stamp has a clear edge on each surface, in both themes',
+    taglineFr: 'Chaque timbre a un bord net sur chaque surface, dans les deux thèmes',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'In the dark theme, the green stamp is a little lighter, so its edge stays clear on the menus',
+      'The yellow stamp has a dark amber edge, so it is easy to see on a light page',
+      'In the dark theme, the status card has the same color as the other cards',
+    ],
+    highlightsFr: [
+      'Dans le thème sombre, le timbre vert est un peu plus clair, et son bord reste net sur les menus',
+      'Le timbre jaune a un bord ambre foncé, et il est facile à voir sur une page claire',
+      'Dans le thème sombre, la carte d’état a la même couleur que les autres cartes',
+    ],
+  },
+  {
     version: '1.42.0',
     date: '2026-10-30',
     title: 'Today Uses the Full Desktop Width',

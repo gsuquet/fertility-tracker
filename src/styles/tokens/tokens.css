@@ -68,7 +68,8 @@
     --stamp-yellow: #eab308;
     --stamp-yellow-light: #facc15;
     --stamp-yellow-text: #1e293b;
-    --stamp-yellow-border: rgba(0, 0, 0, 0.15);
+    /* The yellow fill is light: its edge is a dark amber line of 3:1 or more (WCAG 1.4.11) */
+    --stamp-yellow-border: #a16207;
     --stamp-white-text: #0f172a;
     /* Thin light edge of a dark fill: stamps and dark buttons */
     --border-on-fill: rgba(255, 255, 255, 0.2);
@@ -173,6 +174,10 @@
 
     --stamp-white-border: #7a8597;
     --stamp-empty: #7a8597;
+    /* The dark green fill is a little lighter, so that its edge reaches 3:1 on the menus and the
+       popovers. White text on it stays at 4.5:1 or more. */
+    --stamp-dark-green: #168740;
+    --stamp-light-green-border: #168740;
 
     /* Semantic Feedback Colors */
     --color-danger: #dc2626;
