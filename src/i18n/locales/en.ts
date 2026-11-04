@@ -123,6 +123,7 @@ export const en = {
     backUpNow: 'Back up now',
     lastBackup: 'Last backup: {date}',
     noBackup: 'No backup yet',
+    backUpEncrypted: 'Back up with a password',
     restore: 'Restore from a file',
     help: 'Help',
     welcomeGuide: 'Welcome guide',
@@ -327,10 +328,26 @@ export const en = {
     pdfSuccess: 'Chart PDF downloaded.',
     pdfError: 'The chart PDF could not be made. Use Print instead.',
     jsonDescription:
-      'Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private.',
+      'Back up now downloads all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private. Back up with a password encrypts the file.',
     importError:
       'This file is not a valid backup. Select a backup file from Fertility Tracker (.ftbackup or .json).',
     close: 'Close Share chart',
+  },
+  passwordDialog: {
+    backupTitle: 'Back up with a password',
+    restoreTitle: 'Open an encrypted backup',
+    password: 'Password',
+    confirm: 'Confirm the password',
+    backupNote:
+      'Nobody can open the file without this password, and Fertility Tracker cannot reset it. Use 12 characters or more.',
+    restoreNote: 'This backup file is encrypted. Type its password.',
+    save: 'Save encrypted backup',
+    open: 'Open the file',
+    working: 'Working…',
+    tooShort: 'The password must have 12 characters or more.',
+    mismatch: 'The two passwords are different.',
+    failed: 'This browser cannot encrypt the file.',
+    wrongPassword: 'The password is wrong, or the file is damaged.',
   },
   confirmDialog: {
     demoTitle: 'Replace your data with the demo?',

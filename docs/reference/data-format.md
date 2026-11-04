@@ -8,7 +8,7 @@ The application keeps all the data in `localStorage`. It sends no data to a serv
 
 ## Backup file
 
-A backup file has the format that the application writes. While `WRITE_SCHEMA_VERSION` is 0, it is a JSON array of observations. The file is not encrypted. The application restores a backup file in format 0 or in format 1. Read [Storage format](data-storage.md#storage-format).
+A backup file has the format that the application writes. While `WRITE_SCHEMA_VERSION` is 0, it is a JSON array of observations. The file of **Back up now** is not encrypted. For an encrypted file, read [Encrypted backup file](#encrypted-backup-file). The application restores a backup file in format 0 or in format 1. Read [Storage format](data-storage.md#storage-format).
 
 In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is the same JSON. The application also restores an older file that ends with `.json`.
 
@@ -31,6 +31,36 @@ In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is
   }
 ]
 ```
+
+## Encrypted backup file
+
+**Back up with a password** writes an encrypted backup file. The file name ends with `-encrypted.ftbackup`. The content is a JSON object:
+
+```json
+{
+  "encryptedBackup": 1,
+  "kdf": { "name": "PBKDF2", "hash": "SHA-256", "iterations": 600000, "salt": "base64" },
+  "cipher": { "name": "AES-GCM", "iv": "base64" },
+  "data": "base64"
+}
+```
+
+| Field             | Value                                                      |
+| ----------------- | ---------------------------------------------------------- |
+| `encryptedBackup` | The version of the format: `1`                             |
+| `kdf.salt`        | 16 random bytes, in base64                                 |
+| `kdf.iterations`  | 600,000 when the application writes the file               |
+| `cipher.iv`       | 12 random bytes, in base64                                 |
+| `data`            | The AES-256-GCM ciphertext with its 16-byte tag, in base64 |
+
+- PBKDF2-SHA256 makes the AES-256 key from the password, the salt and the iterations.
+- The plain text is the JSON of a normal backup file. The application compresses it with gzip.
+- Before the encryption, the application adds the length of the compressed data in 4 bytes (big-endian). Then it adds zero bytes to the next multiple of 16,384 bytes. Thus, the size of the file does not show the number of observations.
+- The additional data of AES-GCM is the text `fertility-tracker-encrypted-backup:1:` followed by the iterations, a colon and the salt in base64. Thus, a change of the salt or of the iterations makes the decryption fail.
+- The application restores a file only when `kdf.iterations` is an integer from 600,000 to 10,000,000.
+- A wrong password and a changed file give the same result: the decryption fails, and the data does not change.
+
+The functions are in `src/domain/encryptedBackup.ts` ([Domain API](domain-api.md#encryptedbackupts)).
 
 ## Observation fields
 

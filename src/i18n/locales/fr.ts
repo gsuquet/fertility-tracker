@@ -125,6 +125,7 @@ export const fr: TranslationSchema = {
     backUpNow: 'Sauvegarder maintenant',
     lastBackup: 'Dernière sauvegarde : {date}',
     noBackup: 'Aucune sauvegarde',
+    backUpEncrypted: 'Sauvegarder avec un mot de passe',
     restore: 'Restaurer depuis un fichier',
     help: 'Aide',
     welcomeGuide: 'Guide de bienvenue',
@@ -331,10 +332,26 @@ export const fr: TranslationSchema = {
     pdfSuccess: 'PDF du graphique téléchargé.',
     pdfError: 'Le PDF du graphique n’a pas pu être créé. Utilisez plutôt Imprimer.',
     jsonDescription:
-      "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
+      "Sauvegarder maintenant télécharge toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé. Sauvegarder avec un mot de passe chiffre le fichier.",
     importError:
       "Ce fichier n'est pas une sauvegarde valide. Sélectionnez un fichier de sauvegarde de Fertility Tracker (.ftbackup ou .json).",
     close: 'Fermer le partage du graphique',
+  },
+  passwordDialog: {
+    backupTitle: 'Sauvegarder avec un mot de passe',
+    restoreTitle: 'Ouvrir une sauvegarde chiffrée',
+    password: 'Mot de passe',
+    confirm: 'Confirmer le mot de passe',
+    backupNote:
+      'Personne ne peut ouvrir le fichier sans ce mot de passe, et Fertility Tracker ne peut pas le réinitialiser. Utilisez 12 caractères ou plus.',
+    restoreNote: 'Ce fichier de sauvegarde est chiffré. Saisissez son mot de passe.',
+    save: 'Enregistrer la sauvegarde chiffrée',
+    open: 'Ouvrir le fichier',
+    working: 'En cours…',
+    tooShort: 'Le mot de passe doit avoir 12 caractères ou plus.',
+    mismatch: 'Les deux mots de passe sont différents.',
+    failed: 'Ce navigateur ne peut pas chiffrer le fichier.',
+    wrongPassword: 'Le mot de passe est faux, ou le fichier est endommagé.',
   },
   confirmDialog: {
     demoTitle: 'Remplacer vos données par la démo ?',

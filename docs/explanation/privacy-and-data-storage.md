@@ -37,7 +37,9 @@ To decrease these risks more, make a backup file regularly. Read [Back up and re
 
 ## The backup file
 
-The backup file ends with `.ftbackup`. It is a JSON file that is not encrypted. Any person who has the file can read your observations. Keep it in a safe location. Do not send it through a service that you do not trust.
+The backup file ends with `.ftbackup`. The file of **Back up now** is a JSON file that is not encrypted. Any person who has the file can read your observations. Keep it in a safe location. Do not send it through a service that you do not trust.
+
+**Back up with a password** encrypts the file in the browser, before the download. The browser makes the key from your password, so the key never leaves the device. Without the password, nobody can read the file, and the application cannot reset the password. The file has a size in steps of 16 KB, so its size does not show how many days you recorded.
 
 ## Synchronization in the future
 

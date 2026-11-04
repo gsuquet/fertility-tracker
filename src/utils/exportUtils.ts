@@ -82,8 +82,13 @@ export async function saveFile(blob: Blob, fileName: string): Promise<SaveResult
 
 /**
  * Downloads the JSON backup of the observations, with the backup file name of today. The type is
- * neutral: with `application/json`, a browser can add `.json` after `.ftbackup`.
+ * neutral: with `application/json`, a browser can add `.json` after `.ftbackup`. The name of an
+ * encrypted backup ends with `-encrypted.ftbackup`.
  */
-export function downloadBackupFile(json: string): void {
-  downloadBlob(new Blob([json], { type: 'application/octet-stream' }), getExportFilename('backup'));
+export function downloadBackupFile(json: string, encrypted = false): void {
+  const name = getExportFilename('backup');
+  downloadBlob(
+    new Blob([json], { type: 'application/octet-stream' }),
+    encrypted ? name.replace(`.${BACKUP_EXTENSION}`, `-encrypted.${BACKUP_EXTENSION}`) : name
+  );
 }

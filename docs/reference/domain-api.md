@@ -98,6 +98,18 @@ The rules are in [Cycle and phase rules](cycle-and-phase-rules.md).
 | `summarizeObservations` | `(observations: Observation[]) => BackupSummary`                      | The number of observations, the first date and the last date. The dates are `null` for an empty list.                                                                 |
 | `mergeObservations`     | `(existing: Observation[], imported: Observation[]) => Observation[]` | All the days in date order. An imported day replaces the existing day with the same date. An imported manual Peak Day clears the other manual Peak Days of its cycle. |
 
+## encryptedBackup.ts
+
+| Export                 | Signature                                                                | Returns                                                                                 |
+| ---------------------- | ------------------------------------------------------------------------ | --------------------------------------------------------------------------------------- |
+| `MIN_PASSWORD_LENGTH`  | `number`                                                                 | `12`.                                                                                   |
+| `PBKDF2_ITERATIONS`    | `number`                                                                 | `600000`.                                                                               |
+| `encryptBackup`        | `(text: string, password: string) => Promise<string>`                    | The JSON text of an encrypted backup file.                                              |
+| `parseEncryptedBackup` | `(text: string) => EncryptedBackup \| null`                              | The fields of an encrypted backup file, or `null` when the text is not one.             |
+| `decryptBackup`        | `(backup: EncryptedBackup, password: string) => Promise<string \| null>` | The plain text of the backup, or `null` when the password is wrong or the file changed. |
+
+The format is in [Encrypted backup file](data-format.md#encrypted-backup-file).
+
 ## demoData.ts
 
 | Function                | Signature                             | Returns                                                                              |

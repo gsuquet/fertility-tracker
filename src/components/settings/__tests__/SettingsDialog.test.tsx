@@ -8,6 +8,11 @@ import { useTheme } from '../../../context/ThemeContext';
 import { renderWithProviders } from '../../../test/render';
 import { makeObservation } from '../../../test/factories';
 import { buildDemoObservations } from '../../../domain/demoData';
+import {
+  decryptBackup,
+  encryptBackup,
+  parseEncryptedBackup,
+} from '../../../domain/encryptedBackup';
 import { getAppVersion } from '../../../domain/appVersion';
 import { en, fr } from '../../../i18n';
 import type { Observation } from '../../../types/crms';
@@ -260,6 +265,89 @@ describe('SettingsDialog', () => {
     expect(localStorage.getItem(STORAGE_LAST_BACKUP_KEY)).toBe(getTodayStr());
     expect(props.onClose).not.toHaveBeenCalled();
     expect(screen.queryByText(en.settings.noBackup)).toBeNull();
+  });
+
+  it('downloads an encrypted .ftbackup file with Back up with a password, and stays open', async () => {
+    const createObjectURL = vi.fn((_blob: Blob) => 'blob:backup');
+    Object.assign(URL, { createObjectURL, revokeObjectURL: vi.fn() });
+    let link: HTMLAnchorElement | undefined;
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      link = this;
+    });
+    const props = renderSettings(threeCycles);
+    click(en.settings.backUpEncrypted);
+    const dialog = screen.getByRole('dialog', { name: en.passwordDialog.backupTitle });
+    const password = 'a long enough password';
+    for (const label of [en.passwordDialog.password, en.passwordDialog.confirm]) {
+      fireEvent.change(within(dialog).getByLabelText(label), { target: { value: password } });
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.save }));
+
+    await waitFor(() =>
+      expect(screen.queryByRole('dialog', { name: en.passwordDialog.backupTitle })).toBeNull()
+    );
+    expect(link?.download).toBe(`fertility-tracker-backup-${getTodayStr()}-encrypted.ftbackup`);
+    const blob = createObjectURL.mock.calls[0]?.[0] as Blob;
+    const text = await blob.text();
+    expect(text).not.toContain('2026-09-01');
+    const plain = await decryptBackup(parseEncryptedBackup(text)!, password);
+    expect(JSON.parse(plain!)).toHaveLength(6);
+    expect(localStorage.getItem(STORAGE_LAST_BACKUP_KEY)).toBe(getTodayStr());
+    expect(props.onClose).not.toHaveBeenCalled();
+  });
+
+  it('keeps the password dialog open with a message when the encryption fails', async () => {
+    vi.spyOn(crypto.subtle, 'deriveKey').mockRejectedValueOnce(new Error('no PBKDF2'));
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+    renderSettings(threeCycles);
+    click(en.settings.backUpEncrypted);
+    const dialog = screen.getByRole('dialog', { name: en.passwordDialog.backupTitle });
+    for (const label of [en.passwordDialog.password, en.passwordDialog.confirm]) {
+      fireEvent.change(within(dialog).getByLabelText(label), {
+        target: { value: 'twelve chars ok' },
+      });
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.save }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(en.passwordDialog.failed);
+    expect(download).not.toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_LAST_BACKUP_KEY)).toBeNull();
+  });
+
+  it('asks for the password of an encrypted file, then restores it after the preview', async () => {
+    const file = await encryptBackup(JSON.stringify(threeCycles.slice(0, 2)), 'the right password');
+    const props = renderSettings(threeCycles);
+    upload([new File([file], 'backup-encrypted.ftbackup')]);
+    const dialog = await screen.findByRole('dialog', { name: en.passwordDialog.restoreTitle });
+    const field = within(dialog).getByLabelText(en.passwordDialog.password);
+
+    fireEvent.change(field, { target: { value: 'a wrong password' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.open }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(
+      en.passwordDialog.wrongPassword
+    );
+    expect(count()).toBe('6');
+
+    fireEvent.change(field, { target: { value: 'the right password' } });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.open }));
+    const preview = await screen.findByRole('dialog', { name: en.confirmDialog.importTitle });
+    expect(screen.queryByRole('dialog', { name: en.passwordDialog.restoreTitle })).toBeNull();
+    fireEvent.click(within(preview).getByRole('button', { name: en.confirmDialog.importReplace }));
+    expect(props.onClose).toHaveBeenCalledOnce();
+    expect(count()).toBe('2');
+  });
+
+  it('closes the password dialog with Cancel and keeps Settings and the data', async () => {
+    const file = await encryptBackup('[]', 'the right password');
+    const props = renderSettings(threeCycles);
+    upload([new File([file], 'backup-encrypted.ftbackup')]);
+    const dialog = await screen.findByRole('dialog', { name: en.passwordDialog.restoreTitle });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(screen.queryByRole('dialog', { name: en.passwordDialog.restoreTitle })).toBeNull();
+    expect(screen.getByRole('dialog', { name: en.settings.title })).toBeInTheDocument();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(count()).toBe('6');
   });
 
   it('accepts any file in the file picker, so iOS does not grey out a .ftbackup file', () => {

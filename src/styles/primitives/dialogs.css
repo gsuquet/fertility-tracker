@@ -110,6 +110,17 @@
     flex-wrap: wrap;
   }
 
+  /* The note, the fields and the error of the password dialog (PasswordDialog.tsx) */
+  .password-dialog-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+  }
+
+  .password-dialog-body p {
+    margin: 0;
+  }
+
   /* The grab handle of a bottom sheet (useSheetDrag.ts). It shows on a phone only. */
   .sheet-handle {
     display: none;

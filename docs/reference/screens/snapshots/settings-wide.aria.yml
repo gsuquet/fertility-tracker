@@ -28,8 +28,10 @@
       - listitem:
         - button "Back up now": Back up now No backup yet
       - listitem:
+        - button "Back up with a password"
+      - listitem:
         - button "Restore from a file"
-  - paragraph: "Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private."
+  - paragraph: "Back up now downloads all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private. Back up with a password encrypts the file."
   - region "Help":
     - heading "Help" [level=3]
     - list:
