@@ -52,6 +52,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 
 - Unit tests of the merge: any sequence of syncs between 3 simulated devices gives the same data on each device. This includes deleted days and Peak Day changes.
 - Unit tests of the merge: a device with unreadable data, dropped records or a missing observations key never deletes a remote day.
+- Unit tests of the join: when the user of the new device does not confirm the codes, the device sends no day.
 - Unit tests of the cryptography: a read fails with a wrong key, a changed byte or a different vault id. It also fails with a wrong signature or an old counter.
 - Tests of the functions: a reader token cannot write, a removed token gets `401`, and a write without the current ETag gets `412`.
 - An end-to-end test with two browser contexts that change different days offline and then sync.
@@ -185,15 +186,17 @@ A device or a partner joins with a one-time invitation and an approval on an own
 5. The owner device checks the HMAC. Then it sends a random nonce A to the new device.
 6. The new device sends B. The owner device checks B against its hash.
 7. The two devices show a 6-digit code from a hash of the invitation secret, the public key, A and B.
-8. The owner compares the two codes in person or by voice, and approves. The owner device wraps the keys for the new member.
-9. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys, the signing public key and the current counter.
-10. The new device checks this HMAC before it uses the keys. It keeps the signing public key and the counter.
-11. The invitation stops after its first use or after 24 hours.
+8. The owner compares the two codes in person or by voice. The owner device and the new device each ask their user to confirm that the codes match.
+9. After the confirmation on the owner device, the owner device wraps the keys for the new member.
+10. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys, the signing public key and the current counter.
+11. The new device checks this HMAC. It uses the keys only after its own user confirmed the codes. It keeps the signing public key and the counter.
+12. The invitation stops after its first use or after 24 hours.
 
 - The invitation sets the role. The joining device cannot select its role.
 - The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
 - Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
-- The HMAC of step 9 stops a server that sends false keys to the new device.
+- The HMAC of step 10 stops a server without the link that sends false keys to the new device. The confirmation on the new device stops a person who has the link.
+- Until its user confirms the codes, the new device sends no day and shows no data of the vault.
 - The function accepts one join request for each invitation without an access token. The HMAC of step 4 proves the request.
 - On an Android phone, the system camera can read the QR code. Thus, the application needs no camera permission. A computer uses the link.
 
@@ -252,7 +255,7 @@ When a device with observations joins a vault, its days get clock 0. Thus, on th
 
 ### Safety of the local data
 
-At load, when `parseObservationData()` gives `null` or `droppedCount` is more than 0, the device drops its base from the sync state at once. This occurs before any comparison. The device then joins again as a new device. Then these rules apply:
+At load, when `parseObservationData()` gives `null` or `droppedCount` is more than 0, the device drops its base from the sync state at once. This occurs before any comparison. The device keeps its keys. Its next sync is a first sync, as [First sync](#first-sync) gives. Then these rules apply:
 
 | Condition                                         | Result                                                                     |
 | ------------------------------------------------- | -------------------------------------------------------------------------- |
