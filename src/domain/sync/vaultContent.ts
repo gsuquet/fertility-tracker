@@ -47,7 +47,8 @@ const isDate = (value: unknown): value is string => {
   return !Number.isNaN(time) && new Date(time).toISOString().startsWith(value);
 };
 
-const parseClock = (value: unknown): Clock | null => {
+/** The clock of a JSON value, or null when one field is not valid. */
+export const parseClock = (value: unknown): Clock | null => {
   if (!isRecord(value) || !isCount(value.time) || !isCount(value.counter)) return null;
   const { member } = value;
   if (typeof member !== 'string' || member.length === 0 || member.length > MAX_MEMBER_LENGTH) {

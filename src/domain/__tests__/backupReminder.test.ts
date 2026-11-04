@@ -29,6 +29,23 @@ describe('isBackupDue', () => {
     expect(isBackupDue(dates, observations, '2026-10-20')).toBe(true);
   });
 
+  it('counts from the later of the last backup and the last sync', () => {
+    const dates = { ...noDates, lastBackupDate: '2026-08-01', reminderStart: '2026-01-01' };
+    const synced = { ...dates, lastSyncDate: '2026-09-20' };
+    expect(isBackupDue(synced, observations, '2026-10-19')).toBe(false);
+    expect(isBackupDue(synced, observations, '2026-10-20')).toBe(true);
+    expect(
+      isBackupDue({ ...synced, lastBackupDate: '2026-10-01' }, observations, '2026-10-20')
+    ).toBe(false);
+    expect(
+      isBackupDue(
+        { ...noDates, lastSyncDate: 'garbage', reminderStart: '2026-10-01' },
+        observations,
+        '2026-10-31'
+      )
+    ).toBe(true);
+  });
+
   it('counts from the start of the reminder when there is no valid backup date', () => {
     for (const lastBackupDate of [null, 'garbage']) {
       const dates = { ...noDates, lastBackupDate, reminderStart: '2026-10-01' };

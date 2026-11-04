@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.59.0',
+    date: '2026-11-05',
+    title: 'Sync Triggers',
+    titleFr: 'Déclencheurs de synchronisation',
+    tagline: 'When the app will sync your devices',
+    taglineFr: 'Quand l’application synchronisera vos appareils',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app can now sync when it opens, when you come back to it, when you are online again, and a few seconds after a change',
+      'A recent sync will also count as a backup for the backup reminder',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application peut maintenant synchroniser à l’ouverture, quand vous y revenez, quand vous êtes de nouveau en ligne, et quelques secondes après une modification',
+      'Une synchronisation récente comptera aussi comme une sauvegarde pour le rappel de sauvegarde',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.58.0',
     date: '2026-11-04',
     title: 'Removing a Member',

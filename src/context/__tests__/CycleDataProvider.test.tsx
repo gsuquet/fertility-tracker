@@ -680,3 +680,76 @@ describe('CycleDataProvider', () => {
     });
   });
 });
+
+describe('synced observations', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('saves the observations of a sync at once, keeps the ids of the dates, and deletes the undo copy for a change', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([makeObservation({ id: 'obs_kept', date: '2026-06-01' })])
+    );
+    const { result } = renderData();
+    act(() => {
+      result.current.importDataJson(
+        JSON.stringify([makeObservation({ date: '2026-05-01' })]),
+        'merge'
+      );
+    });
+    expect(result.current.undoChange).toBe('merge');
+    let ok = false;
+    act(() => {
+      ok = result.current.applySyncedObservations([{ date: '2026-06-01', bleeding: 'H' }], false);
+    });
+    expect(ok).toBe(true);
+    expect(result.current.undoChange).toBe('merge');
+    expect(storedList()).toHaveLength(1);
+    expect(result.current.observations[0]).toMatchObject({
+      id: 'obs_kept',
+      bleeding: 'H',
+      stamp: 'RED',
+    });
+    act(() => {
+      result.current.applySyncedObservations([{ date: '2026-06-02', bleeding: 'M' }], true);
+    });
+    expect(result.current.undoChange).toBeNull();
+    expect(result.current.observations[0]?.id).toMatch(/^obs_2026-06-02_/);
+  });
+
+  it('gives false and keeps the observations when the browser refuses the write', () => {
+    const { result } = renderData();
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    let ok = true;
+    act(() => {
+      ok = result.current.applySyncedObservations([{ date: '2026-06-01', bleeding: 'H' }], true);
+    });
+    spy.mockRestore();
+    expect(ok).toBe(false);
+    expect(result.current.saveFailed).toBe(true);
+    expect(result.current.observations).toEqual([]);
+  });
+
+  it('saves the date of the last sync, and tells when the load was damaged', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-10T12:00:00'));
+    const { result } = renderData();
+    expect(result.current.lastSyncDate).toBeNull();
+    expect(result.current.loadDamaged).toBe(false);
+    act(() => result.current.markSynced());
+    expect(result.current.lastSyncDate).toBe('2026-06-10');
+    expect(localStorage.getItem('fertility_care_last_sync')).toBe('2026-06-10');
+    vi.useRealTimers();
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    expect(renderData().result.current.loadDamaged).toBe(true);
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([{ date: 'bad' }, makeObservation({ date: '2026-06-01' })])
+    );
+    localStorage.removeItem(RECOVERY_KEY);
+    expect(renderData().result.current.loadDamaged).toBe(true);
+  });
+});

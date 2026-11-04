@@ -27,6 +27,7 @@ import {
   STORAGE_BACKUP_REMINDER_START_KEY as REMINDER_START_KEY,
   STORAGE_BACKUP_SNOOZED_UNTIL_KEY as SNOOZE_KEY,
   STORAGE_LAST_BACKUP_KEY as LAST_BACKUP_KEY,
+  STORAGE_LAST_SYNC_KEY as LAST_SYNC_KEY,
   STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
   STORAGE_RECOVERY_KEY as RECOVERY_KEY,
   STORAGE_UNDO_KEY as UNDO_KEY,
@@ -76,6 +77,17 @@ export interface CycleDataContextType {
   dismissUndo: () => void;
   /** False when the browser refused to store the undo copy: undo then works until a reload. */
   undoPersisted: boolean;
+  /**
+   * Replaces the observations with the result of a sync, and writes them at once. False when the
+   * browser refused the write: the observations then do not change.
+   */
+  applySyncedObservations: (inputs: ObservationInput[], changed: boolean) => boolean;
+  /** The date (`YYYY-MM-DD`) of the last sync, or null. */
+  lastSyncDate: string | null;
+  /** Records today as the date of the last sync. */
+  markSynced: () => void;
+  /** True when, at this load, the stored observations could not be read or had dropped records. */
+  loadDamaged: boolean;
 }
 
 export interface CycleUiContextType {
@@ -93,6 +105,31 @@ const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
+};
+
+/** The observation of an input, with its stamp and code. A demo day gets a real id. */
+const toObservation = (obsData: ObservationInput): Observation => {
+  const date = obsData.date || getTodayStr();
+  return {
+    // A saved demo day becomes the user's own day, with a real id.
+    id:
+      obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
+        ? obsData.id
+        : `obs_${date}_${Date.now()}`,
+    date,
+    cycleDay: obsData.cycleDay || 1,
+    bleeding: obsData.bleeding,
+    stretch: obsData.stretch,
+    modifiers: obsData.modifiers || [],
+    frequency: obsData.frequency,
+    symptoms: obsData.symptoms || [],
+    intercourse: obsData.intercourse || false,
+    notes: obsData.notes || '',
+    isManualPeak: obsData.isManualPeak || false,
+    isCycleStart: obsData.isCycleStart,
+    stamp: calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []),
+    codeString: obsData.codeString || formatCodeString(obsData),
+  };
 };
 
 /** Clears the manual Peak Day on the other days of the cycle that contains `date`. */
@@ -118,18 +155,36 @@ const loadStoredState = () => {
   const parsed = parseObservationData(raw);
   const keepCopy = () => readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
   if (parsed === null) {
-    return { observations: [], droppedCount: 0, recoveryData: raw, recoveryKept: keepCopy() };
+    return {
+      observations: [],
+      droppedCount: 0,
+      recoveryData: raw,
+      recoveryKept: keepCopy(),
+      damaged: true,
+    };
   }
   const observations = reprocessObservations(parsed.observations);
   const { droppedCount } = parsed;
   if (droppedCount > 0) {
-    return { observations, droppedCount, recoveryData: raw, recoveryKept: keepCopy() };
+    return {
+      observations,
+      droppedCount,
+      recoveryData: raw,
+      recoveryKept: keepCopy(),
+      damaged: true,
+    };
   }
   // A copy kept in an earlier session: its records give the number of dropped records again.
   const recoveryData = readStorage(RECOVERY_KEY);
   const keptDropped =
     recoveryData === null ? 0 : (parseObservationData(recoveryData)?.droppedCount ?? 0);
-  return { observations, droppedCount: keptDropped, recoveryData, recoveryKept: true };
+  return {
+    observations,
+    droppedCount: keptDropped,
+    recoveryData,
+    recoveryKept: true,
+    damaged: false,
+  };
 };
 
 interface UndoState {
@@ -156,6 +211,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     readStorage(REMINDER_START_KEY)
   );
   const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
+  const [lastSyncDate, setLastSyncDate] = useState(() => readStorage(LAST_SYNC_KEY));
+  const { damaged: loadDamaged } = initialState;
   const persistRequested = useRef(false);
   const hasData = observations.length > 0;
   const hasUserData = hasUserObservations(observations);
@@ -209,37 +266,41 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setUndo(null);
   }, []);
 
+  const markSynced = useCallback(() => {
+    const today = getTodayStr();
+    writeStorage(LAST_SYNC_KEY, today);
+    setLastSyncDate(today);
+  }, []);
+
+  const applySyncedObservations = useCallback(
+    (inputs: ObservationInput[], changed: boolean): boolean => {
+      // Each date keeps the id of its observation on this device
+      const idOf = new Map(observations.map(o => [o.date, o.id]));
+      const list = reprocessObservations(
+        inputs.map(input =>
+          toObservation({ ...input, id: input.id ?? idOf.get(input.date as string) })
+        )
+      );
+      if (!writeStorage(STORAGE_KEY, serializeObservations(list))) {
+        setSaveFailed(true);
+        return false;
+      }
+      // A remote change makes the undo copy old: Undo must not bring it back over the change
+      if (changed) dismissUndo();
+      setObservations(list);
+      return true;
+    },
+    [observations, dismissUndo]
+  );
+
   const saveObservation = useCallback(
     (obsData: ObservationInput) => {
       // A day saved after a replacing change would be lost on undo, so the copy goes.
       dismissUndo();
       setObservations(prev => {
-        const date = obsData.date || getTodayStr();
+        const newObs = toObservation(obsData);
+        const { date } = newObs;
         const existingIdx = prev.findIndex(o => o.date === date);
-
-        const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
-        const codeString = obsData.codeString || formatCodeString(obsData);
-
-        const newObs: Observation = {
-          // A saved demo day becomes the user's own day, with a real id.
-          id:
-            obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
-              ? obsData.id
-              : `obs_${date}_${Date.now()}`,
-          date,
-          cycleDay: obsData.cycleDay || 1,
-          bleeding: obsData.bleeding,
-          stretch: obsData.stretch,
-          modifiers: obsData.modifiers || [],
-          frequency: obsData.frequency,
-          symptoms: obsData.symptoms || [],
-          intercourse: obsData.intercourse || false,
-          notes: obsData.notes || '',
-          isManualPeak: obsData.isManualPeak || false,
-          isCycleStart: obsData.isCycleStart,
-          stamp,
-          codeString,
-        };
 
         const updatedList = [...prev];
         if (existingIdx !== -1) {
@@ -354,6 +415,10 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       undoLastChange,
       dismissUndo,
       undoPersisted: undo ? undo.persisted : true,
+      applySyncedObservations,
+      lastSyncDate,
+      markSynced,
+      loadDamaged,
     }),
     [
       observations,
@@ -378,6 +443,10 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       undo,
       undoLastChange,
       dismissUndo,
+      applySyncedObservations,
+      lastSyncDate,
+      markSynced,
+      loadDamaged,
     ]
   );
 

@@ -4,7 +4,7 @@ This page gives the rules of the sync client of the application: the relay clien
 
 **Source folder:** [src/sync/](../../src/sync/)
 
-Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#plan) is complete, the application does not call these functions.
+Until `SYNC_ENABLED` is `true`, the application does not call these functions. The pull request that adds the R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)) also sets the flag.
 
 ## Files
 
@@ -15,6 +15,8 @@ Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-s
 | `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 | `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
+| `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the relay has its R2 bucket          |
+| `syncRunner.ts`     | `runSync()`, `finishSync()`, `dropBaseAtLoad()`                    |
 
 ## Relay client
 
@@ -171,6 +173,45 @@ It gives a `keys` error when the device has no lookup copy. The application show
 It gives a `code` error when the code is not valid or the lookup object does not decrypt. It gives a `keys` error when the recovery blob does not decrypt.
 
 When the vault changed, `removeMember()`, `newRecoveryCode()` and `recoverWithCode()` give a `relay` error with the status `412`.
+
+## Sync in the application
+
+`runSync(input)` does one sync for the device record in the key store. It uses `syncOnce()` of the [sync engine](sync-rules.md#sync) with `vaultStoreOf()`.
+
+- Without a device record, it gives the status `off` and reads nothing.
+- It reads the sync state from `fertility_care_sync_state`. Without a valid state of the member of the record, it uses `newSyncState()`. Thus, the sync is a first sync.
+- A `VaultError` gives the status `error` with the error. The sync state does not change.
+- The other results of `syncOnce()` come back without a change. `runSync()` writes nothing to the browser storage.
+
+For a `synced` result, `finishSync(result, input)` does these steps in this sequence:
+
+- It calls `keepEditsDuringSync()` with the observations of the sync and the current observations.
+- It saves the observations with `applySyncedObservations()`. When the save fails, it stops. The sync state does not change.
+- It writes the state of the result to `fertility_care_sync_state`.
+- It adds the conflicts to `fertility_care_sync_conflicts` with `addConflicts()`.
+
+`finishSync()` gives `true` when it saved a `synced` result. Then `useSync()` calls `markSynced()`, which writes today to `fertility_care_last_sync`.
+
+For a `cancelled` or `busy` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
+
+`dropBaseAtLoad(storage, observations)` applies `dropBase()` to the stored state and writes it. The application calls it at load when `parseObservationData()` gives `null` or `droppedCount` is more than 0. Without a stored state, it does nothing.
+
+### When the application syncs
+
+`useSync()` in [useSync.ts](../../src/hooks/useSync.ts) starts a sync in these conditions, as [When a sync occurs](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#when-a-sync-occurs) gives:
+
+| Event                                 | Sync                                                 |
+| ------------------------------------- | ---------------------------------------------------- |
+| The application opens                 | At once                                              |
+| The page becomes visible              | When the last sync started 60 seconds ago or earlier |
+| The browser goes online               | At once                                              |
+| An observation changes on this device | 5 seconds after the last change                      |
+
+- Only one sync runs at a time. A sync that starts while a sync runs occurs after the running sync.
+- A change that a sync applies does not start a sync.
+- When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
+- When the key store or the sync code fails, the next event tries again.
+- While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
 
 ## Related documents
 
