@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.55.0',
+    date: '2026-11-04',
+    title: 'Device Invitations',
+    titleFr: 'Invitations d’appareils',
+    tagline: 'The safe way to add a device or a partner',
+    taglineFr: 'La façon sûre d’ajouter un appareil ou un partenaire',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app now has the invitations for the coming sync. A new device or a partner will join with a link or a QR code',
+      'The two devices will show the same 6-digit code, and you will compare them before the new device gets your data',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application a maintenant les invitations pour la future synchronisation. Un nouvel appareil ou un partenaire rejoindra avec un lien ou un QR code',
+      'Les deux appareils afficheront le même code à 6 chiffres, et vous les comparerez avant que le nouvel appareil reçoive vos données',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.54.0',
     date: '2026-11-04',
     title: 'Sync Server',

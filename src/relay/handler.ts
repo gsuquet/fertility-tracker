@@ -1,8 +1,21 @@
 /** The relay of the encrypted sync: the routes in /api/ on an R2 bucket. See docs/reference/relay-api.md. */
-import { fromBase64Url, sha256, toBase64Url, utf8 } from '../domain/vault/bytes';
+import { utf8 } from '../domain/vault/bytes';
 import { readVaultObject } from '../domain/vault/vaultObject';
-import type { Member } from '../domain/vault/vaultObject';
 import type { RelayBucket } from './bucket';
+import {
+  CREATE_ONLY,
+  bodyOf,
+  etagOf,
+  fail,
+  isId,
+  memberOf,
+  noContent,
+  ok,
+  ownerOf,
+  tokenHashOf,
+} from './common';
+import { INVITE_STEPS, deleteInvite, getInvite, postInvite, putInvite } from './invites';
+import type { InviteStep } from './invites';
 
 export interface RelayEnv {
   VAULTS?: RelayBucket | undefined;
@@ -16,67 +29,6 @@ export const MAX_RECOVERY_BYTES = 4096;
 export const MAX_NEW_VAULT_BYTES = 262_144;
 /** An update can add at most 64 KB to the stored vault, above the limit of a new vault. */
 export const MAX_VAULT_GROWTH_BYTES = 65_536;
-
-const ID_BYTES = 16;
-const CREATE_ONLY = { etagDoesNotMatch: '*' };
-
-const baseHeaders = (): Headers =>
-  new Headers({
-    'Cache-Control': 'no-store',
-    'Content-Type': 'application/json',
-    'X-Content-Type-Options': 'nosniff',
-  });
-
-const fail = (status: number, error: string) =>
-  new Response(JSON.stringify({ error }), { status, headers: baseHeaders() });
-
-const ok = (body: string, etag: string) => {
-  const headers = baseHeaders();
-  headers.set('ETag', `"${etag}"`);
-  return new Response(body, { status: 200, headers });
-};
-
-/** True for the base64url text of exactly 16 bytes, without extra bits. */
-const isId = (value: string | null | undefined): value is string => {
-  const bytes = fromBase64Url(value);
-  return bytes?.length === ID_BYTES && toBase64Url(bytes) === value;
-};
-
-/** The ETag of an `If-Match` header, without `W/` and the quotes. */
-const etagOf = (value: string) => value.replace(/^W\//, '').replaceAll('"', '');
-
-const tokenHashOf = async (request: Request): Promise<string | null> => {
-  const match = /^Bearer (\S+)$/.exec(request.headers.get('Authorization') ?? '');
-  return match ? toBase64Url(await sha256(utf8(match[1] as string))) : null;
-};
-
-const memberOf = (keyring: Member[], tokenHash: string | null) =>
-  tokenHash === null ? undefined : keyring.find(member => member.tokenHash === tokenHash);
-
-/** The body as text, or null when it is longer than the limit. */
-const bodyOf = async (request: Request, limit: number): Promise<string | null> => {
-  if (Number(request.headers.get('Content-Length') ?? 0) > limit) return null;
-  const text = await request.text();
-  return utf8(text).length > limit ? null : text;
-};
-
-/** The member of the stored vault for the token, or the error answer. */
-async function storedMember(
-  bucket: RelayBucket,
-  vaultId: string,
-  request: Request
-): Promise<Member | Response> {
-  const stored = await bucket.get(`vaults/${vaultId}`);
-  const read = stored ? readVaultObject(await stored.text()) : null;
-  const member = memberOf(read?.header.keyring ?? [], await tokenHashOf(request));
-  return member ?? fail(401, 'token');
-}
-
-async function ownerOf(bucket: RelayBucket, vaultId: string, request: Request) {
-  const member = await storedMember(bucket, vaultId, request);
-  if (member instanceof Response) return member;
-  return member.role === 'owner' ? null : fail(403, 'owner');
-}
 
 async function getVault(bucket: RelayBucket, vaultId: string, request: Request) {
   const stored = await bucket.get(`vaults/${vaultId}`);
@@ -160,14 +112,25 @@ async function deleteRecovery(bucket: RelayBucket, lookupId: string, request: Re
   const refused = await ownerOf(bucket, existing.customMetadata?.vaultId ?? '', request);
   if (refused) return refused;
   await bucket.delete(key);
-  const headers = baseHeaders();
-  headers.delete('Content-Type');
-  return new Response(null, { status: 204, headers });
+  return noContent();
 }
 
-const METHODS = {
-  vaults: ['GET', 'PUT'],
-  recovery: ['GET', 'PUT', 'DELETE'],
+type Route = (bucket: RelayBucket, id: string, request: Request, now: Date) => Promise<Response>;
+
+const postStep =
+  (step: InviteStep): Route =>
+  (bucket, id, request, now) =>
+    postInvite(bucket, id, request, now, step);
+
+const ROUTES: Record<string, Record<string, Route>> = {
+  vaults: { GET: (bucket, id, request) => getVault(bucket, id, request), PUT: putVault },
+  recovery: {
+    GET: (bucket, id) => getRecovery(bucket, id),
+    PUT: (bucket, id, request) => putRecovery(bucket, id, request),
+    DELETE: (bucket, id, request) => deleteRecovery(bucket, id, request),
+  },
+  invites: { GET: getInvite, PUT: putInvite, DELETE: deleteInvite },
+  ...Object.fromEntries(INVITE_STEPS.map(step => [`invites/${step}`, { POST: postStep(step) }])),
 };
 
 /** Answers one request to the relay. */
@@ -180,17 +143,11 @@ export async function handleRelay(
   if (url.hostname !== (env.RELAY_HOST ?? DEFAULT_RELAY_HOST)) return fail(403, 'host');
   const bucket = env.VAULTS;
   if (!bucket) return fail(503, 'unavailable');
-  const match = /^\/api\/(vaults|recovery)\/([^/]+)$/.exec(url.pathname);
-  if (!match) return fail(404, 'notFound');
-  const [, kind, id] = match as unknown as [string, keyof typeof METHODS, string];
-  if (!METHODS[kind].includes(request.method)) return fail(405, 'method');
+  const match = /^\/api\/(vaults|recovery|invites)\/([^/]+)(\/[^/]+)?$/.exec(url.pathname);
+  const routes = match ? ROUTES[`${match[1]}${match[3] ?? ''}`] : undefined;
+  if (!match || !routes) return fail(404, 'notFound');
+  if (!Object.hasOwn(routes, request.method)) return fail(405, 'method');
+  const id = match[2] as string;
   if (!isId(id)) return fail(400, 'invalid');
-  if (kind === 'vaults')
-    return request.method === 'GET'
-      ? getVault(bucket, id, request)
-      : putVault(bucket, id, request, now);
-  if (request.method === 'GET') return getRecovery(bucket, id);
-  return request.method === 'PUT'
-    ? putRecovery(bucket, id, request)
-    : deleteRecovery(bucket, id, request);
+  return (routes[request.method] as Route)(bucket, id, request, now);
 }
