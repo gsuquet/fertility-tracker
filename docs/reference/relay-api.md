@@ -83,6 +83,44 @@ The object `recovery/<lookup id>` holds the lookup object of the recovery code. 
 | `DELETE /api/recovery/<lookup id>` | The token is not of an owner of the vault in the metadata                     | `401` `token`, or `403` `owner`      |
 | `DELETE /api/recovery/<lookup id>` | **Else**                                                                      | `204`                                |
 
+## Invite routes
+
+The object `invites/<invite id>` holds the messages of one [invitation](vault-format.md#invitation). Its R2 metadata has the vault id and the creation time. The relay does not check the content of a message, except the `tokenHash` of the join request.
+
+| Message   | Sender                   | The relay accepts it when                 |
+| --------- | ------------------------ | ----------------------------------------- |
+| `request` | The new device, no token | The object has no `request`               |
+| `offer`   | An owner                 | The object has a `request` and no `offer` |
+| `reveal`  | The new device           | The object has an `offer` and no `reveal` |
+| `answer`  | An owner                 | The object has a `reveal` and no `answer` |
+
+- "An owner" is a token of an owner of the vault in the metadata.
+- "The new device" is a token whose hash is the `tokenHash` of the join request.
+- An invitation that is more than 24 hours old is not available. Each route then answers `404` with the error `notFound`.
+
+| Route                                     | Condition                                                                      | Answer                               |
+| ----------------------------------------- | ------------------------------------------------------------------------------ | ------------------------------------ |
+| `PUT /api/invites/<invite id>`            | `X-Vault-Id` is not 16 bytes in base64url                                      | `400`, error `invalid`               |
+| `PUT /api/invites/<invite id>`            | The token is not of an owner of the vault of `X-Vault-Id`                      | `401` `token`, or `403` `owner`      |
+| `PUT /api/invites/<invite id>`            | The object exists                                                              | `412`, error `changed`               |
+| `PUT /api/invites/<invite id>`            | **Else**                                                                       | `200`, `{}`, with the `ETag`         |
+| `GET /api/invites/<invite id>`            | The object does not exist                                                      | `404`, error `notFound`              |
+| `GET /api/invites/<invite id>`            | The token is not of the new device or of an owner                              | `401` `token`, or `403` `owner`      |
+| `GET /api/invites/<invite id>`            | **Else**                                                                       | `200`, the messages, with the `ETag` |
+| `POST /api/invites/<invite id>/<message>` | The body is more than 4 KB, or it is not a JSON object                         | `413` `tooLarge`, or `400` `invalid` |
+| `POST /api/invites/<invite id>/<message>` | The object does not exist                                                      | `404`, error `notFound`              |
+| `POST /api/invites/<invite id>/request`   | The `tokenHash` of the body is not 32 bytes in base64url                       | `400`, error `invalid`               |
+| `POST /api/invites/<invite id>/<message>` | The token is not of the sender of the message                                  | `401` `token`, or `403` `owner`      |
+| `POST /api/invites/<invite id>/<message>` | The object does not have the message before it, or it has this message already | `409`, error `step`                  |
+| `POST /api/invites/<invite id>/<message>` | A different write occurs first                                                 | `412`, error `changed`               |
+| `POST /api/invites/<invite id>/<message>` | **Else**                                                                       | `200`, `{}`, with the `ETag`         |
+| `DELETE /api/invites/<invite id>`         | The object does not exist                                                      | `404`, error `notFound`              |
+| `DELETE /api/invites/<invite id>`         | The token is not of the new device or of an owner                              | `401` `token`, or `403` `owner`      |
+| `DELETE /api/invites/<invite id>`         | **Else**                                                                       | `204`                                |
+
+- The messages are the JSON object `{ "request", "offer", "reveal", "answer" }`, without the messages that the object does not have yet.
+- The first row that applies gives the answer.
+
 ## Service worker
 
 The service worker ignores each request to `/api/`. Thus, the browser never gets a vault from the cache ([Offline use and installation](deployment.md#offline-use-and-installation)).

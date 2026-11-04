@@ -8,14 +8,15 @@ The functions use only WebCrypto and `CompressionStream`. They have no network c
 
 ## Files
 
-| File              | Content                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------- |
-| `bytes.ts`        | `toBase64Url()`, `fromBase64Url()`, `randomBytes()`, `sha256()`                                |
-| `paddedGzip.ts`   | `compressAndPad()`, `unpadAndDecompress()`: gzip and padding to steps of 16 KB                 |
-| `recoveryCode.ts` | `newRecoverySecret()`, `formatRecoveryCode()`, `parseRecoveryCode()`, `deriveRecoveryValues()` |
-| `keyWrap.ts`      | `wrapKey()`, `unwrapKey()`, `wrapWithKey()`, `unwrapWithKey()`                                 |
-| `signingChain.ts` | `newSigningChain()`, `extendSigningChain()`, `currentSigningKey()`                             |
-| `vaultObject.ts`  | `sealVault()`, `readVaultObject()`, `openVault()`, `decryptVaultDays()`                        |
+| File              | Content                                                                                           |
+| ----------------- | ------------------------------------------------------------------------------------------------- |
+| `bytes.ts`        | `toBase64Url()`, `fromBase64Url()`, `randomBytes()`, `sha256()`                                   |
+| `paddedGzip.ts`   | `compressAndPad()`, `unpadAndDecompress()`: gzip and padding to steps of 16 KB                    |
+| `recoveryCode.ts` | `newRecoverySecret()`, `formatRecoveryCode()`, `parseRecoveryCode()`, `deriveRecoveryValues()`    |
+| `keyWrap.ts`      | `wrapKey()`, `unwrapKey()`, `wrapWithKey()`, `unwrapWithKey()`                                    |
+| `signingChain.ts` | `newSigningChain()`, `extendSigningChain()`, `currentSigningKey()`                                |
+| `vaultObject.ts`  | `sealVault()`, `readVaultObject()`, `openVault()`, `decryptVaultDays()`                           |
+| `invitation.ts`   | `newInvitation()`, `inviteLink()`, `parseInviteFragment()`, the messages and `confirmationCode()` |
 
 ## Encoding
 
@@ -145,6 +146,40 @@ A member of the keyring has these fields:
 After a join or a recovery, the device has a signed counter but no digest. The check then has no digest, and the vault of the same counter is accepted.
 
 `decryptVaultDays(opened, dataKey)` decrypts the ciphertext and gives the vault days of [parseVaultDays()](sync-rules.md#vault-content), or `null`.
+
+## Invitation
+
+An invitation adds a member to the vault ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#adding-a-member)). The messages go through the [invite routes](relay-api.md#invite-routes) of the relay.
+
+- `newInvitation()` gives an invite id of 16 random bytes and a secret of 32 random bytes, in base64url.
+- `inviteLink(appUrl, invitation)` gives `<application URL>#invite=<invite id>.<secret>`.
+- `parseInviteFragment(hash)` gives the invitation of a fragment, or `null` when the fragment is not of this form.
+- The owner device keeps the role of the invitation. The link does not have it.
+
+| Message   | Sender         | Fields                                       | Function            |
+| --------- | -------------- | -------------------------------------------- | ------------------- |
+| `request` | The new device | `publicKey`, `tokenHash`, `nonceHash`, `mac` | `makeJoinRequest()` |
+| `offer`   | The owner      | `nonce`, `vaultId`, `signingPublicKey`       | `makeOffer()`       |
+| `reveal`  | The new device | `nonce`                                      | `makeReveal()`      |
+| `answer`  | The owner      | `content`, `signature`                       | `signAnswer()`      |
+
+- Each nonce is 32 random bytes in base64url. `nonceHash` is the SHA-256 of the nonce of the new device.
+- `mac` is the HMAC-SHA256 with the secret as key. It covers `fertility-tracker-join:1:<invite id>:<publicKey>:<tokenHash>:<nonceHash>`.
+- `checkJoinRequest(invitation, request)` checks the fields and the `mac`.
+- `checkReveal(request, reveal)` checks the nonce against `nonceHash`.
+
+`confirmationCode(invitation, request, offer, reveal)` gives the 6-digit code that the two devices show:
+
+- It makes the SHA-256 of `fertility-tracker-code:1:<invite id>:<secret>:<publicKey>:<offer nonce>:<reveal nonce>:<vaultId>:<signingPublicKey>`.
+- It reads the first 4 bytes as a big-endian number, and keeps the remainder of a division by 1,000,000.
+- It writes the result with 6 digits, with zeros first.
+
+The `content` of the answer is JSON text with the fields `vaultId`, `inviteId`, `memberId`, `role`, `publicKey` and `counter`. `counter` is the counter of the vault that has the new member. The wrapped keys of the member are in the keyring of that vault.
+
+- `signature` is ECDSA P-256 with SHA-256 by the signing private key of the vault. It covers the UTF-8 text `fertility-tracker-answer:1:` and then the content.
+- `checkAnswer(answer, invitation, request, offer)` gives the content, or `null`. It checks the signature with the `signingPublicKey` of the offer.
+- The vault id must be the vault id of the offer, and the invite id must be the id of the invitation.
+- The public key must be the public key of the request. The role must be `owner` or `reader`, and the counter a whole number of 0 or more.
 
 ## Related documents
 

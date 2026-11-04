@@ -191,10 +191,11 @@ A device or a partner joins with a one-time invitation and an approval on an own
 7. The two devices show a 6-digit code from a hash. The hash covers the invitation secret, the public key, A, B, the vault id and the signing public key.
 8. The owner compares the two codes in person or by voice. The owner device and the new device each ask their user to confirm that the codes match.
 9. After the confirmation on the owner device, the owner device wraps the keys for the new member.
-10. The owner device signs the answer with the signing private key of the vault. The answer holds the vault id, the member id, the wrapped keys and the current counter.
+10. The owner device writes the vault with the new member. Then it signs an answer with the signing private key of the vault.
 11. The new device checks the signature with the signing public key of step 5. It uses the keys only after its own user confirmed the codes. It keeps the signing public key and the counter.
 12. The invitation stops after its first use or after 24 hours.
 
+- The answer holds the vault id, the member id, the role and the counter of the new vault. The wrapped keys are in the keyring.
 - The invitation sets the role. The joining device cannot select its role.
 - The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
 - Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
