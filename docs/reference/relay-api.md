@@ -44,9 +44,9 @@ Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the p
 | Condition                                                                   | Answer                           |
 | --------------------------------------------------------------------------- | -------------------------------- |
 | The body is more than 1 MB                                                  | `413`, error `tooLarge`          |
-| `If-None-Match: *`, and the body is more than 256 KB (262,144 bytes)        | `413`, error `tooLarge`          |
 | The body is not a vault object, or its `vaultId` is not the id of the path  | `400`, error `invalid`           |
 | The request has no `If-Match` and no `If-None-Match: *`                     | `428`, error `condition`         |
+| `If-None-Match: *`, and the body is more than 256 KB (262,144 bytes)        | `413`, error `tooLarge`          |
 | `If-None-Match: *`, and the vault exists                                    | `412`, error `changed`           |
 | `If-None-Match: *`, and the token is not of an owner in the new keyring     | `403`, error `owner`             |
 | `If-Match`, and the vault does not exist                                    | `404`, error `notFound`          |
@@ -54,11 +54,14 @@ Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the p
 | `If-Match`, and the token is of a reader                                    | `403`, error `owner`             |
 | `If-Match`, and the ETag is not the ETag of the stored vault                | `412`, error `changed`           |
 | `If-Match`, and the counter is not the stored counter plus 1                | `409`, error `counter`           |
+| `If-Match`, and the body is more than the growth limit                      | `413`, error `tooLarge`          |
 | **Else**                                                                    | `200`, `{}`, with the new `ETag` |
 
 - An update uses a conditional R2 write with the ETag. When a different write occurs first, the answer is `412`.
 - After an update, the relay copies the object to `history/<vault id>/<date>` when that copy does not exist. `date` is the UTC date of the update. Thus, the first update of each day makes the copy.
-- A new vault gets no history copy, and its limit is 256 KB. Thus, a stranger who makes vaults uses less storage.
+- The first row that applies gives the answer.
+- The growth limit is the larger of 256 KB and the size of the stored vault plus 64 KB (65,536 bytes).
+- A new vault gets no history copy. Thus, each request adds at most 256 KB, or 128 KB for an update and its history copy.
 
 ## Recovery routes
 

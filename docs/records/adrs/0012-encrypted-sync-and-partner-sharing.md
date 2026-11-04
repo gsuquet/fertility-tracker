@@ -47,7 +47,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Bad: after each use of the recovery code and after each removal of an own device, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
-- Bad: anyone can make a new vault, because the relay has no accounts. Only the rate limit and the size limit of a new vault limit the storage.
+- Bad: anyone can make a new vault, because the relay has no accounts. Each request adds at most 256 KB, so only the rate limit limits the storage.
 
 ### Confirmation
 
@@ -305,7 +305,7 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 | Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.                                                                                                                                       |
 | Writes    | With an owner token and `If-Match`. A new vault uses `If-None-Match: *`.                                                                                                                                                |
 | Recovery  | A new `recovery/` object needs `If-None-Match: *` and an owner token of a vault. The function keeps that vault id in the R2 metadata. A change or a deletion needs an owner token of that vault. A read needs no token. |
-| Limits    | 1 MB for each vault, 256 KB for a new vault. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                                                                            |
+| Limits    | 1 MB for each vault, 256 KB for a new vault, 64 KB of growth for each update. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                                           |
 | Host      | The function refuses a host other than `fertility-tracker.gsuquet.com`. Thus, no request avoids the rate limit through `pages.dev`.                                                                                     |
 | Invites   | The function keeps the creation time and refuses an invitation after 24 hours.                                                                                                                                          |
 | Caching   | Each answer has `Cache-Control: no-store`. The service worker must not cache `/api/`.                                                                                                                                   |

@@ -14,6 +14,8 @@ export const MAX_VAULT_BYTES = 1_048_576;
 export const MAX_RECOVERY_BYTES = 4096;
 /** A new vault has few days. A low limit makes the storage of a stranger expensive. */
 export const MAX_NEW_VAULT_BYTES = 262_144;
+/** An update can add at most 64 KB to the stored vault, above the limit of a new vault. */
+export const MAX_VAULT_GROWTH_BYTES = 65_536;
 
 const ID_BYTES = 16;
 const CREATE_ONLY = { etagDoesNotMatch: '*' };
@@ -105,12 +107,15 @@ async function putVault(bucket: RelayBucket, vaultId: string, request: Request, 
   }
   const stored = await bucket.get(key);
   if (!stored) return fail(404, 'notFound');
-  const storedRead = readVaultObject(await stored.text());
+  const storedText = await stored.text();
+  const storedRead = readVaultObject(storedText);
   const caller = memberOf(storedRead?.header.keyring ?? [], await tokenHashOf(request));
   if (!storedRead || !caller) return fail(401, 'token');
   if (caller.role !== 'owner') return fail(403, 'owner');
   if (etagOf(ifMatch) !== stored.etag) return fail(412, 'changed');
   if (read.header.counter !== storedRead.header.counter + 1) return fail(409, 'counter');
+  const limit = Math.max(MAX_NEW_VAULT_BYTES, utf8(storedText).length + MAX_VAULT_GROWTH_BYTES);
+  if (utf8(text).length > limit) return fail(413, 'tooLarge');
   const written = await bucket.put(key, text, { onlyIf: { etagMatches: stored.etag } });
   if (!written) return fail(412, 'changed');
   const historyKey = `history/${vaultId}/${now.toISOString().slice(0, 10)}`;

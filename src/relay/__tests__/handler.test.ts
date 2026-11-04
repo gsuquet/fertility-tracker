@@ -9,6 +9,7 @@ import {
   MAX_NEW_VAULT_BYTES,
   MAX_RECOVERY_BYTES,
   MAX_VAULT_BYTES,
+  MAX_VAULT_GROWTH_BYTES,
   handleRelay,
 } from '../handler';
 import type { RelayEnv } from '../handler';
@@ -231,6 +232,28 @@ describe('relay: vault routes', () => {
         })
       )
     ).toEqual({ status: 404, error: 'notFound' });
+  });
+
+  it('refuses an update that grows the vault too fast', async () => {
+    const { send, objects } = setup();
+    const { vaultId, etag } = await created(send);
+    const put = async (body: string, ifMatch: string) =>
+      send(`/api/vaults/${vaultId}`, {
+        method: 'PUT',
+        token: OWNER,
+        headers: { 'If-Match': ifMatch },
+        body,
+      });
+    const next = await vaultText(vaultId, 2);
+    // Up to 256 KB, a small vault can grow
+    const first = await put(`${next}${' '.repeat(MAX_NEW_VAULT_BYTES - next.length)}`, etag);
+    expect(first.status).toBe(200);
+    const stored = objects.get(`vaults/${vaultId}`)?.value.length as number;
+    const third = await vaultText(vaultId, 3);
+    const ifMatch = first.headers.get('ETag') as string;
+    const grown = `${third}${' '.repeat(stored + MAX_VAULT_GROWTH_BYTES + 1 - third.length)}`;
+    expect(await errorOf(await put(grown, ifMatch))).toEqual({ status: 413, error: 'tooLarge' });
+    expect((await put(grown.slice(0, -1), ifMatch)).status).toBe(200);
   });
 
   it('answers 412 when a different write occurs during the creation', async () => {
