@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.53.0',
+    date: '2026-11-04',
+    title: 'Vault Encryption',
+    titleFr: 'Chiffrement du coffre',
+    tagline: 'The encryption that will protect your synced days',
+    taglineFr: 'Le chiffrement qui protégera vos jours synchronisés',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app now has the encryption for the coming sync. Your days will be encrypted on your device, and the server will never see them',
+      'Each device will have its own key, and a recovery code will open your data when you have no other device',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application a maintenant le chiffrement pour la future synchronisation. Vos jours seront chiffrés sur votre appareil, et le serveur ne les verra jamais',
+      'Chaque appareil aura sa propre clé, et un code de récupération ouvrira vos données quand vous n’aurez pas d’autre appareil',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.52.0',
     date: '2026-11-04',
     title: 'Sync Engine',

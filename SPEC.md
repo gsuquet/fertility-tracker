@@ -27,6 +27,7 @@ Find the file or the folder that you change. Then change its page first.
 | `src/domain/stampCalculator.ts`, `src/domain/peakDetector.ts`                                                                        | [Stamp and Peak Day rules](docs/reference/stamp-and-peak-rules.md)     |
 | `src/domain/cycleBoundaryDetector.ts`, `src/domain/cyclePhases.ts`, `src/domain/mucusScore.ts`                                       | [Cycle and phase rules](docs/reference/cycle-and-phase-rules.md)       |
 | `src/domain/versionTracker.ts`, `src/domain/appVersion.ts`, `scripts/version/`                                                       | [Version tracker](docs/reference/version-tracker.md)                   |
+| `src/domain/vault/`                                                                                                                  | [Vault format](docs/reference/vault-format.md)                         |
 | `src/domain/sync/`                                                                                                                   | [Sync rules](docs/reference/sync-rules.md)                             |
 | The other files in `src/domain/`                                                                                                     | [Domain API](docs/reference/domain-api.md)                             |
 | `src/types/crms.ts`                                                                                                                  | [Data format](docs/reference/data-format.md)                           |

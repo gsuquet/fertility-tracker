@@ -67,6 +67,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Data format](reference/data-format.md)
 - [Data storage](reference/data-storage.md)
 - [Sync rules](reference/sync-rules.md)
+- [Vault format](reference/vault-format.md)
 
 ### The code
 
