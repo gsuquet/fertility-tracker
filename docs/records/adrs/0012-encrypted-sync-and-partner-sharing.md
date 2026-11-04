@@ -44,7 +44,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Bad: the server sees the vault ids, the number of members, the IP addresses, the times of the syncs and the padded size.
 - Bad: if the user loses all the devices and the recovery code, nobody can decrypt the vault.
 - Bad: the server can stop the updates, or give a device the last vault that it saw again and again. To a device that uses the recovery code, it can give an old signed vault, but not one older than the code.
-- Bad: after each use of the recovery code, the user must write down a new code.
+- Bad: after each use of the recovery code and after each removal of an own device, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
 
@@ -171,7 +171,7 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 - The object `recovery/<lookup id>` holds the vault id, encrypted with the lookup key. Thus, a new code does not need a new vault.
 - Each owner entry of the keyring holds the current lookup id and a copy of the encrypted lookup object, wrapped like the data key. Readers do not get them. Neither one opens the vault. Thus, each owner device can write the current object again before R2 deletes it.
 - The vault keeps the recovery blob, encrypted with the wrapping key. HKDF cannot make an ECDH key pair, so the key pair is random.
-- The recovery blob holds the private key of the recovery member, the current signing public key and the current counter. Its additional data is the vault id and the purpose `recovery`.
+- The recovery blob holds the private key of the recovery member, the signing public key and the counter at the time the code is made. Its additional data is the vault id and the purpose `recovery`.
 - A device that recovers with the code keeps the signing public key and the counter of the blob. It walks the signing key chain from that key, as at a join. Thus, the server cannot give it a vault that the server made.
 - The owner devices do not keep the recovery code or its wrapping key. They keep only the public key of the recovery member. Thus, they can wrap a new data key for the recovery member, but a removed device cannot unwrap it.
 - The recovery code uses base32 and not BIP39 words. The two give the same 128 bits. The check character finds a typing error, and base32 needs no word list for each language.
@@ -202,7 +202,16 @@ A device or a partner joins with a one-time invitation and an approval on an own
 - The function accepts one join request for each invitation without an access token. The HMAC of step 4 proves the request.
 - On an Android phone, the system camera can read the QR code. Thus, the application needs no camera permission. A computer uses the link.
 
-When no own device is available, the user types the recovery code on a new device. The new device opens the recovery member and adds itself as an owner device. Then it makes a new recovery code. In the same conditional write, it removes the old recovery member, as [Removing a member](#removing-a-member) gives. Then it deletes the old `recovery/<lookup id>` object.
+When no own device is available, the user types the recovery code on a new device. The new device opens the recovery member and adds itself as an owner device. Then it makes a new recovery code, as [New recovery code](#new-recovery-code) gives.
+
+### New recovery code
+
+An owner device makes a new recovery code in this sequence:
+
+1. It creates the new `recovery/<lookup id>` object with `If-None-Match: *` and an owner token that is valid now.
+2. In one conditional write of the vault, it removes the old recovery member and adds the new one. It follows [Removing a member](#removing-a-member).
+3. It deletes the old `recovery/<lookup id>` object.
+4. It shows the new code only after the write of step 2 succeeds. The user must write down the code.
 
 ### Partner devices on iOS
 
@@ -220,7 +229,7 @@ An owner device removes a partner or a lost device in one conditional write:
 4. It removes the entry of the old member from the keyring.
 5. It signs the new vault and writes it with `If-Match`.
 
-When the removed member is an owner, a device or the recovery code, the owner device also makes a new signing key pair. It adds the new public key to the signing key chain, signed with the old key. After the removal of an owner device, the recovery code stays, because owner devices never keep it.
+When the removed member is an owner, a device or the recovery code, the owner device also makes a new signing key pair. It adds the new public key to the signing key chain, signed with the old key. After the removal of an owner device, the owner device also makes a new recovery code, as [New recovery code](#new-recovery-code) gives. The removed device can have the old signing key, and the old recovery blob names that key.
 
 The server refuses the access token of the removed member at once. A removed partner keeps the data that the partner device already shows. No design can take back data that a person already saw.
 
@@ -302,7 +311,7 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 | Logs      | The function writes no log.                                                                                                                                                                                             |
 | Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `history/` after 30 days, `invites/` after 1 day                                                                                                         |
 
-R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
+R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. When a read of `recovery/<lookup id>` gives `404`, the owner device makes the object again from its keyring copy. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
 
 The relay does not need a separate Worker or a second codebase. The Pages project deploys the functions in `functions/` with the static files. The relay has the same origin as the application, so the Content Security Policy does not change. A separate Worker is necessary only for Durable Objects, for example for live updates. This ADR does not select live updates.
 
