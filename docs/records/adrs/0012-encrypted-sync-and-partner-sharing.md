@@ -112,13 +112,13 @@ Each device calculates `cycleDay`, `stamp`, `codeString` and `isPeakDay` again a
 
 Before a comparison and before a write, each day gets a canonical form:
 
-| Field                              | Canonical form                                                    |
-| ---------------------------------- | ----------------------------------------------------------------- |
-| `modifiers`, `symptoms`            | Sorted. An empty array is absent.                                 |
-| `intercourse`, `isManualPeak`      | `true` stays. `false` is absent.                                  |
+| Field                              | Canonical form                                                   |
+| ---------------------------------- | ---------------------------------------------------------------- |
+| `modifiers`, `symptoms`            | Sorted. An empty array is absent.                                |
+| `intercourse`, `isManualPeak`      | `true` stays. `false` is absent.                                 |
 | `isCycleStart`                     | `true`, `false` and absent are three different values. All stay. |
-| `notes`                            | An empty text is absent.                                          |
-| `bleeding`, `stretch`, `frequency` | The code stays. A missing code is absent.                         |
+| `notes`                            | An empty text is absent.                                         |
+| `bleeding`, `stretch`, `frequency` | The code stays. A missing code is absent.                        |
 
 The demo data never syncs. While the device is in a vault, Settings does not show **Load demo data**.
 
@@ -242,12 +242,12 @@ When a device with observations joins a vault, its days get clock 0. Thus, on th
 
 ### Safety of the local data
 
-| Condition                                                                     | Result                                                          |
-| ----------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `recoveryData` is set, `droppedCount` is more than 0, or `saveFailed` is true | No sync write. The device can still read the vault.             |
+| Condition                                                                     | Result                                                         |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
+| `recoveryData` is set, `droppedCount` is more than 0, or `saveFailed` is true | No sync write. The device can still read the vault.            |
 | The observations key is missing and a base exists                             | The device reads the vault as a new device. It deletes no day. |
-| A sync deletes more than 7 days                                               | The device asks the user before it writes.                      |
-| **Else**                                                                      | Normal sync                                                     |
+| A sync deletes more than 7 days                                               | The device asks the user before it writes.                     |
+| **Else**                                                                      | Normal sync                                                    |
 
 ### Conflict list
 
@@ -269,16 +269,16 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 
 ### Relay
 
-| Item      | Value                                                                                |
-| --------- | ------------------------------------------------------------------------------------ |
-| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                   |
-| Storage   | One R2 bucket, bound in `wrangler.json`                                              |
-| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`   |
-| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.    |
-| Writes    | Only with an owner token, and only with `If-Match`                                   |
-| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`. |
-| Caching   | Each answer has `Cache-Control: no-store`. The service worker ignores `/api/`.       |
-| Logs      | The function writes no log.                                                          |
+| Item      | Value                                                                                 |
+| --------- | ------------------------------------------------------------------------------------- |
+| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                    |
+| Storage   | One R2 bucket, bound in `wrangler.json`                                               |
+| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`    |
+| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.     |
+| Writes    | Only with an owner token, and only with `If-Match`                                    |
+| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.  |
+| Caching   | Each answer has `Cache-Control: no-store`. The service worker ignores `/api/`.        |
+| Logs      | The function writes no log.                                                           |
 | Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `invites/` after 1 day |
 
 R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
