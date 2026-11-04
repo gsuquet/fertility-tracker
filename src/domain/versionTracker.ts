@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.56.0',
+    date: '2026-11-04',
+    title: 'Sync Client',
+    titleFr: 'Client de synchronisation',
+    tagline: 'The part of the app that will talk to the sync server',
+    taglineFr: 'La partie de l’application qui parlera au serveur de synchronisation',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app can now make your encrypted vault, and read and write it on the sync server',
+      'The key of your device stays in the browser storage, and nobody can copy it from there',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application peut maintenant créer votre coffre chiffré, et le lire et l’écrire sur le serveur de synchronisation',
+      'La clé de votre appareil reste dans le stockage du navigateur, et personne ne peut la copier',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.55.0',
     date: '2026-11-04',
     title: 'Device Invitations',

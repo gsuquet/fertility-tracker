@@ -40,6 +40,7 @@ fertility-tracker/
 │   ├── relay/                   # Sync relay: the routes in /api/ on an R2 bucket (Relay API)
 │   ├── styles/                  # CSS in cascade layers and the self-hosted font
 │   ├── sw/                      # Service worker: precache and cache strategies
+│   ├── sync/                    # Sync client: relay client, device record, vault store (Sync client)
 │   ├── test/                    # Test helpers
 │   ├── types/                   # TypeScript types and code lists of the domain
 │   ├── utils/                   # Dates, export file names, safe storage, vibrations

@@ -70,6 +70,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Sync rules](reference/sync-rules.md)
 - [Vault format](reference/vault-format.md)
 - [Relay API](reference/relay-api.md)
+- [Sync client](reference/sync-client.md)
 
 ### The code
 
