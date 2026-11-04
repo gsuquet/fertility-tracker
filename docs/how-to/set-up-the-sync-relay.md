@@ -32,8 +32,10 @@ Do this procedure one time, before the application turns on the sync. The relay 
 
 1. Open the zone `gsuquet.com`, then **Security** and **Security rules**.
 2. Add a rate limiting rule for the URI path that starts with `/api/`.
-3. Count the requests for each IP address. Allow 120 requests in 1 minute.
-4. Select the action **Block** for 1 minute, then save the rule.
+3. Count the requests for each IP address. Allow 20 requests in 10 seconds.
+4. Select the action **Block** for 10 seconds, then save the rule.
+
+The Free plan has these values. A different plan can use a longer period with the same rate.
 
 ## Bind the bucket
 

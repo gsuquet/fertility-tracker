@@ -4,7 +4,13 @@ import { randomBytes, sha256, toBase64Url, utf8 } from '../../domain/vault/bytes
 import { newSigningChain } from '../../domain/vault/signingChain';
 import { sealVault } from '../../domain/vault/vaultObject';
 import type { Member } from '../../domain/vault/vaultObject';
-import { DEFAULT_RELAY_HOST, MAX_RECOVERY_BYTES, MAX_VAULT_BYTES, handleRelay } from '../handler';
+import {
+  DEFAULT_RELAY_HOST,
+  MAX_NEW_VAULT_BYTES,
+  MAX_RECOVERY_BYTES,
+  MAX_VAULT_BYTES,
+  handleRelay,
+} from '../handler';
 import type { RelayEnv } from '../handler';
 
 const ORIGIN = `https://${DEFAULT_RELAY_HOST}`;
@@ -122,9 +128,8 @@ describe('relay: vault routes', () => {
       expect(response.headers.get('Cache-Control')).toBe('no-store');
       expect(await response.text()).toBe(objects.get(`vaults/${vaultId}`)?.value);
     }
-    expect(objects.get(`history/${vaultId}/2026-11-04`)?.value).toBe(
-      objects.get(`vaults/${vaultId}`)?.value
-    );
+    // A new vault gets no history copy
+    expect(objects.has(`history/${vaultId}/2026-11-04`)).toBe(false);
   });
 
   it('refuses a read without the token of a member, or of a vault that does not exist', async () => {
@@ -162,6 +167,11 @@ describe('relay: vault routes', () => {
       await errorOf(await put(text, { ...create, 'Content-Length': `${MAX_VAULT_BYTES + 1}` }))
     ).toEqual({ status: 413, error: 'tooLarge' });
     expect(await errorOf(await put('x', create))).toEqual({ status: 400, error: 'invalid' });
+    // A valid vault object with spaces at the end is too large for a new vault
+    expect(await errorOf(await put(`${text}${' '.repeat(MAX_NEW_VAULT_BYTES)}`, create))).toEqual({
+      status: 413,
+      error: 'tooLarge',
+    });
     expect(await errorOf(await put(await vaultText(newId(), 1), create))).toEqual({
       status: 400,
       error: 'invalid',
@@ -195,8 +205,9 @@ describe('relay: vault routes', () => {
     expect(await errorOf(await put(2, '"old"'))).toEqual({ status: 412, error: 'changed' });
     for (const counter of [1, 3])
       expect(await errorOf(await put(counter, etag))).toEqual({ status: 409, error: 'counter' });
-    const history = objects.get(`history/${vaultId}/2026-11-04`)?.value;
     const response = await put(2, etag);
+    const history = objects.get(`history/${vaultId}/2026-11-04`)?.value;
+    expect(history).toBe(objects.get(`vaults/${vaultId}`)?.value);
     expect(response.status).toBe(200);
     expect(await response.json()).toEqual({});
     const next = response.headers.get('ETag') as string;
@@ -220,6 +231,24 @@ describe('relay: vault routes', () => {
         })
       )
     ).toEqual({ status: 404, error: 'notFound' });
+  });
+
+  it('answers 412 when a different write occurs during the creation', async () => {
+    const { send, bucket } = setup();
+    const vaultId = newId();
+    const body = await vaultText(vaultId, 1);
+    const put = bucket.put.bind(bucket);
+    bucket.put = async (key, value, options) => {
+      await put(key, 'other write');
+      return put(key, value, options);
+    };
+    const response = await send(`/api/vaults/${vaultId}`, {
+      method: 'PUT',
+      token: OWNER,
+      headers: { 'If-None-Match': '*' },
+      body,
+    });
+    expect(await errorOf(response)).toEqual({ status: 412, error: 'changed' });
   });
 
   it('answers 412 when a different write occurs during the update', async () => {

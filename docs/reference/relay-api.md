@@ -44,6 +44,7 @@ Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the p
 | Condition                                                                   | Answer                           |
 | --------------------------------------------------------------------------- | -------------------------------- |
 | The body is more than 1 MB                                                  | `413`, error `tooLarge`          |
+| `If-None-Match: *`, and the body is more than 256 KB (262,144 bytes)        | `413`, error `tooLarge`          |
 | The body is not a vault object, or its `vaultId` is not the id of the path  | `400`, error `invalid`           |
 | The request has no `If-Match` and no `If-None-Match: *`                     | `428`, error `condition`         |
 | `If-None-Match: *`, and the vault exists                                    | `412`, error `changed`           |
@@ -56,7 +57,8 @@ Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the p
 | **Else**                                                                    | `200`, `{}`, with the new `ETag` |
 
 - An update uses a conditional R2 write with the ETag. When a different write occurs first, the answer is `412`.
-- After a write, the relay copies the object to `history/<vault id>/<date>` when that copy does not exist. `date` is the UTC date of the write. Thus, the first write of each day makes the copy.
+- After an update, the relay copies the object to `history/<vault id>/<date>` when that copy does not exist. `date` is the UTC date of the update. Thus, the first update of each day makes the copy.
+- A new vault gets no history copy, and its limit is 256 KB. Thus, a stranger who makes vaults uses less storage.
 
 ## Recovery routes
 

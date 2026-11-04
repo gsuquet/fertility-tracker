@@ -12,6 +12,8 @@ export interface RelayEnv {
 export const DEFAULT_RELAY_HOST = 'fertility-tracker.gsuquet.com';
 export const MAX_VAULT_BYTES = 1_048_576;
 export const MAX_RECOVERY_BYTES = 4096;
+/** A new vault has few days. A low limit makes the storage of a stranger expensive. */
+export const MAX_NEW_VAULT_BYTES = 262_144;
 
 const ID_BYTES = 16;
 const CREATE_ONLY = { etagDoesNotMatch: '*' };
@@ -92,23 +94,24 @@ async function putVault(bucket: RelayBucket, vaultId: string, request: Request, 
   const create = request.headers.get('If-None-Match') === '*';
   if (ifMatch === null && !create) return fail(428, 'condition');
   const key = `vaults/${vaultId}`;
-  let written: { etag: string } | null;
   if (ifMatch === null) {
+    // A new vault gets no history copy, so a stranger cannot double the storage
+    if (utf8(text).length > MAX_NEW_VAULT_BYTES) return fail(413, 'tooLarge');
     if (await bucket.head(key)) return fail(412, 'changed');
     const caller = memberOf(read.header.keyring, await tokenHashOf(request));
     if (caller?.role !== 'owner') return fail(403, 'owner');
-    written = await bucket.put(key, text, { onlyIf: CREATE_ONLY });
-  } else {
-    const stored = await bucket.get(key);
-    if (!stored) return fail(404, 'notFound');
-    const storedRead = readVaultObject(await stored.text());
-    const caller = memberOf(storedRead?.header.keyring ?? [], await tokenHashOf(request));
-    if (!storedRead || !caller) return fail(401, 'token');
-    if (caller.role !== 'owner') return fail(403, 'owner');
-    if (etagOf(ifMatch) !== stored.etag) return fail(412, 'changed');
-    if (read.header.counter !== storedRead.header.counter + 1) return fail(409, 'counter');
-    written = await bucket.put(key, text, { onlyIf: { etagMatches: stored.etag } });
+    const created = await bucket.put(key, text, { onlyIf: CREATE_ONLY });
+    return created ? ok('{}', created.etag) : fail(412, 'changed');
   }
+  const stored = await bucket.get(key);
+  if (!stored) return fail(404, 'notFound');
+  const storedRead = readVaultObject(await stored.text());
+  const caller = memberOf(storedRead?.header.keyring ?? [], await tokenHashOf(request));
+  if (!storedRead || !caller) return fail(401, 'token');
+  if (caller.role !== 'owner') return fail(403, 'owner');
+  if (etagOf(ifMatch) !== stored.etag) return fail(412, 'changed');
+  if (read.header.counter !== storedRead.header.counter + 1) return fail(409, 'counter');
+  const written = await bucket.put(key, text, { onlyIf: { etagMatches: stored.etag } });
   if (!written) return fail(412, 'changed');
   const historyKey = `history/${vaultId}/${now.toISOString().slice(0, 10)}`;
   if (!(await bucket.head(historyKey))) await bucket.put(historyKey, text, { onlyIf: CREATE_ONLY });
