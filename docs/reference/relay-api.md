@@ -61,7 +61,8 @@ Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the p
 - After an update, the relay copies the object to `history/<vault id>/<date>` when that copy does not exist. `date` is the UTC date of the update. Thus, the first update of each day makes the copy.
 - The first row that applies gives the answer.
 - The growth limit is the larger of 256 KB and the size of the stored vault plus 64 KB (65,536 bytes).
-- A new vault gets no history copy. Thus, each request adds at most 256 KB, or 128 KB for an update and its history copy.
+- A new vault gets no history copy. An update adds at most 256 KB to the vault.
+- The first update of each UTC day also adds a history copy of up to 1 MB. The lifecycle rule deletes it after 30 days.
 
 ## Recovery routes
 
