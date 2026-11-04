@@ -10,7 +10,8 @@ import {
   IMAGE_SCALE,
   IMAGE_WIDTH,
   MAX_CANVAS_PIXELS,
-  downloadChartPng,
+  PDF_JPEG_QUALITY,
+  saveChartFile,
   imageScale,
   layoutChartImage,
   paintChartImage,
@@ -272,7 +273,7 @@ describe('imageScale', () => {
   });
 });
 
-describe('downloadChartPng', () => {
+describe('saveChartFile', () => {
   afterEach(() => {
     vi.restoreAllMocks();
     vi.unstubAllGlobals();
@@ -280,54 +281,93 @@ describe('downloadChartPng', () => {
   });
 
   const cycles = () => selectPrintCycles([cycle], ['all'], getTodayStr());
+  // The bytes 1, 2 and 3 in base64
+  const BYTES = 'AQID';
 
-  it('draws the cycles and downloads a PNG file with the print file name', async () => {
+  /** A 2D canvas that encodes each image as the three bytes, and the canvas sizes it saw */
+  const fakeCanvas = (encoded = (type: string) => `data:${type};base64,${BYTES}`) => {
     const ctx = fakeContext();
     vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
       ctx as unknown as CanvasRenderingContext2D
     );
-    let size = [0, 0];
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(function (
+    const encodings: { size: number[]; type: string; quality: unknown }[] = [];
+    vi.spyOn(HTMLCanvasElement.prototype, 'toDataURL').mockImplementation(function (
       this: HTMLCanvasElement,
-      callback
+      type = 'image/png',
+      quality?: unknown
     ) {
-      size = [this.width, this.height];
-      callback(new Blob(['png'], { type: 'image/png' }));
+      encodings.push({ size: [this.width, this.height], type, quality });
+      return encoded(type);
     });
-    const createUrl = vi.fn(() => 'blob:chart');
-    const revokeUrl = vi.fn();
-    vi.stubGlobal('URL', { ...URL, createObjectURL: createUrl, revokeObjectURL: revokeUrl });
-    let downloaded = '';
+    return { ctx, encodings };
+  };
+
+  /** The downloaded blob and its file name */
+  const catchDownload = () => {
+    const blobs: Blob[] = [];
+    vi.stubGlobal('URL', {
+      ...URL,
+      createObjectURL: (blob: Blob) => {
+        blobs.push(blob);
+        return 'blob:chart';
+      },
+      revokeObjectURL: vi.fn(),
+    });
+    const names: string[] = [];
     vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
       this: HTMLAnchorElement
     ) {
-      downloaded = this.download;
+      names.push(this.download);
     });
+    return { blobs, names };
+  };
 
-    vi.useFakeTimers({ toFake: ['setTimeout'] });
-    await expect(downloadChartPng(cycles(), en, 'cycle-1')).resolves.toBe(true);
-    expect(downloaded).toBe(`fertility-tracker-chart-cycle-1-${getTodayStr()}.png`);
-    expect(size[0]).toBe(IMAGE_WIDTH * IMAGE_SCALE);
-    expect(size[1]).toBeGreaterThan(0);
+  it('draws the cycles and downloads a PNG file with the print file name', async () => {
+    const { ctx, encodings } = fakeCanvas();
+    const { blobs, names } = catchDownload();
+    await expect(saveChartFile(cycles(), en, 'cycle-1', 'png')).resolves.toBe('downloaded');
+    expect(names).toEqual([`fertility-tracker-chart-cycle-1-${getTodayStr()}.png`]);
+    expect(encodings[0]?.type).toBe('image/png');
+    expect(encodings[0]?.size[0]).toBe(IMAGE_WIDTH * IMAGE_SCALE);
+    expect(encodings[0]?.size[1]).toBeGreaterThan(0);
     expect(ctx.calls).toContain(`scale(${IMAGE_SCALE},${IMAGE_SCALE})`);
-    // Safari can cancel the download when the address goes at once
-    expect(revokeUrl).not.toHaveBeenCalled();
-    vi.advanceTimersByTime(1000);
-    expect(revokeUrl).toHaveBeenCalledWith('blob:chart');
+    expect(blobs[0]?.type).toBe('image/png');
+    expect([...new Uint8Array(await (blobs[0] as Blob).arrayBuffer())]).toEqual([1, 2, 3]);
   });
 
-  it('returns false when the browser has no 2D canvas', async () => {
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
-    await expect(downloadChartPng(cycles(), en, 'cycle-1')).resolves.toBe(false);
-  });
-
-  it('returns false when the browser cannot make the PNG', async () => {
-    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(
-      fakeContext() as unknown as CanvasRenderingContext2D
+  it('downloads a PDF file with the JPEG image of the cycles', async () => {
+    const { encodings } = fakeCanvas();
+    const { blobs, names } = catchDownload();
+    await expect(saveChartFile(cycles(), en, 'cycle-1', 'pdf')).resolves.toBe('downloaded');
+    expect(names).toEqual([`fertility-tracker-chart-cycle-1-${getTodayStr()}.pdf`]);
+    expect(encodings[0]).toMatchObject({ type: 'image/jpeg', quality: PDF_JPEG_QUALITY });
+    const pdf = blobs[0] as Blob;
+    expect(pdf.type).toBe('application/pdf');
+    const text = new TextDecoder('latin1').decode(await pdf.arrayBuffer());
+    expect(text.startsWith('%PDF-1.4')).toBe(true);
+    const [width, height] = encodings[0]?.size ?? [];
+    expect(text).toContain(`/Width ${width} /Height ${height}`);
+    expect(text).toContain(
+      '/Filter /DCTDecode /Length 3 >>\nstream\n\u0001\u0002\u0003\nendstream'
     );
-    vi.spyOn(HTMLCanvasElement.prototype, 'toBlob').mockImplementation(callback => callback(null));
+  });
+
+  it('fails when the browser has no 2D canvas', async () => {
+    vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    await expect(saveChartFile(cycles(), en, 'cycle-1', 'png')).resolves.toBe('failed');
+  });
+
+  it('fails when the browser cannot encode the canvas', async () => {
+    // A canvas too large for the browser gives an empty address
+    fakeCanvas(() => 'data:,');
     const click = vi.spyOn(HTMLAnchorElement.prototype, 'click');
-    await expect(downloadChartPng(cycles(), en, 'cycle-1')).resolves.toBe(false);
+    await expect(saveChartFile(cycles(), en, 'cycle-1', 'pdf')).resolves.toBe('failed');
     expect(click).not.toHaveBeenCalled();
+  });
+
+  it('fails when the browser gives another image format', async () => {
+    // A browser without JPEG gives a PNG image
+    fakeCanvas(() => `data:image/png;base64,${BYTES}`);
+    await expect(saveChartFile(cycles(), en, 'cycle-1', 'pdf')).resolves.toBe('failed');
   });
 });

@@ -111,8 +111,9 @@ Select the cycles in **Cycles**. Each opening selects the cycle of the cycle pic
 
 | Button           | Action                                                         |
 | ---------------- | -------------------------------------------------------------- |
-| **Download PNG** | Downloads an image of the selected cycles.                     |
-| **Print or PDF** | Opens the print dialog of the browser for the selected cycles. |
+| **Print**        | Opens the print dialog of the browser for the selected cycles. |
+| **Download PNG** | Saves an image of the selected cycles.                         |
+| **Download PDF** | Saves a PDF file of the selected cycles.                       |
 
 ## Confirmation dialog
 

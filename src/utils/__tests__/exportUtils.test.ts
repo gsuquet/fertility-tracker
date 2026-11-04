@@ -1,5 +1,5 @@
-import { describe, it, expect } from 'vitest';
-import { getExportFilename } from '../exportUtils';
+import { afterEach, describe, it, expect, vi } from 'vitest';
+import { getExportFilename, saveFile } from '../exportUtils';
 import { getTodayStr } from '../dateUtils';
 
 describe('exportUtils', () => {
@@ -12,23 +12,31 @@ describe('exportUtils', () => {
     expect(filename).not.toContain(' ');
   });
 
-  it('generates clean lowercase dash-separated PDF filenames for cycles', () => {
+  it('generates clean lowercase dash-separated print filenames for cycles', () => {
     const today = getTodayStr();
-    const singleFilename = getExportFilename('pdf', 'cycle-1');
+    const singleFilename = getExportFilename('print', 'cycle-1');
     expect(singleFilename).toBe(`fertility-tracker-chart-cycle-1-${today}`);
     expect(singleFilename).toEqual(singleFilename.toLowerCase());
     expect(singleFilename).not.toContain('_');
 
-    const multiFilename = getExportFilename('pdf', 'all-cycles');
+    const multiFilename = getExportFilename('print', 'all-cycles');
     expect(multiFilename).toBe(`fertility-tracker-chart-all-cycles-${today}`);
 
-    const rawInputFilename = getExportFilename('pdf', 'Cycle #2 (Special)');
+    const rawInputFilename = getExportFilename('print', 'Cycle #2 (Special)');
     expect(rawInputFilename).toBe(`fertility-tracker-chart-cycle-2-special-${today}`);
   });
 
-  it('uses a generic PDF filename when the detail is missing or has no letters or digits', () => {
-    expect(getExportFilename('pdf')).toMatch(/^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}$/);
-    expect(getExportFilename('pdf', '***')).toMatch(/^fertility-tracker-chart-export-/);
+  it('uses a generic print filename when the detail is missing or has no letters or digits', () => {
+    expect(getExportFilename('print')).toMatch(
+      /^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}$/
+    );
+    expect(getExportFilename('print', '***')).toMatch(/^fertility-tracker-chart-export-/);
+  });
+
+  it('gives the PDF file the print file name with .pdf', () => {
+    expect(getExportFilename('pdf', 'cycle-2')).toBe(
+      `fertility-tracker-chart-cycle-2-${getTodayStr()}.pdf`
+    );
   });
 
   it('gives the PNG file the print file name with .png', () => {
@@ -38,5 +46,99 @@ describe('exportUtils', () => {
     expect(getExportFilename('png')).toMatch(
       /^fertility-tracker-chart-export-\d{4}-\d{2}-\d{2}\.png$/
     );
+  });
+});
+
+describe('saveFile', () => {
+  afterEach(() => {
+    vi.restoreAllMocks();
+    vi.unstubAllGlobals();
+    vi.useRealTimers();
+  });
+
+  const blob = new Blob(['%PDF'], { type: 'application/pdf' });
+  const iPhone = () =>
+    vi.spyOn(navigator, 'userAgent', 'get').mockReturnValue('Mozilla/5.0 (iPhone)');
+
+  /** The share functions of the browser, and the files that it shared */
+  const stubShare = (share: () => Promise<void>, canShare = true) => {
+    const shared: File[] = [];
+    vi.stubGlobal('navigator', {
+      ...navigator,
+      userAgent: navigator.userAgent,
+      canShare: vi.fn(() => canShare),
+      share: vi.fn((data: ShareData) => {
+        shared.push(...(data.files ?? []));
+        return share();
+      }),
+    });
+    return shared;
+  };
+
+  /** The downloaded file names, and the revoke of the blob address */
+  const catchDownload = () => {
+    const revoke = vi.fn();
+    vi.stubGlobal('URL', { ...URL, createObjectURL: () => 'blob:file', revokeObjectURL: revoke });
+    const names: string[] = [];
+    vi.spyOn(HTMLAnchorElement.prototype, 'click').mockImplementation(function (
+      this: HTMLAnchorElement
+    ) {
+      names.push(this.download);
+    });
+    return { names, revoke };
+  };
+
+  it('downloads the file outside iOS, and revokes the address one second later', async () => {
+    const shared = stubShare(() => Promise.resolve());
+    const { names, revoke } = catchDownload();
+    vi.useFakeTimers({ toFake: ['setTimeout'] });
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('downloaded');
+    expect(names).toEqual(['chart.pdf']);
+    expect(shared).toEqual([]);
+    // Safari can cancel the download when the address goes at once
+    expect(revoke).not.toHaveBeenCalled();
+    vi.advanceTimersByTime(1000);
+    expect(revoke).toHaveBeenCalledWith('blob:file');
+  });
+
+  it('opens the share sheet with the file on iOS', async () => {
+    iPhone();
+    const shared = stubShare(() => Promise.resolve());
+    const { names } = catchDownload();
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('shared');
+    expect(shared.map(file => [file.name, file.type])).toEqual([['chart.pdf', 'application/pdf']]);
+    expect(names).toEqual([]);
+  });
+
+  it('does nothing more when the user closes the share sheet', async () => {
+    iPhone();
+    stubShare(() => Promise.reject(new DOMException('Share canceled', 'AbortError')));
+    const { names } = catchDownload();
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('cancelled');
+    expect(names).toEqual([]);
+  });
+
+  it('downloads the file when iOS refuses the share sheet', async () => {
+    iPhone();
+    stubShare(() => Promise.reject(new DOMException('No click', 'NotAllowedError')));
+    const { names } = catchDownload();
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('downloaded');
+    expect(names).toEqual(['chart.pdf']);
+  });
+
+  it('downloads the file when iOS cannot share files', async () => {
+    iPhone();
+    const shared = stubShare(() => Promise.resolve(), false);
+    const { names } = catchDownload();
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('downloaded');
+    expect(shared).toEqual([]);
+    expect(names).toEqual(['chart.pdf']);
+  });
+
+  it('downloads the file on an iOS version without the share of files', async () => {
+    iPhone();
+    const { names } = catchDownload();
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('downloaded');
+    expect(names).toEqual(['chart.pdf']);
   });
 });

@@ -2,31 +2,32 @@ import type React from 'react';
 import { useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
-import { X, Printer, ImageDown } from 'lucide-react';
+import { X, Printer, ImageDown, FileDown } from 'lucide-react';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
 import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
 import { getTodayStr } from '../utils/dateUtils';
 import { cycleLength, selectPrintCycles, shortDate } from '../utils/printCycles';
-import { downloadChartPng } from '../utils/chartImage';
+import type { ChartFileFormat, ChartFileResult } from '../utils/chartImage';
+import { saveChartFile } from '../utils/chartImage';
 
 interface ExportModalProps {
   onClose: () => void;
   /** Receives the cycles to print and a short label for the PDF file name. */
   onPreparePrint: (selectedCycleIds: string[], fileDetail: string) => void;
-  /** Receives true after the PNG download, or false when the browser cannot make the image. */
-  onImageDone: (downloaded: boolean) => void;
+  /** Receives what became of the PNG or the PDF file, or `failed` when the browser cannot make it. */
+  onFileDone: (format: ChartFileFormat, result: ChartFileResult) => void;
 }
 
 /**
- * Share chart: the choice of cycles, Download PNG and Print or PDF (RFC 0002). Backup, restore,
- * demo and delete are in Settings.
+ * Share chart: the choice of cycles, Download PNG, Download PDF and Print (RFC 0002). Backup,
+ * restore, demo and delete are in Settings.
  */
 export const ExportModal: React.FC<ExportModalProps> = ({
   onClose,
   onPreparePrint,
-  onImageDone,
+  onFileDone,
 }) => {
   const { cycles, selectedCycleId } = useCycle();
   const { t } = useLanguage();
@@ -63,12 +64,15 @@ export const ExportModal: React.FC<ExportModalProps> = ({
     onClose();
   };
 
-  const handleDownloadPng = () => {
-    const detail = fileDetail();
+  // The file is made in the click, before the dialog closes: iOS opens its share sheet only
+  // from a click
+  const handleDownload = (format: ChartFileFormat) => {
+    const printCycles = selectPrintCycles(cycles, ids, getTodayStr());
+    const saved = saveChartFile(printCycles, t, fileDetail(), format).catch(
+      (): ChartFileResult => 'failed'
+    );
     onClose();
-    void downloadChartPng(selectPrintCycles(cycles, ids, getTodayStr()), t, detail)
-      .catch(() => false)
-      .then(onImageDone);
+    void saved.then(result => onFileDone(format, result));
   };
 
   const nothingSelected = ids.length === 0;
@@ -144,7 +148,16 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <button
           type="button"
           className="btn btn-secondary"
-          onClick={handleDownloadPng}
+          onClick={handlePrint}
+          disabled={nothingSelected}
+        >
+          <Printer size={18} aria-hidden="true" />
+          {t.exportModal.print}
+        </button>
+        <button
+          type="button"
+          className="btn btn-secondary"
+          onClick={() => handleDownload('png')}
           disabled={nothingSelected}
         >
           <ImageDown size={18} aria-hidden="true" />
@@ -153,11 +166,11 @@ export const ExportModal: React.FC<ExportModalProps> = ({
         <button
           type="button"
           className="btn btn-primary"
-          onClick={handlePrint}
+          onClick={() => handleDownload('pdf')}
           disabled={nothingSelected}
         >
-          <Printer size={18} aria-hidden="true" />
-          {t.exportModal.printPdf}
+          <FileDown size={18} aria-hidden="true" />
+          {t.exportModal.downloadPdf}
         </button>
       </div>
     </Modal>

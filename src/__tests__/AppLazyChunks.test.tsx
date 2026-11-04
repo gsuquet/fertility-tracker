@@ -58,7 +58,7 @@ describe('App lazy chunks', () => {
       { name: en.exportModal.title },
       { timeout: 5000 }
     );
-    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.print }));
     expect(print).not.toHaveBeenCalled();
 
     await act(async () => chunks.print.release());

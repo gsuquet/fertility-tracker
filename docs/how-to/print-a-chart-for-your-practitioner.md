@@ -11,11 +11,13 @@ Use this procedure to make a PDF file or a paper copy of your chart. The file ha
 1. Open the **Chart** page.
 2. Click **Chart options** (⋮) and then **Share chart**.
 3. In **Cycles**, select the cycles that you want to print. The cycle of the cycle picker is selected at the start.
-4. Click **Print or PDF**. The print dialog of your browser opens.
-5. Select the printer, or select **Save as PDF**.
-6. Click **Print** or **Save**.
+4. Click **Download PDF**.
+   - On a computer, the browser downloads the PDF file.
+   - On an iPhone or an iPad, the share sheet opens. Tap **Save to Files**, or tap **Print**, **AirDrop** or **Mail**.
 
-To send an image instead, click **Download PNG** in step 4. The browser downloads a PNG file with the same chart.
+To print on paper from a computer, click **Print** in step 4. Then select the printer and click **Print**. To send an image instead, click **Download PNG** in step 4.
+
+The **Print** view also shows the symptoms and the notes of each day. The PDF file and the image do not show them.
 
 ## Result
 

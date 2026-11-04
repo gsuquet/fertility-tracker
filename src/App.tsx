@@ -89,6 +89,7 @@ const markAnalyticsShown = () => {
 };
 const canAnimateTo = (tab: ActiveTab) => tab !== 'analytics' || analyticsShown;
 
+import type { ChartFileFormat, ChartFileResult } from './utils/chartImage';
 import { getExportFilename } from './utils/exportUtils';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
@@ -186,7 +187,7 @@ const MainApp: React.FC = () => {
     // A print within one second of the last one keeps the title from before both prints
     const originalTitle = titleRestore.current?.title ?? document.title;
     clearTimeout(titleRestore.current?.timer);
-    document.title = getExportFilename('pdf', pendingPrintDetail);
+    document.title = getExportFilename('print', pendingPrintDetail);
     window.print();
     const timer = setTimeout(() => {
       document.title = originalTitle;
@@ -244,7 +245,16 @@ const MainApp: React.FC = () => {
   const handlePreparePrint = (selectedCycleIds: string[], fileDetail: string) => {
     setPrintCycleIds(selectedCycleIds);
     setPendingPrintDetail(fileDetail);
-    if (printView !== 'failed') showToast(t.exportModal.exportSuccess);
+    if (printView !== 'failed') showToast(t.exportModal.printOpening);
+  };
+
+  // The share sheet of iOS shows its own result, so a shared file has no message
+  const handleFileDone = (format: ChartFileFormat, result: ChartFileResult) => {
+    const messages = {
+      png: { downloaded: t.exportModal.pngSuccess, failed: t.exportModal.pngError },
+      pdf: { downloaded: t.exportModal.pdfSuccess, failed: t.exportModal.pdfError },
+    };
+    if (result === 'downloaded' || result === 'failed') showToast(messages[format][result]);
   };
 
   return (
@@ -311,9 +321,7 @@ const MainApp: React.FC = () => {
               <ExportModal
                 onClose={closeExportModal}
                 onPreparePrint={handlePreparePrint}
-                onImageDone={downloaded =>
-                  showToast(downloaded ? t.exportModal.pngSuccess : t.exportModal.pngError)
-                }
+                onFileDone={handleFileDone}
               />
             </React.Suspense>
           </ErrorBoundary>

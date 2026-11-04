@@ -36,23 +36,72 @@ test.describe('Share chart', () => {
     await expect(dialog).toBeHidden();
   });
 
+  test('downloads a PDF file of one page with the chart image', async ({ page }) => {
+    await openApp(page);
+    await loadDemoData(page);
+    const dialog = await openShareChart(page);
+
+    const downloadEvent = page.waitForEvent('download');
+    await dialog.getByRole('button', { name: en.exportModal.downloadPdf }).click();
+    const download = await downloadEvent;
+    expect(download.suggestedFilename()).toMatch(
+      new RegExp(`^fertility-tracker-chart-cycle-\\d+-${TODAY}\\.pdf$`)
+    );
+    const file = await readFile(await download.path());
+    const text = file.toString('latin1');
+    expect(text.startsWith('%PDF-1.4')).toBe(true);
+    expect(text).toContain('/Count 1');
+    // The JPEG of the browser: its start of image, at two pixels for each CSS pixel
+    expect(text).toContain('/Width 3176 ');
+    expect(text).toContain('stream\n\xff\xd8');
+    await expect(
+      page.getByRole('status').filter({ hasText: en.exportModal.pdfSuccess })
+    ).toBeVisible();
+    await expect(dialog).toBeHidden();
+  });
+
+  test('opens the share sheet with the PDF file on an iPhone', async ({ page }) => {
+    await page.addInitScript(() => {
+      const shared: string[] = [];
+      Object.assign(window, { sharedFiles: shared });
+      Object.defineProperty(navigator, 'userAgent', { value: 'Mozilla/5.0 (iPhone)' });
+      Object.assign(navigator, {
+        canShare: () => true,
+        share: async ({ files }: ShareData) => {
+          for (const file of files ?? []) shared.push(`${file.name} ${file.type} ${file.size}`);
+        },
+      });
+    });
+    await openApp(page);
+    const dialog = await openShareChart(page);
+    await dialog.getByRole('button', { name: en.exportModal.downloadPdf }).click();
+    await expect(dialog).toBeHidden();
+    await expect
+      .poll(() => page.evaluate(() => (window as unknown as { sharedFiles: string[] }).sharedFiles))
+      .toEqual([expect.stringMatching(new RegExp(`-${TODAY}\\.pdf application/pdf \\d+$`))]);
+  });
+
   test.describe('on a phone', () => {
     test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 
-    test('is a sheet with the two actions at the bottom of the screen', async ({ page }) => {
+    test('is a sheet with the three actions at the bottom of the screen', async ({ page }) => {
       await openApp(page);
       await loadDemoData(page);
       const dialog = await openShareChart(page);
       const sheet = dialog.locator('.share-dialog');
       await expect.poll(async () => (await sheet.boundingBox())?.width).toBe(390);
-      for (const name of [en.exportModal.downloadPng, en.exportModal.printPdf]) {
+      for (const name of [
+        en.exportModal.print,
+        en.exportModal.downloadPng,
+        en.exportModal.downloadPdf,
+      ]) {
         const button = dialog.getByRole('button', { name });
         await expect(button).toBeInViewport();
         expect((await button.boundingBox())?.height).toBeGreaterThanOrEqual(44);
       }
-      // No cycle selected: the two actions are disabled
+      // No cycle selected: the actions are disabled
       await dialog.getByRole('checkbox').first().uncheck();
-      await expect(dialog.getByRole('button', { name: en.exportModal.printPdf })).toBeDisabled();
+      await expect(dialog.getByRole('button', { name: en.exportModal.print })).toBeDisabled();
     });
   });
 });

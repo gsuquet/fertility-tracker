@@ -14,7 +14,7 @@ import { renderWithProviders } from '../../test/render';
 const dialogs: [string, (onClose: () => void) => React.ReactElement][] = [
   [
     'export',
-    onClose => <ExportModal onClose={onClose} onPreparePrint={vi.fn()} onImageDone={vi.fn()} />,
+    onClose => <ExportModal onClose={onClose} onPreparePrint={vi.fn()} onFileDone={vi.fn()} />,
   ],
   ['version', onClose => <VersionModal onClose={onClose} />],
   ['welcome guide', onClose => <WelcomeModal onClose={onClose} />],

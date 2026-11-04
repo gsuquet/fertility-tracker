@@ -98,20 +98,26 @@
     margin: 0;
   }
 
-  /* The actions are in the dialog footer, under the list and out of its scroll */
+  /* The actions are in the dialog footer, under the list and out of its scroll. Print and
+     Download PNG share a row. Download PDF, the main action, is under them. */
+  .share-footer {
+    flex-wrap: wrap;
+  }
+
   .share-footer .btn {
+    flex: 1;
     min-height: var(--control-size-lg);
     gap: var(--space-sm);
+  }
+
+  .share-footer .btn-primary {
+    flex-basis: 100%;
   }
 
   @media (max-width: 640px) {
     /* On a phone, the sheet uses the full width */
     .share-dialog {
       max-width: 100vw;
-    }
-
-    .share-footer .btn {
-      flex: 1;
     }
   }
 }
