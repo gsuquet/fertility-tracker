@@ -68,14 +68,14 @@ The result is `{ "epk": public key, "iv": IV, "data": ciphertext }`. `wrapWithKe
 
 The additional data is the UTF-8 text `fertility-tracker-key:1:<vault id>:<member id>:<key id>:<purpose>`. `unwrapKey()` and `unwrapWithKey()` give the bytes, or `null` when the key, the context or the data is wrong. Each purpose has a fixed context. `-` (`NO_ID`) is the value of a field that does not apply:
 
-| Purpose    | Vault id | Member id     | Key id                     | Bytes                                                                                      |
-| ---------- | -------- | ------------- | -------------------------- | ------------------------------------------------------------------------------------------ |
-| `data`     | Vault id | The member    | `keyId` of the same header | The 32 bytes of the data key                                                               |
-| `signing`  | Vault id | The member    | `keyId` of the same header | The signing private key in PKCS #8                                                         |
-| `lookup`   | Vault id | The member    | `keyId` of the same header | The UTF-8 JSON `{ "lookupId", "object" }`: the lookup id and the text of the lookup object |
-| `earlier`  | Vault id | `-`           | The id of the earlier key  | The 32 bytes of the earlier data key                                                       |
-| `recovery` | Vault id | The lookup id | `-`                        | The recovery blob                                                                          |
-| `lookup`   | `-`      | The lookup id | `-`                        | The lookup object: the UTF-8 vault id                                                      |
+| Purpose    | Vault id | Member id     | Key id                     | Bytes                                                                                                           |
+| ---------- | -------- | ------------- | -------------------------- | --------------------------------------------------------------------------------------------------------------- |
+| `data`     | Vault id | The member    | `keyId` of the same header | The 32 bytes of the data key                                                                                    |
+| `signing`  | Vault id | The member    | `keyId` of the same header | The signing private key in PKCS #8                                                                              |
+| `lookup`   | Vault id | The member    | `keyId` of the same header | The UTF-8 JSON `{ "lookupId", "object", "memberId" }`: the lookup id, the lookup object and the recovery member |
+| `earlier`  | Vault id | `-`           | The id of the earlier key  | The 32 bytes of the earlier data key                                                                            |
+| `recovery` | Vault id | The lookup id | `-`                        | The recovery blob                                                                                               |
+| `lookup`   | `-`      | The lookup id | `-`                        | The lookup object: the UTF-8 vault id                                                                           |
 
 - `recoveryBlobContext()`, `earlierKeyContext()` and `lookupObjectContext()` give the three contexts without a member.
 - The recovery blob is the UTF-8 JSON `{ "privateKey", "signingPublicKey", "counter" }`. `privateKey` is the ECDH private key of the recovery member in PKCS #8. The recovering device knows the vault id and the lookup id, so it can make the context.
