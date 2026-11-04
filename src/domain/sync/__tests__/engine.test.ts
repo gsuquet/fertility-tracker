@@ -134,6 +134,68 @@ describe('syncOnce', () => {
     expect(store.days().map(d => d.date)).toEqual(['2026-10-01', '2026-10-02', '2026-10-03']);
   });
 
+  it('deletes no day when the vault is empty again, and writes the local days to it', async () => {
+    const store = createMemoryVaultStore();
+    const phone = device('phone', [makeObservation({ date: '2026-10-01', stretch: '0' })]);
+    await phone.sync(store, 1000);
+    phone.observations = [makeObservation({ date: '2026-10-01', stretch: '2' })];
+    await phone.sync(store, 2000);
+    // The lifecycle rule deleted the vault: a new empty vault
+    const fresh = createMemoryVaultStore();
+    const result = synced(await phone.sync(fresh, 3000));
+    expect(result.changed).toBe(false);
+    expect(fresh.days().map(d => [d.date, d.day])).toEqual([['2026-10-01', { stretch: '2' }]]);
+  });
+
+  it('keeps a change made during the sync when the application drops the result', async () => {
+    const store = createMemoryVaultStore();
+    const phone = device('phone', [makeObservation({ date: '2026-10-01', stretch: '0' })]);
+    const tablet = device('tablet');
+    await phone.sync(store, 1000);
+    await tablet.sync(store, 1000);
+    tablet.observations = [
+      ...tablet.observations,
+      makeObservation({ date: '2026-10-02', stretch: '2' }),
+    ];
+    await tablet.sync(store, 2000);
+
+    // The user changes the same date again, and a new date, while the vault store works
+    phone.observations = [makeObservation({ date: '2026-10-01', stretch: '4' })];
+    const before = phone.state;
+    const edited = [
+      makeObservation({ date: '2026-10-01', stretch: '6' }),
+      makeObservation({ date: '2026-10-03', stretch: '8' }),
+    ];
+    const result = synced(
+      await syncOnce({
+        state: before,
+        observations: phone.observations,
+        store,
+        now: 3000,
+        recoveryData: false,
+        saveFailed: false,
+        observationsMissing: false,
+        confirmDeletions: async () => true,
+      })
+    );
+    // The observations changed: the application keeps them and only the new clock
+    phone.observations = edited;
+    phone.state = { ...before, clock: result.state.clock };
+
+    await phone.sync(store, 3000);
+    expect(phone.observations.map(o => [o.date, o.stretch])).toEqual([
+      ['2026-10-01', '6'],
+      ['2026-10-02', '2'],
+      ['2026-10-03', '8'],
+    ]);
+    await tablet.sync(store, 4000);
+    expect(tablet.observations.map(o => [o.date, o.stretch])).toEqual([
+      ['2026-10-01', '6'],
+      ['2026-10-02', '2'],
+      ['2026-10-03', '8'],
+    ]);
+  });
+
   it('stops after the last attempt with the status busy', async () => {
     const store = createMemoryVaultStore();
     const phone = device('phone', [makeObservation({ date: '2026-10-01', stretch: '0' })]);

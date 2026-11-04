@@ -40,10 +40,12 @@ const isCount = (value: unknown): value is number =>
   typeof value === 'number' && Number.isSafeInteger(value) && value >= 0;
 
 /** A real calendar date in the YYYY-MM-DD form. */
-const isDate = (value: unknown): value is string =>
-  typeof value === 'string' &&
-  DATE_PATTERN.test(value) &&
-  new Date(`${value}T00:00:00Z`).toISOString().startsWith(value);
+const isDate = (value: unknown): value is string => {
+  if (typeof value !== 'string' || !DATE_PATTERN.test(value)) return false;
+  const time = Date.parse(`${value}T00:00:00Z`);
+  // An impossible month or day gives NaN, and 30 February moves to March
+  return !Number.isNaN(time) && new Date(time).toISOString().startsWith(value);
+};
 
 const parseClock = (value: unknown): Clock | null => {
   if (!isRecord(value) || !isCount(value.time) || !isCount(value.counter)) return null;

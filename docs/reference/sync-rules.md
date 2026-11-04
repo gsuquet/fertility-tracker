@@ -86,7 +86,7 @@ A deleted day loses its manual Peak Day. `firstSyncDays(observations, member)` g
 
 ## Merge
 
-`mergeDays(local, base, remote)` merges each date. `base` is the vault content of the last merge, or `null` before the first merge. The comparison uses only the canonical day, not the clock. A missing date is the same as a tombstone.
+`mergeDays(local, base, remote)` merges each date. `base` is the vault content of the last merge, or `null` before the first merge. The comparison uses only the canonical day, not the clock. A side without an entry for a date never saw that date, so it counts as unchanged. Thus, an empty or a new vault deletes no day.
 
 | Condition                                               | Result                                                         |
 | ------------------------------------------------------- | -------------------------------------------------------------- |
@@ -97,6 +97,7 @@ A deleted day loses its manual Peak Day. `firstSyncDays(observations, member)` g
 | **Else**                                                | The later clock wins. The other version goes to the conflicts. |
 
 - A local clock with time 0 loses to the remote clock. Thus, on a first sync, the vault wins on each date, also over the zero clock of a different member.
+- When the base is `null`, a local day with time 0 that is different from the remote entry always loses, also to a tombstone. It goes to the conflicts, and a lost day counts as a deleted day.
 - The `peak` of each date merges by its own clock: the later clock wins, with the same rule for time 0. When the two clocks are equal, `false` wins.
 - After the merge, a cycle with two or more manual Peak Days keeps the one with the later `peak` clock. When the clocks are equal, the later date stays. The other dates get the `peak` value `false`, with their clock.
 - The cycles come from `groupObservationsIntoCycles()` on the days that are not deleted.
@@ -132,6 +133,8 @@ In a normal sync:
 5. The status is `synced`. The result gives the new state, the observation inputs, the conflicts and `changed`.
 
 `changed` is `true` when the merge changes a day or a manual Peak Day on the device. The engine does not write to the browser storage. The application saves the observations first. It saves the new state only after that save succeeds.
+
+Only one sync runs at a time. The observations can change while the engine waits for the vault store. In that case, the application does not save the observations of the result. It keeps its observations and its state, and keeps only `state.clock` of the result. Its next sync stamps the new change and merges again.
 
 `newSyncState(member, observations)` gives the state of a device that joins a vault. Its days come from `firstSyncDays()`, and it has no base.
 

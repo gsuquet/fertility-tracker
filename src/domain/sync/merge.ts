@@ -84,27 +84,33 @@ export function mergeDays(
     const l = localOf.get(date);
     const r = remoteOf.get(date);
     const b = dayOf(baseOf.get(date));
-    const localChanged = !sameDay(dayOf(l), b);
-    const remoteChanged = !sameDay(dayOf(r), b);
-    let chosen: VaultDay | undefined;
-    if (localChanged && !remoteChanged) {
+    // A side without an entry for the date never saw it: it counts as unchanged, not as deleted
+    const localChanged = l !== undefined && !sameDay(l.day, b);
+    const remoteChanged = r !== undefined && !sameDay(r.day, b);
+    // In a first sync, the vault wins on each date that it has, also with a tombstone
+    const firstSyncLoss =
+      base === null && l?.clock.time === 0 && r !== undefined && !sameDay(l.day, r.day);
+    let chosen: VaultDay;
+    if (firstSyncLoss) {
+      chosen = r;
+      conflicts.push({ date, day: l.day, clock: l.clock });
+    } else if (localChanged && !remoteChanged) {
       chosen = l;
     } else if (remoteChanged && !localChanged) {
       chosen = r;
     } else {
-      chosen = laterOf(l, r);
+      // Each date comes from one of the two sides, so one entry at least exists
+      chosen = laterOf(l, r) as VaultDay;
       const loser = chosen === l ? r : l;
-      if (localChanged && loser && !sameDay(dayOf(l), dayOf(r))) {
-        conflicts.push({ date, day: loser.day, clock: loser.clock });
+      if (localChanged && remoteChanged && !sameDay(chosen.day, (loser as VaultDay).day)) {
+        conflicts.push({ date, day: (loser as VaultDay).day, clock: (loser as VaultDay).clock });
       }
     }
     const peak = mergePeak(l?.peak, r?.peak);
-    // Without a chosen entry, the local side has no entry for a date of the base: the remote has
-    const winner = (chosen ?? r) as VaultDay;
     days.push({
       date,
-      day: chosen ? chosen.day : null,
-      clock: winner.clock,
+      day: chosen.day,
+      clock: chosen.clock,
       ...(peak ? { peak } : {}),
     });
   }

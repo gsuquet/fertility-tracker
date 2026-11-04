@@ -82,14 +82,40 @@ describe('mergeDays', () => {
     expect(added.days.map(d => d.date)).toEqual([D, '2026-10-06']);
   });
 
-  it('handles a date of the base that the local days do not have', () => {
+  it('treats a side without an entry for a date of the base as unchanged, not as deleted', () => {
     const base = [day(D, { stretch: '0' }, c(1))];
-    // Only the local side changed: the date has no day
-    expect(mergeDays([], base, base).days).toEqual([day(D, null, c(1))]);
-    // Both sides changed: the remote day stays, with no conflict for the missing local entry
-    const both = mergeDays([], base, [day(D, { stretch: '2' }, c(3, 'tablet'))]);
-    expect(both.days).toEqual([day(D, { stretch: '2' }, c(3, 'tablet'))]);
-    expect(both.conflicts).toEqual([]);
+    // The local side has no entry: the remote day stays
+    expect(mergeDays([], base, base).days).toEqual(base);
+    const remoteChange = mergeDays([], base, [day(D, { stretch: '2' }, c(3, 'tablet'))]);
+    expect(remoteChange.days).toEqual([day(D, { stretch: '2' }, c(3, 'tablet'))]);
+    expect(remoteChange.conflicts).toEqual([]);
+    // A new or recreated vault without the date: the local day stays and nothing is deleted
+    const emptyVault = mergeDays(base, base, []);
+    expect(emptyVault.days).toEqual(base);
+    expect(emptyVault.deletedDates).toEqual([]);
+    const localChange = mergeDays([day(D, { stretch: '4' }, c(5))], base, []);
+    expect(localChange.days).toEqual([day(D, { stretch: '4' }, c(5))]);
+  });
+
+  it('lets a vault tombstone win a first sync, with the local day in the conflicts', () => {
+    const result = mergeDays([day(D, { stretch: '6' }, c(0))], null, [
+      day(D, null, c(4, 'tablet')),
+    ]);
+    expect(result.days).toEqual([day(D, null, c(4, 'tablet'))]);
+    expect(result.conflicts).toEqual([{ date: D, day: { stretch: '6' }, clock: c(0) }]);
+    expect(result.deletedDates).toEqual([D]);
+    // The same day on both sides gives no conflict
+    expect(mergeDays([day(D, null, c(0))], null, [day(D, null, c(4, 'tablet'))]).conflicts).toEqual(
+      []
+    );
+    // After the first merge, a zero clock that did not change loses without a conflict
+    const later = mergeDays(
+      [day(D, { stretch: '6' }, c(0))],
+      [day(D, { stretch: '6' }, c(0))],
+      [day(D, { stretch: '8' }, c(4, 'tablet'))]
+    );
+    expect(later.days).toEqual([day(D, { stretch: '8' }, c(4, 'tablet'))]);
+    expect(later.conflicts).toEqual([]);
   });
 
   it('merges the manual Peak Day by its own clock, and false wins a tie', () => {
