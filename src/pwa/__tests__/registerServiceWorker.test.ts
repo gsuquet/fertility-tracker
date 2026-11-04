@@ -275,6 +275,8 @@ describe('checkForUpdate', () => {
     vi.unstubAllEnvs();
     Reflect.deleteProperty(navigator, 'serviceWorker');
     Reflect.deleteProperty(window, 'isSecureContext');
+    Reflect.deleteProperty(document, 'visibilityState');
+    vi.useRealTimers();
   });
 
   /** Registers with a controller, or without one for the first install. */
@@ -366,7 +368,6 @@ describe('checkForUpdate', () => {
     await expect(check).resolves.toBe('failed');
     act(() => worker.setState('installed'));
     expect(result.current).toBe(true);
-    vi.useRealTimers();
   });
 
   it('counts as the daily check, so a return to the app does not check again', async () => {
@@ -378,8 +379,6 @@ describe('checkForUpdate', () => {
     Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
     document.dispatchEvent(new Event('visibilitychange'));
     expect(registration.update).toHaveBeenCalledOnce();
-    Reflect.deleteProperty(document, 'visibilityState');
-    vi.useRealTimers();
   });
 
   it('is ready when the new version installed before the update resolved', async () => {
