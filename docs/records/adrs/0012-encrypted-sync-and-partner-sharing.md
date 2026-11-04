@@ -183,19 +183,19 @@ A device or a partner joins with a one-time invitation and an approval on an own
 2. The new device opens the link. The browser does not send the fragment to the server. The application removes the fragment with `history.replaceState`.
 3. The new device makes its key pair, its access token and a random nonce B. It sends the public key, the token hash and a hash of B.
 4. The new device also sends an HMAC of these values with the invitation secret.
-5. The owner device checks the HMAC. Then it sends a random nonce A to the new device.
+5. The owner device checks the HMAC. Then it sends a random nonce A, the vault id and the current signing public key to the new device.
 6. The new device sends B. The owner device checks B against its hash.
-7. The two devices show a 6-digit code from a hash of the invitation secret, the public key, A and B.
+7. The two devices show a 6-digit code from a hash. The hash covers the invitation secret, the public key, A, B, the vault id and the signing public key.
 8. The owner compares the two codes in person or by voice. The owner device and the new device each ask their user to confirm that the codes match.
 9. After the confirmation on the owner device, the owner device wraps the keys for the new member.
-10. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys, the signing public key and the current counter.
-11. The new device checks this HMAC. It uses the keys only after its own user confirmed the codes. It keeps the signing public key and the counter.
+10. The owner device signs the answer with the signing private key of the vault. The answer holds the vault id, the member id, the wrapped keys and the current counter.
+11. The new device checks the signature with the signing public key of step 5. It uses the keys only after its own user confirmed the codes. It keeps the signing public key and the counter.
 12. The invitation stops after its first use or after 24 hours.
 
 - The invitation sets the role. The joining device cannot select its role.
 - The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
 - Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
-- The HMAC of step 10 stops a server without the link that sends false keys to the new device. The confirmation on the new device stops a person who has the link.
+- The code covers the signing public key, and the signature of step 10 needs the signing private key. Thus, a server with the link cannot send false keys to the new device.
 - Until its user confirms the codes, the new device sends no day and shows no data of the vault.
 - The function accepts one join request for each invitation without an access token. The HMAC of step 4 proves the request.
 - On an Android phone, the system camera can read the QR code. Thus, the application needs no camera permission. A computer uses the link.
