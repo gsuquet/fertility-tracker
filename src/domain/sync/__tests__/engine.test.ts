@@ -285,11 +285,15 @@ describe('syncOnce with random changes', () => {
             d.observations = [...rest, makeObservation({ date, stretch: STRETCH[random(6)] })];
           }
           // Only some devices sync in each round, so the changes are concurrent
-          if (random(2) === 0) await d.sync(store, (now += random(3)));
+          now += random(3);
+          if (random(2) === 0) await d.sync(store, now);
         }
       }
       for (let pass = 0; pass < 2; pass++) {
-        for (const d of devices) synced(await d.sync(store, (now += 1)));
+        for (const d of devices) {
+          now += 1;
+          synced(await d.sync(store, now));
+        }
       }
       const view = (d: (typeof devices)[number]) =>
         d.observations.map(o => [o.date, o.stretch ?? null, o.isManualPeak === true]);
