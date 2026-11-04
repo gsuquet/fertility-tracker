@@ -11,5 +11,6 @@
         - checkbox "Cycle 1"
         - text: /Cycle 1 Sep 2 – Sep \d+ · \d+ days/
   - paragraph: /Landscape pages with the \d+-day grid, from the oldest cycle to the newest\./
+  - button "Print"
   - button "Download PNG"
-  - button "Print or PDF"
+  - button "Download PDF"

@@ -176,25 +176,40 @@ describe('App flows', () => {
     expect(await screen.findByRole('dialog', { name: en.exportModal.title })).toBeInTheDocument();
   });
 
-  it('tells the user when the chart image is downloaded, or when it fails', async () => {
+  it('tells the user when the chart file is downloaded or fails, and not after a share', async () => {
     localStorage.setItem(STORAGE_HAS_SEEN_WELCOME_KEY, 'true');
-    const download = vi
-      .spyOn(chartImage, 'downloadChartPng')
-      .mockResolvedValueOnce(true)
-      .mockResolvedValueOnce(false);
+    const save = vi
+      .spyOn(chartImage, 'saveChartFile')
+      .mockResolvedValueOnce('shared')
+      .mockResolvedValueOnce('cancelled')
+      .mockResolvedValueOnce('downloaded')
+      .mockResolvedValueOnce('failed')
+      .mockResolvedValueOnce('downloaded')
+      .mockResolvedValueOnce('failed');
     render(<App />);
-    const downloadPng = async () => {
+    const download = async (name: string) => {
       await openShareChart();
       const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
-      fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.downloadPng }));
+      fireEvent.click(within(dialog).getByRole('button', { name }));
+      await vi.waitFor(() => expect(screen.queryByRole('dialog')).toBeNull());
     };
-    await downloadPng();
-    expect(await screen.findByRole('status')).toHaveTextContent(en.exportModal.pngSuccess);
-    await downloadPng();
-    await vi.waitFor(() =>
-      expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.pngError)
-    );
-    expect(download).toHaveBeenCalledTimes(2);
+    // The share sheet of iOS shows its own result
+    await download(en.exportModal.downloadPdf);
+    await download(en.exportModal.downloadPng);
+    await vi.waitFor(() => expect(save).toHaveBeenCalledTimes(2));
+    expect(screen.queryByRole('status')).toBeNull();
+
+    const expectToast = (text: string) =>
+      vi.waitFor(() => expect(screen.getByRole('status')).toHaveTextContent(text));
+    await download(en.exportModal.downloadPng);
+    await expectToast(en.exportModal.pngSuccess);
+    await download(en.exportModal.downloadPng);
+    await expectToast(en.exportModal.pngError);
+    await download(en.exportModal.downloadPdf);
+    await expectToast(en.exportModal.pdfSuccess);
+    await download(en.exportModal.downloadPdf);
+    await expectToast(en.exportModal.pdfError);
+    expect(save).toHaveBeenCalledTimes(6);
   });
 
   it('opens the help and the about dialogs over Settings', async () => {
@@ -230,10 +245,10 @@ describe('App flows', () => {
     print.mockImplementation(() => {
       titleAtPrint = document.title;
     });
-    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.print }));
     expect(print).toHaveBeenCalledOnce();
     expect(titleAtPrint).toMatch(/all-cycles/);
-    expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.exportSuccess);
+    expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.printOpening);
     expect(screen.queryByRole('dialog')).toBeNull();
 
     act(() => vi.advanceTimersByTime(1000));
@@ -250,7 +265,7 @@ describe('App flows', () => {
     const printAll = () => {
       openShareChartNow();
       const dialog = screen.getByRole('dialog', { name: en.exportModal.title });
-      fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+      fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.print }));
     };
     // Load the lazy export dialog before the timers are fake
     await openShareChart();
@@ -269,7 +284,7 @@ describe('App flows', () => {
     act(() => vi.advanceTimersByTime(1000));
     expect(document.title).toBe('Fertility Tracker');
     act(() => vi.advanceTimersByTime(2499));
-    expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.exportSuccess);
+    expect(screen.getByRole('status')).toHaveTextContent(en.exportModal.printOpening);
     act(() => vi.advanceTimersByTime(1));
     expect(screen.queryByRole('status')).toBeNull();
   });
@@ -282,7 +297,7 @@ describe('App flows', () => {
     const dialog = await screen.findByRole('dialog', { name: en.exportModal.title });
 
     vi.useFakeTimers({ toFake: ['setTimeout', 'clearTimeout'] });
-    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.print }));
     expect(vi.getTimerCount()).toBeGreaterThan(0);
     unmount();
     expect(vi.getTimerCount()).toBe(0);

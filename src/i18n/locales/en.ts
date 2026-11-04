@@ -308,14 +308,17 @@ export const en = {
   exportModal: {
     title: 'Share chart',
     cycles: 'Cycles',
-    printPdf: 'Print or PDF',
+    print: 'Print',
     downloadPng: 'Download PNG',
+    downloadPdf: 'Download PDF',
     oldestToNewestNote:
       'Landscape pages with the 35-day grid, from the oldest cycle to the newest.',
-    exportSuccess: 'PDF report generated successfully!',
+    printOpening: 'The print dialog is opening.',
     printError: 'The print view did not load. Reload the page to try again.',
     pngSuccess: 'Chart image downloaded.',
-    pngError: 'The chart image could not be made. Use Print or PDF instead.',
+    pngError: 'The chart image could not be made. Use Print instead.',
+    pdfSuccess: 'Chart PDF downloaded.',
+    pdfError: 'The chart PDF could not be made. Use Print instead.',
     jsonDescription:
       'Download all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private.',
     importError:

@@ -29,10 +29,10 @@ describe('App with chunks that fail to load', () => {
       { name: en.exportModal.title },
       { timeout: 5000 }
     );
-    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.printPdf }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.exportModal.print }));
 
     expect(await screen.findByText(en.exportModal.printError)).toBeInTheDocument();
-    expect(screen.queryByText(en.exportModal.exportSuccess)).toBeNull();
+    expect(screen.queryByText(en.exportModal.printOpening)).toBeNull();
     expect(print).not.toHaveBeenCalled();
   });
 

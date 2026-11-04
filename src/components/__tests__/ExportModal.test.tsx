@@ -19,7 +19,7 @@ const threeCycles = ['2026-09-01', '2026-09-06', '2026-09-11'].flatMap(start => 
 });
 
 const renderModal = (observations?: Observation[], selectedCycleId?: string) => {
-  const props = { onClose: vi.fn(), onPreparePrint: vi.fn(), onImageDone: vi.fn() };
+  const props = { onClose: vi.fn(), onPreparePrint: vi.fn(), onFileDone: vi.fn() };
   renderWithProviders(<ExportModal {...props} />, {
     ...(observations ? { observations } : {}),
     ...(selectedCycleId ? { selectedCycleId } : {}),
@@ -28,7 +28,7 @@ const renderModal = (observations?: Observation[], selectedCycleId?: string) => 
 };
 
 const click = (name: string | RegExp) => fireEvent.click(screen.getByRole('button', { name }));
-const print = () => click(en.exportModal.printPdf);
+const print = () => click(en.exportModal.print);
 const checkbox = (cycleNum: number) =>
   screen.getByRole('checkbox', { name: `${en.chartStrip.cycleBadge} ${cycleNum}` });
 
@@ -65,7 +65,7 @@ describe('ExportModal', () => {
   });
 
   it('starts from the cycle selected in the app', () => {
-    const props = { onClose: vi.fn(), onPreparePrint: vi.fn(), onImageDone: vi.fn() };
+    const props = { onClose: vi.fn(), onPreparePrint: vi.fn(), onFileDone: vi.fn() };
     renderWithProviders(<OpenWhenSelected {...props} />, {
       observations: threeCycles,
       selectedCycleId: 'cycle_2026-09-06',
@@ -98,15 +98,18 @@ describe('ExportModal', () => {
     );
   });
 
-  it('disables the two actions when no cycle is selected', () => {
+  it('disables the three actions when no cycle is selected', () => {
     renderModal(threeCycles);
+    const actions = [
+      en.exportModal.print,
+      en.exportModal.downloadPng,
+      en.exportModal.downloadPdf,
+    ].map(name => screen.getByRole('button', { name }));
     fireEvent.click(checkbox(3));
     expect(checkbox(3)).not.toBeChecked();
-    expect(screen.getByRole('button', { name: en.exportModal.printPdf })).toBeDisabled();
-    expect(screen.getByRole('button', { name: en.exportModal.downloadPng })).toBeDisabled();
+    for (const action of actions) expect(action).toBeDisabled();
     fireEvent.click(checkbox(1));
-    expect(screen.getByRole('button', { name: en.exportModal.printPdf })).toBeEnabled();
-    expect(screen.getByRole('button', { name: en.exportModal.downloadPng })).toBeEnabled();
+    for (const action of actions) expect(action).toBeEnabled();
   });
 
   it('exports one empty cycle when there is no data', () => {
@@ -116,26 +119,37 @@ describe('ExportModal', () => {
     expect(props.onPreparePrint).toHaveBeenCalledWith(['all'], 'all-cycles');
   });
 
-  it('closes, downloads the PNG of the selected cycles and tells the app', async () => {
-    const download = vi.spyOn(chartImage, 'downloadChartPng').mockResolvedValue(true);
-    const props = renderModal(threeCycles);
-    fireEvent.click(checkbox(1));
-    click(en.exportModal.downloadPng);
-    expect(props.onClose).toHaveBeenCalledOnce();
-    const [cycles, t, detail] = download.mock.calls[0] as Parameters<
-      typeof chartImage.downloadChartPng
-    >;
-    expect(cycles.map(c => c.number)).toEqual([1, 3]);
-    expect(t).toBe(en);
-    expect(detail).toBe('selected-cycles');
-    await vi.waitFor(() => expect(props.onImageDone).toHaveBeenCalledWith(true));
-  });
+  it.each([
+    ['png', en.exportModal.downloadPng],
+    ['pdf', en.exportModal.downloadPdf],
+  ] as const)(
+    'saves the %s file of the selected cycles in the click, then closes',
+    async (format, name) => {
+      const props = renderModal(threeCycles);
+      const save = vi.spyOn(chartImage, 'saveChartFile').mockImplementation(async () => {
+        // The file is made before the dialog closes, so iOS still has the click
+        expect(props.onClose).not.toHaveBeenCalled();
+        return 'downloaded';
+      });
+      fireEvent.click(checkbox(1));
+      click(name);
+      expect(props.onClose).toHaveBeenCalledOnce();
+      const [cycles, t, detail, savedFormat] = save.mock.calls[0] as Parameters<
+        typeof chartImage.saveChartFile
+      >;
+      expect(cycles.map(c => c.number)).toEqual([1, 3]);
+      expect(t).toBe(en);
+      expect(detail).toBe('selected-cycles');
+      expect(savedFormat).toBe(format);
+      await vi.waitFor(() => expect(props.onFileDone).toHaveBeenCalledWith(format, 'downloaded'));
+    }
+  );
 
-  it('tells the app when the PNG fails', async () => {
-    vi.spyOn(chartImage, 'downloadChartPng').mockRejectedValue(new Error('canvas'));
+  it('tells the app when the file fails', async () => {
+    vi.spyOn(chartImage, 'saveChartFile').mockRejectedValue(new Error('canvas'));
     const props = renderModal(threeCycles);
-    click(en.exportModal.downloadPng);
-    await vi.waitFor(() => expect(props.onImageDone).toHaveBeenCalledWith(false));
+    click(en.exportModal.downloadPdf);
+    await vi.waitFor(() => expect(props.onFileDone).toHaveBeenCalledWith('pdf', 'failed'));
   });
 
   it('has no backup, restore, demo or delete action', () => {
@@ -151,12 +165,13 @@ describe('ExportModal', () => {
 
   it('uses the language of the interface', () => {
     renderWithProviders(
-      <ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} onImageDone={vi.fn()} />,
+      <ExportModal onClose={vi.fn()} onPreparePrint={vi.fn()} onFileDone={vi.fn()} />,
       { language: 'fr', observations: threeCycles }
     );
     expect(screen.getByRole('dialog', { name: fr.exportModal.title })).toBeInTheDocument();
     expect(screen.getByRole('button', { name: fr.exportModal.downloadPng })).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: fr.exportModal.printPdf })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.exportModal.downloadPdf })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: fr.exportModal.print })).toBeInTheDocument();
     expect(screen.getByText(fr.cyclePicker.current)).toBeInTheDocument();
   });
 

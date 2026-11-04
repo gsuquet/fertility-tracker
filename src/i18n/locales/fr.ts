@@ -312,14 +312,17 @@ export const fr: TranslationSchema = {
   exportModal: {
     title: 'Partager le graphique',
     cycles: 'Cycles',
-    printPdf: 'Imprimer ou PDF',
+    print: 'Imprimer',
     downloadPng: 'Télécharger en PNG',
+    downloadPdf: 'Télécharger en PDF',
     oldestToNewestNote:
       'Pages en mode paysage avec la grille de 35 jours, du cycle le plus ancien au plus récent.',
-    exportSuccess: 'Rapport PDF généré avec succès !',
+    printOpening: 'La fenêtre d’impression s’ouvre.',
     printError: 'La vue d’impression ne s’est pas chargée. Rechargez la page pour réessayer.',
     pngSuccess: 'Image du graphique téléchargée.',
-    pngError: 'L’image du graphique n’a pas pu être créée. Utilisez plutôt Imprimer ou PDF.',
+    pngError: 'L’image du graphique n’a pas pu être créée. Utilisez plutôt Imprimer.',
+    pdfSuccess: 'PDF du graphique téléchargé.',
+    pdfError: 'Le PDF du graphique n’a pas pu être créé. Utilisez plutôt Imprimer.',
     jsonDescription:
       "Téléchargez toutes vos observations dans un fichier .ftbackup. C'est du JSON simple, lisible dans tout éditeur de texte. Il n'est pas chiffré : gardez-le privé.",
     importError:

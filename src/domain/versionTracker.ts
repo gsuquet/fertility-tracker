@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.49.0',
+    date: '2026-11-04',
+    title: 'PDF File of the Chart',
+    titleFr: 'Fichier PDF du graphique',
+    tagline: 'Download PDF saves a real PDF file, also on an iPhone',
+    taglineFr: 'Télécharger en PDF enregistre un vrai fichier PDF, aussi sur un iPhone',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Share chart has a new Download PDF button. It makes a PDF file of the selected cycles without the print dialog',
+      'On an iPhone or an iPad, Download PDF and Download PNG open the share sheet: tap Save to Files, Print, AirDrop or Mail',
+      'Print or PDF is now Print. It still opens the print dialog of the browser',
+    ],
+    highlightsFr: [
+      'Partager le graphique a un nouveau bouton Télécharger en PDF. Il crée un fichier PDF des cycles choisis sans la fenêtre d’impression',
+      'Sur un iPhone ou un iPad, Télécharger en PDF et Télécharger en PNG ouvrent la feuille de partage : touchez Enregistrer dans Fichiers, Imprimer, AirDrop ou Mail',
+      'Imprimer ou PDF devient Imprimer. Il ouvre toujours la fenêtre d’impression du navigateur',
+    ],
+  },
+  {
     version: '1.48.0',
     date: '2026-10-30',
     title: 'Colors of the Save State',

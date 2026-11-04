@@ -3,7 +3,9 @@ import { formatMessage } from '../i18n';
 import type { StampType } from '../types/crms';
 import { getCycleEndDate } from '../domain/cycleBoundaryDetector';
 import { showsEmptyStamp } from '../domain/stampCalculator';
-import { downloadBlob, getExportFilename } from './exportUtils';
+import type { SaveResult } from './exportUtils';
+import { getExportFilename, saveFile } from './exportUtils';
+import { makeImagePdf } from './pdfFile';
 import type { PrintCycle } from './printCycles';
 import { PRINT_ROW_DAYS, cycleLength, printCode, printRows, shortDate } from './printCycles';
 
@@ -74,6 +76,8 @@ export interface ChartImageLayout {
   width: number;
   height: number;
   ops: DrawOp[];
+  /** The gap under the grid of each cycle, after its bottom line: a PDF page can end there */
+  pageBreaks: number[];
 }
 
 /** Gives the width of a text in a font, in CSS pixels */
@@ -150,6 +154,7 @@ export function layoutChartImage(
     align: CanvasTextAlign = 'left'
   ) => ops.push({ kind: 'text', x, y, text: value, font: textFont, color, align });
   const right = IMAGE_WIDTH - PAD;
+  const pageBreaks: number[] = [];
   let y = PAD;
 
   text(PAD, y + 20, t.printExport.title, font(22, 800));
@@ -228,6 +233,8 @@ export function layoutChartImage(
       });
       y += CELL_H;
     }
+    // In the middle of the gap after the grid: the bottom line of the grid is under y
+    pageBreaks.push(y + 10);
     y += 20;
   }
 
@@ -268,7 +275,7 @@ export function layoutChartImage(
   }
   y += SAMPLE + PAD;
 
-  return { width: IMAGE_WIDTH, height: y, ops };
+  return { width: IMAGE_WIDTH, height: y, ops, pageBreaks };
 }
 
 /** Adds a rectangle with round corners to the path. arcTo works in older browsers than roundRect. */
@@ -353,18 +360,39 @@ export function paintChartImage(
 export const imageScale = (layout: ChartImageLayout) =>
   Math.max(1, Math.min(IMAGE_SCALE, Math.sqrt(MAX_CANVAS_PIXELS / (layout.width * layout.height))));
 
+/** The JPEG quality of the image in the PDF file: the text stays sharp */
+export const PDF_JPEG_QUALITY = 0.92;
+
+/** The file formats of the chart image */
+export type ChartFileFormat = 'png' | 'pdf';
+
+/** What became of the chart file. It is `failed` also when the browser cannot make the image. */
+export type ChartFileResult = SaveResult;
+
+/** The bytes of a `data:` address in base64 */
+function dataUrlBytes(dataUrl: string): Uint8Array<ArrayBuffer> {
+  const binary = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
+  // A loop is much faster than Uint8Array.from with a function, for an image of some megabytes
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return bytes;
+}
+
 /**
- * Draws the cycles on a canvas and downloads the PNG file. It returns false when the browser
- * cannot make the image.
+ * Draws the cycles on a canvas and saves a PNG file, or a PDF file with the image on landscape
+ * pages that end between two cycles.
+ * The drawing and the encoding have no wait, so the share sheet of iOS still has the click.
+ * It gives `failed` when the browser has no 2D canvas or cannot encode a canvas this large.
  */
-export async function downloadChartPng(
+export async function saveChartFile(
   cycles: PrintCycle[],
   t: TranslationSchema,
-  fileDetail: string
-): Promise<boolean> {
+  fileDetail: string,
+  format: ChartFileFormat
+): Promise<ChartFileResult> {
   const canvas = document.createElement('canvas');
   const ctx = canvas.getContext('2d');
-  if (!ctx) return false;
+  if (!ctx) return 'failed';
   const measure: MeasureText = (value, textFont) => {
     ctx.font = textFont;
     return ctx.measureText(value).width;
@@ -375,8 +403,24 @@ export async function downloadChartPng(
   canvas.width = Math.round(layout.width * scale);
   canvas.height = Math.round(layout.height * scale);
   paintChartImage(ctx, layout, scale);
-  const blob = await new Promise<Blob | null>(resolve => canvas.toBlob(resolve, 'image/png'));
-  if (!blob) return false;
-  downloadBlob(blob, getExportFilename('png', fileDetail));
-  return true;
+  const type = format === 'png' ? 'image/png' : 'image/jpeg';
+  const dataUrl = canvas.toDataURL(type, PDF_JPEG_QUALITY);
+  // A browser that cannot encode the canvas gives an empty address
+  if (!dataUrl.startsWith(`data:${type};base64,`)) return 'failed';
+  const bytes = dataUrlBytes(dataUrl);
+  const blob =
+    format === 'png'
+      ? new Blob([bytes], { type })
+      : new Blob(
+          [
+            makeImagePdf(
+              bytes,
+              canvas.width,
+              canvas.height,
+              layout.pageBreaks.map(y => Math.round(y * scale))
+            ),
+          ],
+          { type: 'application/pdf' }
+        );
+  return saveFile(blob, getExportFilename(format, fileDetail));
 }
