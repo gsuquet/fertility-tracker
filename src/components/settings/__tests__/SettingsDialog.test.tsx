@@ -338,6 +338,64 @@ describe('SettingsDialog', () => {
     expect(count()).toBe('2');
   });
 
+  it('drops the result of the work when the user cancels while it runs', async () => {
+    const encrypt = vi.spyOn(crypto.subtle, 'encrypt');
+    const decrypt = vi.spyOn(crypto.subtle, 'decrypt');
+    const download = vi.spyOn(HTMLAnchorElement.prototype, 'click');
+    const props = renderSettings(threeCycles);
+
+    click(en.settings.backUpEncrypted);
+    let dialog = screen.getByRole('dialog', { name: en.passwordDialog.backupTitle });
+    for (const label of [en.passwordDialog.password, en.passwordDialog.confirm]) {
+      fireEvent.change(within(dialog).getByLabelText(label), {
+        target: { value: 'twelve chars ok' },
+      });
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.save }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    await waitFor(() => expect(encrypt).toHaveBeenCalledOnce());
+    await encrypt.mock.results[0]?.value;
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(download).not.toHaveBeenCalled();
+    expect(localStorage.getItem(STORAGE_LAST_BACKUP_KEY)).toBeNull();
+
+    const file = await encryptBackup(JSON.stringify(threeCycles.slice(0, 2)), 'the right password');
+    upload([new File([file], 'backup-encrypted.ftbackup')]);
+    dialog = await screen.findByRole('dialog', { name: en.passwordDialog.restoreTitle });
+    fireEvent.change(within(dialog).getByLabelText(en.passwordDialog.password), {
+      target: { value: 'the right password' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.open }));
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    await waitFor(() => expect(decrypt).toHaveBeenCalledOnce());
+    await decrypt.mock.results[0]?.value;
+    await new Promise(resolve => setTimeout(resolve, 50));
+    expect(screen.queryByRole('dialog', { name: en.confirmDialog.importTitle })).toBeNull();
+    expect(props.onClose).not.toHaveBeenCalled();
+    expect(count()).toBe('6');
+  });
+
+  it('drops a failed encryption after a cancel, and keeps Settings open', async () => {
+    let fail: (error: Error) => void = () => {};
+    vi.spyOn(crypto.subtle, 'deriveKey').mockReturnValueOnce(
+      new Promise<CryptoKey>((_resolve, reject) => (fail = reject))
+    );
+    renderSettings(threeCycles);
+    click(en.settings.backUpEncrypted);
+    const dialog = screen.getByRole('dialog', { name: en.passwordDialog.backupTitle });
+    for (const label of [en.passwordDialog.password, en.passwordDialog.confirm]) {
+      fireEvent.change(within(dialog).getByLabelText(label), {
+        target: { value: 'twelve chars ok' },
+      });
+    }
+    fireEvent.click(within(dialog).getByRole('button', { name: en.passwordDialog.save }));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    fail(new Error('no PBKDF2'));
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(screen.queryByRole('dialog', { name: en.passwordDialog.backupTitle })).toBeNull();
+    expect(screen.getByRole('dialog', { name: en.settings.title })).toBeInTheDocument();
+  });
+
   it('closes the password dialog with Cancel and keeps Settings and the data', async () => {
     const file = await encryptBackup('[]', 'the right password');
     const props = renderSettings(threeCycles);

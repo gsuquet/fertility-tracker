@@ -254,20 +254,39 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     restoreText(text);
   };
 
-  // The dialog closes on success. False keeps it open with its error message.
+  // Each close of the password dialog, or of Settings, makes the running work out of date
+  const passwordRunRef = useRef(0);
+  useEffect(
+    () => () => {
+      passwordRunRef.current += 1;
+    },
+    []
+  );
+  const closePassword = () => {
+    passwordRunRef.current += 1;
+    setPasswordRequest(null);
+  };
+
+  // The dialog closes on success. False keeps it open with its error message. After a cancel,
+  // the result of the work is dropped: no download, no preview.
   const submitPassword = async (password: string): Promise<boolean> => {
+    const run = passwordRunRef.current;
     if (passwordRequest?.mode === 'restore') {
       const plain = await decryptBackup(passwordRequest.backup, password);
+      if (run !== passwordRunRef.current) return true;
       if (plain === null) return false;
       setPasswordRequest(null);
       restoreText(plain);
       return true;
     }
+    let file: string;
     try {
-      downloadBackupFile(await encryptBackup(exportDataJson(), password), true);
+      file = await encryptBackup(exportDataJson(), password);
     } catch {
-      return false;
+      return run !== passwordRunRef.current;
     }
+    if (run !== passwordRunRef.current) return true;
+    downloadBackupFile(file, true);
     markBackedUp();
     setPasswordRequest(null);
     return true;
@@ -522,7 +541,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         <PasswordDialog
           mode={passwordRequest.mode}
           onSubmit={submitPassword}
-          onCancel={() => setPasswordRequest(null)}
+          onCancel={closePassword}
         />
       )}
 

@@ -85,6 +85,7 @@ Settings has these groups, in this sequence:
 
 - In the backup mode, a note says that nobody can open the file without the password. The application cannot reset it.
 - **Cancel**, `Escape` and a click on the backdrop close the password dialog. Settings stays open, and the data does not change.
+- They also close it while the encryption or the decryption runs. The application then drops the result: no file downloads, and no preview opens.
 - `Enter` in a field submits the form.
 - While the encryption or the decryption runs, the button is disabled and shows `passwordDialog.working`.
 
