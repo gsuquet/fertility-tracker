@@ -142,6 +142,10 @@ describe('layoutChartImage', () => {
     expect(two.pageBreaks).toHaveLength(2);
     expect(second - first).toBe(20 + 26 + 2 * 92);
     expect(one.pageBreaks).toEqual([first]);
+    // The break is under the bottom line of the grid, which the canvas draws half a pixel lower
+    const cells = ofKind(one, 'rect').filter(r => r.w === 44 && r.radius === 0);
+    const gridBottom = Math.max(...cells.map(r => r.y + r.h));
+    expect(first).toBe(gridBottom + 10);
   });
 
   it('puts the legend on more lines when the labels are long', () => {

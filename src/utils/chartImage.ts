@@ -76,7 +76,7 @@ export interface ChartImageLayout {
   width: number;
   height: number;
   ops: DrawOp[];
-  /** The bottom of the grid of each cycle: a PDF page can end there */
+  /** The gap under the grid of each cycle, after its bottom line: a PDF page can end there */
   pageBreaks: number[];
 }
 
@@ -233,7 +233,8 @@ export function layoutChartImage(
       });
       y += CELL_H;
     }
-    pageBreaks.push(y);
+    // In the middle of the gap after the grid: the bottom line of the grid is under y
+    pageBreaks.push(y + 10);
     y += 20;
   }
 
