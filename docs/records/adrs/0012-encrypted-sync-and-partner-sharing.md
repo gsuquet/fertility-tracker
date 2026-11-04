@@ -43,7 +43,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Good: the relay is in this repository and deploys with the static files.
 - Bad: the server sees the vault ids, the number of members, the IP addresses, the times of the syncs and the padded size.
 - Bad: if the user loses all the devices and the recovery code, nobody can decrypt the vault.
-- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. It can also give an old vault to a device that joins with the recovery code, because that device has no counter yet.
+- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. To a device that uses the recovery code, it can give a signed vault that is older than the code.
 - Bad: after each use of the recovery code, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
@@ -169,8 +169,10 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 - The recovery code is 26 Crockford base32 characters in groups of 4, plus one check character. It holds 128 random bits.
 - HKDF-SHA256 derives four values from the code: a lookup id, a lookup key, a wrapping key and the access token of the recovery member.
 - The object `recovery/<lookup id>` holds the vault id, encrypted with the lookup key. Thus, a new code does not need a new vault.
-- The encrypted content of the vault holds the current lookup id and a copy of the encrypted lookup object. Neither one opens the vault. Thus, each owner device can write the current object again before R2 deletes it.
-- The vault keeps the private key of the recovery member, encrypted with the wrapping key. HKDF cannot make an ECDH key pair, so the key pair is random.
+- Each owner entry of the keyring holds the current lookup id and a copy of the encrypted lookup object, wrapped like the data key. Readers do not get them. Neither one opens the vault. Thus, each owner device can write the current object again before R2 deletes it.
+- The vault keeps the recovery blob, encrypted with the wrapping key. HKDF cannot make an ECDH key pair, so the key pair is random.
+- The recovery blob holds the private key of the recovery member, the current signing public key and the current counter. Its additional data is the vault id and the purpose `recovery`.
+- A device that recovers with the code keeps the signing public key and the counter of the blob. It walks the signing key chain from that key, as at a join. Thus, the server cannot give it a vault that the server made.
 - The owner devices do not keep the recovery code or its wrapping key. They keep only the public key of the recovery member. Thus, they can wrap a new data key for the recovery member, but a removed device cannot unwrap it.
 - The recovery code uses base32 and not BIP39 words. The two give the same 128 bits. The check character finds a typing error, and base32 needs no word list for each language.
 - PBKDF2 is not necessary for the recovery code, because the code is random. PBKDF2 with 600,000 iterations applies only to a password that the user selects for an encrypted backup file.
@@ -285,19 +287,20 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 
 ### Relay
 
-| Item      | Value                                                                                                                               |
-| --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
-| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                                                                  |
-| Storage   | One R2 bucket, bound in `wrangler.json`                                                                                             |
-| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`                                                  |
-| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.                                                   |
-| Writes    | With an owner token and `If-Match`. A new vault uses `If-None-Match: *`.                                                            |
-| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                |
-| Host      | The function refuses a host other than `fertility-tracker.gsuquet.com`. Thus, no request avoids the rate limit through `pages.dev`. |
-| Invites   | The function keeps the creation time and refuses an invitation after 24 hours.                                                      |
-| Caching   | Each answer has `Cache-Control: no-store`. The service worker must not cache `/api/`.                                               |
-| Logs      | The function writes no log.                                                                                                         |
-| Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `history/` after 30 days, `invites/` after 1 day                     |
+| Item      | Value                                                                                                                                                                                                                   |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                                                                                                                                                      |
+| Storage   | One R2 bucket, bound in `wrangler.json`                                                                                                                                                                                 |
+| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`                                                                                                                                      |
+| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.                                                                                                                                       |
+| Writes    | With an owner token and `If-Match`. A new vault uses `If-None-Match: *`.                                                                                                                                                |
+| Recovery  | A new `recovery/` object needs `If-None-Match: *` and an owner token of a vault. The function keeps that vault id in the R2 metadata. A change or a deletion needs an owner token of that vault. A read needs no token. |
+| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                                                                                                    |
+| Host      | The function refuses a host other than `fertility-tracker.gsuquet.com`. Thus, no request avoids the rate limit through `pages.dev`.                                                                                     |
+| Invites   | The function keeps the creation time and refuses an invitation after 24 hours.                                                                                                                                          |
+| Caching   | Each answer has `Cache-Control: no-store`. The service worker must not cache `/api/`.                                                                                                                                   |
+| Logs      | The function writes no log.                                                                                                                                                                                             |
+| Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `history/` after 30 days, `invites/` after 1 day                                                                                                         |
 
 R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
 
