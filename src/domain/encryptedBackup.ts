@@ -5,6 +5,8 @@
  * days the user recorded. Only WebCrypto and CompressionStream: no cryptography library.
  */
 
+import { compressAndPad, unpadAndDecompress } from './vault/paddedGzip';
+
 /** The shortest password that **Back up with a password** accepts. */
 export const MIN_PASSWORD_LENGTH = 12;
 
@@ -17,8 +19,6 @@ const MAX_ITERATIONS = 10000000;
 const FORMAT_VERSION = 1;
 const SALT_BYTES = 16;
 const IV_BYTES = 12;
-const LENGTH_BYTES = 4;
-const PADDING_STEP = 16384;
 
 /** The fields of an encrypted backup file that the decryption needs. */
 export interface EncryptedBackup {
@@ -68,32 +68,16 @@ const deriveKey = async (password: string, salt: Uint8Array<ArrayBuffer>, iterat
   );
 };
 
-/** Runs the bytes through a compression or decompression stream. */
-const transform = async (bytes: Uint8Array<ArrayBuffer>, stream: TransformStream) => {
-  const body = new Response(bytes).body as ReadableStream<Uint8Array>;
-  return new Uint8Array(await new Response(body.pipeThrough(stream)).arrayBuffer());
-};
-
-/** The length in 4 bytes, the gzip data, then zero bytes to the next multiple of 16 KB. */
-const pad = (compressed: Uint8Array): Uint8Array<ArrayBuffer> => {
-  const used = LENGTH_BYTES + compressed.length;
-  const padded = new Uint8Array(Math.ceil(used / PADDING_STEP) * PADDING_STEP);
-  new DataView(padded.buffer).setUint32(0, compressed.length);
-  padded.set(compressed, LENGTH_BYTES);
-  return padded;
-};
-
 /** Encrypts the JSON text of a backup with the password. Gives the JSON text of the file. */
 export async function encryptBackup(text: string, password: string): Promise<string> {
   const salt = crypto.getRandomValues(new Uint8Array(SALT_BYTES));
   const iv = crypto.getRandomValues(new Uint8Array(IV_BYTES));
   const saltText = toBase64(salt);
   const key = await deriveKey(password, salt, PBKDF2_ITERATIONS);
-  const compressed = await transform(new TextEncoder().encode(text), new CompressionStream('gzip'));
   const ciphertext = await crypto.subtle.encrypt(
     { name: 'AES-GCM', iv, additionalData: additionalData(PBKDF2_ITERATIONS, saltText) },
     key,
-    pad(compressed)
+    await compressAndPad(text)
   );
   return JSON.stringify({
     encryptedBackup: FORMAT_VERSION,
@@ -155,11 +139,7 @@ export async function decryptBackup(
         backup.data
       )
     );
-    const length = new DataView(padded.buffer).getUint32(0);
-    if (LENGTH_BYTES + length > padded.length) return null;
-    const compressed = padded.slice(LENGTH_BYTES, LENGTH_BYTES + length);
-    const plain = await transform(compressed, new DecompressionStream('gzip'));
-    return new TextDecoder().decode(plain);
+    return await unpadAndDecompress(padded);
   } catch {
     return null;
   }

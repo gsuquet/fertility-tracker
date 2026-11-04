@@ -55,7 +55,7 @@ In version 1.30.0 and later, the file name ends with `.ftbackup`. The content is
 
 - PBKDF2-SHA256 makes the AES-256 key from the password, the salt and the iterations.
 - The plain text is the JSON of a normal backup file. The application compresses it with gzip.
-- Before the encryption, the application adds the length of the compressed data in 4 bytes (big-endian). Then it adds zero bytes to the next multiple of 16,384 bytes. Thus, the size of the file does not show the number of observations.
+- Before the encryption, the application adds the length of the compressed data in 4 bytes (big-endian). Then it adds zero bytes to the next multiple of 16,384 bytes. Thus, the size of the file does not show the number of observations. The vault uses the same functions ([Padded gzip](vault-format.md#padded-gzip)).
 - The additional data of AES-GCM is the text `fertility-tracker-encrypted-backup:1:` followed by the iterations, a colon and the salt in base64. Thus, a change of the salt or of the iterations makes the decryption fail.
 - The application restores a file only when `kdf.iterations` is an integer from 600,000 to 10,000,000.
 - A wrong password and a changed file give the same result: the decryption fails, and the data does not change.

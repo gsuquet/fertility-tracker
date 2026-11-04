@@ -171,7 +171,7 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 - The object `recovery/<lookup id>` holds the vault id, encrypted with the lookup key. Thus, a new code does not need a new vault.
 - Each owner entry of the keyring holds the current lookup id and a copy of the encrypted lookup object, wrapped like the data key. Readers do not get them. Neither one opens the vault. Thus, each owner device can write the current object again before R2 deletes it.
 - The vault keeps the recovery blob, encrypted with the wrapping key. HKDF cannot make an ECDH key pair, so the key pair is random.
-- The recovery blob holds the private key of the recovery member, the signing public key and the counter at the time the code is made. Its additional data is the vault id and the purpose `recovery`.
+- The recovery blob holds the private key of the recovery member, the signing public key and the counter at the time the code is made. Its additional data is the vault id, the lookup id and the purpose `recovery` ([Vault format](../../reference/vault-format.md#wrapped-keys)).
 - A device that recovers with the code keeps the signing public key and the counter of the blob. It walks the signing key chain from that key, as at a join. Thus, the server cannot give it a vault that the server made.
 - The owner devices do not keep the recovery code or its wrapping key. They keep only the public key of the recovery member. Thus, they can wrap a new data key for the recovery member, but a removed device cannot unwrap it.
 - The recovery code uses base32 and not BIP39 words. The two give the same 128 bits. The check character finds a typing error, and base32 needs no word list for each language.
