@@ -15,7 +15,7 @@ The functions use only WebCrypto and `CompressionStream`. They have no network c
 | `recoveryCode.ts` | `newRecoverySecret()`, `formatRecoveryCode()`, `parseRecoveryCode()`, `deriveRecoveryValues()` |
 | `keyWrap.ts`      | `wrapKey()`, `unwrapKey()`, `wrapWithKey()`, `unwrapWithKey()`                                 |
 | `signingChain.ts` | `newSigningChain()`, `extendSigningChain()`, `currentSigningKey()`                             |
-| `vaultObject.ts`  | `sealVault()`, `openVault()`, `decryptVaultDays()`                                             |
+| `vaultObject.ts`  | `sealVault()`, `readVaultObject()`, `openVault()`, `decryptVaultDays()`                        |
 
 ## Encoding
 
@@ -127,6 +127,8 @@ A member of the keyring has these fields:
 | `lookup`     | Owner only, optional. The lookup id and the lookup object, wrapped with the purpose `lookup` |
 
 `sealVault(input)` encrypts the days with AES-256-GCM after `compressAndPad()`. The additional data is `fertility-tracker-vault:1:<vault id>:<key id>:<counter>`. Then it signs the header and the ciphertext with the current signing private key.
+
+`readVaultObject(text)` gives the header, the header text, the ciphertext and the signature, without a signature check. It gives `null` when the text, the header or a field is not valid. The [relay](relay-api.md) uses it, because it has no trusted signing key.
 
 `openVault(text, check)` gives the header and the ciphertext, or the reason of a refusal:
 

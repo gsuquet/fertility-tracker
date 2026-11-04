@@ -157,17 +157,32 @@ const parseJson = (text: string): unknown => {
   }
 };
 
+export interface ReadVault {
+  header: VaultHeader;
+  headerText: string;
+  ciphertext: Uint8Array<ArrayBuffer>;
+  signature: Uint8Array<ArrayBuffer>;
+}
+
+/** The parts of a vault object, without a signature check, or null when the object is not valid. */
+export function readVaultObject(text: string): ReadVault | null {
+  const object = parseJson(text);
+  if (!isRecord(object) || typeof object.header !== 'string') return null;
+  const header = parseJson(object.header);
+  const ciphertext = fromBase64Url(object.ciphertext);
+  const signature = fromBase64Url(object.signature);
+  if (!isHeader(header) || !ciphertext?.length || !signature) return null;
+  return { header, headerText: object.header, ciphertext, signature };
+}
+
 /** Checks the vault object. Gives the header and the ciphertext, or the reason of a refusal. */
 export async function openVault(
   text: string,
   check: OpenCheck
 ): Promise<OpenedVault | { refused: OpenRefusal }> {
-  const object = parseJson(text);
-  if (!isRecord(object) || typeof object.header !== 'string') return { refused: 'invalid' };
-  const header = parseJson(object.header);
-  const ciphertext = fromBase64Url(object.ciphertext);
-  const signature = fromBase64Url(object.signature);
-  if (!isHeader(header) || !ciphertext?.length || !signature) return { refused: 'invalid' };
+  const read = readVaultObject(text);
+  if (!read) return { refused: 'invalid' };
+  const { header, headerText, ciphertext, signature } = read;
   if (header.vaultId !== check.vaultId) return { refused: 'wrongVault' };
   const current = await currentSigningKey(
     header.signingChain,
@@ -179,7 +194,7 @@ export async function openVault(
     SIGN,
     current.key,
     signature,
-    signedBytes(object.header, ciphertext)
+    signedBytes(headerText, ciphertext)
   );
   if (!valid) return { refused: 'badSignature' };
   const digest = toBase64Url(await sha256(utf8(text)));
