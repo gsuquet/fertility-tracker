@@ -43,12 +43,13 @@ The project uses test-driven development (TDD). Write a test that fails before e
 
 ## Test helpers
 
-| Helper                                                                                    | File                     | Use                                                                                             |
-| ----------------------------------------------------------------------------------------- | ------------------------ | ----------------------------------------------------------------------------------------------- |
-| `makeObservation({ date, ...fields })`                                                    | `src/test/factories.ts`  | Makes a valid observation. Give only the fields that the test needs.                            |
-| `renderWithProviders(ui, options)`                                                        | `src/test/render.tsx`    | Renders a component in all the application providers.                                           |
-| `openShareChart()`, `openShareChartNow()`, `openFromSettings(name)`, `openVersionNotes()` | `src/test/appActions.ts` | Open a dialog of the app as a user does: from the chart menu, from Settings or from the footer. |
-| `buildDemoObservations(today)`                                                            | `src/domain/demoData.ts` | Makes two full cycles of realistic data.                                                        |
+| Helper                                                                                    | File                           | Use                                                                                                                     |
+| ----------------------------------------------------------------------------------------- | ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| `makeObservation({ date, ...fields })`                                                    | `src/test/factories.ts`        | Makes a valid observation. Give only the fields that the test needs.                                                    |
+| `renderWithProviders(ui, options)`                                                        | `src/test/render.tsx`          | Renders a component in all the application providers.                                                                   |
+| `openShareChart()`, `openShareChartNow()`, `openFromSettings(name)`, `openVersionNotes()` | `src/test/appActions.ts`       | Open a dialog of the app as a user does: from the chart menu, from Settings or from the footer.                         |
+| `createMemoryVaultStore(days)`                                                            | `src/test/memoryVaultStore.ts` | A vault store in memory for the sync engine, with ETags. `changeBeforeNextWrite(days)` makes the next write give `412`. |
+| `buildDemoObservations(today)`                                                            | `src/domain/demoData.ts`       | Makes two full cycles of realistic data.                                                                                |
 
 Options of `renderWithProviders`:
 

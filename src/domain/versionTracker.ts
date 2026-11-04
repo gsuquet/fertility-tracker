@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.52.0',
+    date: '2026-11-04',
+    title: 'Sync Engine',
+    titleFr: 'Moteur de synchronisation',
+    tagline: 'The rules that will merge your days between devices',
+    taglineFr: 'Les règles qui fusionneront vos jours entre appareils',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app now has the merge rules for the coming sync between your devices. Sync is not on yet, and nothing changes on your device',
+      'When two devices change the same day, the later change wins, and the other version goes to a list that you can restore from',
+      'A cycle keeps one manual Peak Day on all devices, and a demo day never syncs',
+    ],
+    highlightsFr: [
+      'L’application a maintenant les règles de fusion pour la future synchronisation entre vos appareils. La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+      'Quand deux appareils modifient le même jour, la modification la plus récente gagne, et l’autre version va dans une liste que vous pouvez restaurer',
+      'Un cycle garde un seul Jour Sommet manuel sur tous les appareils, et un jour de démonstration ne se synchronise jamais',
+    ],
+  },
+  {
     version: '1.51.0',
     date: '2026-11-04',
     title: 'Encrypted Backup',

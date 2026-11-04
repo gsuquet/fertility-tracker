@@ -30,6 +30,7 @@ fertility-tracker/
 │   │   └── today/               # Parts of the Today page
 │   ├── context/                 # React context providers: cycles, language, theme
 │   ├── domain/                  # Pure CrMS rules and data functions
+│   │   └── sync/                # Sync engine: canonical days, clocks, merge (Sync rules)
 │   ├── hooks/                   # Shared React hooks, for example useBackUpNow.ts (Back up now)
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
