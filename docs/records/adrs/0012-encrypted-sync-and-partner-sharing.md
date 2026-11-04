@@ -31,21 +31,22 @@ The application keeps the observations only in the `localStorage` of one browser
 
 ## Decision
 
-The project selects one encrypted and signed vault object in R2, behind a same-origin Pages Function, with a merge on each device. Each device and each partner is a member with its own key. Thus, the owner can remove a partner or a lost device, and the server cannot read, change or add data.
+The project selects one encrypted and signed vault object in R2, with a merge on each device. With a key for each member, the owner can remove a partner or a device, and the server cannot read, change or add data.
 
-The [Design](#design) section gives the rules.
+This ADR adds a [Design](#design) section after the options, because the protocol needs exact rules.
 
 ### Consequences
 
 - Good: the server, Cloudflare and the network never see an observation in clear text.
-- Good: the server cannot change the data, add a member or give an old vault. The signature and the counter stop it.
+- Good: the server cannot change the data or add a member. It cannot give a vault older than the last one that the device saw.
 - Good: the owner can remove a partner or a lost device. The other devices keep their keys.
 - Good: a leaked invitation link is not sufficient. The owner must approve the device and compare a code.
 - Good: no new field on `Observation` and no change to the storage format.
 - Good: the relay is in this repository and deploys with the static files.
 - Bad: the server sees the vault ids, the number of members, the IP addresses, the times of the syncs and the padded size.
 - Bad: if the user loses all the devices and the recovery code, nobody can decrypt the vault.
-- Bad: when the user removes an own device, the user must write down a new recovery code.
+- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. It can also give an old vault to a device with no counter yet.
+- Bad: after each use of the recovery code, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
 
@@ -71,7 +72,7 @@ The [Design](#design) section gives the rules.
 - Good: a small write for each change.
 - Bad: the server sees how many days exist and when each day changes.
 - Bad: KV gives eventual consistency and no conditional write. The free plan of KV allows about 1,000 writes each day.
-- Bad: it needs `updatedAt` and `deletedAt` in each write path of the application.
+- Bad: the server must keep a list of changes for each device that is offline.
 
 ### Encrypted backup file
 
@@ -120,17 +121,17 @@ Before a comparison and before a write, each day gets a canonical form:
 | `notes`                            | An empty text is absent.                                         |
 | `bleeding`, `stretch`, `frequency` | The code stays. A missing code is absent.                        |
 
-The demo data never syncs. While the device is in a vault, Settings does not show **Load demo data**.
+A day whose `id` starts with `demo_` (`DEMO_ID_PREFIX`) never goes into the vault. Before a device joins a vault, it removes the demo days, and the undo copy keeps them. While the device is in a vault, Settings does not show **Load demo data**.
 
 ### Vault object
 
 Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bits. The object has a plain header, a ciphertext and a signature:
 
-| Part       | Content                                                                                   |
-| ---------- | ----------------------------------------------------------------------------------------- |
-| Header     | Format version, vault id, key id, counter, keyring, signing public key, earlier data keys |
-| Ciphertext | AES-256-GCM of the days, the tombstones and the clocks, after gzip and padding            |
-| Signature  | ECDSA P-256 with SHA-256 over the header and the ciphertext                               |
+| Part       | Content                                                                                  |
+| ---------- | ---------------------------------------------------------------------------------------- |
+| Header     | Format version, vault id, key id, counter, keyring, signing key chain, earlier data keys |
+| Ciphertext | AES-256-GCM of the days, the tombstones and the clocks, after gzip and padding           |
+| Signature  | ECDSA P-256 with SHA-256 over the header and the ciphertext                              |
 
 - One random AES-256 **data key** encrypts the ciphertext. Each data key has a key id.
 - The device compresses the JSON with gzip. Then it adds padding to the next multiple of 16 KB. Then it encrypts the result with a random 12-byte IV.
@@ -143,7 +144,9 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 
 - The vault has one ECDSA P-256 **signing key pair**. Only owners have the private key. The keyring wraps it for each owner member.
 - Each write has a signature over the header and the ciphertext. Thus, a reader or the server cannot write a false vault.
-- Each member keeps the signing public key that it got when it joined. A member refuses a vault with a different signing key or a wrong signature.
+- The signing key chain lists each signing public key of the vault. Each new key in the chain has a signature by the key before it.
+- Each member keeps the signing public key that it got when it joined. A member walks the chain from that key to the current key.
+- A member refuses a vault with a wrong signature, or with a signing key that its kept key does not reach through the chain.
 - The keyring is in the signed header. Thus, the server cannot add a member or change a public key.
 
 ### Members and keys
@@ -157,15 +160,17 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 - The keyring has one entry for each member. The entry holds an id, the role, the public key and the hash of an access token.
 - The entry also holds the data key, wrapped for that member. An owner entry also holds the signing private key, wrapped in the same way.
 - To wrap a key, the owner device makes an ephemeral ECDH key pair. It derives a key from the shared secret with HKDF-SHA256. It encrypts with AES-256-GCM.
-- The additional data of a wrapped key is the vault id, the member id and the key id.
+- The additional data of a wrapped key is the vault id, the member id, the key id and the purpose: `data` or `signing`. Thus, a wrapped key cannot take the place of a different wrapped key.
 - A device keeps its private key in IndexedDB as a `CryptoKey` that is not extractable. The data key and the signing private key are extractable only on owner devices, because they wrap them for new members.
-- The server keeps only the SHA-256 of each access token. It refuses a write with a reader token.
+- Each member makes its own random access token on its device. It sends only the SHA-256 of the token when it joins, and the owner device puts the hash in the keyring.
+- The server refuses a write with a reader token.
 
 ### Recovery code
 
 - The recovery code is 26 Crockford base32 characters in groups of 4, plus one check character. It holds 128 random bits.
 - HKDF-SHA256 derives four values from the code: a lookup id, a lookup key, a wrapping key and the access token of the recovery member.
 - The object `recovery/<lookup id>` holds the vault id, encrypted with the lookup key. Thus, a new code does not need a new vault.
+- The owner devices keep the lookup id and a copy of the encrypted lookup object. Neither one opens the vault. Thus, they can write the object again before R2 deletes it.
 - The vault keeps the private key of the recovery member, encrypted with the wrapping key. HKDF cannot make an ECDH key pair, so the key pair is random.
 - The owner devices do not keep the recovery code or its wrapping key. They keep only the public key of the recovery member. Thus, they can wrap a new data key for the recovery member, but a removed device cannot unwrap it.
 - The recovery code uses base32 and not BIP39 words. The two give the same 128 bits. The check character finds a typing error, and base32 needs no word list for each language.
@@ -177,27 +182,30 @@ A device or a partner joins with a one-time invitation and an approval on an own
 
 1. An owner device makes an invitation with a random secret and a role. It shows a QR code and a link: `https://<application>/#invite=<id>.<secret>`.
 2. The new device opens the link. The browser does not send the fragment to the server. The application removes the fragment with `history.replaceState`.
-3. The new device makes its key pair. It sends its public key and an HMAC of that key with the invitation secret.
-4. The owner device checks the HMAC. Then it sends a random nonce to the new device.
-5. The two devices show a 6-digit code from a hash of the invitation secret, the public key and the nonce.
-6. The owner compares the two codes in person or by voice, and approves. The owner device wraps the keys for the new member.
-7. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys and the signing public key.
-8. The new device checks this HMAC before it uses the keys. It keeps the signing public key.
-9. The invitation stops after its first use or after 24 hours.
+3. The new device makes its key pair, its access token and a random nonce B. It sends the public key, the token hash and a hash of B.
+4. The new device also sends an HMAC of these values with the invitation secret.
+5. The owner device checks the HMAC. Then it sends a random nonce A to the new device.
+6. The new device sends B. The owner device checks B against its hash.
+7. The two devices show a 6-digit code from a hash of the invitation secret, the public key, A and B.
+8. The owner compares the two codes in person or by voice, and approves. The owner device wraps the keys for the new member.
+9. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys and the signing public key.
+10. The new device checks this HMAC before it uses the keys. It keeps the signing public key.
+11. The invitation stops after its first use or after 24 hours.
 
 - The invitation sets the role. The joining device cannot select its role.
-- The HMAC of step 3 stops a server that does not have the link. The 6-digit code stops a person who has the link.
-- The nonce of step 4 comes after the public key. Thus, a person with the link cannot try many keys to get the same code.
-- The HMAC of step 7 stops a server that sends false keys to the new device.
-- The system camera of a phone can read the QR code. Thus, the application needs no camera permission.
+- The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
+- Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
+- The HMAC of step 9 stops a server that sends false keys to the new device.
+- The function accepts one join request for each invitation without an access token. The HMAC of step 4 proves the request.
+- On Android and on a computer, the system camera can read the QR code. Thus, the application needs no camera permission.
 
-When no own device is available, the user types the recovery code on a new device. The new device opens the recovery member and adds itself as an owner device. Then it makes a new recovery code and deletes the old `recovery/<lookup id>` object.
+When no own device is available, the user types the recovery code on a new device. The new device opens the recovery member and adds itself as an owner device. Then it makes a new recovery code. In the same conditional write, it removes the old recovery member and makes a new data key. Then it deletes the old `recovery/<lookup id>` object.
 
 ### Partner devices on iOS
 
 On iOS, an installed web application has a storage that is separate from Safari. Safari can also delete the storage of a site after 7 days without a visit. `navigator.storage.persist()` does not stop this in Safari.
 
-Thus, on iOS, the join screen asks the partner to add the application to the Home Screen first. The join screen also accepts the invitation as pasted text. When the keys of a vault are missing, the application tells the user to ask for a new invitation.
+Thus, on iOS, the partner adds the application to the Home Screen first. Then the partner copies the invitation link and pastes it in the installed application. On iOS, a QR code opens Safari, so the QR code is only for Android and computers. When the keys of a vault are missing, the application tells the user to ask for a new invitation.
 
 ### Removing a member
 
@@ -209,7 +217,7 @@ An owner device removes a partner or a lost device in one conditional write:
 4. It removes the entry of the old member from the keyring.
 5. It signs the new vault and writes it with `If-Match`.
 
-When the removed member is an owner device, the owner device also makes a new signing key pair and a new recovery code. The user must write down the new code. The old signing key signs the new signing public key, so the other members accept it.
+When the removed member is an owner device, the owner device also makes a new signing key pair. It adds the new public key to the signing key chain, signed with the old key. The recovery code stays, because owner devices never keep it.
 
 The server refuses the access token of the removed member at once. A removed partner keeps the data that the partner device already shows. No design can take back data that a person already saw.
 
@@ -217,7 +225,7 @@ A removed owner device and a malicious server together can try to write a differ
 
 ### Conflicts and merge
 
-Each device keeps the last vault content that it merged. This copy is the **base**. Each day and each deleted day has a hybrid logical clock: the time, a counter and the member id. The manual Peak Day of a day has its own clock.
+Each device keeps the last vault content that it merged. This copy is the **base**. Each day and each deleted day has a hybrid logical clock: the time, a counter and the member id. `isManualPeak` has its own clock and is not part of the day comparison.
 
 A sync compares the local data, the base and the remote vault for each date:
 
@@ -229,9 +237,10 @@ A sync compares the local data, the base and the remote vault for each date:
 | Local and remote are different from the base, and equal | No change                                                           |
 | **Else**                                                | The later clock wins. The other version goes to the conflict list.  |
 
-- A device saves the clock of a date when the user changes or deletes that date.
+- 5 seconds after each change, also offline, the device compares its local data with the base. It gives a new clock to each date that changed since the last comparison. Thus, no write path of the application changes.
 - A deleted day stays in the vault as a tombstone: the date and the clock. A tombstone is small, so the vault keeps it.
 - A day stays one unit. The merge never combines the bleeding of one device with the mucus of a different device.
+- `isManualPeak` merges for each date by its own clock. A day that loses its manual Peak Day because the user marked a different day of the cycle gets no Peak Day clock. Only an explicit removal gets one.
 - After the merge, a cycle with two manual Peak Days keeps the one with the later Peak Day clock. Each device applies the same rule, so all the devices get the same result.
 - The device writes with `If-Match` and the ETag of the vault that it merged. When the server answers `412`, the device reads the vault again, merges again and writes again.
 - The sync state is in its own `localStorage` key. Thus, the format of `fertility_care_observations` does not change.
@@ -242,12 +251,14 @@ When a device with observations joins a vault, its days get clock 0. Thus, on th
 
 ### Safety of the local data
 
-| Condition                                                                     | Result                                                         |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------- |
-| `recoveryData` is set, `droppedCount` is more than 0, or `saveFailed` is true | No sync write. The device can still read the vault.            |
-| The observations key is missing and a base exists                             | The device reads the vault as a new device. It deletes no day. |
-| A sync deletes more than 7 days                                               | The device asks the user before it writes.                     |
-| **Else**                                                                      | Normal sync                                                    |
+| Condition                                                        | Result                                                          |
+| ---------------------------------------------------------------- | --------------------------------------------------------------- |
+| `recoveryData` is set                                            | No sync. The device does not apply the vault to the local data. |
+| The local data started from unreadable or partly dropped storage | The device drops its base and joins again as a new device.      |
+| `saveFailed` is true                                             | No sync write.                                                  |
+| The observations key is missing and a base exists                | The device reads the vault as a new device. It deletes no day.  |
+| A sync deletes more than 7 days                                  | The device asks the user before it writes.                      |
+| **Else**                                                         | Normal sync                                                     |
 
 ### Conflict list
 
@@ -269,17 +280,19 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 
 ### Relay
 
-| Item      | Value                                                                                 |
-| --------- | ------------------------------------------------------------------------------------- |
-| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                    |
-| Storage   | One R2 bucket, bound in `wrangler.json`                                               |
-| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`    |
-| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.     |
-| Writes    | Only with an owner token, and only with `If-Match`                                    |
-| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.  |
-| Caching   | Each answer has `Cache-Control: no-store`. The service worker ignores `/api/`.        |
-| Logs      | The function writes no log.                                                           |
-| Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `invites/` after 1 day |
+| Item      | Value                                                                                                                               |
+| --------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Code      | Cloudflare Pages Functions in `functions/api/`, in this repository                                                                  |
+| Storage   | One R2 bucket, bound in `wrangler.json`                                                                                             |
+| Objects   | `vaults/<id>`, `recovery/<lookup id>`, `invites/<id>`, `history/<vault id>/<date>`                                                  |
+| Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.                                                   |
+| Writes    | With an owner token and `If-Match`. A new vault uses `If-None-Match: *`.                                                            |
+| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                |
+| Host      | The function refuses a host other than `fertility-tracker.gsuquet.com`. Thus, no request avoids the rate limit through `pages.dev`. |
+| Invites   | The function keeps the creation time and refuses an invitation after 24 hours.                                                      |
+| Caching   | Each answer has `Cache-Control: no-store`. The service worker must not cache `/api/`.                                               |
+| Logs      | The function writes no log.                                                                                                         |
+| Retention | R2 lifecycle rules: `vaults/` and `recovery/` after 12 months, `history/` after 30 days, `invites/` after 1 day                     |
 
 R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
 
@@ -305,7 +318,8 @@ Each step is one pull request. Each step changes its reference pages first, as [
 1. Encrypted backup file: the envelope, gzip, padding and a password. No server.
 2. Sync engine in `src/domain/sync/`: the canonical form, the merge, the clocks, the Peak Day rule and the conflicts. Tests use an adapter in memory.
 3. Relay and owner devices: the Pages Functions, the vault object, the signature and the keyring. Also the invitation, the recovery code and Settings.
-4. Partner sharing: the reader role, the read-only chart, **Stop viewing** and the removal of a member.
+4. In the same step, the service worker skips `/api/`. Its page is [Deployment](../../reference/deployment.md).
+5. Partner sharing: the reader role, the read-only chart, **Stop viewing** and the removal of a member.
 
 ## More information
 
