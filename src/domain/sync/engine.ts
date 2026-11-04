@@ -3,8 +3,10 @@
  * the vault store reads and writes the content, and the application saves the result.
  */
 import type { Observation, ObservationInput } from '../../types/crms';
+import { isUserObservation } from '../backupReminder';
 import { receiveClock, zeroClock } from './clock';
 import type { Clock } from './clock';
+import { dayKey, toSyncDay } from './canonical';
 import { firstSyncDays, stampLocalChanges } from './localChanges';
 import { mergeDays } from './merge';
 import type { SyncConflict } from './merge';
@@ -55,7 +57,11 @@ export type SyncResult =
       observations: ObservationInput[];
       conflicts: SyncConflict[];
       changed: boolean;
+      /** The dates where the merge changes the day or the manual Peak Day on the device. */
+      changedDates: string[];
     };
+
+export type SyncedResult = Extract<SyncResult, { status: 'synced' }>;
 
 /** The state of a device that joins a vault: its days get the zero clock, so the vault wins. */
 export function newSyncState(member: string, observations: Observation[]): SyncState {
@@ -115,7 +121,47 @@ export async function syncOnce(input: SyncInput): Promise<SyncResult> {
       observations: toObservationInputs(merged.days),
       conflicts: merged.conflicts,
       changed: merged.changedDates.length > 0,
+      changedDates: merged.changedDates,
     };
   }
   return { status: 'busy', state };
+}
+
+/** The canonical text of each user day, with its manual Peak Day. */
+const keyOfDates = (observations: Observation[]): Map<string, string> =>
+  new Map(
+    observations
+      .filter(isUserObservation)
+      .map(o => [o.date, `${dayKey(toSyncDay(o))}|${o.isManualPeak === true}`])
+  );
+
+/**
+ * Keeps the changes that the user made while the engine waited for the vault store. `sent` is the
+ * list that the sync received, and `current` is the list now. Each date that changed between the
+ * two keeps its current version. When the merge also changed that date, the merged version goes
+ * to the conflicts. The application then saves the observations and the state of the result.
+ */
+export function keepEditsDuringSync(
+  result: SyncedResult,
+  sent: Observation[],
+  current: Observation[]
+): { observations: ObservationInput[]; conflicts: SyncConflict[] } {
+  const before = keyOfDates(sent);
+  const now = keyOfDates(current);
+  const edited = new Set(
+    [...new Set([...before.keys(), ...now.keys()])].filter(
+      date => before.get(date) !== now.get(date)
+    )
+  );
+  const mergedOf = new Map(result.state.local.map(entry => [entry.date, entry]));
+  const conflicts = [...result.conflicts];
+  for (const date of result.changedDates.filter(date => edited.has(date))) {
+    const merged = mergedOf.get(date) as VaultDay;
+    conflicts.push({ date, day: merged.day, clock: merged.clock });
+  }
+  const observations: ObservationInput[] = [
+    ...result.observations.filter(o => !edited.has(o.date as string)),
+    ...current.filter(o => isUserObservation(o) && edited.has(o.date)),
+  ].sort((a, b) => (a.date as string).localeCompare(b.date as string));
+  return { observations, conflicts };
 }

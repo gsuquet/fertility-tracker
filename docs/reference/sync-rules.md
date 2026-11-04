@@ -8,15 +8,15 @@ The engine has no network code and no storage code. A vault store adapter reads 
 
 ## Files
 
-| File              | Content                                                                         |
-| ----------------- | ------------------------------------------------------------------------------- |
-| `canonical.ts`    | `SyncDay`, `toSyncDay()`, `sameDay()`                                           |
-| `clock.ts`        | `Clock`, `zeroClock()`, `compareClocks()`, `nextClock()`, `receiveClock()`      |
-| `vaultContent.ts` | `VaultDay`, `parseVaultDays()`, `serializeVaultDays()`, `toObservationInputs()` |
-| `localChanges.ts` | `stampLocalChanges()`, `firstSyncDays()`                                        |
-| `cycles.ts`       | `cycleOfDates()`: the cycle of each date, from `groupObservationsIntoCycles()`  |
-| `merge.ts`        | `mergeDays()`, `SyncConflict`, `addConflicts()`                                 |
-| `engine.ts`       | `SyncState`, `VaultStore`, `newSyncState()`, `syncOnce()`, `dropBase()`         |
+| File              | Content                                                                                          |
+| ----------------- | ------------------------------------------------------------------------------------------------ |
+| `canonical.ts`    | `SyncDay`, `toSyncDay()`, `sameDay()`                                                            |
+| `clock.ts`        | `Clock`, `zeroClock()`, `compareClocks()`, `nextClock()`, `receiveClock()`                       |
+| `vaultContent.ts` | `VaultDay`, `parseVaultDays()`, `serializeVaultDays()`, `toObservationInputs()`                  |
+| `localChanges.ts` | `stampLocalChanges()`, `firstSyncDays()`                                                         |
+| `cycles.ts`       | `cycleOfDates()`: the cycle of each date, from `groupObservationsIntoCycles()`                   |
+| `merge.ts`        | `mergeDays()`, `SyncConflict`, `addConflicts()`                                                  |
+| `engine.ts`       | `SyncState`, `VaultStore`, `newSyncState()`, `syncOnce()`, `dropBase()`, `keepEditsDuringSync()` |
 
 ## Canonical form of a day
 
@@ -130,11 +130,17 @@ In a normal sync:
 2. It reads the vault and merges.
 3. When the merged days are different from the vault days, it writes them with the ETag of the read. Else, it does not write.
 4. When the write gives `null`, it reads, merges and writes again. After 5 attempts, the status is `busy`.
-5. The status is `synced`. The result gives the new state, the observation inputs, the conflicts and `changed`.
+5. The status is `synced`. The result gives the new state, the observation inputs, the conflicts, `changed` and `changedDates`.
 
 `changed` is `true` when the merge changes a day or a manual Peak Day on the device. The engine does not write to the browser storage. The application saves the observations first. It saves the new state only after that save succeeds.
 
-Only one sync runs at a time. The observations can change while the engine waits for the vault store. In that case, the application does not save the observations of the result. It keeps its observations and its state, and keeps only `state.clock` of the result. The write to the vault is final, so the application always adds `conflicts` to its list with `addConflicts()`. Its next sync stamps the new change and merges again.
+Only one sync runs at a time. The observations can change while the engine waits for the vault store. The write to the vault is final, so the application always keeps the result. `keepEditsDuringSync(result, sent, current)` gives the observations and the conflicts to save:
+
+- Each date that changed between `sent` and `current` keeps its current version, also a deleted day. The next sync stamps it as a local change.
+- When the merge also changed that date on the device, the merged version goes to the conflicts.
+- The other dates come from the result.
+
+The application then saves these observations, then the state of the result, and adds the conflicts with `addConflicts()`.
 
 `newSyncState(member, observations)` gives the state of a device that joins a vault. Its days come from `firstSyncDays()`, and it has no base.
 

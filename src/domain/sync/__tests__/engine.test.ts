@@ -8,6 +8,7 @@ import {
   MAX_DELETIONS_WITHOUT_CONFIRMATION,
   MAX_SYNC_ATTEMPTS,
   dropBase,
+  keepEditsDuringSync,
   newSyncState,
   syncOnce,
 } from '../engine';
@@ -148,7 +149,7 @@ describe('syncOnce', () => {
     expect(fresh.days().map(d => [d.date, d.day])).toEqual([['2026-10-01', { stretch: '2' }]]);
   });
 
-  it('keeps a change made during the sync when the application drops the result', async () => {
+  it('keeps the changes made during the sync, and the version of the other device', async () => {
     const store = createMemoryVaultStore();
     const phone = device('phone', [makeObservation({ date: '2026-10-01', stretch: '0' })]);
     const tablet = device('tablet');
@@ -160,17 +161,16 @@ describe('syncOnce', () => {
     ];
     await tablet.sync(store, 2000);
 
-    // The user changes the same date again, and a new date, while the vault store works
-    phone.observations = [makeObservation({ date: '2026-10-01', stretch: '4' })];
-    const before = phone.state;
-    const edited = [
+    // The phone syncs stretch 4. The user changes the same date again, and a new date, meanwhile
+    const sent = [makeObservation({ date: '2026-10-01', stretch: '4' })];
+    const current = [
       makeObservation({ date: '2026-10-01', stretch: '6' }),
       makeObservation({ date: '2026-10-03', stretch: '8' }),
     ];
     const result = synced(
       await syncOnce({
-        state: before,
-        observations: phone.observations,
+        state: phone.state,
+        observations: sent,
         store,
         now: 3000,
         recoveryData: false,
@@ -179,29 +179,66 @@ describe('syncOnce', () => {
         confirmDeletions: async () => true,
       })
     );
-    // The observations changed: the application keeps them and only the new clock. The write is
-    // final, so it keeps the conflicts: the version of the tablet is only there now.
-    phone.observations = edited;
-    phone.state = { ...before, clock: result.state.clock };
-    expect(addConflicts([], result.conflicts)).toEqual([
+    const kept = keepEditsDuringSync(result, sent, current);
+    expect(kept.observations.map(o => [o.date, o.stretch])).toEqual([
+      ['2026-10-01', '6'],
+      ['2026-10-02', '2'],
+      ['2026-10-03', '8'],
+    ]);
+    phone.observations = kept.observations.map(input => toObservation('phone', input));
+    phone.state = result.state;
+    let conflicts = addConflicts([], kept.conflicts);
+
+    conflicts = addConflicts(conflicts, synced(await phone.sync(store, 3000)).conflicts);
+    // The version of the tablet stays in the list, and no false conflict replaces it
+    expect(conflicts).toEqual([
       {
         date: '2026-10-01',
         day: { stretch: '2' },
         clock: { time: 2000, counter: 0, member: 'tablet' },
       },
     ]);
-
-    await phone.sync(store, 3000);
-    expect(phone.observations.map(o => [o.date, o.stretch])).toEqual([
-      ['2026-10-01', '6'],
-      ['2026-10-02', '2'],
-      ['2026-10-03', '8'],
-    ]);
     await tablet.sync(store, 4000);
     expect(tablet.observations.map(o => [o.date, o.stretch])).toEqual([
       ['2026-10-01', '6'],
       ['2026-10-02', '2'],
       ['2026-10-03', '8'],
+    ]);
+  });
+
+  it('puts the merged version in the conflicts when the user changed the same date meanwhile', async () => {
+    const store = createMemoryVaultStore();
+    const phone = device('phone', [makeObservation({ date: '2026-10-01', stretch: '0' })]);
+    const tablet = device('tablet');
+    await phone.sync(store, 1000);
+    await tablet.sync(store, 1000);
+    tablet.observations = [makeObservation({ date: '2026-10-01', stretch: '2' })];
+    await tablet.sync(store, 2000);
+
+    const sent = phone.observations;
+    const result = synced(
+      await syncOnce({
+        state: phone.state,
+        observations: sent,
+        store,
+        now: 3000,
+        recoveryData: false,
+        saveFailed: false,
+        observationsMissing: false,
+        confirmDeletions: async () => true,
+      })
+    );
+    // The user deleted the day while the sync brought the change of the tablet
+    const kept = keepEditsDuringSync(result, sent, [
+      makeObservation({ id: 'demo_1', date: '2026-10-05' }),
+    ]);
+    expect(kept.observations).toEqual([]);
+    expect(kept.conflicts).toEqual([
+      {
+        date: '2026-10-01',
+        day: { stretch: '2' },
+        clock: { time: 2000, counter: 0, member: 'tablet' },
+      },
     ]);
   });
 
