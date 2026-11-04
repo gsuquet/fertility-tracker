@@ -46,6 +46,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.58.0',
+    date: '2026-11-04',
+    title: 'Removing a Member',
+    titleFr: 'Retirer un membre',
+    tagline: 'How you will remove a device or a partner, and use your recovery code',
+    taglineFr:
+      'Comment vous retirerez un appareil ou un partenaire, et utiliserez votre code de récupération',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app can now remove a device or a partner from your vault, with a new key that the removed member does not have',
+      'Your recovery code can add a new device to your vault, and you then get a new code',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application peut maintenant retirer un appareil ou un partenaire de votre coffre, avec une nouvelle clé que le membre retiré n’a pas',
+      'Votre code de récupération peut ajouter un nouvel appareil à votre coffre, et vous recevez ensuite un nouveau code',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.57.0',
     date: '2026-11-04',
     title: 'Joining a Vault',

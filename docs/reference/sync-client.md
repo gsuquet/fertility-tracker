@@ -14,6 +14,7 @@ Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-s
 | `keyStore.ts`       | `openKeyStore()`: the device record in IndexedDB                   |
 | `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
+| `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
 
 ## Relay client
 
@@ -89,13 +90,15 @@ The functions give a `VaultError` in these conditions:
 
 | Reason       | Condition                                                                            |
 | ------------ | ------------------------------------------------------------------------------------ |
-| `relay`      | The relay gives an error. On a write, `412` is not an error.                         |
+| `relay`      | The relay gives an error. For `write()` and `writeSession()`, `412` is not an error. |
 | `refused`    | `openVault()` refuses the vault. The `refusal` field gives the reason.               |
 | `removed`    | The keyring has no entry for the device                                              |
 | `keys`       | A wrapped key of the device does not unwrap                                          |
 | `content`    | The days do not decrypt                                                              |
 | `reader`     | `write()` occurs, and the entry of the device is not an owner with a signing key     |
 | `noRead`     | `write()` occurs before a `read()`                                                   |
+| `member`     | The member to remove is not in the keyring, or it is the device                      |
+| `code`       | The recovery code is not valid, or the lookup object does not decrypt                |
 | `invitation` | `approveInvitation()` occurs before the confirm status, or the member does not agree |
 
 The relay refuses the token of a removed member. Thus, a removed device gets the reason `relay` with the status `401`.
@@ -131,6 +134,43 @@ Each device keeps the first valid message of the other device in its state. The 
 - A later check gives `refused` when the message on the relay is not the kept message.
 - Thus, a relay with the link cannot change a message after it sees the other nonce. It cannot try many values to get the same code.
 - The application keeps the same `OwnerInvitation` or `JoinState` object for all the checks of one invitation.
+
+## Removal of a member
+
+`removeMember(relay, keyStore, record, memberId)` removes a member in one conditional write, as [Removing a member](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member) gives. This is the rekey:
+
+- It makes a new data key and a new key id. The days are encrypted again with the new key.
+- It adds the old data key to the earlier keys. It encrypts each earlier key again with the new data key.
+- It wraps the new data key for each member that stays. It wraps the signing key and the lookup copy for each owner that stays.
+- When the removed member is an owner, it adds a new signing key to the chain, signed with the old key. The device then trusts the new key.
+
+It gives a `member` error when the member is not in the keyring or is the device itself. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
+
+## New recovery code
+
+`newRecoveryCode(relay, keyStore, record)` follows [New recovery code](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#new-recovery-code). It gives the device record and the new code.
+
+- It makes the new secret, the new lookup object and the key pair of the new recovery member. It writes the lookup object with `If-None-Match: *`.
+- In one rekey write, it removes the old recovery member and adds the new one. The new recovery blob names the new signing key and the new counter.
+- Each owner except the recovery member gets the new lookup copy.
+- Then it deletes the old lookup object.
+- It reads the old lookup id and the old recovery member from the lookup copy of the device, in the vault that it reads.
+
+It gives a `keys` error when the device has no lookup copy. The application shows the code only after the function succeeds.
+
+## Recovery
+
+`recoverWithCode(relay, keyStore, code)` adds this device to the vault with the recovery code. It gives the device record and a new recovery code.
+
+- It reads the lookup object, and decrypts the vault id with the lookup key.
+- It reads the vault with the access token of the code. It decrypts the recovery blob with the wrapping key.
+- It opens the vault with the signing key and the counter of the blob, as the recovery member. It keeps this record only in memory.
+- It adds the device as an owner, with a lookup copy of the old code. It saves the device record.
+- Then it makes a new recovery code, which removes the old recovery member. When this step fails, the device can call `newRecoveryCode()` again.
+
+It gives a `code` error when the code is not valid or the lookup object does not decrypt. It gives a `keys` error when the recovery blob does not decrypt.
+
+When the vault changed, `removeMember()`, `newRecoveryCode()` and `recoverWithCode()` give a `relay` error with the status `412`.
 
 ## Related documents
 
