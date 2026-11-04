@@ -490,11 +490,16 @@ describe('Check for updates', () => {
     expect(update.checkForUpdate).toHaveBeenCalledTimes(2);
   });
 
-  it('says that a version is ready when the check finds one', async () => {
+  it('does not keep a ready result: only a version that still waits shows Reload to update', async () => {
+    // The check found a version, but a newer one replaced it before the row rendered
     update.checkForUpdate.mockResolvedValue('ready');
     renderSettings();
     fireEvent.click(row());
-    await waitFor(() => expect(row()).toHaveAccessibleDescription(en.settings.updateReady));
+    await waitFor(() => expect(row()).not.toHaveAccessibleDescription());
+    expect(status()).toBeEmptyDOMElement();
+    fireEvent.click(row());
+    expect(update.checkForUpdate).toHaveBeenCalledTimes(2);
+    expect(update.applyUpdate).not.toHaveBeenCalled();
   });
 
   it('applies a ready update with Reload to update', () => {

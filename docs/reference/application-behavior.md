@@ -125,14 +125,14 @@ The first install has no controller. Thus, it activates at once and the applicat
 | No **Reload**                   | The new version starts when all windows of the application are closed and opened again.                                                                             |
 - After the reload, `checkAndRecordVersionSeen()` finds the new version, and the version dialog shows its release notes.
 
-**Settings** > **Check for updates** asks for the check at once ([Settings](screens/settings.md)). `checkForUpdate()` calls `registration.update()` and waits until a new worker is installed or fails. It gives one of these results:
+**Settings** > **Check for updates** asks for the check at once ([Settings](screens/settings.md)). `checkForUpdate()` calls `registration.update()` and waits until a new worker is installed or fails. It offers an installed worker itself, because the update resolves before `updatefound`. The check also counts as the daily check. It gives one of these results:
 
-| Result        | When                                                                                                         |
-| ------------- | ------------------------------------------------------------------------------------------------------------ |
-| `ready`       | A new worker waits, from before the check or after it. **Reload** applies it with `applyUpdate()`.           |
-| `latest`      | The server has the same `sw.js`, or the page has no controller (the first install activates at once).        |
-| `failed`      | `registration.update()` fails, for example offline, or the new worker does not install.                      |
-| `unavailable` | No service worker is registered: a development build, a context that is not secure, or a browser without it. |
+| Result        | When                                                                                                                                                                                                                               |
+| ------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `ready`       | A new worker waits, from before the check or after it. **Reload** applies it with `applyUpdate()`.                                                                                                                                 |
+| `latest`      | The server has the same `sw.js`, or the page has no controller (the first install activates at once).                                                                                                                              |
+| `failed`      | `registration.update()` fails, for example offline, or the new worker does not install. Or the check takes more than 30 seconds (`UPDATE_CHECK_TIMEOUT_MS`): the install can still end later, and **Reload to update** then shows. |
+| `unavailable` | No service worker is registered: a development build, a context that is not secure, or a browser without it.                                                                                                                       |
 
 The check only asks the browser for a new `sw.js`. It does not delete a cache, unregister the worker or touch `localStorage`. Thus, the observations stay, and the application still works offline after a failed check.
 

@@ -334,6 +334,54 @@ describe('checkForUpdate', () => {
     expect(result.current).toBe(true);
   });
 
+  it('is ready when the install ends before updatefound reaches the page', async () => {
+    const { checkForUpdate, registration, useUpdateReady } = await setUp();
+    const worker = makeWorker();
+    // In a browser, the update resolves first and updatefound comes in a later task
+    registration.update.mockImplementationOnce(() => {
+      registration.installing = worker;
+      return Promise.resolve();
+    });
+    const { result } = renderHook(() => useUpdateReady());
+    const check = checkForUpdate();
+    await act(async () => {
+      await Promise.resolve();
+      worker.setState('installed');
+    });
+    await expect(check).resolves.toBe('ready');
+    expect(result.current).toBe(true);
+  });
+
+  it('fails after a timeout when the network stalls, and the install can still end later', async () => {
+    const { checkForUpdate, registration, useUpdateReady, UPDATE_CHECK_TIMEOUT_MS } = await setUp();
+    vi.useFakeTimers();
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      return Promise.resolve();
+    });
+    const { result } = renderHook(() => useUpdateReady());
+    const check = checkForUpdate();
+    await vi.advanceTimersByTimeAsync(UPDATE_CHECK_TIMEOUT_MS);
+    await expect(check).resolves.toBe('failed');
+    act(() => worker.setState('installed'));
+    expect(result.current).toBe(true);
+    vi.useRealTimers();
+  });
+
+  it('counts as the daily check, so a return to the app does not check again', async () => {
+    const { checkForUpdate, registration, UPDATE_CHECK_INTERVAL_MS } = await setUp();
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(UPDATE_CHECK_INTERVAL_MS);
+    await checkForUpdate();
+    expect(registration.update).toHaveBeenCalledOnce();
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(registration.update).toHaveBeenCalledOnce();
+    Reflect.deleteProperty(document, 'visibilityState');
+    vi.useRealTimers();
+  });
+
   it('is ready when the new version installed before the update resolved', async () => {
     const { checkForUpdate, registration } = await setUp();
     const worker = makeWorker();

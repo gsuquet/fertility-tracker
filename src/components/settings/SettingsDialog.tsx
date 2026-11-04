@@ -185,7 +185,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [focusRestore] = useState(startWithRestore);
   const s = t.settings;
   const updateReady = useUpdateReady();
-  const [updateCheck, setUpdateCheck] = useState<UpdateCheckResult | 'checking' | null>(null);
+  const [updateCheck, setUpdateCheck] = useState<
+    Exclude<UpdateCheckResult, 'ready'> | 'checking' | null
+  >(null);
 
   const hasData = observations.length > 0;
 
@@ -274,11 +276,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     }
     if (updateCheck === 'checking') return;
     setUpdateCheck('checking');
-    void checkForUpdate().then(setUpdateCheck);
+    // useUpdateReady() alone shows a ready version, so the row does not keep an old result
+    void checkForUpdate().then(result => setUpdateCheck(result === 'ready' ? null : result));
   };
-  const updateDetails: Record<UpdateCheckResult | 'checking', string> = {
+  const updateDetails: Record<Exclude<UpdateCheckResult, 'ready'> | 'checking', string> = {
     checking: s.updateChecking,
-    ready: s.updateReady,
     latest: s.updateLatest,
     failed: s.updateFailed,
     unavailable: s.updateUnavailable,
