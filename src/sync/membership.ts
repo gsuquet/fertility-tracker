@@ -68,12 +68,11 @@ export async function removeMember(
 export async function newRecoveryCode(
   relay: RelayClient,
   keyStore: KeyStore,
-  record: DeviceRecord,
-  previous?: { lookupId: string; memberId: string }
+  record: DeviceRecord
 ): Promise<{ record: DeviceRecord; recoveryCode: string }> {
   const session = await openSession(relay, keyStore, record);
   const keys = await ownerKeys(session);
-  const old = previous ?? lookupCopyOf(keys.lookupCopy);
+  const old = lookupCopyOf(keys.lookupCopy);
   if (!old) throw new VaultError('keys');
   const { vaultId } = record;
   const secret = newRecoverySecret();
@@ -208,8 +207,6 @@ export async function recoverWithCode(
     last: written.record.last,
   };
   await keyStore.save(record);
-  return newRecoveryCode(relay, keyStore, record, {
-    lookupId: values.lookupId,
-    memberId: entry.id,
-  });
+  // The lookup copy in the vault, not the values of the code: another owner can make a new code first
+  return newRecoveryCode(relay, keyStore, record);
 }

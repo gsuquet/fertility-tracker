@@ -148,15 +148,15 @@ It gives a `member` error when the member is not in the keyring or is the device
 
 ## New recovery code
 
-`newRecoveryCode(relay, keyStore, record, previous)` follows [New recovery code](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#new-recovery-code). It gives the device record and the new code.
+`newRecoveryCode(relay, keyStore, record)` follows [New recovery code](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#new-recovery-code). It gives the device record and the new code.
 
 - It makes the new secret, the new lookup object and the key pair of the new recovery member. It writes the lookup object with `If-None-Match: *`.
 - In one rekey write, it removes the old recovery member and adds the new one. The new recovery blob names the new signing key and the new counter.
 - Each owner except the recovery member gets the new lookup copy.
 - Then it deletes the old lookup object.
-- `previous` gives the old lookup id and the old recovery member. Without it, the function reads them from the lookup copy of the device.
+- It reads the old lookup id and the old recovery member from the lookup copy of the device, in the vault that it reads.
 
-It gives a `keys` error when it has no `previous` and the device has no lookup copy. The application shows the code only after the function succeeds.
+It gives a `keys` error when the device has no lookup copy. The application shows the code only after the function succeeds.
 
 ## Recovery
 

@@ -252,6 +252,32 @@ describe('recovery code', () => {
     ).toBe(record.vaultId);
   });
 
+  it('removes the recovery member of the current code when another owner makes a new code during the recovery', async () => {
+    const { relay, ownerStore, recoveryCode, owner, headerOf, objects } = await setup();
+    let codeOfOwner = '';
+    let puts = 0;
+    const racing: RelayClient = {
+      ...relay,
+      putVault: async (...args) => {
+        const result = await relay.putVault(...args);
+        puts += 1;
+        if (puts === 1)
+          codeOfOwner = (await newRecoveryCode(relay, ownerStore, await owner())).recoveryCode;
+        return result;
+      },
+    };
+    const recovered = await recoverWithCode(racing, createMemoryKeyStore(), recoveryCode);
+    const values = await deriveRecoveryValues(
+      (await parseRecoveryCode(codeOfOwner)) as Uint8Array<ArrayBuffer>
+    );
+    const hash = toBase64Url(await sha256(utf8(values.accessToken)));
+    expect(headerOf().keyring.some(m => m.tokenHash === hash)).toBe(false);
+    expect(objects.has(`recovery/${values.lookupId}`)).toBe(false);
+    expect(
+      (await recoverWithCode(relay, createMemoryKeyStore(), recovered.recoveryCode)).record.vaultId
+    ).toBe(recovered.record.vaultId);
+  });
+
   it('makes a new code on an owner device from its lookup copy', async () => {
     const { relay, ownerStore, recoveryCode, owner, objects } = await setup();
     const oldValues = await deriveRecoveryValues(
@@ -400,7 +426,7 @@ describe('recovery code', () => {
       ).toEqual({ reason: 'keys' });
   });
 
-  it('gives a keys error for a new code without a lookup copy and without the previous values', async () => {
+  it('gives a keys error for a new code without a lookup copy', async () => {
     const { relay, ownerStore, owner } = await setup();
     const session = await openSession(relay, ownerStore, await owner());
     const keyring = session.header.keyring.map(({ lookup: _lookup, ...m }) => m);
