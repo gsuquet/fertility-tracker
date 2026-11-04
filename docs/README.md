@@ -66,6 +66,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Error screen](reference/screens/error-screen.md)
 - [Data format](reference/data-format.md)
 - [Data storage](reference/data-storage.md)
+- [Sync rules](reference/sync-rules.md)
 
 ### The code
 
