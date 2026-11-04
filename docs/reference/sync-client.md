@@ -90,7 +90,7 @@ The functions give a `VaultError` in these conditions:
 
 | Reason       | Condition                                                                            |
 | ------------ | ------------------------------------------------------------------------------------ |
-| `relay`      | The relay gives an error. On a write, `412` is not an error.                         |
+| `relay`      | The relay gives an error. For `write()` and `writeSession()`, `412` is not an error. |
 | `refused`    | `openVault()` refuses the vault. The `refusal` field gives the reason.               |
 | `removed`    | The keyring has no entry for the device                                              |
 | `keys`       | A wrapped key of the device does not unwrap                                          |
@@ -144,7 +144,7 @@ Each device keeps the first valid message of the other device in its state. The 
 - It wraps the new data key for each member that stays. It wraps the signing key and the lookup copy for each owner that stays.
 - When the removed member is an owner, it adds a new signing key to the chain, signed with the old key. The device then trusts the new key.
 
-It gives a `member` error when the member is not in the keyring or is the device itself. After the removal of an owner device, the application also makes a new recovery code.
+It gives a `member` error when the member is not in the keyring or is the device itself. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
 
 ## New recovery code
 
@@ -156,7 +156,7 @@ It gives a `member` error when the member is not in the keyring or is the device
 - Then it deletes the old lookup object.
 - `previous` gives the old lookup id and the old recovery member. Without it, the function reads them from the lookup copy of the device.
 
-The application shows the code only after the function succeeds.
+It gives a `keys` error when it has no `previous` and the device has no lookup copy. The application shows the code only after the function succeeds.
 
 ## Recovery
 
@@ -165,9 +165,12 @@ The application shows the code only after the function succeeds.
 - It reads the lookup object, and decrypts the vault id with the lookup key.
 - It reads the vault with the access token of the code. It decrypts the recovery blob with the wrapping key.
 - It opens the vault with the signing key and the counter of the blob, as the recovery member. It keeps this record only in memory.
-- It adds the device as an owner. Then it makes a new recovery code, which removes the old recovery member.
+- It adds the device as an owner, with a lookup copy of the old code. It saves the device record.
+- Then it makes a new recovery code, which removes the old recovery member. When this step fails, the device can call `newRecoveryCode()` again.
 
 It gives a `code` error when the code is not valid or the lookup object does not decrypt. It gives a `keys` error when the recovery blob does not decrypt.
+
+When the vault changed, `removeMember()`, `newRecoveryCode()` and `recoverWithCode()` give a `relay` error with the status `412`.
 
 ## Related documents
 

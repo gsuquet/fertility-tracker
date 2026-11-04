@@ -227,6 +227,31 @@ describe('recovery code', () => {
     expect(again.record.vaultId).toBe(recovered.record.vaultId);
   });
 
+  it('gives the recovered device a lookup copy, so that it makes the new code again after a failure', async () => {
+    const { relay, recoveryCode, failWhen, headerOf } = await setup();
+    let puts = 0;
+    failWhen(request => {
+      if (request.method !== 'PUT' || !request.url.includes('/vaults/')) return false;
+      puts += 1;
+      return puts === 2;
+    });
+    const store = createMemoryKeyStore();
+    expect(await reasonOf(recoverWithCode(relay, store, recoveryCode))).toMatchObject({
+      reason: 'relay',
+      status: 0,
+    });
+    failWhen(null);
+    const record = (await store.load()) as DeviceRecord;
+    expect(headerOf().keyring.find(m => m.id === record.memberId)?.lookup).toBeDefined();
+    const next = await newRecoveryCode(relay, store, record);
+    expect(
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))
+    ).toMatchObject({ reason: 'relay' });
+    expect(
+      (await recoverWithCode(relay, createMemoryKeyStore(), next.recoveryCode)).record.vaultId
+    ).toBe(record.vaultId);
+  });
+
   it('makes a new code on an owner device from its lookup copy', async () => {
     const { relay, ownerStore, recoveryCode, owner, objects } = await setup();
     const oldValues = await deriveRecoveryValues(
@@ -383,6 +408,11 @@ describe('recovery code', () => {
     expect(await reasonOf(newRecoveryCode(relay, ownerStore, await owner()))).toEqual({
       reason: 'keys',
     });
+    // A rekey without a lookup copy would remove the copy of each owner
+    const reader = await join(relay, ownerStore, 'reader');
+    expect(
+      await reasonOf(removeMember(relay, ownerStore, await owner(), reader.record.memberId))
+    ).toEqual({ reason: 'keys' });
   });
 });
 

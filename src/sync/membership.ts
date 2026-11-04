@@ -178,12 +178,21 @@ export async function recoverWithCode(
   const token = newId(32);
   const memberId = newId(8);
   const publicKey = await rawPublicKey(device.publicKey);
-  const member = await memberFor(session, keys, {
-    id: memberId,
-    role: 'owner',
-    publicKey,
-    tokenHash: await hashOf(token),
-  });
+  // The recovery member has no lookup copy. The device gets one, so that it can make a new code
+  // later when the new code below fails.
+  const lookupCopy = utf8(
+    JSON.stringify({ lookupId: values.lookupId, object: lookup.text, memberId: entry.id })
+  );
+  const member = await memberFor(
+    session,
+    { ...keys, lookupCopy },
+    {
+      id: memberId,
+      role: 'owner',
+      publicKey,
+      tokenHash: await hashOf(token),
+    }
+  );
   const written = await writeSession(relay, temporary, session, {
     keyring: [...session.header.keyring, member],
   });

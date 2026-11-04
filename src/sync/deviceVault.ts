@@ -337,6 +337,8 @@ export async function writeRekeyed(
     rawSigningKey = await pkcs8(next.privateKey);
   }
   const lookup = plan.lookupCopy ?? keys.lookupCopy;
+  // Without a lookup copy, the rekey would remove the copy of each owner
+  if (!lookup && header.recoveryBlob) throw new VaultError('keys');
   const recoveryId = lookupCopyOf(lookup)?.memberId;
   const members = [
     ...header.keyring.filter(member => !plan.remove.includes(member.id)),
