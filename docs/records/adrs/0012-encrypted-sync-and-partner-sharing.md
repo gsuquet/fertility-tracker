@@ -43,7 +43,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Good: the relay is in this repository and deploys with the static files.
 - Bad: the server sees the vault ids, the number of members, the IP addresses, the times of the syncs and the padded size.
 - Bad: if the user loses all the devices and the recovery code, nobody can decrypt the vault.
-- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. To a device that uses the recovery code, it can give a signed vault that is older than the code.
+- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. To a device that uses the recovery code, it can give an old signed vault, but not one older than the code.
 - Bad: after each use of the recovery code, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
