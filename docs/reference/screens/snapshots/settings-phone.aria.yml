@@ -44,6 +44,9 @@
         - button "About Fertility Tracker": /About Fertility Tracker Release notes, storage v\d+\.\d+\.\d+/
       - listitem:
         - button "Legal and medical notice"
+      - listitem:
+        - button "Check for updates"
+  - status
   - region "Data":
     - heading "Data" [level=3]
     - list:

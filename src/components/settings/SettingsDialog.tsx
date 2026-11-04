@@ -10,6 +10,7 @@ import {
   Info,
   Keyboard,
   Moon,
+  RefreshCw,
   Scale,
   Smartphone,
   Trash2,
@@ -24,6 +25,8 @@ import { getAppVersion } from '../../domain/appVersion';
 import { summarizeObservations } from '../../domain/backupImport';
 import type { BackupSummary, ImportMode } from '../../domain/backupImport';
 import { parseObservationData } from '../../domain/storageFormat';
+import { applyUpdate, checkForUpdate, useUpdateReady } from '../../pwa/registerServiceWorker';
+import type { UpdateCheckResult } from '../../pwa/registerServiceWorker';
 import { useBackUpNow } from '../../hooks/useBackUpNow';
 import { setShortcutsEnabled, useShortcutsEnabled } from '../../hooks/useKeyboardShortcuts';
 import { formatMessage } from '../../i18n';
@@ -181,6 +184,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   // Read once: a later change must not open the dialog again
   const [focusRestore] = useState(startWithRestore);
   const s = t.settings;
+  const updateReady = useUpdateReady();
+  const [updateCheck, setUpdateCheck] = useState<
+    Exclude<UpdateCheckResult, 'ready'> | 'checking' | null
+  >(null);
 
   const hasData = observations.length > 0;
 
@@ -260,6 +267,29 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
       ],
     };
   };
+
+  // A ready update comes first: the check found it, or it was ready before
+  const handleUpdateRow = () => {
+    if (updateReady) {
+      applyUpdate();
+      return;
+    }
+    if (updateCheck === 'checking') return;
+    setUpdateCheck('checking');
+    // useUpdateReady() alone shows a ready version, so the row does not keep an old result
+    void checkForUpdate().then(result => setUpdateCheck(result === 'ready' ? null : result));
+  };
+  const updateDetails: Record<Exclude<UpdateCheckResult, 'ready'> | 'checking', string> = {
+    checking: s.updateChecking,
+    latest: s.updateLatest,
+    failed: s.updateFailed,
+    unavailable: s.updateUnavailable,
+  };
+  const updateDetail = updateReady
+    ? s.updateReady
+    : updateCheck === null
+      ? undefined
+      : updateDetails[updateCheck];
 
   const confirmation = pending && confirmContent(pending);
   const lastBackup =
@@ -413,7 +443,17 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             onClick={() => onOpenVersion('legal')}
             opens
           />
+          <ActionRow
+            icon={iconOf(RefreshCw)}
+            label={updateReady ? s.reloadToUpdate : s.checkUpdates}
+            {...(updateDetail ? { detail: updateDetail } : {})}
+            onClick={handleUpdateRow}
+          />
         </Group>
+        {/* The detail of the row is its description. This text reads the result aloud */}
+        <p className="sr-only" role="status">
+          {updateDetail}
+        </p>
 
         <Group id="settings-data" title={s.data}>
           <ActionRow

@@ -98,6 +98,7 @@ The gear (**Settings**) in the header opens Settings. On a phone, it is a full p
 | **Help**                 | **Keyboard shortcuts**       | Opens the **Keyboard shortcuts** dialog.                                                                         |
 | **About**                | **About Fertility Tracker**  | Opens the release notes and the storage data.                                                                    |
 | **About**                | **Legal and medical notice** | Opens the legal and medical notice.                                                                              |
+| **About**                | **Check for updates**        | Checks for a new version at once. When one is ready, **Reload to update** applies it.                            |
 | **Data**                 | **Load the demo cycles**     | Replaces all observations with two demo cycles. Asks first if observations exist.                                |
 | **Data**                 | **Delete all data**          | Deletes all observations after a confirmation. It is disabled when no observations exist.                        |
 
