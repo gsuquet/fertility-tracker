@@ -34,7 +34,8 @@ export type VaultErrorReason =
   | 'keys'
   | 'content'
   | 'reader'
-  | 'noRead';
+  | 'noRead'
+  | 'invitation';
 
 export class VaultError extends Error {
   constructor(

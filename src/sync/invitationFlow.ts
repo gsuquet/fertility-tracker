@@ -27,6 +27,8 @@ import type { RelayClient } from './relayClient';
 export interface OwnerInvitation {
   invitation: Invitation;
   role: Member['role'];
+  /** The offer of the owner device. The code uses this offer, not the offer on the relay. */
+  offer: Offer;
 }
 
 interface Messages {
@@ -85,26 +87,38 @@ const post = async (
   if (!result.ok) throw new VaultError('relay', result);
 };
 
-/** Makes an invitation on the relay. Only an owner can invite. */
+/** Makes an invitation on the relay, and the offer with the current signing key. Only an owner can invite. */
 export async function startInvitation(
   relay: RelayClient,
+  keyStore: KeyStore,
   record: DeviceRecord,
   role: Member['role']
 ): Promise<OwnerInvitation> {
-  if (record.role !== 'owner') throw new VaultError('reader');
+  const session = await openSession(relay, keyStore, record);
+  await ownerKeys(session);
   const invitation = newInvitation();
   const result = await relay.putInvite(invitation.id, record.token, record.vaultId);
   if (!result.ok) throw new VaultError('relay', result);
-  return { invitation, role };
+  const offer = makeOffer(record.vaultId, session.record.trustedSigningKey);
+  return { invitation, role, offer };
 }
 
-/** One check of the invitation by the owner device. It sends the offer when the request is valid. */
+const sameOffer = (value: unknown, offer: Offer) =>
+  isOffer(value) &&
+  value.nonce === offer.nonce &&
+  value.vaultId === offer.vaultId &&
+  value.signingPublicKey === offer.signingPublicKey;
+
+/**
+ * One check of the invitation by the owner device. It sends its own offer when the request is
+ * valid, and gives the code from its own offer only.
+ */
 export async function checkAsOwner(
   relay: RelayClient,
   record: DeviceRecord,
   owner: OwnerInvitation
 ): Promise<OwnerCheck> {
-  const { invitation } = owner;
+  const { invitation, offer } = owner;
   const messages = await messagesOf(relay, invitation.id, record.token);
   if (messages === 'expired') return { status: 'expired' };
   if (messages.request === undefined) return { status: 'waiting' };
@@ -115,47 +129,50 @@ export async function checkAsOwner(
   if (!(await checkJoinRequest(invitation, messages.request))) return refuse();
   const request = messages.request as JoinRequest;
   if (messages.offer === undefined) {
-    await post(
-      relay,
-      invitation.id,
-      'offer',
-      makeOffer(record.vaultId, record.trustedSigningKey),
-      record.token
-    );
+    await post(relay, invitation.id, 'offer', offer, record.token);
     return { status: 'waiting' };
   }
+  if (!sameOffer(messages.offer, offer)) return refuse();
   if (messages.reveal === undefined) return { status: 'waiting' };
-  if (!isOffer(messages.offer) || !(await checkReveal(request, messages.reveal))) return refuse();
-  const code = await confirmationCode(
-    invitation,
-    request,
-    messages.offer,
-    messages.reveal as Reveal
-  );
+  if (!(await checkReveal(request, messages.reveal))) return refuse();
+  const code = await confirmationCode(invitation, request, offer, messages.reveal as Reveal);
   return { status: 'confirm', code, request };
 }
 
-/** After the user confirmed the codes: adds the member to the vault, then sends the signed answer. */
+/**
+ * After the user confirmed the codes: checks the messages again, adds the member to the vault,
+ * then sends the signed answer. A second call after a failed answer keeps the same member.
+ */
 export async function approveInvitation(
   relay: RelayClient,
   keyStore: KeyStore,
   record: DeviceRecord,
-  owner: OwnerInvitation,
-  request: JoinRequest
+  owner: OwnerInvitation
 ): Promise<DeviceRecord> {
+  const check = await checkAsOwner(relay, record, owner);
+  if (check.status !== 'confirm') throw new VaultError('invitation', { error: check.status });
+  const { request } = check;
   const session = await openSession(relay, keyStore, record);
   const keys = await ownerKeys(session);
-  const memberId = toBase64Url(randomBytes(8));
-  const member = await memberFor(session, keys, {
-    id: memberId,
-    role: owner.role,
-    publicKey: request.publicKey,
-    tokenHash: request.tokenHash,
-  });
-  const written = await writeSession(relay, keyStore, session, {
-    keyring: [...session.header.keyring, member],
-  });
-  if (!written) throw new VaultError('relay', { status: 412, error: 'changed' });
+  const existing = session.header.keyring.find(member => member.publicKey === request.publicKey);
+  if (existing && (existing.role !== owner.role || existing.tokenHash !== request.tokenHash))
+    throw new VaultError('invitation', { error: 'member' });
+  let memberId = existing?.id;
+  let written = session;
+  if (!memberId) {
+    memberId = toBase64Url(randomBytes(8));
+    const member = await memberFor(session, keys, {
+      id: memberId,
+      role: owner.role,
+      publicKey: request.publicKey,
+      tokenHash: request.tokenHash,
+    });
+    const next = await writeSession(relay, keyStore, session, {
+      keyring: [...session.header.keyring, member],
+    });
+    if (!next) throw new VaultError('relay', { status: 412, error: 'changed' });
+    written = next;
+  }
   const answer: Answer = await signAnswer(
     {
       vaultId: record.vaultId,

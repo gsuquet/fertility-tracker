@@ -87,15 +87,16 @@ A vault session is the last vault that the device read or wrote: the record, the
 
 The functions give a `VaultError` in these conditions:
 
-| Reason    | Condition                                                                        |
-| --------- | -------------------------------------------------------------------------------- |
-| `relay`   | The relay gives an error. On a write, `412` is not an error.                     |
-| `refused` | `openVault()` refuses the vault. The `refusal` field gives the reason.           |
-| `removed` | The keyring has no entry for the device                                          |
-| `keys`    | A wrapped key of the device does not unwrap                                      |
-| `content` | The days do not decrypt                                                          |
-| `reader`  | `write()` occurs, and the entry of the device is not an owner with a signing key |
-| `noRead`  | `write()` occurs before a `read()`                                               |
+| Reason       | Condition                                                                            |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `relay`      | The relay gives an error. On a write, `412` is not an error.                         |
+| `refused`    | `openVault()` refuses the vault. The `refusal` field gives the reason.               |
+| `removed`    | The keyring has no entry for the device                                              |
+| `keys`       | A wrapped key of the device does not unwrap                                          |
+| `content`    | The days do not decrypt                                                              |
+| `reader`     | `write()` occurs, and the entry of the device is not an owner with a signing key     |
+| `noRead`     | `write()` occurs before a `read()`                                                   |
+| `invitation` | `approveInvitation()` occurs before the confirm status, or the member does not agree |
 
 The relay refuses the token of a removed member. Thus, a removed device gets the reason `relay` with the status `401`.
 
@@ -105,10 +106,15 @@ The functions follow [Adding a member](../records/adrs/0012-encrypted-sync-and-p
 
 On the owner device:
 
-- `startInvitation(relay, record, role)` makes the invitation on the relay. It gives a `reader` error on a reader device.
-- `checkAsOwner(relay, record, owner)` reads the messages. When the join request is valid and the offer is missing, it sends the offer.
-- `checkAsOwner()` gives `confirm` with the code after a valid reveal. It gives `refused` and deletes the invitation when the HMAC or the reveal is wrong.
-- `approveInvitation(relay, keyStore, record, owner, request)` adds the member to the vault and sends the signed answer. The application calls it only after its user confirms the codes.
+- `startInvitation(relay, keyStore, record, role)` reads the vault, then makes the invitation on the relay. It gives a `reader` error on a device that is not an owner.
+- It also makes the offer of the owner device, with the current signing key. The owner device keeps this offer.
+- `checkAsOwner(relay, record, owner)` reads the messages. When the join request is valid and the offer is missing, it sends its offer.
+- It gives `refused` and deletes the invitation for a wrong HMAC, a wrong reveal, or an offer on the relay that is not its offer.
+- It gives `confirm` with the code after a valid reveal. The code uses the offer that the owner device keeps, not the offer on the relay.
+- `approveInvitation(relay, keyStore, record, owner)` checks the messages again, adds the member to the vault and sends the signed answer.
+- The application calls `approveInvitation()` only after its user confirms the codes. Before the confirm status, it gives an `invitation` error.
+- When the keyring has the public key of the request already, `approveInvitation()` keeps that member and sends the answer again. Thus, a second call after a failed answer adds no member.
+- It gives an `invitation` error when that member has a different role or a different token hash.
 
 On the new device:
 

@@ -1,6 +1,8 @@
 import { describe, expect, it } from 'vitest';
-import { newInvitation } from '../../domain/vault/invitation';
+import { sha256, toBase64Url, utf8 } from '../../domain/vault/bytes';
+import { makeJoinRequest, newInvitation } from '../../domain/vault/invitation';
 import { readVaultObject } from '../../domain/vault/vaultObject';
+import type { VaultHeader } from '../../domain/vault/vaultObject';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
 import { VaultError, createVault, openSession, vaultStoreOf, writeSession } from '../deviceVault';
 import {
@@ -12,7 +14,7 @@ import {
   startJoin,
 } from '../invitationFlow';
 import type { JoinState, OwnerInvitation } from '../invitationFlow';
-import type { DeviceRecord } from '../keyStore';
+import type { DeviceRecord, KeyStore } from '../keyStore';
 import type { RelayClient } from '../relayClient';
 
 const days = [
@@ -26,7 +28,18 @@ const setup = async () => {
   const owner = vaultStoreOf(harness.relay, ownerStore, record);
   const first = await owner.read();
   await owner.write(days, first?.etag ?? null);
-  return { ...harness, ownerStore, ownerRecord: (await ownerStore.load()) as DeviceRecord };
+  const headerOf = () =>
+    (
+      readVaultObject(harness.objects.get(`vaults/${record.vaultId}`)?.value as string) as {
+        header: VaultHeader;
+      }
+    ).header;
+  return {
+    ...harness,
+    ownerStore,
+    ownerRecord: (await ownerStore.load()) as DeviceRecord,
+    headerOf,
+  };
 };
 
 const reasonOf = async (promise: Promise<unknown>) => {
@@ -53,10 +66,29 @@ const untilCodes = async (
   return { atNewDevice, atOwner };
 };
 
+/** Runs the whole invitation, and gives the record of the new device. */
+const joined = async (
+  relay: RelayClient,
+  ownerStore: KeyStore,
+  ownerRecord: DeviceRecord,
+  role: 'owner' | 'reader'
+) => {
+  const owner = await startInvitation(relay, ownerStore, ownerRecord, role);
+  const join = await startJoin(relay, owner.invitation);
+  await untilCodes(relay, ownerRecord, owner, join);
+  await approveInvitation(relay, ownerStore, ownerRecord, owner);
+  const answered = await checkAsNewDevice(relay, join);
+  if (answered.status !== 'answered') throw new Error(answered.status);
+  const newStore = createMemoryKeyStore();
+  const record = await finishJoin(relay, newStore, join, answered.offer, answered.content);
+  return { record, newStore, owner, answered };
+};
+
 describe('invitation flow', () => {
-  it('adds a reader that reads the days and cannot write', async () => {
-    const { relay, ownerStore, ownerRecord, objects } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+  it('adds a reader that reads the days, and cannot write or invite', async () => {
+    const { relay, ownerStore, ownerRecord, objects, headerOf } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    expect(owner.offer.signingPublicKey).toBe(ownerRecord.trustedSigningKey);
     const join = await startJoin(relay, owner.invitation);
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'waiting' });
     const { atNewDevice, atOwner } = await untilCodes(relay, ownerRecord, owner, join);
@@ -65,13 +97,7 @@ describe('invitation flow', () => {
     // The new device shows the code again before the answer
     expect(await checkAsNewDevice(relay, join)).toMatchObject({ status: 'confirm' });
 
-    const ownerNext = await approveInvitation(
-      relay,
-      ownerStore,
-      ownerRecord,
-      owner,
-      atOwner.request
-    );
+    const ownerNext = await approveInvitation(relay, ownerStore, ownerRecord, owner);
     expect(ownerNext.last?.counter).toBe(3);
     const answered = await checkAsNewDevice(relay, join);
     if (answered.status !== 'answered') throw new Error(answered.status);
@@ -86,31 +112,25 @@ describe('invitation flow', () => {
     const read = await store.read();
     expect(read?.days).toEqual(days);
     expect(await reasonOf(store.write([], read?.etag ?? null))).toEqual({ reason: 'reader' });
+    expect(await reasonOf(startInvitation(relay, newStore, record, 'reader'))).toEqual({
+      reason: 'reader',
+    });
     // The reader entry has no signing key and no lookup copy
-    const { header } = readVaultObject(
-      objects.get(`vaults/${ownerRecord.vaultId}`)?.value as string
-    ) as never as { header: { keyring: { id: string; signingKey?: unknown; lookup?: unknown }[] } };
-    const entry = header.keyring.find(m => m.id === record.memberId);
+    const entry = headerOf().keyring.find(m => m.id === record.memberId);
     expect(entry?.signingKey).toBeUndefined();
     expect(entry?.lookup).toBeUndefined();
   });
 
   it('adds an owner device that writes, and that can invite in turn', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'owner');
-    const join = await startJoin(relay, owner.invitation);
-    const { atOwner } = await untilCodes(relay, ownerRecord, owner, join);
-    await approveInvitation(relay, ownerStore, ownerRecord, owner, atOwner.request);
-    const answered = await checkAsNewDevice(relay, join);
-    if (answered.status !== 'answered') throw new Error(answered.status);
-    const newStore = createMemoryKeyStore();
-    const record = await finishJoin(relay, newStore, join, answered.offer, answered.content);
+    const { record, newStore } = await joined(relay, ownerStore, ownerRecord, 'owner');
     const store = vaultStoreOf(relay, newStore, record);
     const read = await store.read();
     expect(await store.write([], read?.etag ?? null)).toEqual(expect.any(String));
     const session = await openSession(relay, newStore, (await newStore.load()) as DeviceRecord);
     expect(session.entry.lookup).toBeDefined();
-    expect((await startInvitation(relay, session.record, 'reader')).role).toBe('reader');
+    const next = await startInvitation(relay, newStore, session.record, 'reader');
+    expect(next.role).toBe('reader');
   });
 
   it('adds an owner without a lookup copy when the inviting owner has none', async () => {
@@ -118,24 +138,16 @@ describe('invitation flow', () => {
     const session = await openSession(relay, ownerStore, ownerRecord);
     const keyring = session.header.keyring.map(({ lookup: _lookup, ...m }) => m);
     const written = await writeSession(relay, ownerStore, session, { keyring });
-    const record = written?.record as DeviceRecord;
-    const owner = await startInvitation(relay, record, 'owner');
-    const join = await startJoin(relay, owner.invitation);
-    const { atOwner } = await untilCodes(relay, record, owner, join);
-    await approveInvitation(relay, ownerStore, record, owner, atOwner.request);
-    const answered = await checkAsNewDevice(relay, join);
-    if (answered.status !== 'answered') throw new Error(answered.status);
-    const newStore = createMemoryKeyStore();
-    const joined = await finishJoin(relay, newStore, join, answered.offer, answered.content);
-    const newSession = await openSession(relay, newStore, joined);
+    const { record } = await joined(relay, ownerStore, written?.record as DeviceRecord, 'owner');
+    const newSession = await openSession(relay, createMemoryKeyStore(), record);
     expect(newSession.entry.role).toBe('owner');
     expect(newSession.entry.signingKey).toBeDefined();
     expect(newSession.entry.lookup).toBeUndefined();
   });
 
   it('refuses a join request without the secret, and deletes the invitation', async () => {
-    const { relay, ownerRecord, objects } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+    const { relay, ownerStore, ownerRecord, objects } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'waiting' });
     await startJoin(relay, { ...owner.invitation, secret: newInvitation().secret });
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
@@ -144,8 +156,8 @@ describe('invitation flow', () => {
   });
 
   it('refuses a reveal that is not the nonce of the request', async () => {
-    const { relay, ownerRecord } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation);
     await checkAsOwner(relay, ownerRecord, owner);
     // The offer is sent, and the reveal is not there yet
@@ -154,61 +166,114 @@ describe('invitation flow', () => {
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
   });
 
+  it('refuses an offer that is not the offer of the owner device', async () => {
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const join = await startJoin(relay, owner.invitation);
+    // A relay that gives its own offer, with its own signing key, to the two devices
+    const offer = { ...owner.offer, signingPublicKey: toBase64Url(new Uint8Array(65)) };
+    await relay.postInvite(owner.invitation.id, 'offer', offer, ownerRecord.token);
+    expect(await checkAsNewDevice(relay, join)).toMatchObject({ status: 'confirm' });
+    expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
+  });
+
   it('refuses an offer or an answer that is not valid on the new device', async () => {
-    const { relay, ownerRecord } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation);
     await relay.postInvite(owner.invitation.id, 'offer', { nonce: 7 }, ownerRecord.token);
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'refused' });
-    // A valid offer, then an answer that is not signed
-    const second = await startInvitation(relay, ownerRecord, 'reader');
+    const second = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const other = await startJoin(relay, second.invitation);
     await untilCodes(relay, ownerRecord, second, other);
-    await relay.postInvite(
-      second.invitation.id,
-      'answer',
-      { content: '{}', signature: 'AA' },
-      ownerRecord.token
-    );
+    const answer = { content: '{}', signature: 'AA' };
+    await relay.postInvite(second.invitation.id, 'answer', answer, ownerRecord.token);
     expect(await checkAsNewDevice(relay, other)).toEqual({ status: 'refused' });
-    // The owner device refuses an offer that is not valid
-    const third = await startInvitation(relay, ownerRecord, 'reader');
-    const joinThird = await startJoin(relay, third.invitation);
-    await relay.postInvite(third.invitation.id, 'offer', { nonce: 7 }, ownerRecord.token);
-    await relay.postInvite(
-      third.invitation.id,
-      'reveal',
-      { nonce: joinThird.nonce },
-      joinThird.token
-    );
-    expect(await checkAsOwner(relay, ownerRecord, third)).toEqual({ status: 'refused' });
   });
 
-  it('gives expired on the new device, and a reader error when a reader invites', async () => {
-    const { relay, ownerRecord } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+  it('approves only a confirmed invitation, and keeps the same member on a second call', async () => {
+    const { relay, ownerStore, ownerRecord, headerOf, failWhen } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const join = await startJoin(relay, owner.invitation);
+    expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toEqual({
+      reason: 'invitation',
+      error: 'waiting',
+    });
+    await untilCodes(relay, ownerRecord, owner, join);
+    failWhen(request => request.url.endsWith('/answer'));
+    expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toMatchObject({
+      reason: 'relay',
+      status: 0,
+    });
+    failWhen(null);
+    const size = headerOf().keyring.length;
+    const record = (await ownerStore.load()) as DeviceRecord;
+    // The member is in the keyring already: a different role is refused
+    expect(
+      await reasonOf(approveInvitation(relay, ownerStore, record, { ...owner, role: 'owner' }))
+    ).toEqual({ reason: 'invitation', error: 'member' });
+    await approveInvitation(relay, ownerStore, record, owner);
+    expect(headerOf().keyring).toHaveLength(size);
+    const answered = await checkAsNewDevice(relay, join);
+    expect(answered).toMatchObject({ status: 'answered', content: { counter: 3 } });
+  });
+
+  it('refuses a member in the keyring with the same public key and a different token', async () => {
+    const { relay, ownerStore, ownerRecord, headerOf } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const own = headerOf().keyring.find(m => m.id === ownerRecord.memberId);
+    // A join request with the public key of the owner device and a different token
+    const tokenHash = toBase64Url(await sha256(utf8('other')));
+    const { request, nonce } = await makeJoinRequest(
+      owner.invitation,
+      own?.publicKey as string,
+      tokenHash
+    );
+    await relay.postInvite(owner.invitation.id, 'request', request);
+    await checkAsOwner(relay, ownerRecord, owner);
+    await relay.postInvite(owner.invitation.id, 'reveal', { nonce }, 'other');
+    expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toEqual({
+      reason: 'invitation',
+      error: 'member',
+    });
+  });
+
+  it('refuses a new member with a public key that is not valid', async () => {
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const tokenHash = toBase64Url(await sha256(utf8('joiner')));
+    const { request, nonce } = await makeJoinRequest(owner.invitation, 'AA', tokenHash);
+    await relay.postInvite(owner.invitation.id, 'request', request);
+    await checkAsOwner(relay, ownerRecord, owner);
+    await relay.postInvite(owner.invitation.id, 'reveal', { nonce }, 'joiner');
+    expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toEqual({
+      reason: 'keys',
+    });
+  });
+
+  it('gives expired on the new device', async () => {
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation);
     await relay.deleteInvite(owner.invitation.id, ownerRecord.token);
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'expired' });
-    expect(
-      await reasonOf(startInvitation(relay, { ...ownerRecord, role: 'reader' }, 'reader'))
-    ).toEqual({ reason: 'reader' });
   });
 
   it('gives a relay error when the relay fails', async () => {
-    const { relay, ownerRecord, env } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+    const { relay, ownerStore, ownerRecord, env, failWhen } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation);
     // The request was sent already
     expect(await reasonOf(startJoin(relay, owner.invitation))).toMatchObject({
       reason: 'relay',
       status: 409,
     });
+    failWhen(request => request.method === 'PUT' && request.url.includes('/invites/'));
+    expect(await reasonOf(startInvitation(relay, ownerStore, ownerRecord, 'reader'))).toMatchObject(
+      { reason: 'relay', status: 0 }
+    );
+    failWhen(null);
     env.VAULTS = undefined;
-    expect(await reasonOf(startInvitation(relay, ownerRecord, 'reader'))).toMatchObject({
-      reason: 'relay',
-      status: 503,
-    });
     expect(await reasonOf(checkAsOwner(relay, ownerRecord, owner))).toMatchObject({
       reason: 'relay',
       status: 503,
@@ -221,32 +286,19 @@ describe('invitation flow', () => {
 
   it('gives a relay error when the vault changed before the approval writes', async () => {
     const { relay, ownerStore, ownerRecord, bucket } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation);
-    const { atOwner } = await untilCodes(relay, ownerRecord, owner, join);
+    await untilCodes(relay, ownerRecord, owner, join);
     const put = bucket.put.bind(bucket);
     bucket.put = async (key, value, options) => {
       if (key.startsWith('vaults/')) await put(key, value);
       return put(key, value, options);
     };
-    expect(
-      await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner, atOwner.request))
-    ).toEqual({ reason: 'relay', status: 412, error: 'changed' });
-  });
-
-  it('refuses a new member with a public key that is not valid', async () => {
-    const { relay, ownerStore, ownerRecord } = await setup();
-    const owner = await startInvitation(relay, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
-    const { atOwner } = await untilCodes(relay, ownerRecord, owner, join);
-    expect(
-      await reasonOf(
-        approveInvitation(relay, ownerStore, ownerRecord, owner, {
-          ...atOwner.request,
-          publicKey: 'AA',
-        })
-      )
-    ).toEqual({ reason: 'keys' });
+    expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toEqual({
+      reason: 'relay',
+      status: 412,
+      error: 'changed',
+    });
   });
 
   it('reads messages that are not an object as no message', async () => {
