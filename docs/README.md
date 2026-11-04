@@ -111,3 +111,4 @@ Records are not Diátaxis pages. An RFC proposes a large change before the work 
 - [ADR 0009: Chart density and 44 px desktop columns](records/adrs/0009-chart-density-and-desktop-columns.md)
 - [ADR 0010: One-line legal footer in the browser](records/adrs/0010-one-line-legal-footer.md)
 - [ADR 0011: Design system rules of the phone-first redesign](records/adrs/0011-design-rules-of-the-redesign.md)
+- [ADR 0012: End-to-end encrypted sync and partner sharing](records/adrs/0012-encrypted-sync-and-partner-sharing.md)

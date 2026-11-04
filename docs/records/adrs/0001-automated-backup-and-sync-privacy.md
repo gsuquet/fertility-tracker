@@ -1,7 +1,7 @@
 # ADR 0001: Automatic backup and synchronization with zero-knowledge privacy
 
 - **Date:** 2026-08-14
-- **Status:** Proposed. Not implemented.
+- **Status:** Superseded by [ADR 0012](0012-encrypted-sync-and-partner-sharing.md)
 
 ## Context
 
