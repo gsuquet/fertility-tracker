@@ -29,6 +29,8 @@ export interface OwnerInvitation {
   role: Member['role'];
   /** The offer of the owner device. The code uses this offer, not the offer on the relay. */
   offer: Offer;
+  /** The first valid join request. The owner device keeps it before it sends its offer. */
+  request?: JoinRequest;
 }
 
 interface Messages {
@@ -49,6 +51,8 @@ export interface JoinState {
   privateKey: CryptoKey;
   publicKey: string;
   token: string;
+  /** The first valid offer. The new device keeps it before it sends its reveal. */
+  offer?: Offer;
 }
 
 export type JoinCheck =
@@ -66,6 +70,18 @@ const isOffer = (value: unknown): value is Offer =>
   typeof value.nonce === 'string' &&
   typeof value.vaultId === 'string' &&
   typeof value.signingPublicKey === 'string';
+
+const sameOffer = (value: unknown, offer: Offer) =>
+  isOffer(value) &&
+  value.nonce === offer.nonce &&
+  value.vaultId === offer.vaultId &&
+  value.signingPublicKey === offer.signingPublicKey;
+
+const sameRequest = (value: JoinRequest, request: JoinRequest) =>
+  value.publicKey === request.publicKey &&
+  value.tokenHash === request.tokenHash &&
+  value.nonceHash === request.nonceHash &&
+  value.mac === request.mac;
 
 /** The messages of the invitation, or a status when the relay does not give them. */
 async function messagesOf(relay: RelayClient, inviteId: string, token: string) {
@@ -103,12 +119,6 @@ export async function startInvitation(
   return { invitation, role, offer };
 }
 
-const sameOffer = (value: unknown, offer: Offer) =>
-  isOffer(value) &&
-  value.nonce === offer.nonce &&
-  value.vaultId === offer.vaultId &&
-  value.signingPublicKey === offer.signingPublicKey;
-
 /**
  * One check of the invitation by the owner device. It sends its own offer when the request is
  * valid, and gives the code from its own offer only.
@@ -128,11 +138,14 @@ export async function checkAsOwner(
   };
   if (!(await checkJoinRequest(invitation, messages.request))) return refuse();
   const request = messages.request as JoinRequest;
+  // A relay that changes the request after the offer could try many requests to get the same code
+  if (owner.request && !sameRequest(request, owner.request)) return refuse();
   if (messages.offer === undefined) {
+    owner.request = request;
     await post(relay, invitation.id, 'offer', offer, record.token);
     return { status: 'waiting' };
   }
-  if (!sameOffer(messages.offer, offer)) return refuse();
+  if (!owner.request || !sameOffer(messages.offer, offer)) return refuse();
   if (messages.reveal === undefined) return { status: 'waiting' };
   if (!(await checkReveal(request, messages.reveal))) return refuse();
   const code = await confirmationCode(invitation, request, offer, messages.reveal as Reveal);
@@ -207,8 +220,11 @@ export async function checkAsNewDevice(relay: RelayClient, join: JoinState): Pro
   const messages = await messagesOf(relay, invitation.id, token);
   if (messages === 'expired') return { status: 'expired' };
   if (messages.offer === undefined) return { status: 'waiting' };
-  const { offer } = messages;
-  if (!isOffer(offer)) return { status: 'refused' };
+  // A relay that changes the offer after the reveal could try many offers to get the same code
+  if (!isOffer(messages.offer) || (join.offer && !sameOffer(messages.offer, join.offer)))
+    return { status: 'refused' };
+  join.offer ??= messages.offer;
+  const { offer } = join;
   const reveal = makeReveal(join.nonce);
   if (messages.reveal === undefined) await post(relay, invitation.id, 'reveal', reveal, token);
   const code = await confirmationCode(invitation, request, offer, reveal);

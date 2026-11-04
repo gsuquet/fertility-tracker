@@ -177,6 +177,37 @@ describe('invitation flow', () => {
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
   });
 
+  it('refuses a request or an offer that the relay changes after the first one', async () => {
+    const { relay, ownerStore, ownerRecord, objects } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const join = await startJoin(relay, owner.invitation);
+    await untilCodes(relay, ownerRecord, owner, join);
+    const key = `invites/${owner.invitation.id}`;
+    const change = (field: 'request' | 'offer', value: Record<string, unknown>) => {
+      const stored = objects.get(key);
+      if (!stored) throw new Error('No invitation');
+      const messages = JSON.parse(stored.value);
+      messages[field] = { ...messages[field], ...value };
+      objects.set(key, { ...stored, value: JSON.stringify(messages) });
+    };
+    // The new device keeps the first offer
+    change('offer', { nonce: 'other' });
+    expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'refused' });
+    // The owner device keeps the first request, also a new request with a valid HMAC
+    const other = await makeJoinRequest(owner.invitation, join.publicKey, 'AA');
+    change('request', other.request as never);
+    expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
+  });
+
+  it('refuses an offer on the relay when the owner device kept no request', async () => {
+    const { relay, ownerStore, ownerRecord } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    await startJoin(relay, owner.invitation);
+    await checkAsOwner(relay, ownerRecord, owner);
+    const { request: _request, ...lost } = owner;
+    expect(await checkAsOwner(relay, ownerRecord, lost)).toEqual({ status: 'refused' });
+  });
+
   it('refuses an offer or an answer that is not valid on the new device', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');

@@ -125,6 +125,13 @@ On the new device:
 
 A check gives `waiting` while the other device did not send its message. It gives `expired` when the relay gives `404`.
 
+Each device keeps the first valid message of the other device in its state: the owner device keeps the request, and the new device keeps the offer.
+
+- The owner device keeps the request before it sends its offer. The new device keeps the offer before it sends its reveal.
+- A later check gives `refused` when the message on the relay is not the kept message.
+- Thus, a relay with the link cannot change a message after it sees the nonce of the other device, and try many values to get the same code.
+- The application keeps the same `OwnerInvitation` or `JoinState` object for all the checks of one invitation.
+
 ## Related documents
 
 - [ADR 0012: End-to-end encrypted sync and partner sharing](../records/adrs/0012-encrypted-sync-and-partner-sharing.md)
