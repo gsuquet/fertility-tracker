@@ -8,11 +8,12 @@ Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-s
 
 ## Files
 
-| File             | Content                                                         |
-| ---------------- | --------------------------------------------------------------- |
-| `relayClient.ts` | `createRelayClient()`: one function for each route of the relay |
-| `keyStore.ts`    | `openKeyStore()`: the device record in IndexedDB                |
-| `deviceVault.ts` | `createVault()`, `vaultStoreOf()`, `VaultError`                 |
+| File                | Content                                                            |
+| ------------------- | ------------------------------------------------------------------ |
+| `relayClient.ts`    | `createRelayClient()`: one function for each route of the relay    |
+| `keyStore.ts`       | `openKeyStore()`: the device record in IndexedDB                   |
+| `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
+| `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 
 ## Relay client
 
@@ -57,6 +58,15 @@ The device record is in the IndexedDB database `fertility-tracker-sync`, version
 
 When a write fails, `createVault()` gives a `VaultError` with the reason `relay` and saves nothing.
 
+## Vault session
+
+A vault session is the last vault that the device read or wrote: the record, the header, the ETag, the days and the data key.
+
+- `openSession(relay, keyStore, record)` reads, checks and decrypts the vault. It saves the new trusted signing key, the counter and the role in the record.
+- `ownerKeys(session)` unwraps the signing private key and the lookup copy of the device. It gives a `reader` error when the entry is not an owner with a signing key.
+- `memberFor(session, keys, member)` makes a keyring entry for a new member. It wraps the data key, and for an owner also the signing key and the lookup copy.
+- `writeSession(relay, keyStore, session, change)` writes the next vault with new days or a new keyring. It gives `null` for `412`.
+
 ## Vault store
 
 `vaultStoreOf(relay, keyStore, record)` gives the `VaultStore` of the [sync engine](sync-rules.md#sync) for the vault of the record.
@@ -77,17 +87,50 @@ When a write fails, `createVault()` gives a `VaultError` with the reason `relay`
 
 The functions give a `VaultError` in these conditions:
 
-| Reason    | Condition                                                                        |
-| --------- | -------------------------------------------------------------------------------- |
-| `relay`   | The relay gives an error. On a write, `412` is not an error.                     |
-| `refused` | `openVault()` refuses the vault. The `refusal` field gives the reason.           |
-| `removed` | The keyring has no entry for the device                                          |
-| `keys`    | A wrapped key of the device does not unwrap                                      |
-| `content` | The days do not decrypt                                                          |
-| `reader`  | `write()` occurs, and the entry of the device is not an owner with a signing key |
-| `noRead`  | `write()` occurs before a `read()`                                               |
+| Reason       | Condition                                                                            |
+| ------------ | ------------------------------------------------------------------------------------ |
+| `relay`      | The relay gives an error. On a write, `412` is not an error.                         |
+| `refused`    | `openVault()` refuses the vault. The `refusal` field gives the reason.               |
+| `removed`    | The keyring has no entry for the device                                              |
+| `keys`       | A wrapped key of the device does not unwrap                                          |
+| `content`    | The days do not decrypt                                                              |
+| `reader`     | `write()` occurs, and the entry of the device is not an owner with a signing key     |
+| `noRead`     | `write()` occurs before a `read()`                                                   |
+| `invitation` | `approveInvitation()` occurs before the confirm status, or the member does not agree |
 
 The relay refuses the token of a removed member. Thus, a removed device gets the reason `relay` with the status `401`.
+
+## Invitation
+
+The functions follow [Adding a member](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#adding-a-member). The application calls each check again until the status changes.
+
+On the owner device:
+
+- `startInvitation(relay, keyStore, record, role)` reads the vault, then makes the invitation on the relay. It gives a `reader` error on a device that is not an owner.
+- It also makes the offer of the owner device, with the current signing key. The owner device keeps this offer.
+- `checkAsOwner(relay, record, owner)` reads the messages. When the join request is valid and the offer is missing, it sends its offer.
+- It gives `refused` and deletes the invitation for a wrong HMAC, a wrong reveal, or an offer on the relay that is not its offer.
+- It gives `confirm` with the code after a valid reveal. The code uses the offer that the owner device keeps, not the offer on the relay.
+- `approveInvitation(relay, keyStore, record, owner)` checks the messages again, adds the member to the vault and sends the signed answer.
+- The application calls `approveInvitation()` only after its user confirms the codes. Before the confirm status, it gives an `invitation` error.
+- When the keyring has the public key of the request already, `approveInvitation()` keeps that member and sends the answer again. Thus, a second call after a failed answer adds no member.
+- It gives an `invitation` error when that member has a different role or a different token hash.
+
+On the new device:
+
+- `startJoin(relay, invitation)` makes the key pair and the token of the device, and sends the join request.
+- `checkAsNewDevice(relay, join)` sends the reveal after the offer. It gives `confirm` with the code, then `answered` with the checked answer.
+- `finishJoin(relay, keyStore, join, offer, content)` makes the device record and reads the vault with it. Then it deletes the invitation.
+- The application calls `finishJoin()` only after its user confirms the codes. Thus, the device shows no data before the confirmation.
+
+A check gives `waiting` while the other device did not send its message. It gives `expired` when the relay gives `404`.
+
+Each device keeps the first valid message of the other device in its state. The owner device keeps the request, and the new device keeps the offer.
+
+- The owner device keeps the request before it sends its offer. The new device keeps the offer before it sends its reveal.
+- A later check gives `refused` when the message on the relay is not the kept message.
+- Thus, a relay with the link cannot change a message after it sees the other nonce. It cannot try many values to get the same code.
+- The application keeps the same `OwnerInvitation` or `JoinState` object for all the checks of one invitation.
 
 ## Related documents
 
