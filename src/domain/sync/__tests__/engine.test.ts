@@ -3,6 +3,7 @@ import { createMemoryVaultStore } from '../../../test/memoryVaultStore';
 import { makeObservation } from '../../../test/factories';
 import type { Observation, ObservationInput } from '../../../types/crms';
 import { zeroClock } from '../clock';
+import { addConflicts } from '../merge';
 import {
   MAX_DELETIONS_WITHOUT_CONFIRMATION,
   MAX_SYNC_ATTEMPTS,
@@ -154,7 +155,7 @@ describe('syncOnce', () => {
     await phone.sync(store, 1000);
     await tablet.sync(store, 1000);
     tablet.observations = [
-      ...tablet.observations,
+      makeObservation({ date: '2026-10-01', stretch: '2' }),
       makeObservation({ date: '2026-10-02', stretch: '2' }),
     ];
     await tablet.sync(store, 2000);
@@ -178,9 +179,17 @@ describe('syncOnce', () => {
         confirmDeletions: async () => true,
       })
     );
-    // The observations changed: the application keeps them and only the new clock
+    // The observations changed: the application keeps them and only the new clock. The write is
+    // final, so it keeps the conflicts: the version of the tablet is only there now.
     phone.observations = edited;
     phone.state = { ...before, clock: result.state.clock };
+    expect(addConflicts([], result.conflicts)).toEqual([
+      {
+        date: '2026-10-01',
+        day: { stretch: '2' },
+        clock: { time: 2000, counter: 0, member: 'tablet' },
+      },
+    ]);
 
     await phone.sync(store, 3000);
     expect(phone.observations.map(o => [o.date, o.stretch])).toEqual([

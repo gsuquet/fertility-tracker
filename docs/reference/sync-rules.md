@@ -134,7 +134,7 @@ In a normal sync:
 
 `changed` is `true` when the merge changes a day or a manual Peak Day on the device. The engine does not write to the browser storage. The application saves the observations first. It saves the new state only after that save succeeds.
 
-Only one sync runs at a time. The observations can change while the engine waits for the vault store. In that case, the application does not save the observations of the result. It keeps its observations and its state, and keeps only `state.clock` of the result. Its next sync stamps the new change and merges again.
+Only one sync runs at a time. The observations can change while the engine waits for the vault store. In that case, the application does not save the observations of the result. It keeps its observations and its state, and keeps only `state.clock` of the result. The write to the vault is final, so the application always adds `conflicts` to its list with `addConflicts()`. Its next sync stamps the new change and merges again.
 
 `newSyncState(member, observations)` gives the state of a device that joins a vault. Its days come from `firstSyncDays()`, and it has no base.
 
