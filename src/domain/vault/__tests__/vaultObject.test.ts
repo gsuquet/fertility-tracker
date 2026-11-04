@@ -197,6 +197,12 @@ describe('vault object', () => {
     expect('refused' in (await openVault(await sealVault({ ...input, counter: 3 }), check))).toBe(
       false
     );
+    // After a join or a recovery, the device has a signed counter without a digest
+    const joined = { vaultId, trustedSigningKey: trusted, last: { counter: 2 } };
+    expect('refused' in (await openVault(await sealVault({ ...input, counter: 2 }), joined))).toBe(
+      false
+    );
+    expect(await openVault(await sealVault(input), joined)).toEqual({ refused: 'rollback' });
   });
 
   it('gives null days for a wrong data key or a content that is not vault days', async () => {

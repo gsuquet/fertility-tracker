@@ -23,6 +23,33 @@ export interface WrappedKey extends SealedBytes {
   epk: string;
 }
 
+/** The fixed value of a context field that has no member or no key id. */
+export const NO_ID = '-';
+
+/** The context of the recovery blob. The recovering device knows only the code and the vault id. */
+export const recoveryBlobContext = (vaultId: string, lookupId: string): KeyContext => ({
+  vaultId,
+  memberId: lookupId,
+  keyId: NO_ID,
+  purpose: 'recovery',
+});
+
+/** The context of an earlier data key, encrypted with the current data key. */
+export const earlierKeyContext = (vaultId: string, earlierKeyId: string): KeyContext => ({
+  vaultId,
+  memberId: NO_ID,
+  keyId: earlierKeyId,
+  purpose: 'earlier',
+});
+
+/** The context of the `recovery/<lookup id>` object, encrypted with the lookup key. */
+export const lookupObjectContext = (lookupId: string): KeyContext => ({
+  vaultId: NO_ID,
+  memberId: lookupId,
+  keyId: NO_ID,
+  purpose: 'lookup',
+});
+
 const ECDH = { name: 'ECDH', namedCurve: 'P-256' } as const;
 const IV_BYTES = 12;
 

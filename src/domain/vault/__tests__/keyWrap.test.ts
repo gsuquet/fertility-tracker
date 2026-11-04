@@ -1,6 +1,16 @@
 import { describe, expect, it } from 'vitest';
 import { randomBytes } from '../bytes';
-import { importEcdhPublicKey, unwrapKey, unwrapWithKey, wrapKey, wrapWithKey } from '../keyWrap';
+import {
+  NO_ID,
+  earlierKeyContext,
+  importEcdhPublicKey,
+  lookupObjectContext,
+  recoveryBlobContext,
+  unwrapKey,
+  unwrapWithKey,
+  wrapKey,
+  wrapWithKey,
+} from '../keyWrap';
 import type { KeyContext } from '../keyWrap';
 
 const context: KeyContext = { vaultId: 'v', memberId: 'm', keyId: 'k', purpose: 'data' };
@@ -48,6 +58,40 @@ describe('keyWrap', () => {
     const sealed = await wrapWithKey(bytes, key, { ...context, purpose: 'recovery' });
     expect(await unwrapWithKey(sealed, key, { ...context, purpose: 'recovery' })).toEqual(bytes);
     expect(await unwrapWithKey(sealed, key, context)).toBeNull();
+  });
+
+  it('gives fixed contexts without a key id or a member, and they do not open each other', async () => {
+    expect(recoveryBlobContext('v', 'look')).toEqual({
+      vaultId: 'v',
+      memberId: 'look',
+      keyId: NO_ID,
+      purpose: 'recovery',
+    });
+    expect(earlierKeyContext('v', 'k1')).toEqual({
+      vaultId: 'v',
+      memberId: NO_ID,
+      keyId: 'k1',
+      purpose: 'earlier',
+    });
+    expect(lookupObjectContext('look')).toEqual({
+      vaultId: NO_ID,
+      memberId: 'look',
+      keyId: NO_ID,
+      purpose: 'lookup',
+    });
+    const key = await crypto.subtle.generateKey({ name: 'AES-GCM', length: 256 }, false, [
+      'encrypt',
+      'decrypt',
+    ]);
+    const sealed = await wrapWithKey(randomBytes(4), key, lookupObjectContext('look'));
+    expect(
+      await unwrapWithKey(sealed, key, {
+        vaultId: 'v',
+        memberId: 'look',
+        keyId: NO_ID,
+        purpose: 'lookup',
+      })
+    ).toBeNull();
   });
 
   it('imports a raw public key, or gives null', async () => {

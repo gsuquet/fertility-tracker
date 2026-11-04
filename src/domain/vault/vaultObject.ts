@@ -60,8 +60,11 @@ export interface OpenCheck {
   vaultId: string;
   /** The newest signing public key that the device accepted. */
   trustedSigningKey: string;
-  /** The last counter and the digest of that object, or null before the first read. */
-  last: { counter: number; digest: string } | null;
+  /**
+   * The last counter and the digest of that object, or null before the first read. After a join
+   * or a recovery, the device has a signed counter without a digest.
+   */
+  last: { counter: number; digest?: string } | null;
 }
 
 const IV_BYTES = 12;
@@ -183,7 +186,8 @@ export async function openVault(
   const { last } = check;
   if (
     last &&
-    (header.counter < last.counter || (header.counter === last.counter && digest !== last.digest))
+    (header.counter < last.counter ||
+      (header.counter === last.counter && last.digest !== undefined && digest !== last.digest))
   ) {
     return { refused: 'rollback' };
   }

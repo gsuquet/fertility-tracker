@@ -65,7 +65,21 @@ The recovery secret is 16 random bytes (`newRecoverySecret()`).
 
 The result is `{ "epk": public key, "iv": IV, "data": ciphertext }`. `wrapWithKey(bytes, key, context)` encrypts with an AES-GCM key that the device has, for example the wrapping key of the recovery code. Its result is `{ "iv": IV, "data": ciphertext }`.
 
-The additional data is the UTF-8 text `fertility-tracker-key:1:<vault id>:<member id>:<key id>:<purpose>`. The purpose is `data`, `signing`, `lookup`, `earlier` or `recovery`. `unwrapKey()` and `unwrapWithKey()` give the bytes, or `null` when the key, the context or the data is wrong.
+The additional data is the UTF-8 text `fertility-tracker-key:1:<vault id>:<member id>:<key id>:<purpose>`. `unwrapKey()` and `unwrapWithKey()` give the bytes, or `null` when the key, the context or the data is wrong. Each purpose has a fixed context. `-` (`NO_ID`) is the value of a field that does not apply:
+
+| Purpose    | Vault id | Member id     | Key id                     | Bytes                                                                                      |
+| ---------- | -------- | ------------- | -------------------------- | ------------------------------------------------------------------------------------------ |
+| `data`     | Vault id | The member    | `keyId` of the same header | The 32 bytes of the data key                                                               |
+| `signing`  | Vault id | The member    | `keyId` of the same header | The signing private key in PKCS #8                                                         |
+| `lookup`   | Vault id | The member    | `keyId` of the same header | The UTF-8 JSON `{ "lookupId", "object" }`: the lookup id and the text of the lookup object |
+| `earlier`  | Vault id | `-`           | The id of the earlier key  | The 32 bytes of the earlier data key                                                       |
+| `recovery` | Vault id | The lookup id | `-`                        | The recovery blob                                                                          |
+| `lookup`   | `-`      | The lookup id | `-`                        | The lookup object: the UTF-8 vault id                                                      |
+
+- `recoveryBlobContext()`, `earlierKeyContext()` and `lookupObjectContext()` give the three contexts without a member.
+- The recovery blob is the UTF-8 JSON `{ "privateKey", "signingPublicKey", "counter" }`. `privateKey` is the ECDH private key of the recovery member in PKCS #8. The recovering device knows the vault id and the lookup id, so it can make the context.
+- The lookup object is the content of `recovery/<lookup id>`. It is the JSON of the result of `wrapWithKey()` with the lookup key.
+- When the data key changes, an owner device wraps each `data`, `signing`, `lookup` and `earlier` key again. It cannot change the recovery blob, so the context of the blob has no key id.
 
 ## Signing key chain
 
@@ -116,15 +130,17 @@ A member of the keyring has these fields:
 
 `openVault(text, check)` gives the header and the ciphertext, or the reason of a refusal:
 
-| Condition                                                         | Reason                                                                          |
-| ----------------------------------------------------------------- | ------------------------------------------------------------------------------- |
-| The text, the header or a field is not valid                      | `invalid`                                                                       |
-| The vault id is not the expected vault id                         | `wrongVault`                                                                    |
-| The trusted signing key does not reach the last key of the chain  | `untrusted`                                                                     |
-| The signature is not correct with the last key of the chain       | `badSignature`                                                                  |
-| The counter is lower than the last counter that the device saw    | `rollback`                                                                      |
-| The counter is the same, and the SHA-256 of the text is different | `rollback`                                                                      |
-| **Else**                                                          | The header, the ciphertext, the current signing key and the SHA-256 of the text |
+| Condition                                                                                 | Reason                                                                          |
+| ----------------------------------------------------------------------------------------- | ------------------------------------------------------------------------------- |
+| The text, the header or a field is not valid                                              | `invalid`                                                                       |
+| The vault id is not the expected vault id                                                 | `wrongVault`                                                                    |
+| The trusted signing key does not reach the last key of the chain                          | `untrusted`                                                                     |
+| The signature is not correct with the last key of the chain                               | `badSignature`                                                                  |
+| The counter is lower than the last counter that the device saw                            | `rollback`                                                                      |
+| The counter is the same, the check has a digest, and the SHA-256 of the text is different | `rollback`                                                                      |
+| **Else**                                                                                  | The header, the ciphertext, the current signing key and the SHA-256 of the text |
+
+After a join or a recovery, the device has a signed counter but no digest. The check then has no digest, and the vault of the same counter is accepted.
 
 `decryptVaultDays(opened, dataKey)` decrypts the ciphertext and gives the vault days of [parseVaultDays()](sync-rules.md#vault-content), or `null`.
 
