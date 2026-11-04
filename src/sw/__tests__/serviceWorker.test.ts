@@ -142,6 +142,12 @@ describe('service worker', () => {
     expect(handleFetch(scope, CACHE, font)).toBeUndefined();
   });
 
+  it('ignores the requests to the sync relay', () => {
+    const { scope } = makeScope(online);
+    expect(handleFetch(scope, CACHE, request('/api/vaults/x'))).toBeUndefined();
+    expect(handleFetch(scope, CACHE, request('/api/recovery/x'))).toBeUndefined();
+  });
+
   it('serves hashed assets from the cache without the network', async () => {
     const { scope, caches } = makeScope(online);
     const cache = await caches.open(CACHE);

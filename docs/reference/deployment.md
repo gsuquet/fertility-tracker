@@ -4,13 +4,13 @@ This page gives the rules for the hosting, the offline use, the installation and
 
 ## Hosting
 
-| Item             | Value                                                                                                   |
-| ---------------- | ------------------------------------------------------------------------------------------------------- |
-| Platform         | Cloudflare Pages, static site                                                                           |
-| Settings         | [wrangler.json](../../wrangler.json): `name` is `fertility-tracker`, `pages_build_output_dir` is `dist` |
-| Build command    | `npm run build`, that is `npm run typecheck` (`tsc --noEmit` for `src` and `e2e`) then `vite build`     |
-| Deploy command   | `npm run deploy`, that is the build then `wrangler pages deploy dist`                                   |
-| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                             |
+| Item             | Value                                                                                                    |
+| ---------------- | -------------------------------------------------------------------------------------------------------- |
+| Platform         | Cloudflare Pages: the static site, and the Pages Function of the relay in [functions/](../../functions/) |
+| Settings         | [wrangler.json](../../wrangler.json): `name` is `fertility-tracker`, `pages_build_output_dir` is `dist`  |
+| Build command    | `npm run build`, that is `npm run typecheck` (`tsc --noEmit` for `src` and `e2e`) then `vite build`      |
+| Deploy command   | `npm run deploy`, that is the build then `wrangler pages deploy dist`                                    |
+| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                              |
 
 ## Offline use and installation
 
@@ -30,7 +30,7 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 | `install`  | Adds each precache URL to the new cache, with `cache: 'no-cache'`. The browser checks each file with the server, so its HTTP cache cannot give an old shell. It does not call `skipWaiting()`: a new version waits ([Update](application-behavior.md#update)). |
 | `activate` | Deletes each cache whose name starts with `fertility-tracker-` and is not the current cache. Then calls `clients.claim()`.                                                                                                                                     |
 | `message`  | For the message `SKIP_WAITING`, calls `skipWaiting()`. It ignores other messages.                                                                                                                                                                              |
-| `fetch`    | Ignores requests that are not `GET` or that go to another origin.                                                                                                                                                                                              |
+| `fetch`    | Ignores requests that are not `GET`, that go to another origin, or that go to `/api/` ([Relay API](relay-api.md)).                                                                                                                                             |
 - Cache lookups use `ignoreVary: true`. The precache requests have no `Origin` header, but module scripts are CORS requests. Without this option, `Vary: Origin` makes each lookup fail.
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
@@ -64,6 +64,8 @@ Other rules:
 - `style-src` is `'self' 'unsafe-inline'` and `font-src` is `'self'`. `index.html` loads no stylesheet, font or preconnect from another origin.
 - `sw.js` has `Cache-Control: no-cache, no-store, must-revalidate`. Thus, the browser always looks for a new service worker.
 - Files in `assets/` are immutable for one year.
+- `connect-src` is `'self'`. The relay is on the same origin, so the policy allows the requests to `/api/`.
+- Cloudflare does not add the headers of `_headers` to the answers of the Pages Function. Thus, the relay sets its own headers ([Relay API](relay-api.md#all-routes)).
 
 ## Related documents
 

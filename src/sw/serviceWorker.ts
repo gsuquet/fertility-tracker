@@ -136,6 +136,8 @@ export function handleFetch(
 ): Promise<Response> | undefined {
   const url = new URL(request.url);
   if (request.method !== 'GET' || url.origin !== scope.location.origin) return undefined;
+  // The sync relay must always answer from the network: a cached vault is an old vault
+  if (url.pathname.startsWith('/api/')) return undefined;
   if (request.mode === 'navigate') {
     const shell = new URL('./', scope.location.href);
     const isShell =

@@ -36,6 +36,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Add a language](how-to/add-a-language.md)
 - [Release a new version](how-to/release-a-new-version.md)
 - [Deploy to Cloudflare Pages](how-to/deploy-to-cloudflare.md)
+- [Set up the sync relay](how-to/set-up-the-sync-relay.md)
 - [Write documentation](how-to/write-documentation.md)
 - [Check the layout on real devices](how-to/check-the-layout-on-real-devices.md)
 
@@ -68,6 +69,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Data storage](reference/data-storage.md)
 - [Sync rules](reference/sync-rules.md)
 - [Vault format](reference/vault-format.md)
+- [Relay API](reference/relay-api.md)
 
 ### The code
 

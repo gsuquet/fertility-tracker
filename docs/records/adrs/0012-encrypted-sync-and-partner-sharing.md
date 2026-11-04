@@ -47,6 +47,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Bad: after each use of the recovery code and after each removal of an own device, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
+- Bad: anyone can make a new vault, because the relay has no accounts. Only the rate limit and the size limits limit the storage.
 
 ### Confirmation
 
@@ -286,7 +287,7 @@ At load, when `parseObservationData()` gives `null` or `droppedCount` is more th
 
 ### History
 
-- Once each day, the first write also copies the vault to `history/<vault id>/<date>`. An R2 lifecycle rule deletes a history copy after 30 days.
+- Once each day, the first update also copies the vault to `history/<vault id>/<date>`. An R2 lifecycle rule deletes a history copy after 30 days.
 - A history copy stays readable after a change of the data key, because the vault keeps the earlier data keys.
 - To restore a copy, an owner device restores only its days and tombstones, with new clocks. It keeps the current keyring, data key and signing key chain, and writes the current counter plus 1.
 
@@ -304,7 +305,7 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 | Access    | `Authorization: Bearer <token>`. The server keeps only the SHA-256 of each token.                                                                                                                                       |
 | Writes    | With an owner token and `If-Match`. A new vault uses `If-None-Match: *`.                                                                                                                                                |
 | Recovery  | A new `recovery/` object needs `If-None-Match: *` and an owner token of a vault. The function keeps that vault id in the R2 metadata. A change or a deletion needs an owner token of that vault. A read needs no token. |
-| Limits    | 1 MB for each vault. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                                                                                                    |
+| Limits    | 1 MB for each vault, 256 KB for a new vault. An update is at most 256 KB, or the stored size plus 64 KB. A Cloudflare rate limiting rule for each IP address on `/api/`.                                                |
 | Host      | The function refuses a host other than `fertility-tracker.gsuquet.com`. Thus, no request avoids the rate limit through `pages.dev`.                                                                                     |
 | Invites   | The function keeps the creation time and refuses an invitation after 24 hours.                                                                                                                                          |
 | Caching   | Each answer has `Cache-Control: no-store`. The service worker must not cache `/api/`.                                                                                                                                   |

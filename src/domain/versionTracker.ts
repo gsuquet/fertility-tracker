@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.54.0',
+    date: '2026-11-04',
+    title: 'Sync Server',
+    titleFr: 'Serveur de synchronisation',
+    tagline: 'The server that will keep your encrypted days',
+    taglineFr: 'Le serveur qui gardera vos jours chiffrés',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app now has its sync server. It will keep only encrypted data, and only your devices will have the key',
+      'The app never keeps an old copy of your synced data in its offline cache',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application a maintenant son serveur de synchronisation. Il gardera seulement des données chiffrées, et seuls vos appareils auront la clé',
+      'L’application ne garde jamais une ancienne copie de vos données synchronisées dans son cache hors ligne',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.53.0',
     date: '2026-11-04',
     title: 'Vault Encryption',
