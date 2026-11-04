@@ -1,7 +1,8 @@
 /**
  * A small IndexedDB in memory for the tests of the key store. It has only the calls that the key
  * store uses: open with an upgrade, one object store, get, put and delete. `failNextOpen` and
- * `failNextRequest` make the next open or the next request fail.
+ * `failNextRequest` make the next open or the next request fail. `abortNextCommit` aborts the
+ * next transaction without an error event, as a full storage does.
  */
 
 type Handler = ((event: Event) => void) | null;
@@ -28,8 +29,8 @@ class FakeRequest<T> {
 
 export function createFakeIndexedDb() {
   const databases = new Map<string, Map<string, Map<string, unknown>>>();
-  const state = { failNextOpen: false, failNextRequest: false, closed: 0 };
-  const takeFailure = (kind: 'failNextOpen' | 'failNextRequest') => {
+  const state = { failNextOpen: false, failNextRequest: false, abortNextCommit: false, closed: 0 };
+  const takeFailure = (kind: 'failNextOpen' | 'failNextRequest' | 'abortNextCommit') => {
     const fail = state[kind];
     state[kind] = false;
     return fail;
@@ -48,18 +49,21 @@ export function createFakeIndexedDb() {
       const transaction = {
         oncomplete: null as Handler,
         onerror: null as Handler,
+        onabort: null as Handler,
         error: null as DOMException | null,
         objectStore: () => {
           const request = <T>(run: () => T) => {
             const req = new FakeRequest<T>();
             const fail = takeFailure('failNextRequest');
+            const abort = takeFailure('abortNextCommit');
             req.settle(run, fail);
             queueMicrotask(() =>
               queueMicrotask(() => {
                 if (fail) {
                   transaction.error = req.error;
                   transaction.onerror?.(new Event('error'));
-                } else transaction.oncomplete?.(new Event('complete'));
+                } else if (abort) transaction.onabort?.(new Event('abort'));
+                else transaction.oncomplete?.(new Event('complete'));
               })
             );
             return req;

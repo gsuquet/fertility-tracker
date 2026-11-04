@@ -34,6 +34,9 @@ const completion = (transaction: IDBTransaction) =>
   new Promise<void>((resolve, reject) => {
     transaction.oncomplete = () => resolve();
     transaction.onerror = () => reject(transaction.error);
+    // A failed commit, for example a full storage, fires only abort
+    transaction.onabort = () =>
+      reject(transaction.error ?? new DOMException('Aborted', 'AbortError'));
   });
 
 export function openKeyStore(factory: IDBFactory = globalThis.indexedDB): KeyStore {

@@ -39,6 +39,9 @@ describe('key store', () => {
     await expect(store.load()).rejects.toThrow('Fake failure');
     state.failNextRequest = true;
     await expect(store.save(record())).rejects.toThrow('Fake failure');
+    // A commit that aborts without an error event
+    state.abortNextCommit = true;
+    await expect(store.save(record())).rejects.toThrow('Aborted');
   });
 
   it('uses the IndexedDB of the browser by default', () => {
