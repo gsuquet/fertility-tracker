@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.57.0',
+    date: '2026-11-04',
+    title: 'Joining a Vault',
+    titleFr: 'Rejoindre un coffre',
+    tagline: 'How a new device or a partner will join your vault',
+    taglineFr: 'Comment un nouvel appareil ou un partenaire rejoindra votre coffre',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The app can now add a device or a partner to your vault, after you compare the same 6-digit code on the two screens',
+      'A partner can only read your chart, and only your own devices can change it',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’application peut maintenant ajouter un appareil ou un partenaire à votre coffre, après la comparaison du même code à 6 chiffres sur les deux écrans',
+      'Un partenaire peut seulement lire votre tableau, et seuls vos propres appareils peuvent le modifier',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.56.0',
     date: '2026-11-04',
     title: 'Sync Client',
