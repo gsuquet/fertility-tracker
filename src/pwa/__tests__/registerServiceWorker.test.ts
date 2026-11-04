@@ -263,3 +263,158 @@ describe('update of a new version', () => {
     vi.restoreAllMocks();
   });
 });
+
+describe('checkForUpdate', () => {
+  beforeEach(() => {
+    controllerListeners = [];
+    setSecureContext(true);
+    vi.stubEnv('PROD', true);
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    Reflect.deleteProperty(navigator, 'serviceWorker');
+    Reflect.deleteProperty(window, 'isSecureContext');
+    Reflect.deleteProperty(document, 'visibilityState');
+    vi.useRealTimers();
+  });
+
+  /** Registers with a controller, or without one for the first install. */
+  const setUp = async (registration = makeRegistration(), controller: object | null = {}) => {
+    const module = await load();
+    register.mockResolvedValue(registration);
+    setServiceWorker(controller);
+    await module.registerServiceWorker();
+    return { ...module, registration };
+  };
+
+  it('is unavailable when no service worker is registered', async () => {
+    const { checkForUpdate } = await load();
+    await expect(checkForUpdate()).resolves.toBe('unavailable');
+  });
+
+  it('is unavailable after a failed registration', async () => {
+    const { checkForUpdate, registerServiceWorker } = await load();
+    setServiceWorker({});
+    register.mockRejectedValue(new Error('blocked'));
+    await registerServiceWorker();
+    await expect(checkForUpdate()).resolves.toBe('unavailable');
+  });
+
+  it('is ready at once when a new version already waits', async () => {
+    const { checkForUpdate, registration } = await setUp(makeRegistration(makeWorker('installed')));
+    await expect(checkForUpdate()).resolves.toBe('ready');
+    expect(registration.update).not.toHaveBeenCalled();
+  });
+
+  it('has the latest version when the server has the same worker', async () => {
+    const { checkForUpdate, registration } = await setUp();
+    await expect(checkForUpdate()).resolves.toBe('latest');
+    expect(registration.update).toHaveBeenCalledOnce();
+  });
+
+  it('fails when the browser cannot check, for example offline', async () => {
+    const { checkForUpdate, registration } = await setUp();
+    registration.update.mockRejectedValueOnce(new Error('offline'));
+    await expect(checkForUpdate()).resolves.toBe('failed');
+  });
+
+  it('waits for the install of a new version, then is ready', async () => {
+    const { checkForUpdate, registration, useUpdateReady } = await setUp();
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      return Promise.resolve();
+    });
+    const { result } = renderHook(() => useUpdateReady());
+    const check = checkForUpdate();
+    await act(async () => {
+      await Promise.resolve();
+      worker.setState('installed');
+    });
+    await expect(check).resolves.toBe('ready');
+    expect(result.current).toBe(true);
+  });
+
+  it('is ready when the install ends before updatefound reaches the page', async () => {
+    const { checkForUpdate, registration, useUpdateReady } = await setUp();
+    const worker = makeWorker();
+    // In a browser, the update resolves first and updatefound comes in a later task
+    registration.update.mockImplementationOnce(() => {
+      registration.installing = worker;
+      return Promise.resolve();
+    });
+    const { result } = renderHook(() => useUpdateReady());
+    const check = checkForUpdate();
+    await act(async () => {
+      await Promise.resolve();
+      worker.setState('installed');
+    });
+    await expect(check).resolves.toBe('ready');
+    expect(result.current).toBe(true);
+  });
+
+  it('fails after a timeout when the network stalls, and the install can still end later', async () => {
+    const { checkForUpdate, registration, useUpdateReady, UPDATE_CHECK_TIMEOUT_MS } = await setUp();
+    vi.useFakeTimers();
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      return Promise.resolve();
+    });
+    const { result } = renderHook(() => useUpdateReady());
+    const check = checkForUpdate();
+    await vi.advanceTimersByTimeAsync(UPDATE_CHECK_TIMEOUT_MS);
+    await expect(check).resolves.toBe('failed');
+    act(() => worker.setState('installed'));
+    expect(result.current).toBe(true);
+  });
+
+  it('counts as the daily check, so a return to the app does not check again', async () => {
+    const { checkForUpdate, registration, UPDATE_CHECK_INTERVAL_MS } = await setUp();
+    vi.useFakeTimers();
+    vi.advanceTimersByTime(UPDATE_CHECK_INTERVAL_MS);
+    await checkForUpdate();
+    expect(registration.update).toHaveBeenCalledOnce();
+    Object.defineProperty(document, 'visibilityState', { value: 'visible', configurable: true });
+    document.dispatchEvent(new Event('visibilitychange'));
+    expect(registration.update).toHaveBeenCalledOnce();
+  });
+
+  it('is ready when the new version installed before the update resolved', async () => {
+    const { checkForUpdate, registration } = await setUp();
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      worker.setState('installed');
+      return Promise.resolve();
+    });
+    await expect(checkForUpdate()).resolves.toBe('ready');
+  });
+
+  it('fails when the new version does not install', async () => {
+    const { checkForUpdate, registration } = await setUp();
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      return Promise.resolve();
+    });
+    const check = checkForUpdate();
+    await Promise.resolve();
+    worker.setState('redundant');
+    await expect(check).resolves.toBe('failed');
+  });
+
+  it('has the latest version after the first install, which activates at once', async () => {
+    const { checkForUpdate, registration } = await setUp(makeRegistration(), null);
+    const worker = makeWorker();
+    registration.update.mockImplementationOnce(() => {
+      registration.find(worker);
+      return Promise.resolve();
+    });
+    const check = checkForUpdate();
+    await Promise.resolve();
+    worker.setState('installed');
+    await expect(check).resolves.toBe('latest');
+  });
+});

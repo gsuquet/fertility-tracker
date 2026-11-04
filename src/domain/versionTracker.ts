@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.50.0',
+    date: '2026-11-04',
+    title: 'Check for Updates',
+    titleFr: 'Rechercher des mises à jour',
+    tagline: 'Settings can check for a new version at once',
+    taglineFr: 'Les réglages peuvent rechercher une nouvelle version tout de suite',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings has a new Check for updates row in About. It asks for a new version at once, and you do not wait for the daily check',
+      'When a new version is ready, the row becomes Reload to update. A tap starts the new version',
+      'The check never deletes your observations or your settings, and the app still works offline',
+    ],
+    highlightsFr: [
+      'Les réglages ont une nouvelle ligne Rechercher des mises à jour dans À propos. Elle demande une nouvelle version tout de suite, sans attendre la vérification quotidienne',
+      'Quand une nouvelle version est prête, la ligne devient Recharger pour mettre à jour. Un appui lance la nouvelle version',
+      'La recherche ne supprime jamais vos observations ni vos réglages, et l’application fonctionne toujours hors ligne',
+    ],
+  },
+  {
     version: '1.49.0',
     date: '2026-11-04',
     title: 'PDF File of the Chart',

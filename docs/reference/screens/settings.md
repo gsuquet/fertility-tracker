@@ -26,14 +26,14 @@ The close button, **Back** and `Escape` close Settings.
 
 Settings has these groups, in this sequence:
 
-| Group                    | Rows                                                                                                                            |
-| ------------------------ | ------------------------------------------------------------------------------------------------------------------------------- |
-| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                |
-| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                      |
-| **Backup and restore**   | **Back up now** and **Restore from a file**. Under the group, a note says that the file is plain JSON and is not encrypted.     |
-| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                   |
-| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right) and **Legal and medical notice**.  |
-| **Data**                 | **Load the demo cycles** and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`). |
+| Group                    | Rows                                                                                                                                                  |
+| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                      |
+| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                            |
+| **Backup and restore**   | **Back up now** and **Restore from a file**. Under the group, a note says that the file is plain JSON and is not encrypted.                           |
+| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                         |
+| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**. |
+| **Data**                 | **Load the demo cycles** and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`).                       |
 
 ### Rows
 
@@ -51,11 +51,14 @@ Settings has these groups, in this sequence:
 | **Keyboard shortcuts** (Help) | Opens the **Keyboard shortcuts** dialog over Settings.                                                                           |
 | **About Fertility Tracker**   | Opens the version dialog over Settings, on the release notes ([Version dialog](version-dialog.md)).                              |
 | **Legal and medical notice**  | Opens the version dialog over Settings, at the legal notice.                                                                     |
+| **Check for updates**         | Asks the browser for a new version at once ([Update](../application-behavior.md#update)). Settings stays open.                   |
 | **Load the demo cycles**      | Replaces all observations with the demo data.                                                                                    |
 | **Delete all data**           | Deletes all observations.                                                                                                        |
 - The options of **Language** are "English" and "Français".
 - The detail of **Back up now** is "Last backup: " and the date of the last backup, for example "Last backup: Oct 27, 2026". Without a backup, it is "No backup yet".
 - **Restore from a file**, **Load the demo cycles** and **Delete all data** close Settings after they run.
+- **Check for updates** shows the result of the check in its detail. A hidden `role="status"` text reads it aloud. While the check runs, the detail is "Checking…" and a new tap does nothing. Then the detail is "You have the latest version", "The check failed. Check your connection and try again" or "Updates are not available in this browser".
+- When a new version is ready, the row is **Reload to update** with the detail "A new version is ready". A tap applies the update with `applyUpdate()`, and the application reloads one time. The update message at the bottom of the screen hides while Settings is open. Thus, this row applies the update from Settings.
 - `useBackUpNow()` gives the action of **Back up now**. The backup reminder and the save warning use the same hook ([Data storage](../data-storage.md#backup-reminder)).
 - A backup file that the user opens with the application opens Settings. Settings then restores the file, as **Restore from a file** does ([Open a backup file with the app](../application-behavior.md#open-a-backup-file-with-the-app)).
 - **Restore a backup** of the welcome guide opens Settings with the focus on **Restore from a file** ([Welcome guide](welcome-guide.md)).
