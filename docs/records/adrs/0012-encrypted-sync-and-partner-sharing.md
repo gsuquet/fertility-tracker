@@ -43,7 +43,7 @@ The project selects one encrypted and signed vault object in R2, with a merge on
 - Good: the relay is in this repository and deploys with the static files.
 - Bad: the server sees the vault ids, the number of members, the IP addresses, the times of the syncs and the padded size.
 - Bad: if the user loses all the devices and the recovery code, nobody can decrypt the vault.
-- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. It can also give an old vault to a device with no counter yet.
+- Bad: the server can stop the updates, or give a device the last vault that it saw again and again. It can also give an old vault to a device that joins with the recovery code, because that device has no counter yet.
 - Bad: after each use of the recovery code, the user must write down a new code.
 - Bad: a malicious deploy of the application can read the data in the browser. This risk is already true for the local data.
 - Bad: two devices that change the same day before a sync keep only one version as the current day. The other version stays in a conflict list.
@@ -186,8 +186,8 @@ A device or a partner joins with a one-time invitation and an approval on an own
 6. The new device sends B. The owner device checks B against its hash.
 7. The two devices show a 6-digit code from a hash of the invitation secret, the public key, A and B.
 8. The owner compares the two codes in person or by voice, and approves. The owner device wraps the keys for the new member.
-9. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys and the signing public key.
-10. The new device checks this HMAC before it uses the keys. It keeps the signing public key.
+9. The owner device adds an HMAC with the invitation secret. The HMAC covers the vault id, the member id, the wrapped keys, the signing public key and the current counter.
+10. The new device checks this HMAC before it uses the keys. It keeps the signing public key and the counter.
 11. The invitation stops after its first use or after 24 hours.
 
 - The invitation sets the role. The joining device cannot select its role.
@@ -236,6 +236,7 @@ A sync compares the local data, the base and the remote vault for each date:
 | **Else**                                                | The later clock wins. The other version goes to the conflict list.  |
 
 - 5 seconds after each change, also offline, the device compares its local data with the base. It gives a new clock to each date that changed since the last comparison. Thus, no write path of the application changes.
+- Each sync also does this comparison before the merge. Thus, a change saved just before the application closed gets its clock before a merge.
 - A deleted day stays in the vault as a tombstone: the date and the clock. A tombstone is small, so the vault keeps it.
 - A day stays one unit. The merge never combines the bleeding of one device with the mucus of a different device.
 - `isManualPeak` merges for each date by its own clock. A date that gains `isManualPeak` in a comparison gets a Peak Day clock.
@@ -251,14 +252,15 @@ When a device with observations joins a vault, its days get clock 0. Thus, on th
 
 ### Safety of the local data
 
-| Condition                                                                       | Result                                                                                                |
-| ------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------- |
-| `recoveryData` is set                                                           | No sync. The device does not apply the vault to the local data.                                       |
-| At load, `parseObservationData()` gives `null` or `droppedCount` is more than 0 | Before any comparison, the device drops its base from the sync state. It joins again as a new device. |
-| `saveFailed` is true                                                            | No sync. The device does not apply the vault and does not change the base.                            |
-| The observations key is missing and a base exists                               | The device reads the vault as a new device. It deletes no day.                                        |
-| A sync deletes more than 7 days                                                 | The device asks the user before it writes.                                                            |
-| **Else**                                                                        | Normal sync                                                                                           |
+At load, when `parseObservationData()` gives `null` or `droppedCount` is more than 0, the device drops its base from the sync state at once. This occurs before any comparison. The device then joins again as a new device. Then these rules apply:
+
+| Condition                                         | Result                                                                     |
+| ------------------------------------------------- | -------------------------------------------------------------------------- |
+| `recoveryData` is set                             | No sync. The device does not apply the vault to the local data.            |
+| `saveFailed` is true                              | No sync. The device does not apply the vault and does not change the base. |
+| The observations key is missing and a base exists | The device reads the vault as a new device. It deletes no day.             |
+| A sync deletes more than 7 days                   | The device asks the user before it writes.                                 |
+| **Else**                                          | Normal sync                                                                |
 
 ### Conflict list
 
