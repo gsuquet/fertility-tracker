@@ -51,7 +51,8 @@ export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
     title: 'Removing a Member',
     titleFr: 'Retirer un membre',
     tagline: 'How you will remove a device or a partner, and use your recovery code',
-    taglineFr: 'Comment vous retirerez un appareil ou un partenaire, et utiliserez votre code de récupération',
+    taglineFr:
+      'Comment vous retirerez un appareil ou un partenaire, et utiliserez votre code de récupération',
     crmsSpecVersion: '1.1.0',
     highlights: [
       'The app can now remove a device or a partner from your vault, with a new key that the removed member does not have',
