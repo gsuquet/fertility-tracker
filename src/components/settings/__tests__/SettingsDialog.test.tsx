@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react';
 import { screen, fireEvent, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, it, expect, vi } from 'vitest';
+import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { SettingsDialog } from '../SettingsDialog';
 import { useCycleData } from '../../../context/CycleContext';
 import { useLanguage } from '../../../context/LanguageContext';
@@ -15,6 +15,19 @@ import { getTodayStr } from '../../../utils/dateUtils';
 import { STORAGE_LAST_BACKUP_KEY } from '../../../utils/storageKeys';
 import { setShortcutsEnabled } from '../../../hooks/useKeyboardShortcuts';
 import { setHapticsEnabled } from '../../../utils/haptics';
+import type { UpdateCheckResult } from '../../../pwa/registerServiceWorker';
+
+const update = vi.hoisted(() => ({
+  ready: false,
+  applyUpdate: vi.fn(),
+  checkForUpdate: vi.fn<() => Promise<UpdateCheckResult>>(),
+}));
+
+vi.mock('../../../pwa/registerServiceWorker', () => ({
+  useUpdateReady: () => update.ready,
+  applyUpdate: update.applyUpdate,
+  checkForUpdate: update.checkForUpdate,
+}));
 
 // Three short cycles: 2026-09-01, 2026-09-06, 2026-09-11
 const threeCycles = ['2026-09-01', '2026-09-06', '2026-09-11'].flatMap(start => {
@@ -426,5 +439,80 @@ describe('SettingsDialog', () => {
     );
     expect(screen.getByRole('button', { name: fr.confirmDialog.clearConfirm })).toBeInTheDocument();
     expect(screen.getByRole('heading', { name: fr.settings.data })).toBeInTheDocument();
+  });
+});
+
+describe('Check for updates', () => {
+  beforeEach(() => {
+    update.ready = false;
+    update.applyUpdate.mockReset();
+    update.checkForUpdate.mockReset();
+  });
+
+  const row = () => screen.getByRole('button', { name: en.settings.checkUpdates });
+  const status = () => screen.getByRole('status');
+
+  it('is the last row of About and shows no result before a check', () => {
+    renderSettings();
+    const about = screen.getByRole('region', { name: en.settings.about });
+    expect(within(about).getAllByRole('button').at(-1)).toBe(row());
+    expect(row()).not.toHaveAccessibleDescription();
+    expect(status()).toBeEmptyDOMElement();
+  });
+
+  it.each([
+    ['latest', en.settings.updateLatest],
+    ['failed', en.settings.updateFailed],
+    ['unavailable', en.settings.updateUnavailable],
+  ] as const)('checks at once and says the result %s', async (result, text) => {
+    let finish: (value: UpdateCheckResult) => void = () => undefined;
+    update.checkForUpdate.mockReturnValue(new Promise(resolve => (finish = resolve)));
+    const props = renderSettings();
+    fireEvent.click(row());
+    expect(row()).toHaveAccessibleDescription(en.settings.updateChecking);
+    expect(status()).toHaveTextContent(en.settings.updateChecking);
+    // A second tap while the check runs does nothing
+    fireEvent.click(row());
+    expect(update.checkForUpdate).toHaveBeenCalledOnce();
+    finish(result);
+    await waitFor(() => expect(row()).toHaveAccessibleDescription(text));
+    expect(status()).toHaveTextContent(text);
+    expect(update.applyUpdate).not.toHaveBeenCalled();
+    expect(props.onClose).not.toHaveBeenCalled();
+  });
+
+  it('can check again after a result', async () => {
+    update.checkForUpdate.mockResolvedValue('failed');
+    renderSettings();
+    fireEvent.click(row());
+    await waitFor(() => expect(row()).toHaveAccessibleDescription(en.settings.updateFailed));
+    fireEvent.click(row());
+    expect(update.checkForUpdate).toHaveBeenCalledTimes(2);
+  });
+
+  it('says that a version is ready when the check finds one', async () => {
+    update.checkForUpdate.mockResolvedValue('ready');
+    renderSettings();
+    fireEvent.click(row());
+    await waitFor(() => expect(row()).toHaveAccessibleDescription(en.settings.updateReady));
+  });
+
+  it('applies a ready update with Reload to update', () => {
+    update.ready = true;
+    renderSettings();
+    const reload = screen.getByRole('button', { name: en.settings.reloadToUpdate });
+    expect(reload).toHaveAccessibleDescription(en.settings.updateReady);
+    expect(status()).toHaveTextContent(en.settings.updateReady);
+    fireEvent.click(reload);
+    expect(update.applyUpdate).toHaveBeenCalledOnce();
+    expect(update.checkForUpdate).not.toHaveBeenCalled();
+  });
+
+  it('is in French', () => {
+    update.ready = true;
+    renderSettings(undefined, {}, 'fr');
+    expect(
+      screen.getByRole('button', { name: fr.settings.reloadToUpdate })
+    ).toHaveAccessibleDescription(fr.settings.updateReady);
   });
 });

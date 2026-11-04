@@ -10,6 +10,8 @@ export const SKIP_WAITING_MESSAGE = 'SKIP_WAITING';
 /** The page asks the browser to check for a new version at most once in this time. */
 export const UPDATE_CHECK_INTERVAL_MS = 24 * 60 * 60 * 1000;
 
+/** The registration of the service worker, or null before or without it. */
+let activeRegistration: ServiceWorkerRegistration | null = null;
 /** The worker of the new version that the user can apply, or null. */
 let newWorker: ServiceWorker | null = null;
 /** True after Reload, so that the page reloads when the new worker takes control. */
@@ -93,5 +95,40 @@ export function applyUpdate(): void {
 export async function registerServiceWorker(): Promise<void> {
   if (!import.meta.env.PROD || !window.isSecureContext || !('serviceWorker' in navigator)) return;
   const registration = await navigator.serviceWorker.register('./sw.js').catch(() => undefined);
-  if (registration) watchForUpdate(registration);
+  if (!registration) return;
+  activeRegistration = registration;
+  watchForUpdate(registration);
+}
+
+/** The result of **Check for updates** in Settings. */
+export type UpdateCheckResult = 'ready' | 'latest' | 'failed' | 'unavailable';
+
+/** Resolves with the state of the worker when it is no longer `installing`. */
+const settled = (worker: ServiceWorker): Promise<ServiceWorkerState> =>
+  new Promise(resolve => {
+    if (worker.state !== 'installing') {
+      resolve(worker.state);
+      return;
+    }
+    // An installing worker changes only to `installed` or `redundant`
+    worker.addEventListener('statechange', () => resolve(worker.state));
+  });
+
+/**
+ * Asks the browser for a new sw.js at once, for **Check for updates** in Settings. It only
+ * checks: it does not delete a cache, unregister the worker or touch the saved data.
+ */
+export async function checkForUpdate(): Promise<UpdateCheckResult> {
+  const registration = activeRegistration;
+  if (!registration) return 'unavailable';
+  if (newWorker) return 'ready';
+  try {
+    await registration.update();
+  } catch {
+    return 'failed';
+  }
+  // The update resolves when the new worker starts to install, so wait for the end of the install
+  const worker = registration.installing;
+  if (worker && (await settled(worker)) === 'redundant') return 'failed';
+  return newWorker ? 'ready' : 'latest';
 }
