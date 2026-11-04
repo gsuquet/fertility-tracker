@@ -118,12 +118,21 @@ describe('saveFile', () => {
     expect(names).toEqual([]);
   });
 
-  it('downloads the file when iOS refuses the share sheet', async () => {
+  it('fails, with no download, when iOS refuses the share sheet', async () => {
+    // A download can go missing in the Home Screen app, so the user gets the error message
     iPhone();
     stubShare(() => Promise.reject(new DOMException('No click', 'NotAllowedError')));
     const { names } = catchDownload();
-    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('downloaded');
-    expect(names).toEqual(['chart.pdf']);
+    await expect(saveFile(blob, 'chart.pdf')).resolves.toBe('failed');
+    expect(names).toEqual([]);
+  });
+
+  it('opens the share sheet in the click, with no wait before it', () => {
+    iPhone();
+    const shared = stubShare(() => Promise.resolve());
+    catchDownload();
+    void saveFile(blob, 'chart.pdf');
+    expect(shared).toHaveLength(1);
   });
 
   it('downloads the file when iOS cannot share files', async () => {

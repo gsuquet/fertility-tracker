@@ -137,6 +137,11 @@ describe('layoutChartImage', () => {
     expect(ofKind(two, 'rect').filter(r => r.w === 44)).toHaveLength(35 * 3);
     expect(texts(two)).toContain(`${en.chartStrip.cycleBadge} 2`);
     expect(two.height).toBeGreaterThan(one.height + 2 * 92);
+    // A PDF page can end under the grid of each cycle: one row, then the two rows of the long cycle
+    const [first, second] = two.pageBreaks as [number, number];
+    expect(two.pageBreaks).toHaveLength(2);
+    expect(second - first).toBe(20 + 26 + 2 * 92);
+    expect(one.pageBreaks).toEqual([first]);
   });
 
   it('puts the legend on more lines when the labels are long', () => {
@@ -223,6 +228,7 @@ describe('paintChartImage', () => {
     const image: ChartImageLayout = {
       width: 100,
       height: 50,
+      pageBreaks: [],
       ops: [
         { kind: 'rect', x: 0, y: 0, w: 10, h: 10, radius: 2, fill: '#111' },
         { kind: 'rect', x: 0, y: 0, w: 10, h: 10, radius: 2, stroke: '#222', dashed: true },
@@ -263,13 +269,15 @@ describe('paintChartImage', () => {
 
 describe('imageScale', () => {
   it('uses two pixels for each CSS pixel, and less for a very tall image', () => {
-    expect(imageScale({ width: IMAGE_WIDTH, height: 1000, ops: [] })).toBe(IMAGE_SCALE);
-    const tall = { width: IMAGE_WIDTH, height: 10_000, ops: [] };
+    expect(imageScale({ width: IMAGE_WIDTH, height: 1000, ops: [], pageBreaks: [] })).toBe(
+      IMAGE_SCALE
+    );
+    const tall = { width: IMAGE_WIDTH, height: 10_000, ops: [], pageBreaks: [] };
     const scale = imageScale(tall);
     expect(scale).toBeLessThan(IMAGE_SCALE);
     expect(tall.width * scale * tall.height * scale).toBeCloseTo(MAX_CANVAS_PIXELS, -2);
     // Never less than one pixel for each CSS pixel, so the text stays sharp
-    expect(imageScale({ width: IMAGE_WIDTH, height: 100_000, ops: [] })).toBe(1);
+    expect(imageScale({ width: IMAGE_WIDTH, height: 100_000, ops: [], pageBreaks: [] })).toBe(1);
   });
 });
 
@@ -350,6 +358,24 @@ describe('saveChartFile', () => {
     expect(text).toContain(
       '/Filter /DCTDecode /Length 3 >>\nstream\n\u0001\u0002\u0003\nendstream'
     );
+  });
+
+  it('makes and downloads the file in the click, with no wait before it', () => {
+    fakeCanvas();
+    const { names } = catchDownload();
+    void saveChartFile(cycles(), en, 'cycle-1', 'pdf');
+    expect(names).toHaveLength(1);
+  });
+
+  it('ends the PDF pages between two cycles', async () => {
+    const { encodings } = fakeCanvas();
+    const { blobs } = catchDownload();
+    // Eight cycles of one row are taller than one landscape A4 page
+    const many = Array.from({ length: 8 }, (_, index) => ({ ...cycle, id: `c${index}` }));
+    await saveChartFile(selectPrintCycles(many, ['all'], getTodayStr()), en, 'all-cycles', 'pdf');
+    const text = new TextDecoder('latin1').decode(await (blobs[0] as Blob).arrayBuffer());
+    expect(text).toContain('/Count 2');
+    expect(encodings).toHaveLength(1);
   });
 
   it('fails when the browser has no 2D canvas', async () => {

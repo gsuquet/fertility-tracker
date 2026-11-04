@@ -48,15 +48,19 @@ export function downloadBlob(blob: Blob, fileName: string): void {
   setTimeout(() => URL.revokeObjectURL(url), 1000);
 }
 
-/** What became of a file: downloaded, given to the share sheet, or the user closed the sheet */
-export type SaveResult = 'downloaded' | 'shared' | 'cancelled';
+/**
+ * What became of a file: downloaded, given to the share sheet, the user closed the sheet, or iOS
+ * refused the share sheet
+ */
+export type SaveResult = 'downloaded' | 'shared' | 'cancelled' | 'failed';
 
 /**
  * Saves a file that the app made. On iOS and iPadOS, the share sheet opens with the file, so the
  * user can tap Save to Files, Print, AirDrop or Mail: Safari keeps a download in a list that is
- * hard to find, and the Home Screen app can lose it. Other browsers download the file. The call
- * must come from a click, with no wait before it, or the browser refuses the share sheet. Then
- * the file downloads.
+ * hard to find, and the Home Screen app can lose it. When iOS cannot share files, the file
+ * downloads. Other browsers download the file. The call must come from a click, with no wait
+ * before it, or iOS refuses the share sheet: then the result is `failed`, because a download
+ * can also go missing there.
  */
 export async function saveFile(blob: Blob, fileName: string): Promise<SaveResult> {
   if (isIos() && typeof navigator.canShare === 'function') {
@@ -66,7 +70,9 @@ export async function saveFile(blob: Blob, fileName: string): Promise<SaveResult
         await navigator.share({ files: [file] });
         return 'shared';
       } catch (error) {
-        if (error instanceof DOMException && error.name === 'AbortError') return 'cancelled';
+        return error instanceof DOMException && error.name === 'AbortError'
+          ? 'cancelled'
+          : 'failed';
       }
     }
   }

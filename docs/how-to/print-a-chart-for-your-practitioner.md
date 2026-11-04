@@ -23,6 +23,8 @@ The **Print** view also shows the symptoms and the notes of each day. The PDF fi
 
 You have a landscape chart with one row of 35 days for each cycle. The rows go from the oldest cycle to the newest cycle. The text of the chart is in the language of the application. The observation codes are the same in each language. The file name has the cycle number and the date, for example `fertility-tracker-chart-cycle-2-2026-10-27.pdf`. The PNG file has the same name with `.png`.
 
+In the PDF file, a page ends only between two cycles.
+
 ## Related documents
 
 - [Back up and restore your data](back-up-and-restore-your-data.md)

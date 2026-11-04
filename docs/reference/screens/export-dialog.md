@@ -77,8 +77,10 @@ The print layout:
 
 `makeImagePdf()` makes the PDF file from the image of `saveChartFile()`. It does not use the print view or the print dialog, so it works in the Home Screen app of iOS.
 
-- The file has one page. The page is a landscape A4 sheet (841.89 by 595.28 points), or taller when the image needs it. The image is at the top, on the full width of the page.
-- The image is the PNG image above, as a JPEG with a quality of 0.92. The PDF embeds the JPEG bytes as they are.
+- The pages are landscape A4 sheets (841.89 by 595.28 points). The image is on the full width of each page.
+- A page ends only under the grid of a cycle, so a cycle is never on two pages. The title is on the first page and the legend is on the last page. Each page holds as many cycles as fit.
+- A cycle that is taller than a page gets its own page, which is taller than A4.
+- The image is the PNG image above, as a JPEG with a quality of 0.92. The PDF embeds the JPEG bytes one time, and each page shows its part of the image.
 - The file name is the print file name with `.pdf`, for example `fertility-tracker-chart-cycle-1-YYYY-MM-DD.pdf`.
 
 ### Save the file
@@ -86,7 +88,8 @@ The print layout:
 `saveChartFile()` draws and encodes the file in the click, with no wait, and `saveFile()` saves it:
 
 - On iOS and iPadOS, the share sheet opens with the file. The user can tap **Save to Files**, **Print**, **AirDrop** or **Mail**. Safari puts a download in a list that is hard to find, and the Home Screen app can lose it.
-- If iOS cannot share files, or refuses the share sheet, the browser downloads the file.
+- If iOS cannot share files, the browser downloads the file.
+- If iOS refuses the share sheet, the application shows the error message. A download can go missing in the Home Screen app.
 - Other browsers download the file.
 
 | Result                         | Message                                                  |
@@ -95,6 +98,7 @@ The print layout:
 | The share sheet opens          | No message: the share sheet shows its own result.        |
 | The user closes the sheet      | No message.                                              |
 | The browser cannot make it     | An error message. The user can use **Print**.            |
+| iOS refuses the share sheet    | An error message. The user can use **Print**.            |
 
 ## Accessibility
 

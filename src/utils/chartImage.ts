@@ -76,6 +76,8 @@ export interface ChartImageLayout {
   width: number;
   height: number;
   ops: DrawOp[];
+  /** The bottom of the grid of each cycle: a PDF page can end there */
+  pageBreaks: number[];
 }
 
 /** Gives the width of a text in a font, in CSS pixels */
@@ -152,6 +154,7 @@ export function layoutChartImage(
     align: CanvasTextAlign = 'left'
   ) => ops.push({ kind: 'text', x, y, text: value, font: textFont, color, align });
   const right = IMAGE_WIDTH - PAD;
+  const pageBreaks: number[] = [];
   let y = PAD;
 
   text(PAD, y + 20, t.printExport.title, font(22, 800));
@@ -230,6 +233,7 @@ export function layoutChartImage(
       });
       y += CELL_H;
     }
+    pageBreaks.push(y);
     y += 20;
   }
 
@@ -270,7 +274,7 @@ export function layoutChartImage(
   }
   y += SAMPLE + PAD;
 
-  return { width: IMAGE_WIDTH, height: y, ops };
+  return { width: IMAGE_WIDTH, height: y, ops, pageBreaks };
 }
 
 /** Adds a rectangle with round corners to the path. arcTo works in older browsers than roundRect. */
@@ -361,17 +365,21 @@ export const PDF_JPEG_QUALITY = 0.92;
 /** The file formats of the chart image */
 export type ChartFileFormat = 'png' | 'pdf';
 
-/** What became of the chart file, or `failed` when the browser cannot make the image */
-export type ChartFileResult = SaveResult | 'failed';
+/** What became of the chart file. It is `failed` also when the browser cannot make the image. */
+export type ChartFileResult = SaveResult;
 
 /** The bytes of a `data:` address in base64 */
 function dataUrlBytes(dataUrl: string): Uint8Array<ArrayBuffer> {
   const binary = atob(dataUrl.slice(dataUrl.indexOf(',') + 1));
-  return Uint8Array.from(binary, char => char.charCodeAt(0));
+  // A loop is much faster than Uint8Array.from with a function, for an image of some megabytes
+  const bytes = new Uint8Array(binary.length);
+  for (let index = 0; index < binary.length; index++) bytes[index] = binary.charCodeAt(index);
+  return bytes;
 }
 
 /**
- * Draws the cycles on a canvas and saves a PNG file, or a PDF file with the image on one page.
+ * Draws the cycles on a canvas and saves a PNG file, or a PDF file with the image on landscape
+ * pages that end between two cycles.
  * The drawing and the encoding have no wait, so the share sheet of iOS still has the click.
  * It gives `failed` when the browser has no 2D canvas or cannot encode a canvas this large.
  */
@@ -402,6 +410,16 @@ export async function saveChartFile(
   const blob =
     format === 'png'
       ? new Blob([bytes], { type })
-      : new Blob([makeImagePdf(bytes, canvas.width, canvas.height)], { type: 'application/pdf' });
+      : new Blob(
+          [
+            makeImagePdf(
+              bytes,
+              canvas.width,
+              canvas.height,
+              layout.pageBreaks.map(y => Math.round(y * scale))
+            ),
+          ],
+          { type: 'application/pdf' }
+        );
   return saveFile(blob, getExportFilename(format, fileDetail));
 }
