@@ -30,7 +30,7 @@ Settings has these groups, in this sequence:
 | ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                      |
 | **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                            |
-| **Backup and restore**   | **Back up now** and **Restore from a file**. Under the group, a note says that the file is plain JSON and is not encrypted.                           |
+| **Backup and restore**   | **Back up now**, **Back up with a password** and **Restore from a file**. Under the group, a note tells which file is encrypted.                      |
 | **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                         |
 | **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**. |
 | **Data**                 | **Load the demo cycles** and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`).                       |
@@ -46,6 +46,7 @@ Settings has these groups, in this sequence:
 | **App icon badge**            | A switch. It shows only when the browser has the Badging API ([App icon badge](../application-behavior.md#app-icon-badge)).      |
 | **Use keyboard shortcuts**    | A switch. It turns all the single-key shortcuts on or off ([Keyboard shortcuts](../application-behavior.md#keyboard-shortcuts)). |
 | **Back up now**               | Downloads `fertility-tracker-backup-YYYY-MM-DD.ftbackup` at once and records the backup date. Settings stays open.               |
+| **Back up with a password**   | Opens the [password dialog](#password-dialog) for a backup. Settings stays open.                                                 |
 | **Restore from a file**       | Opens the file picker. Then it shows a preview and replaces or merges the observations with the file.                            |
 | **Welcome guide**             | Opens the welcome guide over Settings.                                                                                           |
 | **Keyboard shortcuts** (Help) | Opens the **Keyboard shortcuts** dialog over Settings.                                                                           |
@@ -67,10 +68,42 @@ Settings has these groups, in this sequence:
 
 - The file uses the write format of the browser storage ([Storage format](../data-storage.md#storage-format)). In this version, that is a bare JSON array, so older versions can restore it.
 - **Restore from a file** accepts the bare array (format 0) and the object `{ "schemaVersion": 1, "observations": [...] }` (format 1).
-- The file is plain JSON. It is not encrypted. The note under **Backup and restore** (`exportModal.jsonDescription`) tells this to the user.
+- The file of **Back up now** is plain JSON. It is not encrypted. The file of **Back up with a password** is encrypted ([Encrypted backup file](../data-format.md#encrypted-backup-file)). The note under **Backup and restore** (`exportModal.jsonDescription`) tells this to the user.
 - The file has the extension `.ftbackup` and the type `application/octet-stream`. With `application/json`, a browser can add `.json` after the name. The content is plain JSON, and any text editor can open it.
 - The file input has no `accept` filter. iOS greys out a file with an extension that it does not know. The application checks the contents, not the extension. Thus, a `.ftbackup` file and an old `.json` backup both restore.
 - A file that is not a valid backup shows `exportModal.importError` under the note. The data does not change.
+- An encrypted file opens the password dialog for a restore. After the decryption, the restore continues as for a plain file.
+
+### Password dialog
+
+[PasswordDialog.tsx](../../../src/components/settings/PasswordDialog.tsx) opens over Settings. It has two modes:
+
+| Mode    | Title                        | Fields                                    | Button                    |
+| ------- | ---------------------------- | ----------------------------------------- | ------------------------- |
+| Backup  | **Back up with a password**  | **Password** and **Confirm the password** | **Save encrypted backup** |
+| Restore | **Open an encrypted backup** | **Password**                              | **Open the file**         |
+
+- In the backup mode, a note says that nobody can open the file without the password. The application cannot reset it.
+- **Cancel**, `Escape` and a click on the backdrop close the password dialog. Settings stays open, and the data does not change.
+- They also close it while the encryption or the decryption runs. The application then drops the result: no file downloads, and no preview opens.
+- `Enter` in a field submits the form.
+- While the encryption or the decryption runs, the button is disabled and shows `passwordDialog.working`.
+
+When the user submits the backup mode:
+
+| Condition                                 | Result                                                                                                             |
+| ----------------------------------------- | ------------------------------------------------------------------------------------------------------------------ |
+| The password has fewer than 12 characters | The message `passwordDialog.tooShort` shows. No file downloads.                                                    |
+| The two fields are different              | The message `passwordDialog.mismatch` shows. No file downloads.                                                    |
+| The encryption fails                      | The message `passwordDialog.failed` shows. No file downloads.                                                      |
+| **Else**                                  | Downloads `fertility-tracker-backup-YYYY-MM-DD-encrypted.ftbackup`, records the backup date and closes the dialog. |
+
+When the user submits the restore mode:
+
+| Condition            | Result                                                                          |
+| -------------------- | ------------------------------------------------------------------------------- |
+| The decryption fails | The message `passwordDialog.wrongPassword` shows. The data does not change.     |
+| **Else**             | The dialog closes. Settings shows the preview of the file, as for a plain file. |
 
 ### Confirmation
 
@@ -108,6 +141,9 @@ Settings is a lazy chunk. The application imports it when the browser is idle, a
 - The name of each row button is only its label (`aria-labelledby`). Its detail line, for example "Last backup: Oct 20, 2026" or "Release notes, storage", is its description (`aria-describedby`).
 - The detail of **App icon badge** is "Show a dot on the app icon when today has no observation". On Apple systems, the text about the permission for notifications follows it. While the system asks for the permission, the switch is disabled.
 - **Restore from a file** is a button that opens a hidden file input. Thus, the keyboard can reach it.
+- The password dialog is a dialog of the [dialog component](../dialog-component.md), with its title as its name. The focus starts on **Password**.
+- Each password field is an `<input type="password">` with a visible label. The backup mode uses `autocomplete="new-password"`, and the restore mode uses `autocomplete="current-password"`.
+- The messages of the password dialog have `role="alert"`.
 - The messages `exportModal.importError` and `appBadge.denied` have `role="alert"`.
 - The text of **Delete all data** uses `--color-danger-text`. It has a contrast of 4.5:1 or more in both themes ([Design system](../design-system.md)).
 - The confirmation dialog has `aria-labelledby` (its title) and `aria-describedby` (its message). When it opens, the focus goes to **Cancel**.
@@ -117,7 +153,9 @@ Settings is a lazy chunk. The application imports it when the browser is idle, a
 - [settings/SettingsDialog.tsx](../../../src/components/settings/SettingsDialog.tsx)
 - [AppBadgeSetting.tsx](../../../src/components/AppBadgeSetting.tsx)
 - [ConfirmDialog.tsx](../../../src/components/ConfirmDialog.tsx)
+- [settings/PasswordDialog.tsx](../../../src/components/settings/PasswordDialog.tsx)
 - [useBackUpNow.ts](../../../src/hooks/useBackUpNow.ts)
+- [encryptedBackup.ts](../../../src/domain/encryptedBackup.ts)
 - [exportUtils.ts](../../../src/utils/exportUtils.ts)
 - [backupImport.ts](../../../src/domain/backupImport.ts)
 - [settings.css](../../../src/styles/views/settings.css)

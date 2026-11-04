@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.51.0',
+    date: '2026-11-04',
+    title: 'Encrypted Backup',
+    titleFr: 'Sauvegarde chiffrée',
+    tagline: 'Protect a backup file with a password',
+    taglineFr: 'Protégez un fichier de sauvegarde avec un mot de passe',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings has a new Back up with a password row. The file is encrypted on your device, and nobody can read it without the password',
+      'Restore from a file asks for the password of an encrypted file, then shows the same preview as for a plain file',
+      'Keep the password safe: Fertility Tracker cannot reset it, and a lost password makes the file unusable',
+    ],
+    highlightsFr: [
+      'Les réglages ont une nouvelle ligne Sauvegarder avec un mot de passe. Le fichier est chiffré sur votre appareil, et personne ne peut le lire sans le mot de passe',
+      'Restaurer depuis un fichier demande le mot de passe d’un fichier chiffré, puis montre le même aperçu que pour un fichier simple',
+      'Gardez le mot de passe en lieu sûr : Fertility Tracker ne peut pas le réinitialiser, et un mot de passe perdu rend le fichier inutilisable',
+    ],
+  },
+  {
     version: '1.50.0',
     date: '2026-11-04',
     title: 'Check for Updates',

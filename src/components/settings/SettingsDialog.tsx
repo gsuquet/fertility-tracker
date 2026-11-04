@@ -9,6 +9,7 @@ import {
   Globe,
   Info,
   Keyboard,
+  Lock,
   Moon,
   RefreshCw,
   Scale,
@@ -23,6 +24,8 @@ import { useLanguage } from '../../context/LanguageContext';
 import { useTheme } from '../../context/ThemeContext';
 import { getAppVersion } from '../../domain/appVersion';
 import { summarizeObservations } from '../../domain/backupImport';
+import { decryptBackup, encryptBackup, parseEncryptedBackup } from '../../domain/encryptedBackup';
+import type { EncryptedBackup } from '../../domain/encryptedBackup';
 import type { BackupSummary, ImportMode } from '../../domain/backupImport';
 import { parseObservationData } from '../../domain/storageFormat';
 import { applyUpdate, checkForUpdate, useUpdateReady } from '../../pwa/registerServiceWorker';
@@ -32,10 +35,12 @@ import { setShortcutsEnabled, useShortcutsEnabled } from '../../hooks/useKeyboar
 import { formatMessage } from '../../i18n';
 import type { SupportedLanguage } from '../../i18n/types';
 import { formatDateDisplay } from '../../utils/dateUtils';
+import { downloadBackupFile } from '../../utils/exportUtils';
 import { isHapticsSupported, setHapticsEnabled, useHapticsEnabled } from '../../utils/haptics';
 import { AppBadgeSetting } from '../AppBadgeSetting';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
+import { PasswordDialog } from './PasswordDialog';
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -171,7 +176,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   startWithRestore = false,
   launchedBackup = null,
 }) => {
-  const { observations, lastBackupDate, importDataJson, loadDemoData, clearAllData } = useCycle();
+  const {
+    observations,
+    lastBackupDate,
+    importDataJson,
+    loadDemoData,
+    clearAllData,
+    exportDataJson,
+    markBackedUp,
+  } = useCycle();
   const handleBackUp = useBackUpNow();
   const { t, language, setLanguage } = useLanguage();
   const { theme, toggleTheme } = useTheme();
@@ -179,6 +192,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const shortcutsOn = useShortcutsEnabled();
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [importError, setImportError] = useState(false);
+  const [passwordRequest, setPasswordRequest] = useState<
+    { mode: 'backup' } | { mode: 'restore'; backup: EncryptedBackup } | null
+  >(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const restoreButtonRef = useRef<HTMLButtonElement>(null);
   // Read once: a later change must not open the dialog again
@@ -210,6 +226,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
 
   // The contents decide, not the extension: a .ftbackup file and an old .json file both work
   const restoreText = (text: string) => {
+    const encrypted = parseEncryptedBackup(text);
+    if (encrypted) {
+      setImportError(false);
+      setPasswordRequest({ mode: 'restore', backup: encrypted });
+      return;
+    }
     const imported = parseObservationData(text);
     setImportError(imported === null);
     if (imported) {
@@ -230,6 +252,44 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     const text = await file.text();
     e.target.value = '';
     restoreText(text);
+  };
+
+  // Each close of the password dialog, or of Settings, makes the running work out of date
+  const passwordRunRef = useRef(0);
+  useEffect(
+    () => () => {
+      passwordRunRef.current += 1;
+    },
+    []
+  );
+  const closePassword = () => {
+    passwordRunRef.current += 1;
+    setPasswordRequest(null);
+  };
+
+  // The dialog closes on success. False keeps it open with its error message. After a cancel,
+  // the result of the work is dropped: no download, no preview.
+  const submitPassword = async (password: string): Promise<boolean> => {
+    const run = passwordRunRef.current;
+    if (passwordRequest?.mode === 'restore') {
+      const plain = await decryptBackup(passwordRequest.backup, password);
+      if (run !== passwordRunRef.current) return true;
+      if (plain === null) return false;
+      setPasswordRequest(null);
+      restoreText(plain);
+      return true;
+    }
+    let file: string;
+    try {
+      file = await encryptBackup(exportDataJson(), password);
+    } catch {
+      return run !== passwordRunRef.current;
+    }
+    if (run !== passwordRunRef.current) return true;
+    downloadBackupFile(file, true);
+    markBackedUp();
+    setPasswordRequest(null);
+    return true;
   };
 
   const confirmContent = (action: PendingAction) => {
@@ -403,6 +463,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
             onClick={handleBackUp}
           />
           <ActionRow
+            icon={iconOf(Lock)}
+            label={s.backUpEncrypted}
+            onClick={() => setPasswordRequest({ mode: 'backup' })}
+            opens
+          />
+          <ActionRow
             icon={iconOf(Upload)}
             label={s.restore}
             onClick={() => fileInputRef.current?.click()}
@@ -470,6 +536,14 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           />
         </Group>
       </div>
+
+      {passwordRequest && (
+        <PasswordDialog
+          mode={passwordRequest.mode}
+          onSubmit={submitPassword}
+          onCancel={closePassword}
+        />
+      )}
 
       {confirmation && (
         <ConfirmDialog
