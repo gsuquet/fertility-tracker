@@ -1,4 +1,5 @@
 /** The cause of a failed sync action, as a key of the `sync` texts. See docs/reference/screens/settings.md. */
+import type { SyncControl } from '../hooks/useSync';
 import type { VaultError } from '../sync/deviceVault';
 
 export type SyncFailure =
@@ -7,6 +8,7 @@ export type SyncFailure =
   | 'wrongHost'
   | 'busy'
   | 'badCode'
+  | 'signIn'
   | 'failed';
 
 /** The cause of a failure, for an alert. The name, not instanceof: the vault code loads late. */
@@ -17,6 +19,8 @@ export const failureOf = (error: unknown, recovering = false): SyncFailure => {
   if (reason !== 'relay') return 'failed';
   const status = detail?.status;
   if (status === 0) return 'noConnection';
+  // Cloudflare Access asks for a new sign-in: the relay client does not follow its redirect
+  if (status === 302 && detail?.error === 'signIn') return 'signIn';
   if (status === 503) return 'unavailable';
   if (status === 403 && detail?.error === 'host') return 'wrongHost';
   if (status === 429) return 'busy';
@@ -52,4 +56,21 @@ export const isOutOfVault = (error: unknown): boolean => {
     reason === 'removed' ||
     (reason === 'relay' && (detail?.status === 401 || detail?.status === 404))
   );
+};
+
+/** The gear shows the sync warning after this number of failed syncs in a row. */
+export const WARNING_FAILURES = 2;
+/** The gear shows the sync warning when the last sync is older than this. */
+export const WARNING_AGE_MS = 24 * 60 * 60 * 1000;
+
+/** True when the sync needs the user. See docs/reference/screens/navigation.md#sync-warning. */
+export const needsAttention = (
+  control: Pick<SyncControl, 'hasRecord' | 'lastError' | 'failures' | 'lastSyncedAt'>,
+  now: number
+): boolean => {
+  const { hasRecord, lastError, failures, lastSyncedAt } = control;
+  if (hasRecord !== true) return false;
+  if (lastError && failureOf(lastError) === 'signIn') return true;
+  if (failures >= WARNING_FAILURES) return true;
+  return lastSyncedAt !== null && now - lastSyncedAt > WARNING_AGE_MS;
 };

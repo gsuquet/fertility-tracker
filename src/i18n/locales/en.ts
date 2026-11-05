@@ -111,6 +111,7 @@ export const en = {
   settings: {
     title: 'Settings',
     open: 'Settings',
+    openSyncWarning: 'Settings: sync needs attention',
     close: 'Close settings',
     install: 'Install',
     appearance: 'Appearance and input',
@@ -758,6 +759,9 @@ export const en = {
     recoverHint: 'Use your recovery code on a new device',
     syncNow: 'Sync now',
     lastSync: 'Last sync: {date}',
+    lastSyncToday: 'Last sync: today at {time}',
+    syncedJustNow: 'Synced just now',
+    syncing: 'Syncing…',
     notSynced: 'Not synced yet',
     newCode: 'New recovery code',
     newCodeHint: 'The old code stops working',
@@ -787,6 +791,9 @@ export const en = {
     busy: 'Too many requests. Wait one minute and try again.',
     badCode: 'This code is not valid. Check each character.',
     failed: 'The sync failed. Try again later.',
+    signIn: 'Your sign-in to this site expired. Reload the page to sign in again.',
+    tryAgain: 'Try again',
+    reload: 'Reload',
     errorCode: 'Error code: {code}',
     confirmDeletions:
       'The sync deletes {count} days on this device, from changes on your other devices. Continue?',

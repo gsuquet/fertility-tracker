@@ -19,6 +19,7 @@ import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import {
   STORAGE_OBSERVATIONS_KEY,
   STORAGE_SHARED_CHART_KEY,
+  STORAGE_LAST_SYNC_AT_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../utils/storageKeys';
@@ -90,7 +91,22 @@ export interface SyncControl {
   resolveConflict: (conflict: SyncConflict, restore: boolean) => Promise<void>;
   /** The days of the shared chart of a partner device, or null. */
   sharedDays: ObservationInput[] | null;
+  /** True when the key store had a record at the last sync or action. Null before the first sync. */
+  hasRecord: boolean | null;
+  /** The number of syncs in a row that ended with an error. */
+  failures: number;
+  /** The time of the last full sync in milliseconds, or null. */
+  lastSyncedAt: number | null;
 }
+
+/** The stored time of the last full sync, or null without a valid one. */
+const storedSyncTime = (): number | null => {
+  const time = Number(readStorage(STORAGE_LAST_SYNC_AT_KEY) ?? Number.NaN);
+  return Number.isFinite(time) ? time : null;
+};
+
+/** Saves the time of a full sync. A refused write keeps the older time. */
+const saveSyncTime = () => writeStorage(STORAGE_LAST_SYNC_AT_KEY, String(Date.now()));
 
 const storedConflicts = () => parseConflicts(readStorage(STORAGE_SYNC_CONFLICTS_KEY));
 
@@ -121,12 +137,21 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
+  const [hasRecord, setHasRecord] = useState<boolean | null>(null);
+  const [failures, setFailures] = useState(0);
+  const [lastSyncedAt, setLastSyncedAt] = useState(storedSyncTime);
+  /** Counts a sync that ended with an error, or starts the count again. */
+  const endSync = useCallback((error: VaultError | null) => {
+    setLastError(error);
+    setFailures(count => (error ? count + 1 : 0));
+  }, []);
   const [conflicts, setConflicts] = useState<SyncConflict[]>(storedConflicts);
   const [sharedDays, setSharedDays] = useState<ObservationInput[] | null>(storedSharedDays);
   // The shared chart changes only when its stored text changes: the pages keep their data
   const sharedText = useRef(readStorage(STORAGE_SHARED_CHART_KEY));
   const readConflicts = useCallback(() => {
     setConflicts(storedConflicts());
+    setLastSyncedAt(storedSyncTime());
     const text = readStorage(STORAGE_SHARED_CHART_KEY);
     if (text === sharedText.current) return;
     sharedText.current = text;
@@ -161,10 +186,12 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
         const { runner, relay, keyStore } = await services();
         // A reader device only reads the shared chart: the checks of its own days do not apply
         const record = await keyStore.load();
+        setHasRecord(record !== null);
         if (record?.role === 'reader') {
           const shared = await runner.readShared(relay, keyStore, record, storage);
           // No markSynced(): the own days go nowhere, so the backup reminder still counts
-          setLastError(shared.error);
+          endSync(shared.error);
+          if (shared.saved && !shared.error) saveSyncTime();
           return { sent: shared.error === null, skipped: false, error: shared.error };
         }
         const sent = latest.current.data;
@@ -204,11 +231,12 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
             return ok;
           },
         });
-        setLastError(result.status === 'error' ? result.error : null);
+        endSync(result.status === 'error' ? result.error : null);
         // A list without its mark came during the sync: the state of the sync must not stay
         if (distrustCount() !== trust) removeStorage(STORAGE_SYNC_STATE_KEY);
         if (saved) {
           latest.current.data.markSynced();
+          saveSyncTime();
         }
         return {
           sent: result.status === 'synced' || result.status === 'off',
@@ -223,7 +251,7 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
     });
     waiting.current = next;
     return next;
-  }, [exclusive, services]);
+  }, [exclusive, services, endSync]);
 
   const resolveConflict = useCallback(
     (shown: SyncConflict, restore: boolean) =>
@@ -258,7 +286,12 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
       const { key } = event;
-      if (key === STORAGE_SYNC_CONFLICTS_KEY || key === STORAGE_SHARED_CHART_KEY || key === null) {
+      if (
+        key === STORAGE_SYNC_CONFLICTS_KEY ||
+        key === STORAGE_SHARED_CHART_KEY ||
+        key === STORAGE_LAST_SYNC_AT_KEY ||
+        key === null
+      ) {
         readConflicts();
       }
     };
@@ -268,8 +301,20 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
 
   const withSync = useCallback(
     <T>(action: (loaded: SyncServices) => Promise<T>): Promise<T> =>
-      exclusive(async () => action(await services())),
-    [exclusive, services]
+      exclusive(async () => {
+        const loaded = await services();
+        try {
+          return await action(loaded);
+        } finally {
+          // An action can save or delete the record
+          const record = await loaded.keyStore.load().catch(() => undefined);
+          if (record !== undefined) {
+            setHasRecord(record !== null);
+            if (record === null) endSync(null);
+          }
+        }
+      }),
+    [exclusive, services, endSync]
   );
 
   // The start of the application, the visible page and the online browser
@@ -315,7 +360,21 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
       conflicts,
       resolveConflict,
       sharedDays,
+      hasRecord,
+      failures,
+      lastSyncedAt,
     }),
-    [services, sync, withSync, lastError, conflicts, resolveConflict, sharedDays]
+    [
+      services,
+      sync,
+      withSync,
+      lastError,
+      conflicts,
+      resolveConflict,
+      sharedDays,
+      hasRecord,
+      failures,
+      lastSyncedAt,
+    ]
   );
 }

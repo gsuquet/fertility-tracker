@@ -229,6 +229,39 @@
     padding: 0 var(--space-md) var(--space-sm);
   }
 
+  /* The sync alert: the first row of the Sync group, in red, with its button */
+  .settings-alert-row {
+    display: flex;
+    align-items: center;
+    gap: var(--space-md);
+    min-height: var(--row-height);
+    padding: var(--space-sm) var(--space-md);
+    background-color: var(--color-danger-surface);
+    color: var(--color-danger-text);
+    font-size: var(--font-size-sm);
+    font-weight: 600;
+  }
+
+  .settings-alert-row > [role='alert'] {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .settings-alert-button {
+    flex-shrink: 0;
+  }
+
+  /* The icon of Sync now turns while the sync runs */
+  .settings-row-icon-spin {
+    animation: spin 1s linear infinite;
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .settings-row-icon-spin {
+      animation: none;
+    }
+  }
+
   /* On a phone, Settings is a full page over the bottom bar. Back closes it (RFC 0002). */
   @media (max-width: 640px) {
     .settings-overlay {

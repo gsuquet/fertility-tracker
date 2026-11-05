@@ -16,6 +16,7 @@ describe('storageKeys', () => {
       STORAGE_SHARED_CHART_KEY: 'fertility_care_shared_chart',
       STORAGE_SHARED_READ_KEY: 'fertility_care_shared_read',
       STORAGE_LAST_SYNC_KEY: 'fertility_care_last_sync',
+      STORAGE_LAST_SYNC_AT_KEY: 'fertility_care_last_sync_at',
       STORAGE_LANGUAGE_KEY: 'fertility_care_lang',
       STORAGE_THEME_KEY: 'fertility_care_theme',
       STORAGE_ENTRY_MODE_KEY: 'fertility_care_entry_mode',

@@ -113,6 +113,7 @@ export const fr: TranslationSchema = {
   settings: {
     title: 'Réglages',
     open: 'Réglages',
+    openSyncWarning: 'Réglages : la synchronisation demande votre attention',
     close: 'Fermer les réglages',
     install: 'Installer',
     appearance: 'Apparence et saisie',
@@ -767,6 +768,9 @@ export const fr: TranslationSchema = {
     recoverHint: 'Utilisez votre code de récupération sur un nouvel appareil',
     syncNow: 'Synchroniser maintenant',
     lastSync: 'Dernière synchronisation : {date}',
+    lastSyncToday: 'Dernière synchronisation : aujourd’hui à {time}',
+    syncedJustNow: 'Synchronisé à l’instant',
+    syncing: 'Synchronisation…',
     notSynced: 'Pas encore synchronisé',
     newCode: 'Nouveau code de récupération',
     newCodeHint: 'L’ancien code ne fonctionne plus',
@@ -797,6 +801,9 @@ export const fr: TranslationSchema = {
     busy: 'Trop de requêtes. Attendez une minute et réessayez.',
     badCode: 'Ce code n’est pas valide. Vérifiez chaque caractère.',
     failed: 'La synchronisation a échoué. Réessayez plus tard.',
+    signIn: 'Votre connexion à ce site a expiré. Rechargez la page pour vous connecter à nouveau.',
+    tryAgain: 'Réessayer',
+    reload: 'Recharger',
     errorCode: 'Code d’erreur : {code}',
     confirmDeletions:
       'La synchronisation supprime {count} jours sur cet appareil, à partir de modifications sur vos autres appareils. Continuer ?',

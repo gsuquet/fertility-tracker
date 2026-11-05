@@ -19,6 +19,7 @@ import type { Observation } from '../../../types/crms';
 import { getTodayStr } from '../../../utils/dateUtils';
 import {
   STORAGE_LAST_BACKUP_KEY,
+  STORAGE_LAST_SYNC_AT_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../../../utils/storageKeys';
@@ -695,6 +696,9 @@ describe('SettingsDialog sync', () => {
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
       sharedDays: null,
+      hasRecord: null,
+      failures: 0,
+      lastSyncedAt: null,
     };
   };
   const groupNames = () =>
@@ -746,6 +750,9 @@ describe('SettingsDialog sync', () => {
         conflicts: [],
         resolveConflict: vi.fn(async () => {}),
         sharedDays: null,
+        hasRecord: null,
+        failures: 0,
+        lastSyncedAt: null,
       },
     });
     fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
@@ -790,6 +797,9 @@ describe('SettingsDialog on a synced device', () => {
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
       sharedDays: null,
+      hasRecord: null,
+      failures: 0,
+      lastSyncedAt: null,
     } satisfies SyncControl;
     const keyring = () =>
       (
@@ -809,6 +819,7 @@ describe('SettingsDialog on a synced device', () => {
   beforeEach(() => {
     localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
     localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
+    localStorage.setItem(STORAGE_LAST_SYNC_AT_KEY, '1000');
   });
 
   it('deletes on all devices: the data goes, then the device syncs', async () => {
@@ -837,6 +848,7 @@ describe('SettingsDialog on a synced device', () => {
     expect(keyring()).not.toContain(record.memberId);
     expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_LAST_SYNC_AT_KEY)).toBeNull();
     // The last changes go to the vault first
     expect(control.syncNow).toHaveBeenCalledOnce();
   });

@@ -47,7 +47,11 @@ import type { DeviceRecord } from '../../sync/keyStore';
 import { failureOf, isOutOfVault } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { removeStorage } from '../../utils/storage';
-import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
+import {
+  STORAGE_LAST_SYNC_AT_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../../utils/storageKeys';
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -199,6 +203,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         }
         removeStorage(STORAGE_SYNC_STATE_KEY);
         removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
+        removeStorage(STORAGE_LAST_SYNC_AT_KEY);
       });
     } catch (error) {
       setLeaveFailure(failureOf(error));

@@ -24,6 +24,7 @@ import type { DeviceRecord } from '../../sync/keyStore';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { readStorage, removeStorage } from '../../utils/storage';
 import {
+  STORAGE_LAST_SYNC_AT_KEY,
   STORAGE_SHARED_CHART_KEY,
   STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
@@ -33,6 +34,7 @@ import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
 import { failureCodeOf, failureOf, isStorageBlocked } from '../../utils/syncFailure';
+import { signInAgain } from '../../utils/signIn';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
 import { cleanDeviceName } from '../../domain/vault/deviceName';
@@ -45,6 +47,39 @@ import { ActionRow, Group, iconOf } from './settingsRows';
 
 type SyncText = TranslationSchema['sync'];
 type Failure = SyncFailure | 'undoFirstShort';
+
+/** The detail of Sync now changes this often while the group is open. */
+export const LAST_SYNC_TICK_MS = 30_000;
+const JUST_NOW_MS = 60_000;
+
+/**
+ * The detail of Sync now after a sync. See docs/reference/screens/settings.md#last-sync.
+ * `time` is the time of the last sync, and `date` the stored date of an older version.
+ */
+export const lastSyncText = (
+  s: SyncText,
+  locale: string,
+  time: number | null,
+  date: string | null,
+  now: number
+): string => {
+  if (time !== null) {
+    if (now - time < JUST_NOW_MS) return s.syncedJustNow;
+    const at = new Date(time);
+    if (at.toDateString() === new Date(now).toDateString()) {
+      return formatMessage(s.lastSyncToday, {
+        time: at.toLocaleTimeString(locale, { timeStyle: 'short' }),
+      });
+    }
+    return formatMessage(s.lastSync, {
+      date: at.toLocaleString(locale, { dateStyle: 'medium', timeStyle: 'short' }),
+    });
+  }
+  if (date === null) return s.notSynced;
+  return formatMessage(s.lastSync, {
+    date: formatDateDisplay(date, locale, { year: 'numeric', month: 'short', day: 'numeric' }),
+  });
+};
 
 interface RecoveryCodeDialogProps {
   code: string;
@@ -224,6 +259,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const s: SyncText = t.sync;
   const [record, setRecord] = useState<DeviceRecord | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
+  // Sync now runs
+  const [syncing, setSyncing] = useState(false);
+  // The current time, for the detail of Sync now
+  const [now, setNow] = useState(Date.now);
+  useEffect(() => {
+    const tick = setInterval(() => setNow(Date.now()), LAST_SYNC_TICK_MS);
+    return () => clearInterval(tick);
+  }, []);
   // An action that makes a recovery code runs
   const [making, setMaking] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
@@ -344,6 +387,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
         removeStorage(STORAGE_SHARED_CHART_KEY);
         removeStorage(STORAGE_SHARED_READ_KEY);
+        removeStorage(STORAGE_LAST_SYNC_AT_KEY);
         return { record: null };
       },
       { makesCode: false }
@@ -352,8 +396,11 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 
   const syncNow = async () => {
     setBusy(true);
+    setSyncing(true);
     setFailure(null);
     await control.syncNow();
+    setNow(Date.now());
+    setSyncing(false);
     setBusy(false);
   };
 
@@ -361,26 +408,46 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const reading = record?.role === 'reader';
   // A reader device shows the date of its last read of the shared chart
   const syncDate = reading ? readStorage(STORAGE_SHARED_READ_KEY) : lastSyncDate;
-  const lastSync =
-    syncDate === null
-      ? s.notSynced
-      : formatMessage(s.lastSync, {
-          date: formatDateDisplay(syncDate, t.locale, {
-            year: 'numeric',
-            month: 'short',
-            day: 'numeric',
-          }),
-        });
+  const lastSync = syncing
+    ? s.syncing
+    : lastSyncText(s, t.locale, control.lastSyncedAt, syncDate, now);
   // The error of the last sync shows only when no action failed
   const lastError = record ? control.lastError : null;
   const shown = failure ?? (lastError ? failureOf(lastError) : null);
   const shownCode = failure ? failureCode : failureCodeOf(lastError);
   // The code dialog shows its own error
   const alert = entering ? null : shown;
+  // An expired sign-in needs a reload. Else, a device with a record can sync again.
+  const alertAction =
+    alert === 'signIn'
+      ? { label: s.reload, run: signInAgain }
+      : record
+        ? { label: s.tryAgain, run: () => void syncNow() }
+        : null;
 
   return (
     <>
       <Group id="settings-sync" title={s.group}>
+        {alert && (
+          <li className="settings-alert-row">
+            <div role="alert">
+              {s[alert]}
+              {alert === 'failed' && shownCode && (
+                <> {formatMessage(s.errorCode, { code: shownCode })}</>
+              )}
+            </div>
+            {alertAction && (
+              <button
+                type="button"
+                className="btn btn-secondary settings-alert-button"
+                onClick={alertAction.run}
+                disabled={busy}
+              >
+                {alertAction.label}
+              </button>
+            )}
+          </li>
+        )}
         {record === null && (
           <>
             <ActionRow
@@ -418,7 +485,13 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         {record && (
           <>
             <ActionRow
-              icon={iconOf(RefreshCw)}
+              icon={
+                <RefreshCw
+                  size={18}
+                  className={`settings-row-icon${syncing ? ' settings-row-icon-spin' : ''}`}
+                  aria-hidden="true"
+                />
+              }
               label={s.syncNow}
               detail={lastSync}
               onClick={() => void syncNow()}
@@ -487,14 +560,6 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         )}
       </Group>
       {blocked && <p className="settings-note">{s.blocked}</p>}
-      {alert && (
-        <p className="settings-alert" role="alert">
-          {s[alert]}
-          {alert === 'failed' && shownCode && (
-            <> {formatMessage(s.errorCode, { code: shownCode })}</>
-          )}
-        </p>
-      )}
 
       {entering && (
         <RecoveryEntryDialog

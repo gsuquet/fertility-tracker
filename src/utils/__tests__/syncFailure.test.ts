@@ -5,7 +5,9 @@ import {
   failureOf,
   isOutOfVault,
   isStorageBlocked,
+  needsAttention,
   STORAGE_BLOCKED,
+  WARNING_AGE_MS,
 } from '../syncFailure';
 
 describe('failureOf', () => {
@@ -23,6 +25,8 @@ describe('failureOf', () => {
     expect(failureOf(new VaultError('relay', { status: 403, error: 'host' }))).toBe('wrongHost');
     expect(failureOf(new VaultError('relay', { status: 403, error: 'owner' }))).toBe('failed');
     expect(failureOf(new VaultError('relay', { status: 429 }))).toBe('busy');
+    expect(failureOf(new VaultError('relay', { status: 302, error: 'signIn' }))).toBe('signIn');
+    expect(failureOf(new VaultError('relay', { status: 302 }))).toBe('failed');
   });
 });
 
@@ -57,5 +61,28 @@ describe('isStorageBlocked', () => {
     expect(isStorageBlocked(Object.assign(new Error('x'), { name: STORAGE_BLOCKED }))).toBe(true);
     expect(isStorageBlocked(new Error('x'))).toBe(false);
     expect(isStorageBlocked({ name: STORAGE_BLOCKED })).toBe(false);
+  });
+});
+
+describe('needsAttention', () => {
+  const now = 10 * WARNING_AGE_MS;
+  const fine = { hasRecord: true, lastError: null, failures: 0, lastSyncedAt: now - 1000 };
+  const signIn = new VaultError('relay', { status: 302, error: 'signIn' });
+  const offline = new VaultError('relay', { status: 0 });
+
+  it('is true for an expired sign-in, two failures in a row or a sync older than one day', () => {
+    expect(needsAttention(fine, now)).toBe(false);
+    expect(needsAttention({ ...fine, lastError: signIn, failures: 1 }, now)).toBe(true);
+    expect(needsAttention({ ...fine, lastError: offline, failures: 1 }, now)).toBe(false);
+    expect(needsAttention({ ...fine, lastError: offline, failures: 2 }, now)).toBe(true);
+    expect(needsAttention({ ...fine, lastSyncedAt: now - WARNING_AGE_MS }, now)).toBe(false);
+    expect(needsAttention({ ...fine, lastSyncedAt: now - WARNING_AGE_MS - 1 }, now)).toBe(true);
+    expect(needsAttention({ ...fine, lastSyncedAt: null }, now)).toBe(false);
+  });
+
+  it('is false without a known record', () => {
+    const warned = { ...fine, lastError: signIn, failures: 3, lastSyncedAt: 0 };
+    expect(needsAttention({ ...warned, hasRecord: false }, now)).toBe(false);
+    expect(needsAttention({ ...warned, hasRecord: null }, now)).toBe(false);
   });
 });

@@ -102,6 +102,8 @@ const canAnimateTo = (tab: ActiveTab) => tab !== 'analytics' || analyticsShown;
 import type { ChartFileFormat, ChartFileResult } from './utils/chartImage';
 import { getExportFilename } from './utils/exportUtils';
 import { takeInviteFragment } from './utils/inviteUrl';
+import { leaveSignInPath } from './utils/signIn';
+import { needsAttention } from './utils/syncFailure';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
 import type { LaunchShortcut } from './utils/launchShortcut';
@@ -145,6 +147,8 @@ const MainApp: React.FC = () => {
   const readOnlyRef = useRef(false);
   readOnlyRef.current = shared !== null;
   // An invitation link of the sync opens the join dialog
+  // After a new sign-in of Cloudflare Access, the address goes back to the app address
+  useEffect(leaveSignInPath, []);
   const [inviteFragment, setInviteFragment] = useState(takeInviteFragment);
   const closeJoin = () => setInviteFragment(null);
   // A link opened in a tab of the application changes only the fragment
@@ -301,6 +305,7 @@ const MainApp: React.FC = () => {
             activeTab={activeTab}
             setActiveTab={setActiveTab}
             onOpenSettings={() => setIsSettingsOpen(true)}
+            syncWarning={needsAttention(sync, Date.now())}
             onTopBarSlot={setTopBarSlot}
           />
         </CycleDataOverride>

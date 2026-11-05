@@ -66,6 +66,8 @@ export function createRelayClient(
       method,
       headers: all,
       cache: 'no-store',
+      // Cloudflare Access redirects to its sign-in page, which the CSP blocks: see the redirect
+      redirect: 'manual',
       signal: AbortSignal.timeout(RELAY_TIMEOUT_MS),
     };
     if (body !== undefined) init.body = body;
@@ -75,6 +77,7 @@ export function createRelayClient(
     } catch {
       return { ok: false, status: 0, error: 'network' };
     }
+    if (response.type === 'opaqueredirect') return { ok: false, status: 302, error: 'signIn' };
     if (!response.ok) return { ok: false, status: response.status, error: await errorOf(response) };
     const etag = response.headers.get('ETag');
     return {
