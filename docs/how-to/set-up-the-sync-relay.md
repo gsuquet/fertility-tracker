@@ -1,6 +1,6 @@
 # Set up the sync relay
 
-Do this procedure one time, before the application turns on the sync. The relay needs an R2 bucket, lifecycle rules and a rate limiting rule ([Relay API](../reference/relay-api.md)).
+Do this procedure one time, before the first deploy with the bucket binding. The relay needs an R2 bucket, lifecycle rules and a rate limiting rule ([Relay API](../reference/relay-api.md)).
 
 ## Before you start
 
@@ -37,19 +37,30 @@ Do this procedure one time, before the application turns on the sync. The relay 
 
 The Free plan has these values. A different plan can use a longer period with the same rate.
 
+## Keep the bucket private
+
+The relay is the only path to the objects. The objects are encrypted, but their names and sizes are not secret. Thus, nothing else must read the bucket.
+
+1. Open the bucket `fertility-tracker-vaults`, then **Settings**.
+2. In **Public Development URL**, make sure that the r2.dev URL is disabled.
+3. In **Custom Domains**, make sure that the bucket has no domain.
+4. In **R2 Object Storage**, open **Manage API tokens**. Delete each token that you do not use.
+
+A new bucket is private. The binding in `wrangler.json` gives access only to the Pages Function.
+
 ## Bind the bucket
 
-The Pages project reads its bindings from `wrangler.json`. Thus, a pull request adds the binding after the bucket exists:
+The Pages project reads its bindings from `wrangler.json`. This binding is in the file:
 
 ```json
 "r2_buckets": [{ "binding": "VAULTS", "bucket_name": "fertility-tracker-vaults" }]
 ```
 
-Do not add the binding before the bucket exists. Else the deploy fails.
+The deploy fails when the bucket does not exist. Thus, make the bucket before a deploy of a new project.
 
 ## Result
 
-After the deploy, `GET https://fertility-tracker.gsuquet.com/api/recovery/AAAAAAAAAAAAAAAAAAAAAA` gives `404` with the error `notFound`. Before the binding, it gives `503`.
+After the deploy, `GET https://fertility-tracker.gsuquet.com/api/recovery/AAAAAAAAAAAAAAAAAAAAAA` gives `404` with the error `notFound`. A `503` tells that the binding is missing.
 
 ## Related documents
 

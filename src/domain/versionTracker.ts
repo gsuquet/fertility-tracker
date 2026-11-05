@@ -46,6 +46,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.61.1',
+    date: '2026-11-05',
+    title: 'Sync Storage',
+    titleFr: 'Stockage de la synchronisation',
+    tagline: 'The sync server now has its encrypted storage, while sync stays off',
+    taglineFr:
+      'Le serveur de synchronisation a maintenant son stockage chiffré, et la synchronisation reste désactivée',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The sync server can now keep encrypted copies of a synced chart',
+      'Only the sync server can read the storage, and it cannot decrypt your days',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Le serveur de synchronisation peut maintenant garder des copies chiffrées d’un tableau synchronisé',
+      'Seul le serveur de synchronisation peut lire le stockage, et il ne peut pas déchiffrer vos jours',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.61.0',
     date: '2026-11-05',
     title: 'Device Invitations',

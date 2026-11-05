@@ -13,7 +13,7 @@ The relay is a Cloudflare Pages Function in the same project as the application.
 | `VAULTS`     | The R2 bucket. Without it, each route answers `503` with the error `unavailable`.          |
 | `RELAY_HOST` | Optional. The host that the relay accepts. The default is `fertility-tracker.gsuquet.com`. |
 
-Until [Set up the sync relay](../how-to/set-up-the-sync-relay.md) is done, the project has no `VAULTS` binding. Thus, the relay answers only `503`.
+`wrangler.json` gives the `VAULTS` binding to the bucket `fertility-tracker-vaults` ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)). A local build without the bucket answers only `503`.
 
 ## All routes
 
