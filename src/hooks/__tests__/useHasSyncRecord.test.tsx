@@ -19,7 +19,7 @@ describe('useHasSyncRecord', () => {
     expect(empty.result.current).toBeNull();
     await waitFor(() => expect(empty.result.current).toBe(false));
     const keyStore = createMemoryKeyStore();
-    await createVault(relay, keyStore);
+    await createVault(relay, keyStore, 'Phone');
     const control = controlOf(relay, keyStore);
     const synced = renderHook(() => useHasSyncRecord(control));
     await waitFor(() => expect(synced.result.current).toBe(true));

@@ -2,6 +2,7 @@
 import type { VaultStore } from '../domain/sync/engine';
 import type { VaultDay } from '../domain/sync/vaultContent';
 import { randomBytes, sha256, toBase64Url, utf8 } from '../domain/vault/bytes';
+import { openName, sealName } from '../domain/vault/deviceName';
 import {
   earlierKeyContext,
   importEcdhPublicKey,
@@ -70,7 +71,8 @@ const contextOf = (
 /** Makes a vault with this device and the recovery member as owners. */
 export async function createVault(
   relay: RelayClient,
-  keyStore: KeyStore
+  keyStore: KeyStore,
+  name: string
 ): Promise<{ record: DeviceRecord; recoveryCode: string }> {
   const vaultId = newId(16);
   const keyId = newId(8);
@@ -96,7 +98,8 @@ export async function createVault(
     id: string,
     publicKey: CryptoKey,
     tokenText: string,
-    withLookup: boolean
+    withLookup: boolean,
+    memberName?: string
   ): Promise<Member> => ({
     id,
     role: 'owner',
@@ -106,6 +109,15 @@ export async function createVault(
     signingKey: await wrapKey(signingPrivate, publicKey, contextOf(vaultId, id, keyId, 'signing')),
     ...(withLookup
       ? { lookup: await wrapKey(lookupCopy, publicKey, contextOf(vaultId, id, keyId, 'lookup')) }
+      : {}),
+    ...(memberName
+      ? {
+          name: await sealName(
+            memberName,
+            await importDataKey(rawDataKey),
+            contextOf(vaultId, id, keyId, 'name')
+          ),
+        }
       : {}),
   });
   const blob = utf8(
@@ -120,7 +132,7 @@ export async function createVault(
     keyId,
     counter: 1,
     keyring: [
-      await member(deviceId, device.publicKey, token, true),
+      await member(deviceId, device.publicKey, token, true, name),
       await member(recoveryId, recoveryPair.publicKey, recovery.accessToken, false),
     ],
     signingChain: signing.chain,
@@ -233,7 +245,10 @@ export async function ownerKeys(session: VaultSession): Promise<OwnerKeys> {
   return { rawSigningKey, signingKey, lookupCopy };
 }
 
-type MemberInfo = Pick<Member, 'id' | 'role' | 'publicKey' | 'tokenHash'>;
+/** A member before its keys are wrapped. The name is not encrypted yet. */
+type MemberInfo = Pick<Member, 'id' | 'role' | 'publicKey' | 'tokenHash'> & {
+  name?: string | null;
+};
 
 /** A keyring entry with the data key, and for an owner the signing key and the lookup copy. */
 async function wrapEntry(
@@ -248,12 +263,17 @@ async function wrapEntry(
 ): Promise<Member> {
   const publicKey = await importEcdhPublicKey(member.publicKey);
   if (!publicKey) throw new VaultError('keys');
-  const context = (purpose: 'data' | 'signing' | 'lookup') =>
+  const context = (purpose: 'data' | 'signing' | 'lookup' | 'name') =>
     contextOf(vaultId, member.id, keyId, purpose);
+  const { id, role, tokenHash, name } = member;
   const entry: Member = {
-    ...member,
+    id,
+    role,
+    publicKey: member.publicKey,
+    tokenHash,
     dataKey: await wrapKey(raw.dataKey, publicKey, context('data')),
   };
+  if (name) entry.name = await sealName(name, await importDataKey(raw.dataKey), context('name'));
   if (member.role === 'owner') {
     entry.signingKey = await wrapKey(raw.signingKey, publicKey, context('signing'));
     if (raw.lookup) entry.lookup = await wrapKey(raw.lookup, publicKey, context('lookup'));
@@ -268,6 +288,25 @@ export function memberFor(session: VaultSession, keys: OwnerKeys, member: Member
     session.header.keyId,
     { dataKey: session.rawDataKey, signingKey: keys.rawSigningKey, lookup: keys.lookupCopy },
     member
+  );
+}
+
+export interface MemberName {
+  id: string;
+  role: Member['role'];
+  /** Null when the member has no name, or the name does not decrypt. */
+  name: string | null;
+}
+
+/** The id, the role and the name of each member of the keyring. */
+export function memberNames(session: VaultSession): Promise<MemberName[]> {
+  const { header, dataKey, record } = session;
+  return Promise.all(
+    header.keyring.map(async ({ id, role, name }) => ({
+      id,
+      role,
+      name: await openName(name, dataKey, contextOf(record.vaultId, id, header.keyId, 'name')),
+    }))
   );
 }
 
@@ -340,21 +379,33 @@ export async function writeRekeyed(
   // Without a lookup copy, the rekey would remove the copy of each owner
   if (!lookup && header.recoveryBlob) throw new VaultError('keys');
   const recoveryId = lookupCopyOf(lookup)?.memberId;
-  const members = [
-    ...header.keyring.filter(member => !plan.remove.includes(member.id)),
+  // The names of the members that stay, decrypted with the old data key
+  const names = new Map(
+    (await memberNames(session)).map(member => [member.id, member.name] as const)
+  );
+  const members: MemberInfo[] = [
+    ...header.keyring
+      .filter(member => !plan.remove.includes(member.id))
+      .map(({ id, role, publicKey, tokenHash }) => ({
+        id,
+        role,
+        publicKey,
+        tokenHash,
+        name: names.get(id) ?? null,
+      })),
     ...(plan.add ?? []),
   ];
   const keyring = await Promise.all(
-    members.map(({ id, role, publicKey, tokenHash }) =>
+    members.map(member =>
       wrapEntry(
         vaultId,
         keyId,
         {
           dataKey: rawDataKey,
           signingKey: rawSigningKey,
-          lookup: id === recoveryId ? null : lookup,
+          lookup: member.id === recoveryId ? null : lookup,
         },
-        { id, role, publicKey, tokenHash }
+        member
       )
     )
   );

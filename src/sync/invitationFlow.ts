@@ -42,7 +42,7 @@ interface Messages {
 
 export type OwnerCheck =
   | { status: 'waiting' | 'expired' | 'refused' }
-  | { status: 'confirm'; code: string; request: JoinRequest };
+  | { status: 'confirm'; code: string; request: JoinRequest; name: string };
 
 export interface JoinState {
   invitation: Invitation;
@@ -81,6 +81,8 @@ const sameRequest = (value: JoinRequest, request: JoinRequest) =>
   value.publicKey === request.publicKey &&
   value.tokenHash === request.tokenHash &&
   value.nonceHash === request.nonceHash &&
+  value.name.iv === request.name.iv &&
+  value.name.data === request.name.data &&
   value.mac === request.mac;
 
 /** The messages of the invitation, or a status when the relay does not give them. */
@@ -136,7 +138,8 @@ export async function checkAsOwner(
     await relay.deleteInvite(invitation.id, record.token);
     return { status: 'refused' };
   };
-  if (!(await checkJoinRequest(invitation, messages.request))) return refuse();
+  const name = await checkJoinRequest(invitation, messages.request);
+  if (name === null) return refuse();
   const request = messages.request as JoinRequest;
   // A relay that changes the request after the offer could try many requests to get the same code
   if (owner.request && !sameRequest(request, owner.request)) return refuse();
@@ -149,7 +152,7 @@ export async function checkAsOwner(
   if (messages.reveal === undefined) return { status: 'waiting' };
   if (!(await checkReveal(request, messages.reveal))) return refuse();
   const code = await confirmationCode(invitation, request, offer, messages.reveal as Reveal);
-  return { status: 'confirm', code, request };
+  return { status: 'confirm', code, request, name };
 }
 
 /**
@@ -164,7 +167,7 @@ export async function approveInvitation(
 ): Promise<DeviceRecord> {
   const check = await checkAsOwner(relay, record, owner);
   if (check.status !== 'confirm') throw new VaultError('invitation', { error: check.status });
-  const { request } = check;
+  const { request, name } = check;
   const session = await openSession(relay, keyStore, record);
   const keys = await ownerKeys(session);
   const existing = session.header.keyring.find(member => member.publicKey === request.publicKey);
@@ -179,6 +182,7 @@ export async function approveInvitation(
       role: owner.role,
       publicKey: request.publicKey,
       tokenHash: request.tokenHash,
+      name,
     });
     const next = await writeSession(relay, keyStore, session, {
       keyring: [...session.header.keyring, member],
@@ -201,15 +205,19 @@ export async function approveInvitation(
   return written.record;
 }
 
-/** The new device makes its keys and its token, and sends the join request. */
-export async function startJoin(relay: RelayClient, invitation: Invitation): Promise<JoinState> {
+/** The new device makes its keys and its token, and sends the join request with its name. */
+export async function startJoin(
+  relay: RelayClient,
+  invitation: Invitation,
+  name: string
+): Promise<JoinState> {
   const pair = await crypto.subtle.generateKey(ECDH, false, ['deriveBits']);
   const publicKey = toBase64Url(
     new Uint8Array(await crypto.subtle.exportKey('raw', pair.publicKey))
   );
   const token = toBase64Url(randomBytes(32));
   const tokenHash = toBase64Url(await sha256(utf8(token)));
-  const { request, nonce } = await makeJoinRequest(invitation, publicKey, tokenHash);
+  const { request, nonce } = await makeJoinRequest(invitation, publicKey, tokenHash, name);
   await post(relay, invitation.id, 'request', request);
   return { invitation, request, nonce, privateKey: pair.privateKey, publicKey, token };
 }

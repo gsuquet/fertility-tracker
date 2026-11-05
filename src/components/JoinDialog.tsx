@@ -3,6 +3,7 @@ import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useCycle } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
+import { cleanDeviceName } from '../domain/vault/deviceName';
 import type { AnswerContent, Offer } from '../domain/vault/invitation';
 import { useDemoRemoval } from '../hooks/useDemoRemoval';
 import type { SyncControl } from '../hooks/useSync';
@@ -10,12 +11,15 @@ import type { VaultError } from '../sync/deviceVault';
 import type { JoinState } from '../sync/invitationFlow';
 import { failureOf } from '../utils/syncFailure';
 import type { SyncFailure } from '../utils/syncFailure';
+import { DeviceNameField } from './DeviceNameField';
 import { INVITE_POLL_MS, SyncStepDialog, codeText, isTemporary } from './SyncStepDialog';
 import type { StepAction } from './SyncStepDialog';
 
 type EndMessage = SyncFailure | 'expired' | 'refused' | 'alreadySynced' | 'undoFirst' | 'badLink';
 
 type Step =
+  | { kind: 'checking' }
+  | { kind: 'name' }
   | { kind: 'waiting' }
   | { kind: 'confirm'; code: string }
   /** Finishing is true while `finishJoin()` runs: the dialog then does not close. */
@@ -57,7 +61,11 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
   const s = t.sync;
   const { undoChange } = useCycle();
   const removeDemoDays = useDemoRemoval();
-  const [step, setStep] = useState<Step>({ kind: 'waiting' });
+  const [step, setStep] = useState<Step>({ kind: 'checking' });
+  const [name, setName] = useState('');
+  const [nameInvalid, setNameInvalid] = useState(false);
+  // Resolves with the name that the user typed
+  const named = useRef<((name: string) => void) | null>(null);
   // A failure that the next check can repair, for example no connection
   const [problem, setProblem] = useState<SyncFailure | null>(null);
   const join = useRef<JoinState | null>(null);
@@ -124,10 +132,18 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
         const invitation = parseInviteFragment(link);
         if (!invitation) throw new JoinStop('badLink');
         const flow = await import('../sync/invitationFlow');
-        // The relay has no invitation with this id: it expired, or the owner device stopped it
-        const state = await flow.startJoin(relay, invitation).catch((error: unknown) => {
-          throw (error as VaultError).detail?.status === 404 ? new JoinStop('expired') : error;
+        // The device asks for its name before it sends its join request
+        const typed = await new Promise<string>(resolve => {
+          named.current = resolve;
+          setStep({ kind: 'name' });
         });
+        const deviceName = cleanDeviceName(typed) as string;
+        // The relay has no invitation with this id: it expired, or the owner device stopped it
+        const state = await flow
+          .startJoin(relay, invitation, deviceName)
+          .catch((error: unknown) => {
+            throw (error as VaultError).detail?.status === 404 ? new JoinStop('expired') : error;
+          });
         join.current = state;
         // The dialog closed while the request went: the invitation stops
         if (!mounted.current) {
@@ -184,10 +200,26 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
     else setStep({ kind: 'joining', code, finishing: false });
   };
 
+  const submitName = () => {
+    if (cleanDeviceName(name) === null) {
+      setNameInvalid(true);
+      return;
+    }
+    setStep({ kind: 'waiting' });
+    (named.current as (name: string) => void)(name);
+  };
+
   const closeAction: StepAction = { label: s.close, onClick: onClose, primary: true };
   const cancelAction: StepAction = { label: t.actions.cancel, onClick: cancel };
   const view: { status: string; actions: StepAction[]; alert?: string } = (() => {
     switch (step.kind) {
+      case 'checking':
+        return { status: s.working, actions: [cancelAction] };
+      case 'name':
+        return {
+          status: s.nameNote,
+          actions: [cancelAction, { label: s.nameContinue, onClick: submitName, primary: true }],
+        };
       case 'waiting':
         return { status: s.joinWaiting, actions: [cancelAction] };
       case 'confirm':
@@ -215,6 +247,24 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
       actions={view.actions}
       onClose={step.kind === 'joining' && step.finishing ? null : cancel}
     >
+      {step.kind === 'name' && (
+        <form
+          onSubmit={e => {
+            e.preventDefault();
+            submitName();
+          }}
+          noValidate
+        >
+          <DeviceNameField
+            value={name}
+            onChange={value => {
+              setName(value);
+              setNameInvalid(false);
+            }}
+            invalid={nameInvalid}
+          />
+        </form>
+      )}
       {(step.kind === 'confirm' || step.kind === 'joining') && (
         <p className="sync-code">{codeText(step.code)}</p>
       )}

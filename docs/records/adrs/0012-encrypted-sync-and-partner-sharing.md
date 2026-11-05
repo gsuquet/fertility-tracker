@@ -165,6 +165,19 @@ Each vault is one R2 object, `vaults/<vault id>`. The vault id is 128 random bit
 - Each member makes its own random access token on its device. It sends only the SHA-256 of the token when it joins, and the owner device puts the hash in the keyring.
 - The server refuses a write with a reader token.
 
+### Device names
+
+Each device and each partner has a name that its user types, for example "Phone of Gabriel". The device list of an owner device shows these names ([Removing a member](#removing-a-member)). The server must not see a name.
+
+- The keyring entry of a member holds its name, encrypted with the current data key. Each member that reads the days can read the names.
+- The additional data of a name is the vault id, the member id and the key id. Thus, a name cannot move to a different member.
+- The keyring is in the signed header. Thus, the server cannot change a name.
+- When the data key changes, the owner device encrypts each name again with the new key.
+- A name has 1 to 40 characters. The recovery member has no name. The device list calls it "Recovery code".
+- A member without a name shows as "Device without a name". For example, a member that joined before this rule has no name.
+
+The device that makes the vault asks its user for a name in **Turn on sync**. A recovery also asks for the name of the new device. A new device asks for its name before it sends its join request.
+
 ### Recovery code
 
 - The recovery code is 26 Crockford base32 characters in groups of 4, plus one check character. It holds 128 random bits.
@@ -184,13 +197,13 @@ A device or a partner joins with a one-time invitation and an approval on an own
 
 1. An owner device makes an invitation with a random secret and a role. It shows a QR code and a link: `https://<application>/#invite=<id>.<secret>`.
 2. The new device opens the link. The browser does not send the fragment to the server. The application removes the fragment with `history.replaceState`.
-3. The new device makes its key pair, its access token and a random nonce B. It sends the public key, the token hash and a hash of B.
+3. The new device makes its key pair, its access token and a random nonce B. It sends the public key, the token hash, a hash of B and its name. It encrypts the name with a key from the invitation secret.
 4. The new device also sends an HMAC of these values with the invitation secret.
 5. The owner device checks the HMAC. Then it sends a random nonce A, the vault id and the current signing public key to the new device.
 6. The new device sends B. The owner device checks B against its hash.
-7. The two devices show a 6-digit code from a hash. The hash covers the invitation secret, the public key, A, B, the vault id and the signing public key.
+7. The two devices show a 6-digit code from a hash. The hash covers the secret, the public key, the encrypted name, A, B, the vault id and the signing key.
 8. The owner compares the two codes in person or by voice. The owner device and the new device each ask their user to confirm that the codes match.
-9. After the confirmation on the owner device, the owner device wraps the keys for the new member.
+9. After the confirmation on the owner device, the owner device wraps the keys for the new member. It encrypts the name of the new member with the data key.
 10. The owner device writes the vault with the new member. Then it signs an answer with the signing private key of the vault.
 11. The new device checks the signature with the signing public key of step 5. It uses the keys only after its own user confirmed the codes. It keeps the signing public key and the counter.
 12. The invitation stops after its first use or after 24 hours.
@@ -198,6 +211,7 @@ A device or a partner joins with a one-time invitation and an approval on an own
 - The answer holds the vault id, the member id, the role and the counter of the new vault. The wrapped keys are in the keyring.
 - The invitation sets the role. The joining device cannot select its role.
 - The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
+- The server does not have the invitation secret. Thus, it cannot read the name in the join request. The owner device shows the name with the 6-digit code, and the code covers the encrypted name.
 - Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
 - The code covers the signing public key, and the signature of step 10 needs the signing private key. Thus, a server with the link cannot send false keys to the new device.
 - Until its user confirms the codes, the new device sends no day and shows no data of the vault.
@@ -223,11 +237,13 @@ Thus, on iOS, the partner adds the application to the Home Screen first. Then th
 
 ### Removing a member
 
+An owner device shows the members of the keyring in a device list, with their [names](#device-names) and their roles. The user selects the member to remove in this list.
+
 An owner device removes a partner or a lost device in one conditional write:
 
 1. It makes a new data key and a new key id.
 2. It encrypts the days again with the new key.
-3. It wraps the new key for each member that stays.
+3. It wraps the new key for each member that stays. It encrypts the name of each member again with the new key.
 4. It removes the entry of the old member from the keyring.
 5. It signs the new vault and writes it with `If-Match`.
 

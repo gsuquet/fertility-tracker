@@ -26,7 +26,7 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 const setup = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  await createVault(harness.relay, keyStore);
+  await createVault(harness.relay, keyStore, 'Phone');
   const runs = { count: 0 };
   const services: SyncServices = {
     relay: harness.relay,

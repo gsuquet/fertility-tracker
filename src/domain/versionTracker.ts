@@ -46,6 +46,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.66.0',
+    date: '2026-11-05',
+    title: 'Device Names',
+    titleFr: 'Noms des appareils',
+    tagline: 'Name each device when it joins your synced chart, when sync is ready',
+    taglineFr:
+      'Nommez chaque appareil quand il rejoint votre tableau synchronisé, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Each device will ask for a name when it turns on sync, joins or recovers',
+      'The names are encrypted, so the sync server cannot read them',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Chaque appareil demandera un nom quand il active la synchronisation, la rejoint ou la récupère',
+      'Les noms sont chiffrés, donc le serveur de synchronisation ne peut pas les lire',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.65.0',
     date: '2026-11-05',
     title: 'Days to Check',

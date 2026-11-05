@@ -683,7 +683,7 @@ describe('SettingsDialog sync', () => {
   const controlOf = async (withRecord: boolean, enabled = true): Promise<SyncControl> => {
     const harness = createRelayHarness();
     const keyStore = createMemoryKeyStore();
-    if (withRecord) await createVault(harness.relay, keyStore);
+    if (withRecord) await createVault(harness.relay, keyStore, 'Phone');
     const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
     return {
       enabled,
@@ -749,6 +749,11 @@ describe('SettingsDialog sync', () => {
       },
     });
     fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
+    const naming = await screen.findByRole('dialog', { name: en.sync.nameTitle });
+    fireEvent.change(within(naming).getByLabelText(en.sync.nameLabel), {
+      target: { value: 'Phone' },
+    });
+    fireEvent.click(within(naming).getByRole('button', { name: en.sync.turnOn }));
     const close = screen.getByRole('button', { name: en.settings.close });
     await waitFor(() => expect(close).toBeDisabled());
     fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
@@ -772,7 +777,7 @@ describe('SettingsDialog on a synced device', () => {
   const synced = async (role: DeviceRecord['role'] = 'owner') => {
     const harness = createRelayHarness();
     const keyStore = createMemoryKeyStore();
-    const { record } = await createVault(harness.relay, keyStore);
+    const { record } = await createVault(harness.relay, keyStore, 'Phone');
     if (role === 'reader') await keyStore.save({ ...record, role });
     const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
     const control = {

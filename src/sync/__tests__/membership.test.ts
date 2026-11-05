@@ -20,6 +20,7 @@ import {
   VaultError,
   createVault,
   lookupCopyOf,
+  memberNames,
   openSession,
   vaultStoreOf,
   writeSession,
@@ -53,7 +54,7 @@ const reasonOf = async (promise: Promise<unknown>) => {
 const join = async (relay: RelayClient, ownerStore: KeyStore, role: 'owner' | 'reader') => {
   const ownerRecord = (await ownerStore.load()) as DeviceRecord;
   const owner = await startInvitation(relay, ownerStore, ownerRecord, role);
-  const state = await startJoin(relay, owner.invitation);
+  const state = await startJoin(relay, owner.invitation, 'Tablet');
   await checkAsOwner(relay, ownerRecord, owner);
   await checkAsNewDevice(relay, state);
   await checkAsOwner(relay, ownerRecord, owner);
@@ -68,7 +69,7 @@ const join = async (relay: RelayClient, ownerStore: KeyStore, role: 'owner' | 'r
 const setup = async () => {
   const harness = createRelayHarness();
   const ownerStore = createMemoryKeyStore();
-  const { record, recoveryCode } = await createVault(harness.relay, ownerStore);
+  const { record, recoveryCode } = await createVault(harness.relay, ownerStore, 'Phone');
   const store = vaultStoreOf(harness.relay, ownerStore, record);
   const first = await store.read();
   await store.write(days, first?.etag ?? null);
@@ -110,6 +111,42 @@ describe('removal of a member', () => {
       earlierKeyContext(after.record.vaultId, before.header.keyId)
     );
     expect(raw).toEqual(before.rawDataKey);
+  });
+
+  it('encrypts the names again with the new data key, and drops a name that does not decrypt', async () => {
+    const { relay, ownerStore, headerOf, owner } = await setup();
+    const tablet = await join(relay, ownerStore, 'owner');
+    const reader = await join(relay, ownerStore, 'reader');
+    // The entry of the tablet gets a name of another key
+    const session = await openSession(relay, ownerStore, await owner());
+    const otherKey = await crypto.subtle.importKey('raw', randomBytes(32), 'AES-GCM', false, [
+      'encrypt',
+    ]);
+    const keyring = await Promise.all(
+      session.header.keyring.map(async member =>
+        member.id === tablet.record.memberId
+          ? {
+              ...member,
+              name: await wrapWithKey(utf8('Lost'), otherKey, {
+                vaultId: session.record.vaultId,
+                memberId: member.id,
+                keyId: session.header.keyId,
+                purpose: 'name',
+              }),
+            }
+          : member
+      )
+    );
+    await writeSession(relay, ownerStore, session, { keyring });
+    await removeMember(relay, ownerStore, await owner(), reader.record.memberId);
+    const after = await openSession(relay, ownerStore, await owner());
+    expect(after.header.keyId).not.toBe(session.header.keyId);
+    expect(await memberNames(after)).toEqual([
+      { id: (await owner()).memberId, role: 'owner', name: 'Phone' },
+      { id: expect.any(String), role: 'owner', name: null },
+      { id: tablet.record.memberId, role: 'owner', name: null },
+    ]);
+    expect(headerOf().keyring.find(m => m.id === tablet.record.memberId)?.name).toBeUndefined();
   });
 
   it('encrypts each earlier key again at the next rekey', async () => {
@@ -270,7 +307,7 @@ describe('recovery code', () => {
       (await parseRecoveryCode(recoveryCode)) as Uint8Array<ArrayBuffer>
     );
     const store = createMemoryKeyStore();
-    const recovered = await recoverWithCode(relay, store, recoveryCode);
+    const recovered = await recoverWithCode(relay, store, recoveryCode, 'Laptop');
     expect(recovered.record.role).toBe('owner');
     expect(recovered.recoveryCode).not.toBe(recoveryCode);
     expect(await store.load()).toEqual(recovered.record);
@@ -282,13 +319,21 @@ describe('recovery code', () => {
     const oldHash = toBase64Url(await sha256(utf8(oldValues.accessToken)));
     expect(headerOf().keyring.some(m => m.tokenHash === oldHash)).toBe(false);
     expect(
-      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
     ).toMatchObject({ reason: 'relay', status: 404 });
     // Each owner except the recovery member has the new lookup copy, and the new code works
     const session = await openSession(relay, store, recovered.record);
     expect(session.entry.lookup).toBeDefined();
-    const again = await recoverWithCode(relay, createMemoryKeyStore(), recovered.recoveryCode);
+    const again = await recoverWithCode(
+      relay,
+      createMemoryKeyStore(),
+      recovered.recoveryCode,
+      'Laptop'
+    );
     expect(again.record.vaultId).toBe(recovered.record.vaultId);
+    // The names stay through the rekeys of the new codes. The recovery member has no name.
+    const names = await memberNames(await openSession(relay, store, (await store.load()) as never));
+    expect(names.map(member => member.name)).toEqual(['Phone', 'Laptop', 'Laptop', null]);
   });
 
   it('gives the recovered device a lookup copy, so that it makes the new code again after a failure', async () => {
@@ -300,7 +345,7 @@ describe('recovery code', () => {
       return puts === 2;
     });
     const store = createMemoryKeyStore();
-    expect(await reasonOf(recoverWithCode(relay, store, recoveryCode))).toMatchObject({
+    expect(await reasonOf(recoverWithCode(relay, store, recoveryCode, 'Laptop'))).toMatchObject({
       reason: 'relay',
       status: 0,
     });
@@ -309,10 +354,11 @@ describe('recovery code', () => {
     expect(headerOf().keyring.find(m => m.id === record.memberId)?.lookup).toBeDefined();
     const next = await newRecoveryCode(relay, store, record);
     expect(
-      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
     ).toMatchObject({ reason: 'relay' });
     expect(
-      (await recoverWithCode(relay, createMemoryKeyStore(), next.recoveryCode)).record.vaultId
+      (await recoverWithCode(relay, createMemoryKeyStore(), next.recoveryCode, 'Laptop')).record
+        .vaultId
     ).toBe(record.vaultId);
   });
 
@@ -330,7 +376,7 @@ describe('recovery code', () => {
         return result;
       },
     };
-    const recovered = await recoverWithCode(racing, createMemoryKeyStore(), recoveryCode);
+    const recovered = await recoverWithCode(racing, createMemoryKeyStore(), recoveryCode, 'Laptop');
     const values = await deriveRecoveryValues(
       (await parseRecoveryCode(codeOfOwner)) as Uint8Array<ArrayBuffer>
     );
@@ -338,7 +384,8 @@ describe('recovery code', () => {
     expect(headerOf().keyring.some(m => m.tokenHash === hash)).toBe(false);
     expect(objects.has(`recovery/${values.lookupId}`)).toBe(false);
     expect(
-      (await recoverWithCode(relay, createMemoryKeyStore(), recovered.recoveryCode)).record.vaultId
+      (await recoverWithCode(relay, createMemoryKeyStore(), recovered.recoveryCode, 'Laptop'))
+        .record.vaultId
     ).toBe(recovered.record.vaultId);
   });
 
@@ -374,7 +421,9 @@ describe('recovery code', () => {
 
   it('gives errors for a code that is not valid, a lookup object that does not decrypt, and a failed write', async () => {
     const { relay, ownerStore, recoveryCode, objects, owner, failWhen, bucket } = await setup();
-    expect(await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), 'not a code'))).toEqual({
+    expect(
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), 'not a code', 'Laptop'))
+    ).toEqual({
       reason: 'code',
     });
     expect(
@@ -382,7 +431,8 @@ describe('recovery code', () => {
         recoverWithCode(
           relay,
           createMemoryKeyStore(),
-          await formatRecoveryCode(newRecoverySecret())
+          await formatRecoveryCode(newRecoverySecret()),
+          'Laptop'
         )
       )
     ).toMatchObject({ reason: 'relay', status: 404 });
@@ -394,7 +444,9 @@ describe('recovery code', () => {
     if (!stored) throw new Error('No lookup object');
     for (const value of ['not json', '{}', JSON.stringify({ iv: 'AA', data: 'AA' })]) {
       objects.set(key, { ...stored, value });
-      expect(await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))).toEqual({
+      expect(
+        await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
+      ).toEqual({
         reason: 'code',
       });
     }
@@ -424,7 +476,9 @@ describe('recovery code', () => {
       if (k.startsWith('vaults/')) await put(k, value);
       return put(k, value, options);
     };
-    expect(await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))).toEqual({
+    expect(
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
+    ).toEqual({
       reason: 'relay',
       status: 412,
       error: 'changed',
@@ -434,7 +488,7 @@ describe('recovery code', () => {
     const recoveryId = headerOf().keyring.find(m => m.lookup === undefined)?.id as string;
     await removeMember(relay, ownerStore, await owner(), recoveryId);
     expect(
-      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode))
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
     ).toMatchObject({ reason: 'relay', status: 401 });
   });
 
@@ -470,7 +524,9 @@ describe('recovery code', () => {
       )) as Uint8Array
     );
     expect(
-      await reasonOf(recoverWithCode(withBlob(undefined), createMemoryKeyStore(), recoveryCode))
+      await reasonOf(
+        recoverWithCode(withBlob(undefined), createMemoryKeyStore(), recoveryCode, 'Laptop')
+      )
     ).toEqual({ reason: 'removed' });
     const bad = [
       { iv: toBase64Url(randomBytes(12)), data: toBase64Url(randomBytes(32)) },
@@ -486,7 +542,9 @@ describe('recovery code', () => {
     ];
     for (const blob of bad)
       expect(
-        await reasonOf(recoverWithCode(withBlob(blob), createMemoryKeyStore(), recoveryCode))
+        await reasonOf(
+          recoverWithCode(withBlob(blob), createMemoryKeyStore(), recoveryCode, 'Laptop')
+        )
       ).toEqual({ reason: 'keys' });
   });
 

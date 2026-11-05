@@ -27,7 +27,10 @@ import { useDemoRemoval } from '../../hooks/useDemoRemoval';
 import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
+import { cleanDeviceName } from '../../domain/vault/deviceName';
+import { DeviceNameField } from '../DeviceNameField';
 import { ConflictDialog } from './ConflictDialog';
+import { NameDialog } from './NameDialog';
 import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
 
@@ -82,8 +85,8 @@ export const RecoveryCodeDialog: React.FC<RecoveryCodeDialogProps> = ({ code, on
 interface RecoveryEntryDialogProps {
   /** True for an invitation link, for an installed app on iOS. Else a recovery code. */
   forLink?: boolean;
-  /** Recovers with the code. The parent closes the dialog when it worked. */
-  onSubmit: (code: string) => void;
+  /** Recovers with the code and the name of the device. The parent closes the dialog when it worked. */
+  onSubmit: (code: string, name: string) => void;
   onCancel: () => void;
   working: boolean;
   error: string | null;
@@ -106,6 +109,8 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState('');
+  const [name, setName] = useState('');
+  const [nameInvalid, setNameInvalid] = useState(false);
   // The recovery makes a new code: the dialog stays open until it ends
   const cancel = () => {
     if (!working) onCancel();
@@ -127,7 +132,14 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
       <form
         onSubmit={e => {
           e.preventDefault();
-          if (!working) onSubmit(code);
+          if (working) return;
+          if (!isCode) {
+            onSubmit(code, '');
+            return;
+          }
+          const clean = cleanDeviceName(name);
+          if (clean === null) setNameInvalid(true);
+          else onSubmit(code, clean);
         }}
         noValidate
       >
@@ -147,6 +159,16 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
               onChange={e => setCode(e.target.value)}
             />
           </div>
+          {isCode && (
+            <DeviceNameField
+              value={name}
+              onChange={value => {
+                setName(value);
+                setNameInvalid(false);
+              }}
+              invalid={nameInvalid}
+            />
+          )}
           {error && (
             <p className="settings-alert" role="alert">
               {error}
@@ -184,6 +206,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const removeDemoDays = useDemoRemoval();
   const [inviting, setInviting] = useState(false);
   const [checking, setChecking] = useState(false);
+  const [naming, setNaming] = useState(false);
   // The invitation link that the user pasted, for an installed app on iOS
   const [pasting, setPasting] = useState(false);
   const [joinFragment, setJoinFragment] = useState<string | null>(null);
@@ -252,17 +275,17 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     return current && { record: current };
   };
 
-  const turnOn = () =>
+  const turnOn = (name: string) =>
     run(async ({ relay, keyStore }) => {
       const existing = await joined(keyStore);
       if (existing) return existing;
       removeDemoDays();
       const { createVault } = await import('../../sync/deviceVault');
-      const made = await createVault(relay, keyStore);
+      const made = await createVault(relay, keyStore, name);
       return { record: made.record, code: made.recoveryCode };
     });
 
-  const recover = (typed: string) => {
+  const recover = (typed: string, name: string) => {
     // ADR 0012: no join while an undo copy exists
     if (undoChange !== null) {
       setFailure('undoFirstShort');
@@ -274,7 +297,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         if (existing) return existing;
         removeDemoDays();
         const { recoverWithCode } = await import('../../sync/membership');
-        const made = await recoverWithCode(relay, keyStore, typed);
+        const made = await recoverWithCode(relay, keyStore, typed, name);
         return { record: made.record, code: made.recoveryCode };
       },
       { recovering: true }
@@ -335,8 +358,12 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               icon={iconOf(Share2)}
               label={s.turnOn}
               detail={s.turnOnHint}
-              onClick={() => void turnOn()}
+              onClick={() => {
+                setFailure(null);
+                setNaming(true);
+              }}
               disabled={busy}
+              opens
             />
             <ActionRow
               icon={iconOf(KeyRound)}
@@ -418,7 +445,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 
       {entering && (
         <RecoveryEntryDialog
-          onSubmit={typed => void recover(typed)}
+          onSubmit={(typed, name) => void recover(typed, name)}
           onCancel={() => {
             setEntering(false);
             setFailure(null);
@@ -452,6 +479,16 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               .then(({ keyStore }) => keyStore.load())
               .then(show);
           }}
+        />
+      )}
+
+      {naming && (
+        <NameDialog
+          onSubmit={name => {
+            setNaming(false);
+            void turnOn(name);
+          }}
+          onCancel={() => setNaming(false)}
         />
       )}
 

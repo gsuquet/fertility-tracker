@@ -34,7 +34,7 @@ const storedDates = () =>
 const servicesLoad = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  await createVault(harness.relay, keyStore);
+  await createVault(harness.relay, keyStore, 'Phone');
   const services: SyncServices = { relay: harness.relay, keyStore, runner };
   return vi.fn(async () => services);
 };

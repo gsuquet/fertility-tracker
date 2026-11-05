@@ -65,6 +65,15 @@ const SyncHarness = ({ load }: { load: () => Promise<SyncServices> }) => {
 };
 
 const row = (name: string) => screen.findByRole('button', { name });
+/** Types the name of the device in the name dialog of Turn on sync, and turns on the sync. */
+const nameAndTurnOn = async (name = 'Phone') => {
+  const dialog = await screen.findByRole('dialog', { name: s.nameTitle });
+  fireEvent.change(within(dialog).getByLabelText(s.nameLabel), { target: { value: name } });
+  fireEvent.click(within(dialog).getByRole('button', { name: s.turnOn }));
+};
+/** Types the name of the device in the code dialog. */
+const typeRecoveryName = (dialog: HTMLElement, name = 'Laptop') =>
+  fireEvent.change(within(dialog).getByLabelText(s.nameLabel), { target: { value: name } });
 const codeOf = (dialog: HTMLElement) =>
   within(dialog).getByText(CODE, { selector: '.sync-code' }).textContent as string;
 
@@ -78,7 +87,7 @@ const failingRelay = (status: number) =>
 const ownerRecord = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  const made = await createVault(harness.relay, keyStore);
+  const made = await createVault(harness.relay, keyStore, 'Phone');
   return { ...harness, keyStore, ...made };
 };
 
@@ -97,6 +106,7 @@ describe('SyncSettings', () => {
     expect(onRecordChange).toHaveBeenLastCalledWith(null);
     expect(screen.queryByRole('button', { name: s.syncNow })).toBeNull();
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
 
     const dialog = await screen.findByRole('dialog', { name: s.codeTitle });
     expect(dialog).toHaveAccessibleDescription(s.codeNote);
@@ -124,6 +134,7 @@ describe('SyncSettings', () => {
     const harness = createRelayHarness();
     renderSync(controlOf(harness.relay, createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     const dialog = await screen.findByRole('dialog', { name: s.codeTitle });
     fireEvent.click(within(dialog).getByRole('button', { name: s.copy }));
     expect(await within(dialog).findByRole('button', { name: s.copied })).toBeInTheDocument();
@@ -138,6 +149,7 @@ describe('SyncSettings', () => {
     const harness = createRelayHarness();
     renderSync(controlOf(harness.relay, createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     const dialog = await screen.findByRole('dialog', { name: s.codeTitle });
     fireEvent.click(within(dialog).getByRole('button', { name: s.copy }));
     await waitFor(() => expect(writeText).toHaveBeenCalled());
@@ -154,6 +166,7 @@ describe('SyncSettings', () => {
     harness.failWhen(() => true);
     renderSync(controlOf(harness.relay, keyStore));
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     expect(await screen.findByRole('alert')).toHaveTextContent(s.noConnection);
     expect(await keyStore.load()).toBeNull();
     expect(screen.getByRole('button', { name: s.turnOn })).toBeEnabled();
@@ -162,6 +175,7 @@ describe('SyncSettings', () => {
   it('gives sync not available when the relay has no bucket', async () => {
     renderSync(controlOf(failingRelay(503), createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     expect(await screen.findByRole('alert')).toHaveTextContent(s.unavailable);
   });
 
@@ -181,6 +195,7 @@ describe('SyncSettings', () => {
     renderSync(controlOf(relay, createMemoryKeyStore()));
     const turnOn = await row(s.turnOn);
     fireEvent.click(turnOn);
+    await nameAndTurnOn();
     await waitFor(() => expect(turnOn).toBeDisabled());
     expect(screen.getByRole('button', { name: s.recover })).toBeDisabled();
     // A second click does not start a second vault
@@ -198,6 +213,7 @@ describe('SyncSettings', () => {
     const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
     expect(dialog).toHaveAccessibleDescription(s.enterNote);
     const input = within(dialog).getByLabelText(s.codeLabel);
+    typeRecoveryName(dialog);
     expect(input).toHaveFocus();
 
     // A code with a wrong character, then a valid code of no vault
@@ -239,6 +255,7 @@ describe('SyncSettings', () => {
     fireEvent.click(await row(s.recover));
     const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
     const input = within(dialog).getByLabelText(s.codeLabel);
+    typeRecoveryName(dialog);
     fireEvent.change(input, { target: { value: await formatRecoveryCode(newRecoverySecret()) } });
     fireEvent.submit(input);
     const working = await within(dialog).findByRole('button', { name: s.working });
@@ -322,6 +339,7 @@ describe('SyncSettings', () => {
     renderSync(controlOf(owner.relay, keyStore));
     fireEvent.click(await row(s.recover));
     const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
+    typeRecoveryName(dialog);
     fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
       target: { value: owner.recoveryCode },
     });
@@ -416,6 +434,7 @@ describe('SyncSettings', () => {
     const { onBusyChange } = renderSync(controlOf(harness.relay, createMemoryKeyStore()));
     const calls = () => onBusyChange.mock.calls.map(([busy]) => busy);
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     const dialog = await screen.findByRole('dialog', { name: s.codeTitle });
     expect(calls()).toEqual([false, true]);
     fireEvent.click(within(dialog).getByRole('button', { name: s.wroteItDown }));
@@ -439,6 +458,7 @@ describe('SyncSettings', () => {
     await keyStore.save(owner.record);
     const count = owner.objects.size;
     fireEvent.click(turnOn);
+    await nameAndTurnOn();
     expect(await row(s.syncNow)).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: s.codeTitle })).toBeNull();
     expect(owner.objects.size).toBe(count);
@@ -455,6 +475,7 @@ describe('SyncSettings', () => {
     fireEvent.click(await row(s.recover));
     const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
     await keyStore.save(owner.record);
+    typeRecoveryName(dialog);
     fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
       target: { value: owner.recoveryCode },
     });
@@ -473,6 +494,7 @@ describe('SyncSettings', () => {
     owner.failWhen(
       request => request.method === 'PUT' && new URL(request.url).pathname.includes('/recovery/')
     );
+    typeRecoveryName(dialog);
     fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
       target: { value: owner.recoveryCode },
     });
@@ -499,6 +521,7 @@ describe('SyncSettings', () => {
       resolveConflict: vi.fn(async () => {}),
     });
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
     expect(screen.getByRole('button', { name: s.turnOn })).toBeEnabled();
   });
@@ -510,6 +533,7 @@ describe('SyncSettings', () => {
     const demo = buildDemoObservations('2026-10-20');
     renderSync(controlOf(harness.relay, keyStore), 'en', [...demo, own]);
     fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
     await screen.findByRole('dialog', { name: s.codeTitle });
     const stored = JSON.parse(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) as string);
     expect(stored.map((o: Observation) => o.date)).toEqual(['2026-10-01']);
@@ -526,6 +550,7 @@ describe('SyncSettings', () => {
       write(key, value);
     });
     fireEvent.click(turnOn);
+    await nameAndTurnOn();
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
     setItem.mockRestore();
     expect(await keyStore.load()).toBeNull();
