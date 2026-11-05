@@ -43,6 +43,8 @@ interface ProgressiveObservationFormProps {
   idPrefix: string;
   /** Called with true while the code field or the notes have the focus. */
   onTypingChange?: ((typing: boolean) => void) | undefined;
+  /** The shared chart of a partner device: the notes show in full, as text. */
+  readOnly?: boolean | undefined;
 }
 
 /**
@@ -55,6 +57,7 @@ export const ProgressiveObservationForm: React.FC<ProgressiveObservationFormProp
   directOnly,
   idPrefix,
   onTypingChange,
+  readOnly = false,
 }) => {
   const { t } = useLanguage();
   const { fields } = form;
@@ -302,37 +305,45 @@ export const ProgressiveObservationForm: React.FC<ProgressiveObservationFormProp
         {switchRow(t.codes.intercourse.I, fields.intercourse, form.toggleIntercourse)}
         {switchRow(t.actions.setPeak, fields.isManualPeak, form.toggleManualPeak)}
 
-        <div className="obs-group">
-          <button
-            type="button"
-            className={`obs-row ${notesOpen ? 'open' : ''}`}
-            aria-expanded={notesOpen}
-            aria-controls={notesOpen ? notesId : undefined}
-            onClick={() => toggleGroup('notes')}
-          >
+        {/* The shared chart shows the whole note: its disabled row cannot open */}
+        {readOnly ? (
+          <div className="obs-group obs-notes-read">
             <span className="obs-row-key">{t.observationForm.notes}</span>
-            <span className={`obs-row-value ${fields.notes.trim() ? 'set' : ''}`}>
-              {fields.notes.trim() || t.observationForm.none}
-            </span>
-            {notesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
-          </button>
-          {notesOpen && (
-            <div className="obs-notes">
-              <textarea
-                ref={notesRef}
-                id={notesId}
-                className="form-input form-textarea"
-                rows={3}
-                aria-label={t.labels.notes}
-                placeholder={t.todayView.notesPlaceholder}
-                value={fields.notes}
-                onChange={e => form.setNotes(e.target.value)}
-                onFocus={() => setTyping(true)}
-                onBlur={() => setTyping(false)}
-              />
-            </div>
-          )}
-        </div>
+            <p className="obs-notes-text">{fields.notes.trim() || t.observationForm.none}</p>
+          </div>
+        ) : (
+          <div className="obs-group">
+            <button
+              type="button"
+              className={`obs-row ${notesOpen ? 'open' : ''}`}
+              aria-expanded={notesOpen}
+              aria-controls={notesOpen ? notesId : undefined}
+              onClick={() => toggleGroup('notes')}
+            >
+              <span className="obs-row-key">{t.observationForm.notes}</span>
+              <span className={`obs-row-value ${fields.notes.trim() ? 'set' : ''}`}>
+                {fields.notes.trim() || t.observationForm.none}
+              </span>
+              {notesOpen ? <ChevronUp size={18} /> : <ChevronDown size={18} />}
+            </button>
+            {notesOpen && (
+              <div className="obs-notes">
+                <textarea
+                  ref={notesRef}
+                  id={notesId}
+                  className="form-input form-textarea"
+                  rows={3}
+                  aria-label={t.labels.notes}
+                  placeholder={t.todayView.notesPlaceholder}
+                  value={fields.notes}
+                  onChange={e => form.setNotes(e.target.value)}
+                  onFocus={() => setTyping(true)}
+                  onBlur={() => setTyping(false)}
+                />
+              </div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );

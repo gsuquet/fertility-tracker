@@ -25,6 +25,7 @@ This page gives the rules for the shared chart mode of a partner device. A partn
 
 `CycleDataOverride` gives this data to these parts. The other parts, for example Settings, the backup reminder and **Undo**, use the observations of the device.
 
+- The header, with its cycle picker
 - The statistics bar and the four pages
 - The observation drawer and the **+** button of the phone
 - The export dialog and the print view
@@ -33,14 +34,14 @@ This page gives the rules for the shared chart mode of a partner device. A partn
 
 While `readOnly` is `true`, no part of the pages changes a day:
 
-| Part                                                                 | Change                                                                                                                                |
-| -------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| [Today](today.md)                                                    | The fields of the form are disabled. The Save bar and the actions menu do not show.                                                   |
-| [Observation drawer](observation-drawer.md)                          | The title is "Observation". The date and the fields are disabled. The actions menu and **Save** do not show. **Cancel** is **Close**. |
-| The **+** button of the phone ([Navigation](navigation.md))          | It does not show.                                                                                                                     |
-| The day bar of the [chart](chart.md) and the [calendar](calendar.md) | **Edit** does not show.                                                                                                               |
-| The **Log Observation** shortcut of the app icon                     | It opens Today, and does not open the drawer.                                                                                         |
-| **Else**                                                             | No change. For example, the export dialog prints the shared chart.                                                                    |
+| Part                                                                 | Change                                                                                                                                                                 |
+| -------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| [Today](today.md)                                                    | The fields of the form are disabled. The notes show in full, as text. The Save bar and the actions menu do not show.                                                   |
+| [Observation drawer](observation-drawer.md)                          | The title is "Observation". The date and the fields are disabled. The notes show in full, as text. The actions menu and **Save** do not show. **Cancel** is **Close**. |
+| The **+** button of the phone ([Navigation](navigation.md))          | It does not show.                                                                                                                                                      |
+| The day bar of the [chart](chart.md) and the [calendar](calendar.md) | **Edit** does not show.                                                                                                                                                |
+| The **Log Observation** shortcut of the app icon                     | It opens Today, and does not open the drawer.                                                                                                                          |
+| **Else**                                                             | No change. For example, the export dialog prints the shared chart.                                                                                                     |
 
 Above the pages, a note (`role="note"`) shows the text "This is the shared chart. You can read it, but you cannot change it."
 

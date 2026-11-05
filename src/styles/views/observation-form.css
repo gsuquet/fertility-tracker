@@ -311,3 +311,14 @@
   padding: 0;
   border: 0;
 }
+
+/* The whole note of a day of the shared chart, on several lines */
+.obs-notes-read {
+  padding: var(--space-sm) 0;
+}
+
+.obs-notes-text {
+  margin: var(--space-xs) 0 0;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}

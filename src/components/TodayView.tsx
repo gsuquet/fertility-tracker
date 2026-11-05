@@ -230,6 +230,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
               directOnly={directOnly}
               idPrefix="today"
               onTypingChange={setTyping}
+              readOnly={readOnly}
             />
           </fieldset>
           {!readOnly && (

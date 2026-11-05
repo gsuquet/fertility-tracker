@@ -298,12 +298,15 @@ const MainApp: React.FC = () => {
   return (
     <TopBarProvider value={topBarSlot}>
       <div className="app-layout">
-        <Header
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onTopBarSlot={setTopBarSlot}
-        />
+        {/* The cycle picker of the header selects a cycle of the shared chart */}
+        <CycleDataOverride value={shared}>
+          <Header
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onTopBarSlot={setTopBarSlot}
+          />
+        </CycleDataOverride>
 
         <main
           className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}

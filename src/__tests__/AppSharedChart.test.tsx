@@ -23,6 +23,8 @@ vi.mock('../hooks/useSync', () => ({
   }),
 }));
 
+const LONG_NOTE =
+  'Shared note. A long note of the owner that the partner reads in full. A long note of the owner that the partner reads in full. A long note of the owner that the partner reads in full. A long note of the owner that the partner reads in full.';
 const today = getTodayStr();
 const yesterday = addDays(today, -1);
 let desktop = false;
@@ -42,7 +44,7 @@ describe('App on a partner device with a shared chart', () => {
     );
     sync.sharedDays = [
       { date: yesterday, bleeding: 'H' },
-      { date: today, bleeding: 'M', notes: 'Shared note' },
+      { date: today, bleeding: 'M', notes: LONG_NOTE },
     ];
     vi.mocked(window.matchMedia).mockImplementation(
       query =>
@@ -69,6 +71,8 @@ describe('App on a partner device with a shared chart', () => {
     const code = within(page).getByLabelText(en.labels.directInput);
     expect(code).toHaveValue('M');
     expect(code).toBeDisabled();
+    // The whole note shows as text, because the disabled row cannot open
+    expect(within(page).getByText(LONG_NOTE)).toBeVisible();
     expect(within(page).queryByRole('button', { name: en.actions.save })).toBeNull();
     expect(
       within(page).queryByRole('button', { name: en.observationForm.actionsLabel })
@@ -93,6 +97,32 @@ describe('App on a partner device with a shared chart', () => {
     const footer = drawer.querySelector('.drawer-footer') as HTMLElement;
     fireEvent.click(within(footer).getByRole('button', { name: en.sync.close }));
     expect(screen.queryByRole('dialog', { name: en.drawer.viewTitle })).toBeNull();
+  });
+
+  it('lists the cycles of the shared chart in the cycle picker, and opens the one that the user selects', async () => {
+    const older = addDays(today, -40);
+    sync.sharedDays = [
+      { date: older, bleeding: 'H' },
+      { date: yesterday, bleeding: 'H', isCycleStart: true },
+      { date: today, bleeding: 'M' },
+    ];
+    render(<App />);
+    fireEvent.click(screen.getByRole('tab', { name: en.tabs.chart }));
+    await screen.findByRole('tabpanel', { name: en.tabs.chart });
+    fireEvent.click(
+      screen.getAllByRole('button', { name: en.cyclePicker.buttonLabel })[0] as HTMLElement
+    );
+    const list = await screen.findByRole('listbox');
+    // All cycles, and the two cycles of the shared chart: not the one cycle of the own days
+    const options = within(list).getAllByRole('option');
+    expect(options).toHaveLength(3);
+    const oldest = options.find(
+      option => option.getAttribute('aria-selected') === 'false' && option !== options[0]
+    ) as HTMLElement;
+    fireEvent.click(oldest);
+    expect(
+      await screen.findByRole('button', { name: new RegExp(`^Cycle Day 1, Date ${older}`) })
+    ).toBeInTheDocument();
   });
 
   it('shows the day bar of the desktop chart without Edit', async () => {

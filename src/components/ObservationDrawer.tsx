@@ -218,7 +218,12 @@ export const ObservationDrawer: React.FC = () => {
             />
           </div>
 
-          <ProgressiveObservationForm form={form} directOnly={directOnly} idPrefix="obs" />
+          <ProgressiveObservationForm
+            form={form}
+            directOnly={directOnly}
+            idPrefix="obs"
+            readOnly={readOnly}
+          />
         </fieldset>
 
         {/* Footer Actions */}
