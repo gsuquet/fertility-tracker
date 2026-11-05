@@ -195,7 +195,7 @@ While **Recover** runs, the code dialog does not close. **Cancel** is disabled, 
 - The text of the role `owner` is "Can change the chart". The text of the role `reader` is "Can only read the chart".
 - **Remove** asks for a confirmation. The title is "Remove" and the name, with a question mark. The message says that the device stops syncing at once, and keeps what it already shows.
 - For an owner device, the message also says that a new recovery code follows. The removed device can know the old code.
-- After the confirmation, the dialog calls `removeDevice()` with the sync lock. Then it loads the list again.
+- After the confirmation, the dialog calls `removeDevice()` with the sync lock. When it succeeds, the dialog loads the list again.
 - When `removeDevice()` gives a new code, Settings shows the [recovery code dialog](#recovery-code-dialog). Settings stays open until the user closes it.
 - While the list loads or a removal runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
 - When a call fails, an alert in the dialog gives the cause, as in the [Sync group](#sync-group).
