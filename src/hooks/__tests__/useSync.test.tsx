@@ -9,6 +9,8 @@ import * as runner from '../../sync/syncRunner';
 import { SYNC_ENABLED } from '../../sync/syncFlag';
 import { makeObservation } from '../../test/factories';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
+import { markOf } from '../../utils/textMark';
+import { serializeObservations } from '../../domain/storageFormat';
 import { CHANGE_SYNC_DELAY_MS, VISIBLE_SYNC_INTERVAL_MS, useSync } from '../useSync';
 import type { SyncServices } from '../useSync';
 
@@ -277,6 +279,68 @@ describe('useSync', () => {
     await waitFor(() => expect(third.result.current.observations).toHaveLength(3));
     const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
     expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true, true]);
+  });
+
+  it('keeps a day saved before the first sync on a device without the observations key', async () => {
+    const { load, services } = await setup();
+    const runSync = services.runner.runSync;
+    let first = true;
+    services.runner = {
+      ...services.runner,
+      runSync: async input => {
+        if (!first) return runSync(input);
+        first = false;
+        return { status: 'off' };
+      },
+    };
+    const { result } = render(load);
+    await settle();
+    act(() => result.current.saveObservation({ date: '2026-10-01', bleeding: 'H' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_SYNC_DELAY_MS);
+    });
+    await waitFor(() => expect(result.current.lastSyncDate).not.toBeNull());
+    expect(result.current.observations.map(o => o.date)).toEqual(['2026-10-01']);
+  });
+
+  it('starts again with a first sync after a version without the sync wrote the list', async () => {
+    const { load, relay, keyStore } = await setup();
+    const days = ['2026-10-01', '2026-10-02'].map(date => makeObservation({ date, bleeding: 'H' }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+    const first = render(load);
+    await waitFor(() => expect(first.result.current.lastSyncDate).not.toBeNull());
+    first.unmount();
+    // An old version writes one day only, and no mark
+    const text = JSON.stringify(days.slice(0, 1));
+    localStorage.setItem(STORAGE_KEY, text);
+    const second = render(load);
+    await waitFor(() => expect(second.result.current.observations).toHaveLength(2));
+    const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true]);
+    expect(localStorage.getItem('fertility_care_observations_mark')).toBe(
+      markOf(localStorage.getItem(STORAGE_KEY) as string)
+    );
+  });
+
+  it('starts again with a first sync when a tab of a version without the sync writes the list', async () => {
+    const { load, relay, keyStore } = await setup();
+    const days = ['2026-10-01', '2026-10-02'].map(date => makeObservation({ date, bleeding: 'H' }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+    const { result } = render(load);
+    await waitFor(() => expect(result.current.lastSyncDate).not.toBeNull());
+    await settle();
+    // The old version writes the same format, with one day only and no mark
+    const text = serializeObservations(result.current.observations.slice(0, 1));
+    localStorage.setItem(STORAGE_KEY, text);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: text }));
+    });
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(result.current.observations).toHaveLength(2));
+    const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true]);
   });
 
   it('does not sync a list that another tab changed, and uses a Web Lock when the browser has one', async () => {

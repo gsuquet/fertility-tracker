@@ -5,6 +5,7 @@ import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
 import type { Observation } from '../../types/crms';
 import { validateObservation } from '../../domain/dataValidator';
+import { markOf } from '../../utils/textMark';
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
@@ -733,25 +734,33 @@ describe('synced observations', () => {
     expect(result.current.observations).toEqual([]);
   });
 
-  it('saves the date of the last sync, and tells when the observations key was missing at the load', () => {
+  it('saves the date of the last sync, and the mark of the stored observations', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-10T12:00:00'));
     const { result } = renderData();
     expect(result.current.lastSyncDate).toBeNull();
-    expect(result.current.loadMissing).toBe(true);
     act(() => result.current.markSynced());
     expect(result.current.lastSyncDate).toBe('2026-06-10');
     expect(localStorage.getItem('fertility_care_last_sync')).toBe('2026-06-10');
     vi.useRealTimers();
-    expect(renderData().result.current.loadMissing).toBe(false);
+    const stored = localStorage.getItem(STORAGE_KEY) as string;
+    expect(localStorage.getItem('fertility_care_observations_mark')).toBe(markOf(stored));
   });
 
   it('deletes the sync state at a damaged load, and keeps it at a good load', () => {
     const SYNC_STATE_KEY = 'fertility_care_sync_state';
+    const text = JSON.stringify([makeObservation({ date: '2026-06-01' })]);
     localStorage.setItem(SYNC_STATE_KEY, 'state');
-    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+    localStorage.setItem(STORAGE_KEY, text);
+    localStorage.setItem('fertility_care_observations_mark', markOf(text));
     renderData();
     expect(localStorage.getItem(SYNC_STATE_KEY)).toBe('state');
+    // A list without its mark comes from a version without the sync
+    localStorage.setItem(STORAGE_KEY, text);
+    localStorage.setItem('fertility_care_observations_mark', 'other');
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
     localStorage.setItem(STORAGE_KEY, '{corrupt');
     renderData();
     expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();

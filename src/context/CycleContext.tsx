@@ -23,12 +23,14 @@ import {
 import { buildDemoObservations } from '../domain/demoData';
 import { parseObservationData, serializeObservations } from '../domain/storageFormat';
 import { mergeObservations } from '../domain/backupImport';
+import { markOf } from '../utils/textMark';
 import {
   STORAGE_BACKUP_REMINDER_START_KEY as REMINDER_START_KEY,
   STORAGE_BACKUP_SNOOZED_UNTIL_KEY as SNOOZE_KEY,
   STORAGE_LAST_BACKUP_KEY as LAST_BACKUP_KEY,
   STORAGE_LAST_SYNC_KEY as LAST_SYNC_KEY,
   STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
+  STORAGE_OBSERVATIONS_MARK_KEY as MARK_KEY,
   STORAGE_RECOVERY_KEY as RECOVERY_KEY,
   STORAGE_SYNC_STATE_KEY as SYNC_STATE_KEY,
   STORAGE_UNDO_KEY as UNDO_KEY,
@@ -87,8 +89,6 @@ export interface CycleDataContextType {
   lastSyncDate: string | null;
   /** Records today as the date of the last sync. */
   markSynced: () => void;
-  /** True when the observations key was missing from the browser storage at this load. */
-  loadMissing: boolean;
 }
 
 export interface CycleUiContextType {
@@ -189,15 +189,27 @@ const readStoredState = () => {
 };
 
 /**
- * The stored state, and the facts of this load for the sync. At a damaged load or without the
- * observations key, the sync state goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
+ * The stored state. At a damaged load, without the observations key or without their mark, the
+ * sync state goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
  */
 const loadStoredState = () => {
-  const missing = readStorage(STORAGE_KEY) === null;
+  const stored = readStorage(STORAGE_KEY);
   const state = readStoredState();
-  // A missing key also deletes it: after a reload, the key holds '[]' and looks like deleted days
-  if (state.damaged || missing) removeStorage(SYNC_STATE_KEY);
-  return { ...state, missing };
+  // A missing key also deletes it: after a reload, the key holds '[]' and looks like deleted days.
+  // A list without its mark comes from a version without the sync.
+  const unknownWriter = stored !== null && readStorage(MARK_KEY) !== markOf(stored);
+  if (state.damaged || stored === null || unknownWriter) removeStorage(SYNC_STATE_KEY);
+  return state;
+};
+
+/**
+ * Writes the observations and their mark. A version from before the sync writes no mark: a mark
+ * that is not the mark of the stored text shows a list that the sync must not trust.
+ */
+const writeObservations = (text: string): boolean => {
+  if (!writeStorage(STORAGE_KEY, text)) return false;
+  writeStorage(MARK_KEY, markOf(text));
+  return true;
 };
 
 interface UndoState {
@@ -225,7 +237,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
   const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
   const [lastSyncDate, setLastSyncDate] = useState(() => readStorage(LAST_SYNC_KEY));
-  const { missing: loadMissing } = initialState;
   const persistRequested = useRef(false);
   const fromOtherTab = useRef<Observation[] | null>(null);
   const hasData = observations.length > 0;
@@ -247,7 +258,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!recoveryKept && observations === initialState.observations) return;
     // A list from another tab is already in the storage: a write back could remove its new data
     if (observations === fromOtherTab.current) return;
-    setSaveFailed(!writeStorage(STORAGE_KEY, serializeObservations(observations)));
+    setSaveFailed(!writeObservations(serializeObservations(observations)));
   }, [observations, recoveryKept, initialState.observations]);
 
   // Another tab of the application saved observations: this tab shows them, and a sync in this
@@ -316,7 +327,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
           toObservation({ ...input, id: input.id ?? idOf.get(input.date as string) })
         )
       );
-      if (!writeStorage(STORAGE_KEY, serializeObservations(list))) {
+      if (!writeObservations(serializeObservations(list))) {
         setSaveFailed(true);
         return false;
       }
@@ -453,7 +464,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       applySyncedObservations,
       lastSyncDate,
       markSynced,
-      loadMissing,
     }),
     [
       observations,
@@ -481,7 +491,6 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       applySyncedObservations,
       lastSyncDate,
       markSynced,
-      loadMissing,
     ]
   );
 

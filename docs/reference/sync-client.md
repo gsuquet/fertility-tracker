@@ -194,7 +194,7 @@ For a `synced` result, `finishSync(result, input)` does these steps in this sequ
 
 For a `cancelled` or `busy` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
 
-At load, the provider deletes `fertility_care_sync_state` at once in these conditions: `parseObservationData()` gives `null`, `droppedCount` is more than 0, or the observations key is missing. Thus, the next sync is a first sync, and the vault wins on each date ([Safety of the local data](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#safety-of-the-local-data)).
+At load, the provider deletes `fertility_care_sync_state` at once when the stored observations are damaged, missing or without their correct mark. Thus, the next sync is a first sync, and the vault wins on each date ([Safety of the local data](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#safety-of-the-local-data)).
 
 ### When the application syncs
 
@@ -209,8 +209,9 @@ At load, the provider deletes `fertility_care_sync_state` at once in these condi
 
 - Only one sync runs at a time in a tab. A sync that starts while a sync runs occurs after the running sync.
 - When the browser has Web Locks, the lock `fertility-tracker-sync` lets only one tab sync at a time.
-- A tab does not sync when the stored observations are not its observations. The `storage` event then gives it the stored observations, as [Synced observations](data-storage.md#synced-observations) gives.
-- Until the first saved sync, `observationsMissing` is `true` when the observations key was missing at the load (`loadMissing`).
+- A tab does not sync when the stored observations are not its observations. The `storage` event gives it a list that it can read, as [Synced observations](data-storage.md#synced-observations) gives. Else, the tab syncs again only after its next save.
+- When the mark of the stored observations is not correct, a version without the sync wrote them. The tab then deletes the sync state before it syncs. Thus, the sync is a first sync.
+- `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.

@@ -29,6 +29,7 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup, `YYYY-MM-DD`                                                                                |
 | `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder, `YYYY-MM-DD`                                                                           |
 | `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze, `YYYY-MM-DD`                                                                             |
+| `STORAGE_OBSERVATIONS_MARK_KEY`     | `fertility_care_observations_mark`        | The mark of the stored observations ([Synced observations](#synced-observations))                                         |
 | `STORAGE_SYNC_STATE_KEY`            | `fertility_care_sync_state`               | The sync state of the device ([Sync in the application](sync-client.md#sync-in-the-application))                          |
 | `STORAGE_SYNC_CONFLICTS_KEY`        | `fertility_care_sync_conflicts`           | The days that lost a conflict of the sync                                                                                 |
 | `STORAGE_LAST_SYNC_KEY`             | `fertility_care_last_sync`                | Date of the last sync, `YYYY-MM-DD`                                                                                       |
@@ -127,9 +128,11 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - When `changed` is `true`, it deletes the undo copy, as `saveObservation()` does. Thus, **Undo** never brings back an old list over remote changes.
 - The selected cycle does not change.
 
-`markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`. `loadMissing` is `true` when the observations key was missing at this load.
+`markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`.
 
-- The provider deletes `fertility_care_sync_state` at the load when the observations key is missing, `parseObservationData()` gives `null` or `droppedCount` is more than 0.
+- Each write of `fertility_care_observations` also writes its mark, the FNV-1a hash of the text, to `fertility_care_observations_mark`. A version without the sync writes no mark.
+
+- The provider deletes `fertility_care_sync_state` at the load when the observations key or its correct mark is missing. It also deletes it when `parseObservationData()` gives `null` or `droppedCount` is more than 0.
 - When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. This tab does not write them back.
 - A value that is not readable, or that has a record that this version drops, changes nothing. The value stays in the storage.
 - When another tab changes the observations or deletes `fertility_care_observations_undo`, this tab forgets its undo copy. Thus, **Undo** never brings back an old list over a change of another tab.

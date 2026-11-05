@@ -11,7 +11,12 @@ import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
 import { serializeObservations } from '../domain/storageFormat';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
-import { STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
+import {
+  STORAGE_OBSERVATIONS_KEY,
+  STORAGE_OBSERVATIONS_MARK_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../utils/storageKeys';
+import { markOf } from '../utils/textMark';
 
 /** A page that becomes visible syncs only when the last sync started this long ago. */
 export const VISIBLE_SYNC_INTERVAL_MS = 60_000;
@@ -59,7 +64,6 @@ export function useSync(
   const again = useRef(false);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
-  const syncedOnce = useRef(false);
 
   const sync = useCallback(async () => {
     if (running.current) {
@@ -76,13 +80,17 @@ export function useSync(
         // Another tab saved other observations: this tab gets them first, with the storage event
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
         if (stored !== null && stored !== serializeObservations(sent.observations)) return;
+        // A version without the sync wrote the list: the sync starts again as a first sync
+        if (stored !== null && readStorage(STORAGE_OBSERVATIONS_MARK_KEY) !== markOf(stored)) {
+          removeStorage(STORAGE_SYNC_STATE_KEY);
+        }
         const result = await runner.runSync({
           relay,
           keyStore,
           storage,
           observations: sent.observations,
-          // Until the first saved sync, a key that was missing at the load is still missing
-          observationsMissing: sent.loadMissing && !syncedOnce.current,
+          // The provider deleted the sync state when the key was missing at the load
+          observationsMissing: false,
           recoveryData: sent.recoveryData !== null,
           saveFailed: sent.saveFailed,
           now: Date.now(),
@@ -103,7 +111,6 @@ export function useSync(
           },
         });
         if (saved) {
-          syncedOnce.current = true;
           latest.current.data.markSynced();
         }
       });
