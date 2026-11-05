@@ -180,6 +180,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const s: SyncText = t.sync;
   const [record, setRecord] = useState<DeviceRecord | null | undefined>(undefined);
   const [busy, setBusy] = useState(false);
+  // An action that makes a recovery code runs
+  const [making, setMaking] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
   const [code, setCode] = useState<string | null>(null);
   const [entering, setEntering] = useState(false);
@@ -188,8 +190,9 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   onRecordRef.current = onRecordChange;
   const onBusyRef = useRef(onBusyChange);
   onBusyRef.current = onBusyChange;
-  // A new recovery code must show: Settings stays open until the action ends
-  useEffect(() => onBusyRef.current(busy), [busy]);
+  // A new recovery code must show: Settings stays open until the user closes the code dialog
+  const holding = making || code !== null;
+  useEffect(() => onBusyRef.current(holding), [holding]);
 
   const show = useCallback((next: DeviceRecord | null) => {
     setRecord(next);
@@ -207,10 +210,11 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   /** Runs one action with the services. The action gives the new record and a code to show. */
   const run = async (
     action: (services: SyncServices) => Promise<{ record: DeviceRecord | null; code?: string }>,
-    recovering = false
+    { recovering = false, makesCode = true } = {}
   ) => {
     // The disabled rows and the disabled Recover button stop a second action
     setBusy(true);
+    setMaking(makesCode);
     setFailure(null);
     try {
       const result = await control.withSync(action);
@@ -220,8 +224,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       if (result.record) void control.syncNow();
     } catch (error) {
       setFailure(failureOf(error, recovering));
+      // A recovery can save the record before its new code fails: the rows follow the key store
+      await control
+        .services()
+        .then(({ keyStore }) => keyStore.load())
+        .then(show, () => {});
     } finally {
       setBusy(false);
+      setMaking(false);
     }
   };
 
@@ -232,8 +242,16 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     if (!applySyncedObservations(kept, false)) throw new Error('The browser refused the write');
   };
 
+  /** The record of the key store. Another tab can save one after the group opens. */
+  const joined = async (keyStore: SyncServices['keyStore']) => {
+    const current = await keyStore.load();
+    return current && { record: current };
+  };
+
   const turnOn = () =>
     run(async ({ relay, keyStore }) => {
+      const existing = await joined(keyStore);
+      if (existing) return existing;
       removeDemoDays();
       const { createVault } = await import('../../sync/deviceVault');
       const made = await createVault(relay, keyStore);
@@ -241,12 +259,17 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     });
 
   const recover = (typed: string) =>
-    run(async ({ relay, keyStore }) => {
-      removeDemoDays();
-      const { recoverWithCode } = await import('../../sync/membership');
-      const made = await recoverWithCode(relay, keyStore, typed);
-      return { record: made.record, code: made.recoveryCode };
-    }, true);
+    run(
+      async ({ relay, keyStore }) => {
+        const existing = await joined(keyStore);
+        if (existing) return existing;
+        removeDemoDays();
+        const { recoverWithCode } = await import('../../sync/membership');
+        const made = await recoverWithCode(relay, keyStore, typed);
+        return { record: made.record, code: made.recoveryCode };
+      },
+      { recovering: true }
+    );
 
   const newCode = () =>
     run(async ({ relay, keyStore }) => {
@@ -260,12 +283,15 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 
   const turnOff = () => {
     setConfirmOff(false);
-    void run(async ({ keyStore }) => {
-      await keyStore.clear();
-      removeStorage(STORAGE_SYNC_STATE_KEY);
-      removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
-      return { record: null };
-    });
+    void run(
+      async ({ keyStore }) => {
+        await keyStore.clear();
+        removeStorage(STORAGE_SYNC_STATE_KEY);
+        removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
+        return { record: null };
+      },
+      { makesCode: false }
+    );
   };
 
   const syncNow = async () => {

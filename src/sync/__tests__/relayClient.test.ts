@@ -1,7 +1,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import { randomBytes, toBase64Url } from '../../domain/vault/bytes';
 import { createRelayHarness } from '../../test/relayHarness';
-import { createRelayClient } from '../relayClient';
+import { RELAY_TIMEOUT_MS, createRelayClient } from '../relayClient';
 
 const newId = () => toBase64Url(randomBytes(16));
 
@@ -69,6 +69,19 @@ describe('relay client', () => {
     });
     expect(await client.getVault('v', 't')).toEqual({ ok: false, status: 500, error: 'unknown' });
     expect(await client.getVault('v', 't')).toEqual({ ok: false, status: 502, error: 'unknown' });
+  });
+
+  it('stops a request after the relay timeout', async () => {
+    const timeout = vi.spyOn(AbortSignal, 'timeout');
+    let signal: AbortSignal | null = null;
+    const relay = createRelayClient(async request => {
+      signal = request.signal;
+      return new Response('{}', { status: 200 });
+    }, 'https://relay.test');
+    await relay.getRecovery('abc');
+    expect(timeout).toHaveBeenCalledWith(RELAY_TIMEOUT_MS);
+    expect(signal).not.toBeNull();
+    timeout.mockRestore();
   });
 
   it('gives the error network when the fetch fails, and uses the origin of the page by default', async () => {

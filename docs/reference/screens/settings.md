@@ -147,7 +147,10 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay. |
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
-- While a row runs, the rows of the group are disabled. Settings does not close, so that the user sees the new recovery code.
+- While a row runs, the rows of the group are disabled.
+- While a row that makes a recovery code runs, and while the code dialog is open, Settings does not close. Thus, the user sees each new code.
+- **Turn on sync** and **Recover** first read the key store. When another tab saved a record, they show its rows and make no vault.
+- After a failure, the group reads the key store again. For example, a recovery can save the record before its new code fails.
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).

@@ -342,12 +342,94 @@ describe('SyncSettings', () => {
     expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
   });
 
-  it('tells Settings when an action runs', async () => {
+  it('keeps Settings open while a code action runs and while the code shows', async () => {
     const harness = createRelayHarness();
     const { onBusyChange } = renderSync(controlOf(harness.relay, createMemoryKeyStore()));
+    const calls = () => onBusyChange.mock.calls.map(([busy]) => busy);
     fireEvent.click(await row(s.turnOn));
-    await screen.findByRole('dialog', { name: s.codeTitle });
-    expect(onBusyChange.mock.calls.map(([busy]) => busy)).toEqual([false, true, false]);
+    const dialog = await screen.findByRole('dialog', { name: s.codeTitle });
+    expect(calls()).toEqual([false, true]);
+    fireEvent.click(within(dialog).getByRole('button', { name: s.wroteItDown }));
+    expect(calls()).toEqual([false, true, false]);
+
+    // Sync now and Turn off make no code: Settings can close while they run
+    fireEvent.click(await row(s.syncNow));
+    fireEvent.click(await row(s.turnOff));
+    const confirm = await screen.findByRole('dialog', { name: s.turnOffTitle });
+    fireEvent.click(within(confirm).getByRole('button', { name: s.turnOffConfirm }));
+    expect(await row(s.turnOn)).toBeInTheDocument();
+    expect(calls()).toEqual([false, true, false]);
+  });
+
+  it('shows the record that another tab saved, and makes no second vault', async () => {
+    const owner = await ownerRecord();
+    const keyStore = createMemoryKeyStore();
+    renderSync(controlOf(owner.relay, keyStore));
+    const turnOn = await row(s.turnOn);
+    const recoverRow = screen.getByRole('button', { name: s.recover });
+    await keyStore.save(owner.record);
+    const count = owner.objects.size;
+    fireEvent.click(turnOn);
+    expect(await row(s.syncNow)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: s.codeTitle })).toBeNull();
+    expect(owner.objects.size).toBe(count);
+
+    // The same for a recovery that starts before the other tab saves its record
+    await keyStore.clear();
+    fireEvent.click(await row(s.turnOff));
+    fireEvent.click(
+      within(await screen.findByRole('dialog', { name: s.turnOffTitle })).getByRole('button', {
+        name: s.turnOffConfirm,
+      })
+    );
+    expect(recoverRow).not.toBeInTheDocument();
+    fireEvent.click(await row(s.recover));
+    const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
+    await keyStore.save(owner.record);
+    fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
+      target: { value: owner.recoveryCode },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: s.recoverAction }));
+    expect(await row(s.syncNow)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: s.codeTitle })).toBeNull();
+    expect(owner.objects.size).toBe(count);
+  });
+
+  it('shows the rows of the record that a recovery saved before its new code failed', async () => {
+    const owner = await ownerRecord();
+    const keyStore = createMemoryKeyStore();
+    const { onRecordChange } = renderSync(controlOf(owner.relay, keyStore));
+    fireEvent.click(await row(s.recover));
+    const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
+    owner.failWhen(
+      request => request.method === 'PUT' && new URL(request.url).pathname.includes('/recovery/')
+    );
+    fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
+      target: { value: owner.recoveryCode },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: s.recoverAction }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(s.noConnection);
+    expect(await keyStore.load()).not.toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(await row(s.syncNow)).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: s.newCode })).toBeEnabled();
+    expect(onRecordChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('keeps the rows when the key store does not load again after a failure', async () => {
+    const keyStore = createMemoryKeyStore();
+    const services: SyncServices = { relay: failingRelay(500), keyStore, runner };
+    let loads = 0;
+    renderSync({
+      enabled: true,
+      services: () => (loads++ === 0 ? Promise.resolve(services) : Promise.reject(new Error('x'))),
+      syncNow: vi.fn(),
+      withSync: () => Promise.reject(new Error('chunk')),
+      lastError: null,
+    });
+    fireEvent.click(await row(s.turnOn));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
+    expect(screen.getByRole('button', { name: s.turnOn })).toBeEnabled();
   });
 
   it('removes the demo days before the device joins a vault', async () => {

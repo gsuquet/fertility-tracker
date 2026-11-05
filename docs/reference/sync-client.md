@@ -26,6 +26,7 @@ Until `SYNC_ENABLED` is `true`, the application does not call these functions. T
 - When the network fails, the result is `{ ok: false, status: 0, error: "network" }`.
 - The ETag of the result has no quotes. The client adds the quotes in `If-Match`.
 - Each request has `cache: "no-store"`.
+- A request that takes more than 30 seconds (`RELAY_TIMEOUT_MS`) fails as a network error.
 
 ## Device record
 
