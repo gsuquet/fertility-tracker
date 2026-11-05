@@ -1,4 +1,4 @@
-/** The invitation of a new owner device. See docs/reference/screens/settings.md#invitation-dialog. */
+/** The invitation of a new owner device or a partner. See docs/reference/screens/settings.md#invitation-dialog. */
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
@@ -27,6 +27,8 @@ interface Started {
 
 interface InviteDialogProps {
   control: SyncControl;
+  /** `owner` for a device of the user, `reader` for a partner. */
+  invitedRole: DeviceRecord['role'];
   onClose: () => void;
   /** The time between two checks. Tests give a short time. */
   pollMs?: number;
@@ -36,6 +38,7 @@ const appUrl = () => `${window.location.origin}${window.location.pathname}`;
 
 export const InviteDialog: React.FC<InviteDialogProps> = ({
   control,
+  invitedRole,
   onClose,
   pollMs = INVITE_POLL_MS,
 }) => {
@@ -50,8 +53,8 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
   const finished = useRef(false);
   const mounted = useRef(false);
   const running = useRef(false);
-  const latest = useRef({ control, pollMs });
-  latest.current = { control, pollMs };
+  const latest = useRef({ control, pollMs, invitedRole });
+  latest.current = { control, pollMs, invitedRole };
 
   /** Deletes the invitation on the relay one time, so that the new device stops. */
   const stop = () => {
@@ -76,14 +79,14 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
     mounted.current = true;
     if (!running.current) {
       running.current = true;
-      const { control: sync, pollMs: wait } = latest.current;
+      const { control: sync, pollMs: wait, invitedRole: invited } = latest.current;
       const run = async () => {
         const flow = await import('../../sync/invitationFlow');
         const { inviteLink } = await import('../../domain/vault/invitation');
         const made = await sync.withSync(async ({ relay, keyStore }) => {
           const record = await keyStore.load();
           if (!record) throw new Error('No device record');
-          return { record, owner: await flow.startInvitation(relay, keyStore, record, 'owner') };
+          return { record, owner: await flow.startInvitation(relay, keyStore, record, invited) };
         });
         started.current = made;
         // The dialog closed while the invitation started: the invitation stops
@@ -157,6 +160,7 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
     );
   };
 
+  const title = invitedRole === 'owner' ? s.inviteTitle : s.invitePartner;
   const closeAction: StepAction = { label: s.close, onClick: onClose, primary: true };
   const cancelAction: StepAction = { label: t.actions.cancel, onClick: cancel };
   const view: { status: string; actions: StepAction[]; alert?: string } = (() => {
@@ -185,15 +189,18 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
           ],
         };
       case 'done':
-        return { status: s.inviteDone, actions: [closeAction] };
+        return {
+          status: invitedRole === 'owner' ? s.inviteDone : s.invitePartnerDone,
+          actions: [closeAction],
+        };
       default:
-        return { status: s.inviteTitle, alert: s[step.message], actions: [closeAction] };
+        return { status: title, alert: s[step.message], actions: [closeAction] };
     }
   })();
 
   return (
     <SyncStepDialog
-      title={s.inviteTitle}
+      title={title}
       status={view.status}
       alert={view.alert ?? (problem && s[problem])}
       actions={view.actions}

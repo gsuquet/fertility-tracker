@@ -8,7 +8,9 @@ import type { DeviceRecord } from '../../sync/keyStore';
 import * as runner from '../../sync/syncRunner';
 import { SYNC_ENABLED } from '../../sync/syncFlag';
 import { makeObservation } from '../../test/factories';
+import { joinMember } from '../../test/joinMember';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
+import { removeMember } from '../../sync/membership';
 import { markOf } from '../../utils/textMark';
 import { serializeObservations } from '../../domain/storageFormat';
 import { CHANGE_SYNC_DELAY_MS, VISIBLE_SYNC_INTERVAL_MS, useSync } from '../useSync';
@@ -16,6 +18,7 @@ import type { SyncServices } from '../useSync';
 
 const STORAGE_KEY = 'fertility_care_observations';
 const STATE_KEY = 'fertility_care_sync_state';
+const SHARED_KEY = 'fertility_care_shared_chart';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <LanguageProvider>
@@ -339,6 +342,77 @@ describe('useSync', () => {
       error: null,
     });
     expect(runs.count).toBe(0);
+  });
+
+  it('reads the shared chart on a reader device, and never merges it with its own days', async () => {
+    const { relay, keyStore, services } = await setup();
+    const owner = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    const read = await owner.read();
+    await owner.write(
+      [{ date: '2026-10-01', day: { bleeding: 'H' }, clock: { time: 5, counter: 0, member: 'm' } }],
+      read?.etag ?? null
+    );
+    const reader = await joinMember(relay, keyStore, 'reader');
+    const runs = { count: 0, shared: 0 };
+    const load = vi.fn(async () => ({
+      ...services,
+      keyStore: reader.keyStore,
+      runner: {
+        ...runner,
+        runSync: async (input: runner.RunInput) => {
+          runs.count += 1;
+          return runner.runSync(input);
+        },
+        readShared: async (...args: Parameters<typeof runner.readShared>) => {
+          runs.shared += 1;
+          return runner.readShared(...args);
+        },
+      },
+    }));
+    const own = [makeObservation({ date: '2026-09-01', bleeding: 'M' })];
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(own));
+    const { result } = renderHook(() => ({ sync: useSync(true, load), data: useCycleData() }), {
+      wrapper,
+    });
+    await waitFor(() => expect(result.current.data.lastSyncDate).not.toBeNull());
+    expect(runs).toEqual({ count: 0, shared: 1 });
+    expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01');
+    // The own days of the device stay, and the device has no sync state
+    expect(result.current.data.observations.map(o => o.date)).toEqual(['2026-09-01']);
+    expect(localStorage.getItem(STATE_KEY)).toBeNull();
+    expect(await act(() => result.current.sync.syncNow())).toEqual({
+      sent: true,
+      skipped: false,
+      error: null,
+    });
+    // A refused save of its own days does not stop the read
+    vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+    act(() => {
+      result.current.data.saveObservation(makeObservation({ date: '2026-09-02' }));
+    });
+    await waitFor(() => expect(result.current.data.saveFailed).toBe(true));
+    // A write that the browser refuses does not mark a sync
+    localStorage.removeItem('fertility_care_last_sync');
+    vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
+      throw new Error('QuotaExceededError');
+    });
+    expect((await act(() => result.current.sync.syncNow())).error).toBeNull();
+    expect(runs.shared).toBe(3);
+    expect(localStorage.getItem('fertility_care_last_sync')).toBeNull();
+    // A removed partner gets the error, and keeps the shared chart
+    await removeMember(
+      relay,
+      keyStore,
+      (await keyStore.load()) as DeviceRecord,
+      reader.record.memberId
+    );
+    const outcome = await act(() => result.current.sync.syncNow());
+    expect(outcome.sent).toBe(false);
+    expect(outcome.error?.detail?.status).toBe(401);
+    expect(result.current.sync.lastError?.reason).toBe('relay');
+    expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01');
   });
 
   it('reads the vault as a new device when the observations key was missing at the load', async () => {

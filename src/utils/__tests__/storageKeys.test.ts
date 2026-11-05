@@ -13,6 +13,7 @@ describe('storageKeys', () => {
       STORAGE_OBSERVATIONS_MARK_KEY: 'fertility_care_observations_mark',
       STORAGE_SYNC_STATE_KEY: 'fertility_care_sync_state',
       STORAGE_SYNC_CONFLICTS_KEY: 'fertility_care_sync_conflicts',
+      STORAGE_SHARED_CHART_KEY: 'fertility_care_shared_chart',
       STORAGE_LAST_SYNC_KEY: 'fertility_care_last_sync',
       STORAGE_LANGUAGE_KEY: 'fertility_care_lang',
       STORAGE_THEME_KEY: 'fertility_care_theme',

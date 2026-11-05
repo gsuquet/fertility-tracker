@@ -16,7 +16,7 @@ Until `SYNC_ENABLED` is `true`, the application does not call these functions. T
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 | `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
 | `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the application follows ADR 0012     |
-| `syncRunner.ts`     | `runSync()` and `finishSync()`: one sync of the application        |
+| `syncRunner.ts`     | `runSync()`, `finishSync()` and `readShared()`: one sync           |
 
 ## Relay client
 
@@ -230,6 +230,16 @@ For a `cancelled`, `busy` or `error` result, `finishSync()` writes the state of 
 
 At load, the provider deletes `fertility_care_sync_state` at once when the stored observations are damaged, missing or without their correct mark. Thus, the next sync is a first sync, and the vault wins on each date ([Safety of the local data](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#safety-of-the-local-data)).
 
+### Shared chart
+
+A reader device never merges the vault with its own observations ([Partner devices](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#partner-devices)). `readShared(relay, keyStore, record, storage)` does its sync:
+
+- It reads the vault with `openSession()`. Thus, it checks the vault and saves the new counter in the record, as `read()` does.
+- It writes the days of the vault to `fertility_care_shared_chart` with `serializeVaultDays()`. It writes no vault.
+- It does not read or write the sync state or the conflict list. The observations of the device do not change.
+- It gives `{ saved, error }`. `saved` is true when the browser accepted the write. `error` is the `VaultError` of a failed read, or `null`.
+- After a failure, the shared chart stays. A removed partner keeps the data that the device already shows.
+
 ### When the application syncs
 
 `useSync()` in [useSync.ts](../../src/hooks/useSync.ts) starts a sync in these conditions, as [When a sync occurs](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#when-a-sync-occurs) gives:
@@ -248,6 +258,7 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 - When `checkStoredMark()` deletes the sync state during a sync, the tab deletes the state of that sync after `finishSync()`.
 - `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
+- When the device record is a reader, the tab calls `readShared()` in place of `runSync()`. The checks of the stored observations do not apply. After a saved read, it calls `markSynced()`.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
 - While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
@@ -268,7 +279,7 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 A `SyncOutcome` has these fields:
 
-- `sent` is true when the vault has the changes of this device, or when the device has no record.
+- `sent` is true when the vault has the changes of this device, or when the device has no record. On a reader device, it is true after a read without an error.
 - `skipped` is true when the provider has `saveFailed` or `recoveryData`. The tab then does not call `runSync()`.
 - `error` is the `VaultError` of a failed sync, or `null`.
 

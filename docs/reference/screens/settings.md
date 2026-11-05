@@ -151,11 +151,11 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
-| Device record of this device | Rows                                                                                                                          |
-| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                                            |
-| Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
-| Reader                       | **Sync now** and **Turn off sync on this device**                                                                             |
+| Device record of this device | Rows                                                                                                                                                |
+| ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
+| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                                                                  |
+| Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **Invite a partner**, **New recovery code** and **Turn off sync on this device** |
+| Reader                       | **Sync now** and **Stop viewing**                                                                                                                   |
 
 | Row                              | Result                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -166,8 +166,10 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).   |
 | **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                       |
 | **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
+| **Invite a partner**             | Opens the [invitation dialog](#invitation-dialog) for a reader. Its detail is "Let your partner read the chart".                                                                      |
 | **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                         |
-| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay.                                                              |
+| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the shared chart. The observations stay.                                            |
+| **Stop viewing**                 | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the [shared chart](../sync-client.md#shared-chart). The observations stay.          |
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
 - While a row runs, the rows of the group are disabled.
@@ -178,6 +180,8 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
+- The confirmation of **Stop viewing** says that the shared chart goes from this device. To read it again, the device needs a new invitation.
+- A reader device cannot write the vault. Thus, **Stop viewing** does not remove it from the keyring. An owner device can remove it in the device list ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#partner-devices)).
 - **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later. **On this device only** of **Delete all data** and of **Replace** removes it ([On a synced device](#on-a-synced-device)).
 
 While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
@@ -221,13 +225,14 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 
 | Step         | Content                                                                                                                                                                                                                                                 |
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Start        | "Working…" while `startInvitation()` runs with the role `owner`.                                                                                                                                                                                        |
+| Start        | "Working…" while `startInvitation()` runs. The role is `owner` for **Invite a device** and `reader` for **Invite a partner**.                                                                                                                           |
 | Waiting      | The [QR code](#qr-code) of the link, the link `#invite=<id>.<secret>` and **Copy**. A text tells the user to scan the code with an Android phone, or to open the link on the new device. On iOS, the user pastes the link in the installed application. |
 | Confirmation | The name of the new device, the 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**.                                                                                 |
 | Adding       | "Working…" while `approveInvitation()` runs.                                                                                                                                                                                                            |
-| Done         | "The device is added." Then the owner device syncs.                                                                                                                                                                                                     |
+| Done         | "The device is added." or "The partner is added." Then the owner device syncs.                                                                                                                                                                          |
 | End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                                                                                                                               |
 
+- The title of the dialog is the label of its row.
 - While the dialog waits, it calls `checkAsOwner()` each 3 seconds.
 - When a check fails with no connection or no relay, the dialog shows the cause and checks again.
 - When `approveInvitation()` fails, the dialog shows the cause and the code again. The owner can click **The codes match** again.

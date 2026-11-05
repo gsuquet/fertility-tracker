@@ -46,6 +46,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.68.0',
+    date: '2026-11-05',
+    title: 'Partner Invitation',
+    titleFr: 'Invitation du partenaire',
+    tagline: 'Invite your partner to read your chart, when sync is ready',
+    taglineFr: 'Invitez votre partenaire à lire votre tableau, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings will invite a partner who can read the chart but not change it',
+      'The partner device will keep your chart apart from its own days',
+      'Stop viewing will delete the shared chart from the partner device',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Les Paramètres inviteront un ou une partenaire qui peut lire le tableau sans le modifier',
+      'L’appareil du partenaire gardera votre tableau à part de ses propres jours',
+      'Ne plus voir le tableau supprimera le tableau partagé de l’appareil du partenaire',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.67.0',
     date: '2026-11-05',
     title: 'Device List',

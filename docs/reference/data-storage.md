@@ -32,6 +32,7 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_OBSERVATIONS_MARK_KEY`     | `fertility_care_observations_mark`        | The mark of the stored observations ([Synced observations](#synced-observations))                                         |
 | `STORAGE_SYNC_STATE_KEY`            | `fertility_care_sync_state`               | The sync state of the device ([Sync in the application](sync-client.md#sync-in-the-application))                          |
 | `STORAGE_SYNC_CONFLICTS_KEY`        | `fertility_care_sync_conflicts`           | The days that lost a conflict of the sync                                                                                 |
+| `STORAGE_SHARED_CHART_KEY`          | `fertility_care_shared_chart`             | The days of the vault on a reader device ([Shared chart](sync-client.md#shared-chart))                                    |
 | `STORAGE_LAST_SYNC_KEY`             | `fertility_care_last_sync`                | Date of the last sync, `YYYY-MM-DD`                                                                                       |
 | `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                                    |
 | `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                                  |

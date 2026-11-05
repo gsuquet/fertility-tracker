@@ -4,10 +4,17 @@ import { parseConflicts, parseSyncState } from '../../domain/sync/syncStorage';
 import { makeObservation } from '../../test/factories';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
 import type { ObservationInput } from '../../types/crms';
-import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
+import { parseVaultDays } from '../../domain/sync/vaultContent';
+import { joinMember } from '../../test/joinMember';
+import {
+  STORAGE_SHARED_CHART_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../../utils/storageKeys';
+import { removeMember } from '../membership';
 import { createVault, vaultStoreOf } from '../deviceVault';
 import type { DeviceRecord } from '../keyStore';
-import { finishSync, runSync } from '../syncRunner';
+import { finishSync, readShared, runSync } from '../syncRunner';
 import type { RunInput, SyncStorage } from '../syncRunner';
 
 const memoryStorage = (): SyncStorage & { items: Map<string, string> } => {
@@ -183,5 +190,70 @@ describe('finishSync', () => {
     for (const result of [{ status: 'off' }, { status: 'skipped', reason: 'saveFailed' }] as const)
       expect(finishSync(result, { ...base, storage })).toBe(false);
     expect(storage.items.size).toBe(0);
+  });
+});
+
+describe('readShared', () => {
+  /** A vault with one day of the owner, and a reader device with its own storage. */
+  const withReader = async () => {
+    const owner = await setup();
+    const first = await runSync(owner.input());
+    finishSync(first, {
+      storage: owner.storage,
+      sent: [],
+      current: [],
+      applyObservations: () => true,
+    });
+    const reader = await joinMember(owner.relay, owner.keyStore, 'reader');
+    return { ...owner, reader, readerStorage: memoryStorage() };
+  };
+
+  it('writes the days of the vault to the shared chart, and nothing else', async () => {
+    const { relay, reader, readerStorage, keyStore } = await withReader();
+    const before = reader.record.last?.counter;
+    expect(await readShared(relay, reader.keyStore, reader.record, readerStorage)).toEqual({
+      saved: true,
+      error: null,
+    });
+    const shared = parseVaultDays(JSON.parse(readerStorage.read(STORAGE_SHARED_CHART_KEY) ?? ''));
+    expect(shared?.map(d => [d.date, d.day?.bleeding])).toEqual([['2026-10-01', 'H']]);
+    // No sync state and no conflict list: the device does not merge the vault
+    expect([...readerStorage.items.keys()]).toEqual([STORAGE_SHARED_CHART_KEY]);
+    // The record keeps the counter of the vault that it read
+    const owner = (await keyStore.load()) as DeviceRecord;
+    expect((await reader.keyStore.load())?.last?.counter).toBe(owner.last?.counter);
+    expect(before).toBe(owner.last?.counter);
+  });
+
+  it('keeps the shared chart after a failed read, and tells a refused write', async () => {
+    const { relay, reader, readerStorage, keyStore } = await withReader();
+    await readShared(relay, reader.keyStore, reader.record, readerStorage);
+    const kept = readerStorage.read(STORAGE_SHARED_CHART_KEY);
+    readerStorage.write = () => false;
+    expect(await readShared(relay, reader.keyStore, reader.record, readerStorage)).toEqual({
+      saved: false,
+      error: null,
+    });
+    // A removed partner keeps the data that the device already shows
+    await removeMember(
+      relay,
+      keyStore,
+      (await keyStore.load()) as DeviceRecord,
+      reader.record.memberId
+    );
+    const result = await readShared(relay, reader.keyStore, reader.record, readerStorage);
+    expect(result.saved).toBe(false);
+    expect(result.error).toMatchObject({ reason: 'relay', detail: { status: 401 } });
+    expect(readerStorage.read(STORAGE_SHARED_CHART_KEY)).toBe(kept);
+  });
+
+  it('throws the errors that are not vault errors', async () => {
+    const { relay, reader, readerStorage } = await withReader();
+    reader.keyStore.save = async () => {
+      throw new Error('full');
+    };
+    await expect(readShared(relay, reader.keyStore, reader.record, readerStorage)).rejects.toThrow(
+      'full'
+    );
   });
 });

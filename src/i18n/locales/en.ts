@@ -692,6 +692,9 @@ export const en = {
     badLink: 'This invitation link is not valid. Ask for a new invitation.',
     invite: 'Invite a device',
     inviteHint: 'Add your phone or your computer',
+    invitePartner: 'Invite a partner',
+    invitePartnerHint: 'Let your partner read the chart',
+    invitePartnerDone: 'The partner is added.',
     inviteTitle: 'Invite a device',
     inviteLink:
       'Scan the code with the camera of an Android phone, or open this link on the new device. On iOS, paste it in the installed app.',
@@ -758,6 +761,10 @@ export const en = {
     turnOffMessage:
       'This device stops syncing. Your observations stay on this device. Your other devices keep the shared chart.',
     turnOffConfirm: 'Turn off',
+    stopViewing: 'Stop viewing',
+    stopViewingTitle: 'Stop viewing the shared chart?',
+    stopViewingMessage:
+      'The shared chart goes from this device. To read it again, you need a new invitation. Your own observations stay.',
     codeTitle: 'Your recovery code',
     codeNote:
       'Write down this code and keep it in a safe place. Without this code and without a device, nobody can open your synced chart.',

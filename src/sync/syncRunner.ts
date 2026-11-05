@@ -10,9 +10,14 @@ import {
   serializeConflicts,
   serializeSyncState,
 } from '../domain/sync/syncStorage';
-import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../utils/storageKeys';
-import { VaultError, vaultStoreOf } from './deviceVault';
-import type { KeyStore } from './keyStore';
+import { serializeVaultDays } from '../domain/sync/vaultContent';
+import {
+  STORAGE_SHARED_CHART_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../utils/storageKeys';
+import { VaultError, openSession, vaultStoreOf } from './deviceVault';
+import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
 
 /** The browser storage, as `readStorage()` and `writeStorage()` give it. */
@@ -92,4 +97,26 @@ export function finishSync(result: RunResult, input: FinishInput): boolean {
     STORAGE_SYNC_CONFLICTS_KEY,
     serializeConflicts(addConflicts(conflicts, kept.conflicts))
   );
+}
+
+/**
+ * The sync of a reader device: it reads the vault and writes its days to the shared chart. It
+ * never merges them with the observations of the device. After a failure, the shared chart stays.
+ */
+export async function readShared(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord,
+  storage: SyncStorage
+): Promise<{ saved: boolean; error: VaultError | null }> {
+  try {
+    const session = await openSession(relay, keyStore, record);
+    return {
+      saved: storage.write(STORAGE_SHARED_CHART_KEY, serializeVaultDays(session.days)),
+      error: null,
+    };
+  } catch (error) {
+    if (error instanceof VaultError) return { saved: false, error };
+    throw error;
+  }
 }

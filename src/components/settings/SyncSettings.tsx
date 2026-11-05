@@ -3,6 +3,7 @@ import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import {
   CloudOff,
+  EyeOff,
   History,
   KeyRound,
   Link,
@@ -10,6 +11,7 @@ import {
   RotateCcw,
   Share2,
   Smartphone,
+  UserPlus,
   Users,
 } from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
@@ -21,7 +23,11 @@ import { useSheetDrag } from '../../hooks/useSheetDrag';
 import type { DeviceRecord } from '../../sync/keyStore';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { removeStorage } from '../../utils/storage';
-import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
+import {
+  STORAGE_SHARED_CHART_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../../utils/storageKeys';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
@@ -206,7 +212,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 }) => {
   const { lastSyncDate, undoChange } = useCycle();
   const removeDemoDays = useDemoRemoval();
-  const [inviting, setInviting] = useState(false);
+  const [inviting, setInviting] = useState<DeviceRecord['role'] | null>(null);
   const [checking, setChecking] = useState(false);
   const [naming, setNaming] = useState(false);
   const [listing, setListing] = useState(false);
@@ -324,6 +330,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         await keyStore.clear();
         removeStorage(STORAGE_SYNC_STATE_KEY);
         removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
+        removeStorage(STORAGE_SHARED_CHART_KEY);
         return { record: null };
       },
       { makesCode: false }
@@ -351,6 +358,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const shown = failure ?? (record && control.lastError ? failureOf(control.lastError) : null);
   // The code dialog shows its own error
   const alert = entering ? null : shown;
+  // A reader device stops viewing the shared chart in place of a sync of its own days
+  const reading = record?.role === 'reader';
 
   return (
     <>
@@ -426,7 +435,17 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
                 icon={iconOf(Smartphone)}
                 label={s.invite}
                 detail={s.inviteHint}
-                onClick={() => setInviting(true)}
+                onClick={() => setInviting('owner')}
+                disabled={busy}
+                opens
+              />
+            )}
+            {record.role === 'owner' && (
+              <ActionRow
+                icon={iconOf(UserPlus)}
+                label={s.invitePartner}
+                detail={s.invitePartnerHint}
+                onClick={() => setInviting('reader')}
                 disabled={busy}
                 opens
               />
@@ -441,8 +460,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               />
             )}
             <ActionRow
-              icon={iconOf(CloudOff)}
-              label={s.turnOff}
+              icon={iconOf(reading ? EyeOff : CloudOff)}
+              label={reading ? s.stopViewing : s.turnOff}
               onClick={() => setConfirmOff(true)}
               disabled={busy}
               danger
@@ -511,17 +530,21 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         <DevicesDialog control={control} onCode={setCode} onClose={() => setListing(false)} />
       )}
 
-      {inviting && <InviteDialog control={control} onClose={() => setInviting(false)} />}
+      {inviting && (
+        <InviteDialog control={control} invitedRole={inviting} onClose={() => setInviting(null)} />
+      )}
 
       {code && <RecoveryCodeDialog code={code} onDone={() => setCode(null)} />}
 
       {confirmOff && (
         <ConfirmDialog
-          title={s.turnOffTitle}
-          actions={[{ label: s.turnOffConfirm, onClick: turnOff, danger: true }]}
+          title={reading ? s.stopViewingTitle : s.turnOffTitle}
+          actions={[
+            { label: reading ? s.stopViewing : s.turnOffConfirm, onClick: turnOff, danger: true },
+          ]}
           onCancel={() => setConfirmOff(false)}
         >
-          <p>{s.turnOffMessage}</p>
+          <p>{reading ? s.stopViewingMessage : s.turnOffMessage}</p>
         </ConfirmDialog>
       )}
     </>
