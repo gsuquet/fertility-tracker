@@ -68,7 +68,7 @@ The gear shows a small red dot when the sync needs the user. `needsAttention()` 
 - 2 syncs in a row failed with an error.
 - The last sync occurred more than 24 hours ago.
 
-The dot does not show without the time of a last sync. A click on the gear opens [Settings](settings.md). The [Sync alert](settings.md#sync-alert) then gives the cause. The application shows no other message.
+Without the time of a last sync, the third condition is false. A click on the gear opens [Settings](settings.md). The [Sync alert](settings.md#sync-alert) then gives the cause. The application shows no other message.
 
 ### Footer
 

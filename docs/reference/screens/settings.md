@@ -196,7 +196,7 @@ The alert of the Sync group is the first row of the group. It has the red text o
 
 | Condition                                                  | Alert                                                                                                                                                                                                                                                                      |
 | ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Cloudflare Access asks for a new sign-in (`302`, `signIn`) | "Your sign-in to this site expired. Reload the page to sign in again."                                                                                                                                                                                                     |
+| Cloudflare Access asks for a new sign-in (`302`, `signIn`) | "Your sign-in to this site expired. Select Reload to sign in again."                                                                                                                                                                                                       |
 | The request has no answer (status `0`)                     | "No connection. Check your connection and try again."                                                                                                                                                                                                                      |
 | The relay has no bucket (`503`)                            | "The sync server is not available. Try again later."                                                                                                                                                                                                                       |
 | The relay refuses the address of the page (`403`, `host`)  | "This address cannot sync. Open the application at fertility-tracker.gsuquet.com."                                                                                                                                                                                         |
@@ -216,9 +216,11 @@ The alert of the Sync group is the first row of the group. It has the red text o
 
 Cloudflare Access protects the site. When its sign-in expires, Access answers a request of the relay with a redirect to its sign-in page. The relay client does not follow the redirect ([Relay client](../sync-client.md#relay-client)). Thus, the cause is `signIn`, not "No connection".
 
-- **Reload** goes to `./sign-in`. The service worker gets this navigation from the network, not from its cached app shell ([Offline use and installation](../deployment.md#offline-use-and-installation)). Thus, Access shows its sign-in page.
-- After the sign-in, Access opens `./sign-in` again. The server gives the application for this path.
+- **Reload** goes to `./sign-in`. The service worker gets this path from the network first. Thus, Access can redirect to its sign-in page.
+- After the sign-in, Access opens `./sign-in` again. The service worker then gives the cached app shell, as for `./` ([Offline use and installation](../deployment.md#offline-use-and-installation)). Thus, the page keeps the version of the active worker.
 - At the start, the application changes the address `./sign-in` to `./` with `history.replaceState()`. Thus, a later reload does not go to the sign-in path again.
+- A normal reload of `./` gets the cached app shell. It does not show the sign-in page. Thus, the alert tells the user to select **Reload**.
+- The alerts of the dialogs of the sync also show **Reload** for this cause. [SyncAlert.tsx](../../../src/components/SyncAlert.tsx) shows these alerts.
 
 ### Last sync
 

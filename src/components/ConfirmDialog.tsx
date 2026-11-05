@@ -3,6 +3,7 @@ import { useId, useRef } from 'react';
 import { useLanguage } from '../context/LanguageContext';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
+import { SyncAlert } from './SyncAlert';
 
 export interface ConfirmAction {
   label: string;
@@ -59,11 +60,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       </div>
       <div className="modal-body" id={`${id}-message`} ref={bodyRef}>
         {children}
-        {alert && (
-          <p className="settings-alert" role="alert">
-            {alert}
-          </p>
-        )}
+        {alert && <SyncAlert text={alert} />}
       </div>
       <div className="modal-footer">
         <button

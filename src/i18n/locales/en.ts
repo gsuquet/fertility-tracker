@@ -791,7 +791,7 @@ export const en = {
     busy: 'Too many requests. Wait one minute and try again.',
     badCode: 'This code is not valid. Check each character.',
     failed: 'The sync failed. Try again later.',
-    signIn: 'Your sign-in to this site expired. Reload the page to sign in again.',
+    signIn: 'Your sign-in to this site expired. Select Reload to sign in again.',
     tryAgain: 'Try again',
     reload: 'Reload',
     errorCode: 'Error code: {code}',

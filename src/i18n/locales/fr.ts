@@ -801,7 +801,8 @@ export const fr: TranslationSchema = {
     busy: 'Trop de requêtes. Attendez une minute et réessayez.',
     badCode: 'Ce code n’est pas valide. Vérifiez chaque caractère.',
     failed: 'La synchronisation a échoué. Réessayez plus tard.',
-    signIn: 'Votre connexion à ce site a expiré. Rechargez la page pour vous connecter à nouveau.',
+    signIn:
+      'Votre connexion à ce site a expiré. Sélectionnez Recharger pour vous connecter à nouveau.',
     tryAgain: 'Réessayer',
     reload: 'Recharger',
     errorCode: 'Code d’erreur : {code}',

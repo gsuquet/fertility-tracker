@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { leaveSignInPath, signInAgain } from '../signIn';
+import { SIGN_IN_PATH as WORKER_SIGN_IN_PATH } from '../../sw/serviceWorker';
+import { SIGN_IN_PATH, leaveSignInPath, signInAgain } from '../signIn';
 
 describe('signIn', () => {
   afterEach(() => {
@@ -32,5 +33,11 @@ describe('signIn', () => {
     window.history.replaceState(null, '', '/app/sign-in-later');
     leaveSignInPath();
     expect(window.location.pathname).toBe('/app/sign-in-later');
+  });
+});
+
+describe('SIGN_IN_PATH', () => {
+  it('is the path that the service worker gets from the network', () => {
+    expect(SIGN_IN_PATH).toBe(WORKER_SIGN_IN_PATH);
   });
 });

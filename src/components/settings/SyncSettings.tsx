@@ -44,6 +44,7 @@ import { DevicesDialog } from './DevicesDialog';
 import { NameDialog } from './NameDialog';
 import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
+import { SyncAlert } from '../SyncAlert';
 
 type SyncText = TranslationSchema['sync'];
 type Failure = SyncFailure | 'undoFirstShort';
@@ -213,11 +214,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
               invalid={nameInvalid}
             />
           )}
-          {error && (
-            <p className="settings-alert" role="alert">
-              {error}
-            </p>
-          )}
+          {error && <SyncAlert text={error} />}
         </div>
         <div className="modal-footer">
           <button type="button" className="btn btn-secondary" onClick={cancel} disabled={working}>

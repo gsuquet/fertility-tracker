@@ -3,6 +3,7 @@ import type React from 'react';
 import { useId } from 'react';
 import { failureOf } from '../utils/syncFailure';
 import { Modal } from './Modal';
+import { SyncAlert } from './SyncAlert';
 
 /** The time between two checks of an invitation on the relay. */
 export const INVITE_POLL_MS = 3_000;
@@ -57,11 +58,7 @@ export const SyncStepDialog: React.FC<SyncStepDialogProps> = ({
       <div className="modal-body password-dialog-body">
         <p role="status">{status}</p>
         {children}
-        {alert && (
-          <p className="settings-alert" role="alert">
-            {alert}
-          </p>
-        )}
+        {alert && <SyncAlert text={alert} />}
       </div>
       {actions.length > 0 && (
         <div className="modal-footer">
