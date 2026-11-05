@@ -48,13 +48,21 @@ const withSyncLock = <T>(run: () => Promise<T>): Promise<T> =>
     ? globalThis.navigator.locks.request('fertility-tracker-sync', run)
     : run();
 
+/** The end of one sync. `sent` is true when the vault has the changes of this device, or without a record. */
+export interface SyncOutcome {
+  sent: boolean;
+  error: VaultError | null;
+}
+
+const NOT_SENT: SyncOutcome = { sent: false, error: null };
+
 /** The sync for the Settings screen. */
 export interface SyncControl {
   enabled: boolean;
   /** The relay client, the key store and the sync code, loaded one time. */
   services: () => Promise<SyncServices>;
   /** Starts a sync at once, or after the sync that runs. It resolves when that sync ends. */
-  syncNow: () => Promise<void>;
+  syncNow: () => Promise<SyncOutcome>;
   /**
    * Runs an action of Settings after the sync that runs, with the sync lock. No sync starts
    * before the action ends.
@@ -76,7 +84,7 @@ export function useSync(
   // The syncs and the actions of this tab, one after the other
   const queue = useRef<Promise<unknown>>(Promise.resolve());
   // A sync that did not start yet. A new call does not add a second one.
-  const waiting = useRef<Promise<void> | null>(null);
+  const waiting = useRef<Promise<SyncOutcome> | null>(null);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
@@ -96,9 +104,9 @@ export function useSync(
     return next;
   }, []);
 
-  const sync = useCallback((): Promise<void> => {
+  const sync = useCallback((): Promise<SyncOutcome> => {
     if (waiting.current) return waiting.current;
-    const next = exclusive(async () => {
+    const next = exclusive(async (): Promise<SyncOutcome> => {
       waiting.current = null;
       lastStart.current = Date.now();
       try {
@@ -106,7 +114,9 @@ export function useSync(
         const sent = latest.current.data;
         // Another tab saved other observations: this tab gets them first, with the storage event
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
-        if (stored !== null && stored !== serializeObservations(sent.observations)) return;
+        if (stored !== null && stored !== serializeObservations(sent.observations)) {
+          return NOT_SENT;
+        }
         // A version without the sync wrote the list: the sync starts again as a first sync
         checkStoredMark(stored);
         const trust = distrustCount();
@@ -142,9 +152,14 @@ export function useSync(
         if (saved) {
           latest.current.data.markSynced();
         }
+        return {
+          sent: result.status === 'synced' || result.status === 'off',
+          error: result.status === 'error' ? result.error : null,
+        };
       } catch {
         // The key store or the code did not load: the next event loads it again
         loaded.current = null;
+        return NOT_SENT;
       }
     });
     waiting.current = next;

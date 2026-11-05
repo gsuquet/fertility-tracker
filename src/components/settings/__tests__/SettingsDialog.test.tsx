@@ -25,7 +25,7 @@ import {
 import { setShortcutsEnabled } from '../../../hooks/useKeyboardShortcuts';
 import { setHapticsEnabled } from '../../../utils/haptics';
 import type { UpdateCheckResult } from '../../../pwa/registerServiceWorker';
-import type { SyncControl, SyncServices } from '../../../hooks/useSync';
+import type { SyncControl, SyncOutcome, SyncServices } from '../../../hooks/useSync';
 import { createVault } from '../../../sync/deviceVault';
 import { readVaultObject } from '../../../domain/vault/vaultObject';
 import type { VaultHeader } from '../../../domain/vault/vaultObject';
@@ -688,7 +688,7 @@ describe('SettingsDialog sync', () => {
     return {
       enabled,
       services: async () => services,
-      syncNow: vi.fn(),
+      syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
       withSync: action => action(services),
       lastError: null,
     };
@@ -735,7 +735,7 @@ describe('SettingsDialog sync', () => {
       sync: {
         enabled: true,
         services: async () => services,
-        syncNow: vi.fn(async () => {}),
+        syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
         withSync: action => action(services),
         lastError: null,
       },
@@ -770,7 +770,7 @@ describe('SettingsDialog on a synced device', () => {
     const control = {
       enabled: true,
       services: async () => services,
-      syncNow: vi.fn(async () => {}),
+      syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
       withSync: <T,>(action: (loaded: SyncServices) => Promise<T>) => action(services),
       lastError: null,
     } satisfies SyncControl;
@@ -820,7 +820,8 @@ describe('SettingsDialog on a synced device', () => {
     expect(keyring()).not.toContain(record.memberId);
     expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
-    expect(control.syncNow).not.toHaveBeenCalled();
+    // The last changes go to the vault first
+    expect(control.syncNow).toHaveBeenCalledOnce();
   });
 
   it('deletes on this device only when another tab already turned off the sync', async () => {
@@ -904,6 +905,26 @@ describe('SettingsDialog on a synced device', () => {
     expect(
       within(screen.getByRole('dialog', { name: c.clearTitle })).queryByRole('alert')
     ).toBeNull();
+  });
+
+  it('does not leave when the sync before it fails, and gives its cause', async () => {
+    const { control, keyStore, keyring, record } = await synced();
+    const { VaultError } = await import('../../../sync/deviceVault');
+    control.syncNow
+      .mockResolvedValueOnce({ sent: false, error: new VaultError('relay', { status: 0 }) })
+      .mockResolvedValueOnce({ sent: false, error: null });
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(en.sync.noConnection);
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    await waitFor(() =>
+      expect(within(dialog).getByRole('alert')).toHaveTextContent(en.sync.failed)
+    );
+    expect(count()).toBe('6');
+    expect(await keyStore.load()).not.toBeNull();
+    expect(keyring()).toContain(record.memberId);
+    expect(props.onClose).not.toHaveBeenCalled();
   });
 
   it('asks the usual question on a reader device', async () => {

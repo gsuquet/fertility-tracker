@@ -132,14 +132,15 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 **Delete all data** and **Replace** delete days on each device of the vault ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). Thus, on an owner device, the confirmation gives two actions in place of one. It also shows the message `confirmDialog.syncedMessage`.
 
-| Action                                                          | Result                                                                                                                                                                                                                                                      |
-| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Delete on this device only**, **Replace on this device only** | First, `leaveVault()` removes the device from the vault ([Sync client](../sync-client.md#removal-of-a-member)). Then it deletes the sync state and the conflict list. Then the action runs on this device.                                                  |
-| **Delete on all devices**, **Replace on all devices**           | The action runs on this device. Then the device syncs. Each other owner device gets the deletions at its next sync. When that sync deletes more than 7 days, that device asks its user first ([Sync client](../sync-client.md#when-the-application-syncs)). |
+| Action                                                          | Result                                                                                                                                                                                                                                                                     |
+| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Delete on this device only**, **Replace on this device only** | First, the device syncs, so that the vault gets its last changes. Then `leaveVault()` removes the device from the vault ([Sync client](../sync-client.md#removal-of-a-member)). Then it deletes the sync state and the conflict list. Then the action runs on this device. |
+| **Delete on all devices**, **Replace on all devices**           | The action runs on this device. Then the device syncs. Each other owner device gets the deletions at its next sync. When that sync deletes more than 7 days, that device asks its user first ([Sync client](../sync-client.md#when-the-application-syncs)).                |
 
 - **Merge** deletes no day. Thus, it is the same on a synced device.
 - **On this device only** runs after the sync that runs, with the sync lock. While it runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
-- When `leaveVault()` fails, an alert in the confirmation gives the cause, and no data changes. Without a connection, the user can select **Turn off sync on this device** first.
+- When the sync does not send the changes, or `leaveVault()` fails, an alert in the confirmation gives the cause, and no data changes. Without a connection, the user can select **Turn off sync on this device** first.
+- After **On all devices**, the undo copy stays until a sync brings a change from another device ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). The message `confirmDialog.syncedMessage` says so.
 - A reader device asks no question. Its own days do not go into the vault.
 - Without observations on this device, **Restore from a file** acts immediately, as on all devices.
 

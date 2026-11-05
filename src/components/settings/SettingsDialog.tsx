@@ -183,6 +183,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setLeaving(true);
     setLeaveFailure(null);
     try {
+      // The last changes of this device go to the vault before it leaves
+      const outcome = await control.syncNow();
+      if (!outcome.sent) {
+        setLeaveFailure(outcome.error ? failureOf(outcome.error) : 'failed');
+        setLeaving(false);
+        return;
+      }
       await control.withSync(async ({ relay, keyStore }) => {
         const current = await keyStore.load();
         if (current) {

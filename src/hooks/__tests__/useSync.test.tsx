@@ -285,6 +285,28 @@ describe('useSync', () => {
     expect(result.current.lastError).toBeNull();
   });
 
+  it('tells whether the vault has the changes of this device at the end of a sync', async () => {
+    const { load, failWhen, keyStore } = await setup();
+    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    let outcome = await act(() => result.current.syncNow());
+    expect(outcome).toEqual({ sent: true, error: null });
+    failWhen(() => true);
+    outcome = await act(() => result.current.syncNow());
+    expect(outcome.sent).toBe(false);
+    expect(outcome.error?.detail?.status).toBe(0);
+    failWhen(null);
+    // Another tab saved other observations: this sync sends nothing
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-10-09' })]));
+    expect(await act(() => result.current.syncNow())).toEqual({ sent: false, error: null });
+    localStorage.removeItem(STORAGE_KEY);
+    // Without a record, nothing waits to go
+    await keyStore.clear();
+    expect(await act(() => result.current.syncNow())).toEqual({ sent: true, error: null });
+    const broken = vi.fn().mockRejectedValue(new Error('offline'));
+    const other = renderHook(() => useSync(false, broken), { wrapper });
+    expect(await act(() => other.result.current.syncNow())).toEqual({ sent: false, error: null });
+  });
+
   it('reads the vault as a new device when the observations key was missing at the load', async () => {
     const { load, relay, keyStore } = await setup();
     localStorage.setItem(

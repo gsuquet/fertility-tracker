@@ -2,7 +2,7 @@ import { act, fireEvent, screen, waitFor, within } from '@testing-library/react'
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { en, fr } from '../../../i18n';
 import { formatRecoveryCode, newRecoverySecret } from '../../../domain/vault/recoveryCode';
-import type { SyncControl, SyncServices } from '../../../hooks/useSync';
+import type { SyncControl, SyncOutcome, SyncServices } from '../../../hooks/useSync';
 import { VaultError, createVault } from '../../../sync/deviceVault';
 import type { DeviceRecord, KeyStore } from '../../../sync/keyStore';
 import { createRelayClient } from '../../../sync/relayClient';
@@ -368,8 +368,8 @@ describe('SyncSettings', () => {
     let release: () => void = () => {};
     const syncNow = vi.fn(
       () =>
-        new Promise<void>(resolve => {
-          release = resolve;
+        new Promise<SyncOutcome>(resolve => {
+          release = () => resolve({ sent: true, error: null });
         })
     );
     renderSync(controlOf(owner.relay, owner.keyStore, { syncNow }), 'fr');

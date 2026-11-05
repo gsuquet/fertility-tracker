@@ -149,7 +149,7 @@ Each device keeps the first valid message of the other device in its state. The 
 
 It gives a `member` error when the member is not in the keyring or is the device itself. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
 
-`leaveVault(relay, keyStore, record)` removes the device itself from the vault, then deletes the device record. **On this device only** of **Delete all data** and of **Replace** uses it ([Confirmation](screens/settings.md#confirmation)).
+`leaveVault(relay, keyStore, record)` removes the device itself from the vault, then deletes the device record. **On this device only** of **Delete all data** and of **Replace** uses it ([On a synced device](screens/settings.md#on-a-synced-device)).
 
 - It does the same rekey as `removeMember()`, with a new signing key in the chain. It does not save the record of the rekey.
 - The days of the vault do not change. The other devices and the recovery code still open the vault.
@@ -232,13 +232,13 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
 
-| Field       | Use                                                                                                                                   |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`   | The value of `SYNC_ENABLED`                                                                                                           |
-| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                         |
-| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends. A sync that did not start yet covers a new call. |
-| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.   |
-| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                            |
+| Field       | Use                                                                                                                                                                                                                                                                                                         |
+| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | The value of `SYNC_ENABLED`                                                                                                                                                                                                                                                                                 |
+| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                                                                                                                                                                               |
+| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends, with `{ sent, error }`. `sent` is true when the vault has the changes of this device, or when the device has no record. `error` is the `VaultError` of a failed sync. A sync that did not start yet covers a new call. |
+| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                                                                                                                                                                         |
+| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                                                                                                                                                                  |
 
 ## Related documents
 
