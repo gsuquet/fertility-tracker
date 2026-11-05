@@ -26,12 +26,13 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 
 A device in a vault never loads the demo days ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)). [useHasSyncRecord.ts](../../../src/hooks/useHasSyncRecord.ts) reads the key store when the guide opens. A click on **Explore Demo Data** reads it again.
 
-| Condition                                                   | Result                                            |
-| ----------------------------------------------------------- | ------------------------------------------------- |
-| The key store loads, or its load failed                     | The button does not show.                         |
-| The key store has a device record                           | The button does not show.                         |
-| At the click, the key store has a record, or its load fails | The button goes. The demo data does not load.     |
-| **Else**                                                    | Slide 4 shows the button. A click loads the demo. |
+| Condition                                                                     | Result                                                                                 |
+| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| The browser blocks storage: the key store fails with `StorageBlocked`         | Slide 4 shows the button. A click loads the demo. Such a browser cannot keep a record. |
+| The key store loads, or its load failed for another cause                     | The button does not show.                                                              |
+| The key store has a device record                                             | The button does not show.                                                              |
+| At the click, the key store has a record, or its load fails for another cause | The button goes. The demo data does not load.                                          |
+| **Else**                                                                      | Slide 4 shows the button. A click loads the demo.                                      |
 
 In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens [Settings](settings.md) ([Install and update](../application-behavior.md#install-and-update)).
 

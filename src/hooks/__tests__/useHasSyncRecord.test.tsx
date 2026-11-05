@@ -22,6 +22,16 @@ describe('useHasSyncRecord', () => {
     await waitFor(() => expect(synced.result.current).toBe(true));
   });
 
+  it('is false in a browser that blocks the storage of the record', async () => {
+    const { relay } = createRelayHarness();
+    const blocked = controlOf(relay, {
+      ...createMemoryKeyStore(),
+      load: () => Promise.reject(Object.assign(new Error('blocked'), { name: 'StorageBlocked' })),
+    });
+    const { result } = renderHook(() => useHasSyncRecord(blocked));
+    await waitFor(() => expect(result.current).toBe(false));
+  });
+
   it('stays null after a failed load, and ignores a load that ends after the unmount', async () => {
     const { relay } = createRelayHarness();
     const failing = controlOf(relay, createMemoryKeyStore(), {

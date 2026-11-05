@@ -157,6 +157,7 @@ Settings has a **Sync** group after **Backup and restore** ([Sync client](../syn
 | None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                                                                  |
 | Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **Invite a partner**, **New recovery code** and **Turn off sync on this device** |
 | Reader                       | **Sync now** and **Stop viewing**                                                                                                                   |
+| The browser blocks storage   | No row. The note "Sync needs the storage of the browser, and this browser blocks it." shows under the group. It is not an alert.                    |
 
 | Row                              | Result                                                                                                                                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -179,6 +180,7 @@ Settings has a **Sync** group after **Backup and restore** ([Sync client](../syn
 - After a failure, the group reads the key store again. For example, a recovery can save the record before its new code fails.
 - While an undo copy exists, **Recover** shows the alert "Click Undo or Delete the copy first." The device does not join ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
+- The browser blocks storage when the key store fails with `StorageBlocked` ([Device record](../sync-client.md#device-record)). After another failure of the key store, the group has no row and shows the alert of a general failure.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - The confirmation of **Stop viewing** says that the shared chart goes from this device. To read it again, the device needs a new invitation.

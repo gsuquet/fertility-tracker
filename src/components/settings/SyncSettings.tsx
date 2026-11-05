@@ -32,7 +32,7 @@ import {
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
-import { failureOf } from '../../utils/syncFailure';
+import { failureOf, isStorageBlocked } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
 import { cleanDeviceName } from '../../domain/vault/deviceName';
@@ -227,6 +227,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   // An action that makes a recovery code runs
   const [making, setMaking] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
+  // The browser blocks the storage of the record: the group has no row and a note, not an alert
+  const [blocked, setBlocked] = useState(false);
   const [code, setCode] = useState<string | null>(null);
   const [entering, setEntering] = useState(false);
   const [confirmOff, setConfirmOff] = useState(false);
@@ -248,7 +250,10 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   useEffect(() => {
     void services()
       .then(({ keyStore }) => keyStore.load())
-      .then(show, () => setFailure('failed'));
+      .then(show, error => {
+        if (isStorageBlocked(error)) setBlocked(true);
+        else setFailure('failed');
+      });
   }, [services, show]);
 
   /** Runs one action with the services. The action gives the new record and a code to show. */
@@ -473,6 +478,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           </>
         )}
       </Group>
+      {blocked && <p className="settings-note">{s.blocked}</p>}
       {alert && (
         <p className="settings-alert" role="alert">
           {s[alert]}

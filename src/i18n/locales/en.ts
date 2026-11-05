@@ -753,6 +753,7 @@ export const en = {
     group: 'Sync',
     turnOn: 'Turn on sync',
     turnOnHint: 'Your devices and your partner share an encrypted chart',
+    blocked: 'Sync needs the storage of the browser, and this browser blocks it.',
     recover: 'Recover with a code',
     recoverHint: 'Use your recovery code on a new device',
     syncNow: 'Sync now',

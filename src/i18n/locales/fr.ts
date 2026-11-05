@@ -762,6 +762,7 @@ export const fr: TranslationSchema = {
     group: 'Synchronisation',
     turnOn: 'Activer la synchronisation',
     turnOnHint: 'Vos appareils et votre partenaire partagent un tableau chiffré',
+    blocked: 'La synchronisation a besoin du stockage du navigateur, et ce navigateur le bloque.',
     recover: 'Récupérer avec un code',
     recoverHint: 'Utilisez votre code de récupération sur un nouvel appareil',
     syncNow: 'Synchroniser maintenant',

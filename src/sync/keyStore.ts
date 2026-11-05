@@ -1,5 +1,6 @@
 /** The device record of the sync in IndexedDB. See docs/reference/sync-client.md. */
 import type { Member } from '../domain/vault/vaultObject';
+import { STORAGE_BLOCKED } from '../utils/syncFailure';
 
 export interface DeviceRecord {
   vaultId: string;
@@ -42,8 +43,9 @@ const completion = (transaction: IDBTransaction) =>
 /** The errors of a browser that has no IndexedDB or blocks it: such a browser keeps no record. */
 const BLOCKED = new Set(['SecurityError', 'InvalidStateError']);
 
-/** An error that tells that the browser cannot keep a record. */
-class StorageBlocked extends Error {}
+class StorageBlocked extends Error {
+  override name = STORAGE_BLOCKED;
+}
 
 export function openKeyStore(factory: IDBFactory | undefined = globalThis.indexedDB): KeyStore {
   const open = async () => {
@@ -76,16 +78,8 @@ export function openKeyStore(factory: IDBFactory | undefined = globalThis.indexe
     }
   };
   return {
-    load: async () => {
-      try {
-        return (
-          ((await run('readonly', store => store.get(KEY))) as DeviceRecord | undefined) ?? null
-        );
-      } catch (error) {
-        if (error instanceof StorageBlocked) return null;
-        throw error;
-      }
-    },
+    load: async () =>
+      ((await run('readonly', store => store.get(KEY))) as DeviceRecord | undefined) ?? null,
     save: async record => {
       await run('readwrite', store => store.put(record, KEY));
     },

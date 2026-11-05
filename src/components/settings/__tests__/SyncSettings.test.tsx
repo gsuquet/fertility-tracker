@@ -174,6 +174,18 @@ describe('SyncSettings', () => {
     expect(screen.getByRole('button', { name: s.turnOn })).toBeEnabled();
   });
 
+  it('shows a note and no row in a browser that blocks the storage of the record', async () => {
+    const harness = createRelayHarness();
+    const blocked = Object.assign(new Error('blocked'), { name: 'StorageBlocked' });
+    renderSync(
+      controlOf(harness.relay, { ...createMemoryKeyStore(), load: () => Promise.reject(blocked) })
+    );
+    expect(await screen.findByText(s.blocked)).not.toHaveAttribute('role');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
+    expect(screen.queryByRole('button', { name: s.recover })).toBeNull();
+  });
+
   it('gives sync not available when the relay has no bucket', async () => {
     renderSync(controlOf(failingRelay(503), createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));
