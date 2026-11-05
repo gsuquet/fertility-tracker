@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.60.0',
+    date: '2026-11-05',
+    title: 'Sync Settings',
+    titleFr: 'Réglages de synchronisation',
+    tagline: 'The place to turn on sync, when it is ready',
+    taglineFr: 'L’endroit pour activer la synchronisation, quand elle sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings will have a Sync group to turn on sync, sync now, and recover with a code',
+      'When you turn on sync, the app will show a recovery code to write down and keep safe',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Les réglages auront un groupe Synchronisation pour activer la synchronisation, synchroniser maintenant et récupérer avec un code',
+      'Quand vous activerez la synchronisation, l’application affichera un code de récupération à noter et à garder en lieu sûr',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.59.0',
     date: '2026-11-05',
     title: 'Sync Triggers',

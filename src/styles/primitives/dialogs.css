@@ -121,6 +121,19 @@
     margin: 0;
   }
 
+  /* The recovery code of the sync (SyncSettings.tsx), in groups of 4 characters */
+  .password-dialog-body .sync-code {
+    font-family: var(--font-mono);
+    font-size: var(--font-size-lg);
+    letter-spacing: 0.05em;
+    overflow-wrap: anywhere;
+    user-select: all;
+  }
+
+  .sync-code-input {
+    font-family: var(--font-mono);
+  }
+
   /* The grab handle of a bottom sheet (useSheetDrag.ts). It shows on a phone only. */
   .sheet-handle {
     display: none;

@@ -214,6 +214,8 @@ describe('useSync', () => {
       },
     };
     render(load);
+    // The first sync runs. A sync that did not start yet covers a new call.
+    await waitFor(() => expect(load).toHaveBeenCalled());
     act(() => {
       window.dispatchEvent(new Event('online'));
       window.dispatchEvent(new Event('online'));
@@ -238,6 +240,49 @@ describe('useSync', () => {
       window.dispatchEvent(new Event('online'));
     });
     await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
+  });
+
+  it('gives the services to Settings, loaded one time, and loads them again after a failure', async () => {
+    const { services } = await setup();
+    const load = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(services);
+    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    expect(result.current.enabled).toBe(false);
+    await expect(result.current.services()).rejects.toThrow('offline');
+    expect(await result.current.services()).toBe(services);
+    expect(await result.current.services()).toBe(services);
+    expect(load).toHaveBeenCalledTimes(2);
+  });
+
+  it('runs an action of Settings after the sync that runs, and syncs after a failed action', async () => {
+    const { load, runs, services } = await setup();
+    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    const order: string[] = [];
+    const first = result.current.syncNow().then(() => order.push('sync'));
+    const action = result.current.withSync(async loaded => {
+      order.push(`action ${runs.count}`);
+      expect(loaded).toBe(services);
+      throw new Error('refused');
+    });
+    await expect(action).rejects.toThrow('refused');
+    await first;
+    await act(async () => {
+      await result.current.syncNow();
+    });
+    expect(order).toEqual(['sync', 'action 1']);
+    expect(runs.count).toBe(2);
+  });
+
+  it('gives the error of the last sync, and null after a sync without an error', async () => {
+    const { load, failWhen } = await setup();
+    failWhen(() => true);
+    const { result } = renderHook(() => useSync(true, load), { wrapper });
+    await waitFor(() => expect(result.current.lastError?.reason).toBe('relay'));
+    expect(result.current.lastError?.detail?.status).toBe(0);
+    failWhen(null);
+    await act(async () => {
+      await result.current.syncNow();
+    });
+    expect(result.current.lastError).toBeNull();
   });
 
   it('reads the vault as a new device when the observations key was missing at the load', async () => {

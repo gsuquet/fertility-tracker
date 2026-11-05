@@ -5,6 +5,9 @@ export type RelayResult =
   | { ok: true; status: number; text: string; etag: string | null }
   | { ok: false; status: number; error: string };
 
+/** A request to the relay that takes longer fails as a network error. */
+export const RELAY_TIMEOUT_MS = 30_000;
+
 export type Fetcher = (request: Request) => Promise<Response>;
 
 export interface RelayClient {
@@ -58,7 +61,13 @@ export function createRelayClient(
   const call = async ({ method, path, token, body, headers = {} }: Call): Promise<RelayResult> => {
     const all = new Headers(headers);
     if (token !== undefined) all.set('Authorization', `Bearer ${token}`);
-    const init: RequestInit = { method, headers: all, cache: 'no-store' };
+    // A stalled network gives a network error, so that Settings does not wait forever
+    const init: RequestInit = {
+      method,
+      headers: all,
+      cache: 'no-store',
+      signal: AbortSignal.timeout(RELAY_TIMEOUT_MS),
+    };
     if (body !== undefined) init.body = body;
     let response: Response;
     try {

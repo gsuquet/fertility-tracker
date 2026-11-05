@@ -2,11 +2,12 @@
  * Starts the sync of the application: at the start, when the page becomes visible, when the
  * browser goes online and after a change. See docs/reference/sync-client.md.
  */
-import { useCallback, useEffect, useRef } from 'react';
+import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
 import { SYNC_ENABLED } from '../sync/syncFlag';
+import type { VaultError } from '../sync/deviceVault';
 import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
 import { serializeObservations } from '../domain/storageFormat';
@@ -42,36 +43,66 @@ const loadServices = async (): Promise<SyncServices> => {
 const storage = { read: readStorage, write: writeStorage, remove: removeStorage };
 
 /** One sync at a time for all the tabs of the application, when the browser has Web Locks. */
-const withSyncLock = (run: () => Promise<void>): Promise<void> =>
+const withSyncLock = <T>(run: () => Promise<T>): Promise<T> =>
   globalThis.navigator?.locks
     ? globalThis.navigator.locks.request('fertility-tracker-sync', run)
     : run();
 
+/** The sync for the Settings screen. */
+export interface SyncControl {
+  enabled: boolean;
+  /** The relay client, the key store and the sync code, loaded one time. */
+  services: () => Promise<SyncServices>;
+  /** Starts a sync at once, or after the sync that runs. It resolves when that sync ends. */
+  syncNow: () => Promise<void>;
+  /**
+   * Runs an action of Settings after the sync that runs, with the sync lock. No sync starts
+   * before the action ends.
+   */
+  withSync: <T>(action: (services: SyncServices) => Promise<T>) => Promise<T>;
+  /** The error of the last sync, or null after a sync without an error. */
+  lastError: VaultError | null;
+}
+
 export function useSync(
   enabled: boolean = SYNC_ENABLED,
   load: () => Promise<SyncServices> = loadServices
-): void {
+): SyncControl {
   const data = useCycleData();
   const { t } = useLanguage();
   const latest = useRef({ data, t });
   latest.current = { data, t };
-  const services = useRef<Promise<SyncServices> | null>(null);
-  const running = useRef(false);
-  const again = useRef(false);
+  const loaded = useRef<Promise<SyncServices> | null>(null);
+  // The syncs and the actions of this tab, one after the other
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  // A sync that did not start yet. A new call does not add a second one.
+  const waiting = useRef<Promise<void> | null>(null);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
+  const [lastError, setLastError] = useState<VaultError | null>(null);
 
-  const sync = useCallback(async () => {
-    if (running.current) {
-      again.current = true;
-      return;
-    }
-    running.current = true;
-    lastStart.current = Date.now();
-    try {
-      services.current ??= load();
-      const { runner, relay, keyStore } = await services.current;
-      await withSyncLock(async () => {
+  const services = useCallback(() => {
+    // A failed load loads again at the next call
+    loaded.current ??= load().catch(error => {
+      loaded.current = null;
+      throw error;
+    });
+    return loaded.current;
+  }, [load]);
+
+  const exclusive = useCallback(<T>(work: () => Promise<T>): Promise<T> => {
+    const next = queue.current.then(() => withSyncLock(work));
+    queue.current = next.catch(() => {});
+    return next;
+  }, []);
+
+  const sync = useCallback((): Promise<void> => {
+    if (waiting.current) return waiting.current;
+    const next = exclusive(async () => {
+      waiting.current = null;
+      lastStart.current = Date.now();
+      try {
+        const { runner, relay, keyStore } = await services();
         const sent = latest.current.data;
         // Another tab saved other observations: this tab gets them first, with the storage event
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
@@ -105,23 +136,26 @@ export function useSync(
             return ok;
           },
         });
+        setLastError(result.status === 'error' ? result.error : null);
         // A list without its mark came during the sync: the state of the sync must not stay
         if (distrustCount() !== trust) removeStorage(STORAGE_SYNC_STATE_KEY);
         if (saved) {
           latest.current.data.markSynced();
         }
-      });
-    } catch {
-      // The key store or the code did not load: the next event loads it again
-      services.current = null;
-    } finally {
-      running.current = false;
-      if (again.current) {
-        again.current = false;
-        void sync();
+      } catch {
+        // The key store or the code did not load: the next event loads it again
+        loaded.current = null;
       }
-    }
-  }, [load]);
+    });
+    waiting.current = next;
+    return next;
+  }, [exclusive, services]);
+
+  const withSync = useCallback(
+    <T>(action: (loaded: SyncServices) => Promise<T>): Promise<T> =>
+      exclusive(async () => action(await services())),
+    [exclusive, services]
+  );
 
   // The start of the application, the visible page and the online browser
   useEffect(() => {
@@ -156,4 +190,6 @@ export function useSync(
     timer.current = setTimeout(() => void sync(), CHANGE_SYNC_DELAY_MS);
   }, [enabled, sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
+
+  return { enabled, services, syncNow: sync, withSync, lastError };
 }

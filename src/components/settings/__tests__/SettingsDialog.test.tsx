@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { SettingsDialog } from '../SettingsDialog';
 import { useCycleData } from '../../../context/CycleContext';
@@ -21,6 +21,10 @@ import { STORAGE_LAST_BACKUP_KEY } from '../../../utils/storageKeys';
 import { setShortcutsEnabled } from '../../../hooks/useKeyboardShortcuts';
 import { setHapticsEnabled } from '../../../utils/haptics';
 import type { UpdateCheckResult } from '../../../pwa/registerServiceWorker';
+import type { SyncControl, SyncServices } from '../../../hooks/useSync';
+import { createVault } from '../../../sync/deviceVault';
+import * as syncRunner from '../../../sync/syncRunner';
+import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHarness';
 
 const update = vi.hoisted(() => ({
   ready: false,
@@ -665,5 +669,86 @@ describe('Check for updates', () => {
     expect(
       screen.getByRole('button', { name: fr.settings.reloadToUpdate })
     ).toHaveAccessibleDescription(fr.settings.updateReady);
+  });
+});
+
+describe('SettingsDialog sync', () => {
+  const controlOf = async (withRecord: boolean, enabled = true): Promise<SyncControl> => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    if (withRecord) await createVault(harness.relay, keyStore);
+    const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
+    return {
+      enabled,
+      services: async () => services,
+      syncNow: vi.fn(),
+      withSync: action => action(services),
+      lastError: null,
+    };
+  };
+  const groupNames = () =>
+    screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent);
+
+  it('has no Sync group while the sync is off', async () => {
+    renderSettings(undefined, { sync: await controlOf(true, false) });
+    expect(groupNames()).not.toContain(en.sync.group);
+    expect(screen.getByRole('button', { name: en.settings.loadDemo })).toBeInTheDocument();
+  });
+
+  it('shows the Sync group after Backup and restore when the sync is on', async () => {
+    renderSettings(undefined, { sync: await controlOf(false) });
+    expect(await screen.findByRole('button', { name: en.sync.turnOn })).toBeInTheDocument();
+    const names = groupNames();
+    expect(names.indexOf(en.sync.group)).toBe(names.indexOf(en.settings.backup) + 1);
+    expect(screen.getByRole('button', { name: en.settings.loadDemo })).toBeInTheDocument();
+  });
+
+  it('hides Load the demo cycles while the device has a record', async () => {
+    renderSettings(undefined, { sync: await controlOf(true) });
+    expect(await screen.findByRole('button', { name: en.sync.syncNow })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: en.settings.loadDemo })).toBeNull();
+    expect(screen.getByRole('button', { name: en.settings.deleteAll })).toBeInTheDocument();
+  });
+
+  it('stays open while a sync action runs', async () => {
+    const harness = createRelayHarness();
+    let release: () => void = () => {};
+    const blocked = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const relay = {
+      ...harness.relay,
+      putVault: async (...args: Parameters<typeof harness.relay.putVault>) => {
+        await blocked;
+        return harness.relay.putVault(...args);
+      },
+    };
+    const services: SyncServices = { relay, keyStore: createMemoryKeyStore(), runner: syncRunner };
+    const props = renderSettings(threeCycles, {
+      sync: {
+        enabled: true,
+        services: async () => services,
+        syncNow: vi.fn(async () => {}),
+        withSync: action => action(services),
+        lastError: null,
+      },
+    });
+    fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
+    const close = screen.getByRole('button', { name: en.settings.close });
+    await waitFor(() => expect(close).toBeDisabled());
+    fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
+    // The device joins a vault: no demo days. A data action does not close Settings.
+    expect(screen.queryByRole('button', { name: en.settings.loadDemo })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: en.settings.deleteAll }));
+    const confirm = screen.getByRole('dialog', { name: en.confirmDialog.clearTitle });
+    fireEvent.click(within(confirm).getByRole('button', { name: en.confirmDialog.clearConfirm }));
+    expect(count()).toBe('0');
+    expect(props.onClose).not.toHaveBeenCalled();
+    await act(async () => release());
+    expect(await screen.findByRole('dialog', { name: en.sync.codeTitle })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: en.sync.wroteItDown }));
+    expect(close).toBeEnabled();
+    fireEvent.click(close);
+    expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 });

@@ -26,6 +26,7 @@ Until `SYNC_ENABLED` is `true`, the application does not call these functions. T
 - When the network fails, the result is `{ ok: false, status: 0, error: "network" }`.
 - The ETag of the result has no quotes. The client adds the quotes in `If-Match`.
 - Each request has `cache: "no-store"`.
+- A request that takes more than 30 seconds (`RELAY_TIMEOUT_MS`) fails as a network error.
 
 ## Device record
 
@@ -218,6 +219,18 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
 - While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
+
+### Sync control
+
+`useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
+
+| Field       | Use                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | The value of `SYNC_ENABLED`                                                                                                           |
+| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                         |
+| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends. A sync that did not start yet covers a new call. |
+| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.   |
+| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                            |
 
 ## Related documents
 
