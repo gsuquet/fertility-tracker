@@ -128,6 +128,36 @@ Before a backup changes existing observations, the dialog shows a preview from `
 
 During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
 
+### Sync group
+
+While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
+
+| Device record of this device | Rows                                                                     |
+| ---------------------------- | ------------------------------------------------------------------------ |
+| None                         | **Turn on sync** and **Recover with a code**                             |
+| Owner                        | **Sync now**, **New recovery code** and **Turn off sync on this device** |
+| Reader                       | **Sync now** and **Turn off sync on this device**                        |
+
+| Row                              | Result                                                                                                                   |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
+| **Turn on sync**                 | Makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                     |
+| **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                |
+| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                    |
+| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                            |
+| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay. |
+
+- While a row runs, the rows of the group are disabled.
+- When a row fails, an alert under the group gives the cause. The causes are no connection, sync not available yet, a code that is not valid, or another error.
+- While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
+- **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later.
+
+### Recovery code dialog
+
+The dialog shows the code in groups of 4 characters, in a monospace font. The text tells the user to write down the code and to keep it in a safe place. Without the code and without a device, nobody can open the vault.
+
+- **Copy** copies the code to the clipboard. After the copy, the button shows **Copied**.
+- **I wrote it down** closes the dialog. The dialog has no other close button. `Escape`, Back and a click on the backdrop do nothing.
+
 ### Load
 
 Settings is a lazy chunk. The application imports it when the browser is idle, as it imports the other dialogs ([Code splitting and lazy loading](../technology.md#code-splitting-and-lazy-loading)).

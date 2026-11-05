@@ -21,6 +21,10 @@ import { STORAGE_LAST_BACKUP_KEY } from '../../../utils/storageKeys';
 import { setShortcutsEnabled } from '../../../hooks/useKeyboardShortcuts';
 import { setHapticsEnabled } from '../../../utils/haptics';
 import type { UpdateCheckResult } from '../../../pwa/registerServiceWorker';
+import type { SyncControl, SyncServices } from '../../../hooks/useSync';
+import { createVault } from '../../../sync/deviceVault';
+import * as syncRunner from '../../../sync/syncRunner';
+import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHarness';
 
 const update = vi.hoisted(() => ({
   ready: false,
@@ -665,5 +669,38 @@ describe('Check for updates', () => {
     expect(
       screen.getByRole('button', { name: fr.settings.reloadToUpdate })
     ).toHaveAccessibleDescription(fr.settings.updateReady);
+  });
+});
+
+describe('SettingsDialog sync', () => {
+  const controlOf = async (withRecord: boolean, enabled = true): Promise<SyncControl> => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    if (withRecord) await createVault(harness.relay, keyStore);
+    const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
+    return { enabled, services: async () => services, syncNow: vi.fn(), lastError: null };
+  };
+  const groupNames = () =>
+    screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent);
+
+  it('has no Sync group while the sync is off', async () => {
+    renderSettings(undefined, { sync: await controlOf(true, false) });
+    expect(groupNames()).not.toContain(en.sync.group);
+    expect(screen.getByRole('button', { name: en.settings.loadDemo })).toBeInTheDocument();
+  });
+
+  it('shows the Sync group after Backup and restore when the sync is on', async () => {
+    renderSettings(undefined, { sync: await controlOf(false) });
+    expect(await screen.findByRole('button', { name: en.sync.turnOn })).toBeInTheDocument();
+    const names = groupNames();
+    expect(names.indexOf(en.sync.group)).toBe(names.indexOf(en.settings.backup) + 1);
+    expect(screen.getByRole('button', { name: en.settings.loadDemo })).toBeInTheDocument();
+  });
+
+  it('hides Load the demo cycles while the device has a record', async () => {
+    renderSettings(undefined, { sync: await controlOf(true) });
+    expect(await screen.findByRole('button', { name: en.sync.syncNow })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: en.settings.loadDemo })).toBeNull();
+    expect(screen.getByRole('button', { name: en.settings.deleteAll })).toBeInTheDocument();
   });
 });

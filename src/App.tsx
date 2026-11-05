@@ -129,7 +129,7 @@ const MainApp: React.FC = () => {
   const installMode = useInstallMode();
   // The dot on the app icon while today has no observation, when the user turned it on
   useAppBadge(observations);
-  useSync();
+  const sync = useSync();
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -340,6 +340,7 @@ const MainApp: React.FC = () => {
                 onOpenVersion={setVersionTab}
                 startWithRestore={settingsStartsWithRestore}
                 launchedBackup={launchedBackup}
+                sync={sync}
               />
             </React.Suspense>
           </ErrorBoundary>

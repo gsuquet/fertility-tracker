@@ -1,9 +1,8 @@
 import type React from 'react';
-import { useEffect, useId, useRef, useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import {
   BookOpen,
   ChevronLeft,
-  ChevronRight,
   Database,
   Download,
   Globe,
@@ -41,6 +40,9 @@ import { AppBadgeSetting } from '../AppBadgeSetting';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { PasswordDialog } from './PasswordDialog';
+import { ActionRow, Group, iconOf } from './settingsRows';
+import { SyncSettings } from './SyncSettings';
+import type { SyncControl } from '../../hooks/useSync';
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -54,6 +56,8 @@ interface SettingsDialogProps {
   startWithRestore?: boolean | undefined;
   /** A backup file that the user opened with the app. Settings restores it at once. */
   launchedBackup?: { text: string } | null | undefined;
+  /** The sync of the application. Settings shows the Sync group only when it is on. */
+  sync?: SyncControl | undefined;
 }
 
 /** A data action that waits for the user to confirm it. */
@@ -90,79 +94,6 @@ const SwitchRow: React.FC<SwitchRowProps> = ({ icon, label, checked, onChange })
   </li>
 );
 
-interface ActionRowProps {
-  icon: React.ReactNode;
-  label: string;
-  detail?: string;
-  /** A short text at the right, for example the version */
-  value?: string;
-  onClick: () => void;
-  /** A row that opens another dialog has a chevron */
-  opens?: boolean;
-  danger?: boolean;
-  disabled?: boolean;
-  buttonRef?: React.Ref<HTMLButtonElement>;
-}
-
-const ActionRow: React.FC<ActionRowProps> = ({
-  icon,
-  label,
-  detail,
-  value,
-  onClick,
-  opens = false,
-  danger = false,
-  disabled = false,
-  buttonRef,
-}) => {
-  // The name is the label only: the detail is the description
-  const id = useId();
-  return (
-    <li>
-      <button
-        ref={buttonRef}
-        type="button"
-        className={`settings-row ${danger ? 'danger' : ''}`}
-        onClick={onClick}
-        disabled={disabled}
-        aria-labelledby={`${id}-label`}
-        aria-describedby={detail ? `${id}-detail` : undefined}
-      >
-        {icon}
-        <span className="settings-row-text">
-          <span id={`${id}-label`} className="settings-row-label">
-            {label}
-          </span>
-          {detail && (
-            <span id={`${id}-detail`} className="settings-row-detail">
-              {detail}
-            </span>
-          )}
-        </span>
-        {value && <span className="settings-row-value">{value}</span>}
-        {opens && <ChevronRight size={18} className="settings-row-chevron" aria-hidden="true" />}
-      </button>
-    </li>
-  );
-};
-
-const Group: React.FC<{ id: string; title: string; children: React.ReactNode }> = ({
-  id,
-  title,
-  children,
-}) => (
-  <section className="settings-group" aria-labelledby={id}>
-    <h3 id={id} className="settings-group-title">
-      {title}
-    </h3>
-    <ul className="settings-list">{children}</ul>
-  </section>
-);
-
-const iconOf = (Icon: React.ComponentType<{ size?: number; className?: string }>) => (
-  <Icon size={18} className="settings-row-icon" aria-hidden="true" />
-);
-
 /**
  * Settings: all the actions that are not a part of the daily work (RFC 0002). It is a full page on
  * a phone and a 560 pixel dialog on a wider screen. Back, Escape and the close button close it.
@@ -175,6 +106,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   onOpenVersion,
   startWithRestore = false,
   launchedBackup = null,
+  sync,
 }) => {
   const {
     observations,
@@ -192,6 +124,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const shortcutsOn = useShortcutsEnabled();
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [importError, setImportError] = useState(false);
+  // A device in a vault does not load the demo cycles (ADR 0012)
+  const [hasSyncRecord, setHasSyncRecord] = useState(false);
   const [passwordRequest, setPasswordRequest] = useState<
     { mode: 'backup' } | { mode: 'restore'; backup: EncryptedBackup } | null
   >(null);
@@ -484,6 +418,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           </p>
         )}
 
+        {sync?.enabled && <SyncSettings control={sync} onRecordChange={setHasSyncRecord} />}
+
         <Group id="settings-help" title={s.help}>
           <ActionRow icon={iconOf(BookOpen)} label={s.welcomeGuide} onClick={onOpenWelcome} opens />
           <ActionRow
@@ -522,11 +458,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         </p>
 
         <Group id="settings-data" title={s.data}>
-          <ActionRow
-            icon={iconOf(Database)}
-            label={s.loadDemo}
-            onClick={() => runOrConfirm({ kind: 'demo' })}
-          />
+          {!hasSyncRecord && (
+            <ActionRow
+              icon={iconOf(Database)}
+              label={s.loadDemo}
+              onClick={() => runOrConfirm({ kind: 'demo' })}
+            />
+          )}
           <ActionRow
             icon={iconOf(Trash2)}
             label={s.deleteAll}
