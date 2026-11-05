@@ -1,40 +1,28 @@
 /** The Sync group of Settings. See docs/reference/screens/settings.md#sync-group. */
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { CloudOff, KeyRound, RefreshCw, RotateCcw, Share2 } from 'lucide-react';
+import { CloudOff, KeyRound, Link, RefreshCw, RotateCcw, Share2, Smartphone } from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { isUserObservation } from '../../domain/backupReminder';
 import { formatMessage } from '../../i18n';
 import type { TranslationSchema } from '../../i18n/types';
 import type { SyncControl, SyncServices } from '../../hooks/useSync';
 import { useSheetDrag } from '../../hooks/useSheetDrag';
-import type { VaultError } from '../../sync/deviceVault';
 import type { DeviceRecord } from '../../sync/keyStore';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { removeStorage } from '../../utils/storage';
 import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
+import { useDemoRemoval } from '../../hooks/useDemoRemoval';
+import { failureOf } from '../../utils/syncFailure';
+import type { SyncFailure } from '../../utils/syncFailure';
+import { JoinDialog } from '../JoinDialog';
+import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
 
 type SyncText = TranslationSchema['sync'];
-type Failure = 'noConnection' | 'unavailable' | 'badCode' | 'failed';
-
-/** The cause of a failure, for the alert under the group. */
-export const failureOf = (error: unknown, recovering = false): Failure => {
-  // The name, not instanceof: the vault code loads only when the sync starts
-  if (!(error instanceof Error) || error.name !== 'VaultError') return 'failed';
-  const { reason, detail } = error as VaultError;
-  if (reason === 'code') return 'badCode';
-  if (reason !== 'relay') return 'failed';
-  const status = detail?.status;
-  if (status === 0) return 'noConnection';
-  if (status === 503) return 'unavailable';
-  // The relay has no lookup object for this code
-  if (recovering && status === 404) return 'badCode';
-  return 'failed';
-};
+type Failure = SyncFailure | 'undoFirstShort';
 
 interface RecoveryCodeDialogProps {
   code: string;
@@ -82,6 +70,8 @@ export const RecoveryCodeDialog: React.FC<RecoveryCodeDialogProps> = ({ code, on
 };
 
 interface RecoveryEntryDialogProps {
+  /** True for an invitation link, for an installed app on iOS. Else a recovery code. */
+  forLink?: boolean;
   /** Recovers with the code. The parent closes the dialog when it worked. */
   onSubmit: (code: string) => void;
   onCancel: () => void;
@@ -91,6 +81,7 @@ interface RecoveryEntryDialogProps {
 
 /** Asks for the recovery code of a vault. */
 export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
+  forLink = false,
   onSubmit,
   onCancel,
   working,
@@ -98,6 +89,10 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
 }) => {
   const { t } = useLanguage();
   const s = t.sync;
+  const isCode = !forLink;
+  const texts = isCode
+    ? { title: s.enterTitle, note: s.enterNote, label: s.codeLabel, action: s.recoverAction }
+    : { title: s.linkTitle, note: s.linkNote, label: s.inviteLinkLabel, action: s.joinAction };
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState('');
@@ -117,7 +112,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="modal-header" {...dragHandlers}>
-        <h2 id={`${id}-title`}>{s.enterTitle}</h2>
+        <h2 id={`${id}-title`}>{texts.title}</h2>
       </div>
       <form
         onSubmit={e => {
@@ -127,16 +122,16 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
         noValidate
       >
         <div className="modal-body password-dialog-body" ref={bodyRef}>
-          <p id={`${id}-note`}>{s.enterNote}</p>
+          <p id={`${id}-note`}>{texts.note}</p>
           <div className="form-group">
-            <label htmlFor={`${id}-code`}>{s.codeLabel}</label>
+            <label htmlFor={`${id}-code`}>{texts.label}</label>
             <input
               ref={inputRef}
               id={`${id}-code`}
               className="form-input sync-code-input"
               type="text"
               autoComplete="off"
-              autoCapitalize="characters"
+              autoCapitalize={isCode ? 'characters' : 'off'}
               spellCheck={false}
               value={code}
               onChange={e => setCode(e.target.value)}
@@ -153,7 +148,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
             {t.actions.cancel}
           </button>
           <button type="submit" className="btn btn-primary" disabled={working}>
-            {working ? s.working : s.recoverAction}
+            {working ? s.working : texts.action}
           </button>
         </div>
       </form>
@@ -175,7 +170,12 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   onRecordChange,
   onBusyChange,
 }) => {
-  const { lastSyncDate, observations, applySyncedObservations } = useCycle();
+  const { lastSyncDate, undoChange } = useCycle();
+  const removeDemoDays = useDemoRemoval();
+  const [inviting, setInviting] = useState(false);
+  // The invitation link that the user pasted, for an installed app on iOS
+  const [pasting, setPasting] = useState(false);
+  const [joinFragment, setJoinFragment] = useState<string | null>(null);
   const { t } = useLanguage();
   const s: SyncText = t.sync;
   const [record, setRecord] = useState<DeviceRecord | null | undefined>(undefined);
@@ -235,13 +235,6 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     }
   };
 
-  // The demo days never go into a vault (ADR 0012): they go before the device joins
-  const removeDemoDays = () => {
-    const kept = observations.filter(isUserObservation);
-    if (kept.length === observations.length) return;
-    if (!applySyncedObservations(kept, false)) throw new Error('The browser refused the write');
-  };
-
   /** The record of the key store. Another tab can save one after the group opens. */
   const joined = async (keyStore: SyncServices['keyStore']) => {
     const current = await keyStore.load();
@@ -258,8 +251,13 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       return { record: made.record, code: made.recoveryCode };
     });
 
-  const recover = (typed: string) =>
-    run(
+  const recover = (typed: string) => {
+    // ADR 0012: no join while an undo copy exists
+    if (undoChange !== null) {
+      setFailure('undoFirstShort');
+      return;
+    }
+    return run(
       async ({ relay, keyStore }) => {
         const existing = await joined(keyStore);
         if (existing) return existing;
@@ -270,6 +268,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       },
       { recovering: true }
     );
+  };
 
   const newCode = () =>
     run(async ({ relay, keyStore }) => {
@@ -339,6 +338,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               disabled={busy}
               opens
             />
+            <ActionRow
+              icon={iconOf(Link)}
+              label={s.joinLink}
+              detail={s.joinLinkHint}
+              onClick={() => setPasting(true)}
+              disabled={busy}
+              opens
+            />
           </>
         )}
         {record && (
@@ -350,6 +357,16 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               onClick={() => void syncNow()}
               disabled={busy}
             />
+            {record.role === 'owner' && (
+              <ActionRow
+                icon={iconOf(Smartphone)}
+                label={s.invite}
+                detail={s.inviteHint}
+                onClick={() => setInviting(true)}
+                disabled={busy}
+                opens
+              />
+            )}
             {record.role === 'owner' && (
               <ActionRow
                 icon={iconOf(RotateCcw)}
@@ -386,6 +403,35 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           error={shown && s[shown]}
         />
       )}
+
+      {pasting && (
+        <RecoveryEntryDialog
+          forLink
+          onSubmit={link => {
+            setPasting(false);
+            setJoinFragment(link.includes('#') ? link.slice(link.indexOf('#')) : '');
+          }}
+          onCancel={() => setPasting(false)}
+          working={false}
+          error={null}
+        />
+      )}
+
+      {joinFragment !== null && (
+        <JoinDialog
+          control={control}
+          fragment={joinFragment}
+          onClose={() => {
+            setJoinFragment(null);
+            // The join saved a record: the group shows its rows
+            void services()
+              .then(({ keyStore }) => keyStore.load())
+              .then(show);
+          }}
+        />
+      )}
+
+      {inviting && <InviteDialog control={control} onClose={() => setInviting(false)} />}
 
       {code && <RecoveryCodeDialog code={code} onDone={() => setCode(null)} />}
 

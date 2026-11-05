@@ -14,8 +14,9 @@ import {
   STORAGE_LAST_SYNC_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
+  STORAGE_UNDO_KEY,
 } from '../../../utils/storageKeys';
-import { SyncSettings, failureOf } from '../SyncSettings';
+import { SyncSettings } from '../SyncSettings';
 import { useSync } from '../../../hooks/useSync';
 import { buildDemoObservations } from '../../../domain/demoData';
 import { makeObservation } from '../../../test/factories';
@@ -264,6 +265,69 @@ describe('SyncSettings', () => {
     expect(control.syncNow).toHaveBeenCalledTimes(1);
   });
 
+  it('opens the invitation dialog on an owner device', async () => {
+    const owner = await ownerRecord();
+    renderSync(controlOf(owner.relay, owner.keyStore));
+    expect(await row(s.invite)).toHaveAccessibleDescription(s.inviteHint);
+    fireEvent.click(screen.getByRole('button', { name: s.invite }));
+    const dialog = await screen.findByRole('dialog', { name: s.inviteTitle });
+    fireEvent.click(await within(dialog).findByRole('button', { name: en.actions.cancel }));
+    expect(screen.queryByRole('dialog', { name: s.inviteTitle })).toBeNull();
+  });
+
+  it('joins with a pasted link, for an installed app on iOS', async () => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    const { onRecordChange } = renderSync(controlOf(harness.relay, keyStore));
+    expect(await row(s.joinLink)).toHaveAccessibleDescription(s.joinLinkHint);
+
+    // Cancel, then a text without a link
+    fireEvent.click(screen.getByRole('button', { name: s.joinLink }));
+    let dialog = await screen.findByRole('dialog', { name: s.linkTitle });
+    expect(dialog).toHaveAccessibleDescription(s.linkNote);
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(screen.queryByRole('dialog', { name: s.linkTitle })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: s.joinLink }));
+    dialog = await screen.findByRole('dialog', { name: s.linkTitle });
+    fireEvent.change(within(dialog).getByLabelText(s.inviteLinkLabel), {
+      target: { value: 'hello' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: s.joinAction }));
+    let join = await screen.findByRole('dialog', { name: s.joinTitle });
+    expect(await within(join).findByRole('alert')).toHaveTextContent(s.badLink);
+    fireEvent.click(within(join).getByRole('button', { name: s.close }));
+
+    // A link with its fragment: the device joins, then the group shows the rows of the record
+    fireEvent.click(await row(s.joinLink));
+    dialog = await screen.findByRole('dialog', { name: s.linkTitle });
+    fireEvent.change(within(dialog).getByLabelText(s.inviteLinkLabel), {
+      target: { value: 'https://app.test/#invite=abc.def' },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: s.joinAction }));
+    join = await screen.findByRole('dialog', { name: s.joinTitle });
+    expect(await within(join).findByRole('alert')).toHaveTextContent(s.badLink);
+    const owner = await ownerRecord();
+    await keyStore.save(owner.record);
+    fireEvent.click(within(join).getByRole('button', { name: s.close }));
+    expect(await row(s.syncNow)).toBeInTheDocument();
+    expect(onRecordChange).toHaveBeenLastCalledWith(true);
+  });
+
+  it('does not recover while an undo copy exists', async () => {
+    const owner = await ownerRecord();
+    localStorage.setItem(STORAGE_UNDO_KEY, JSON.stringify([]));
+    const keyStore = createMemoryKeyStore();
+    renderSync(controlOf(owner.relay, keyStore));
+    fireEvent.click(await row(s.recover));
+    const dialog = await screen.findByRole('dialog', { name: s.enterTitle });
+    fireEvent.change(within(dialog).getByLabelText(s.codeLabel), {
+      target: { value: owner.recoveryCode },
+    });
+    fireEvent.click(within(dialog).getByRole('button', { name: s.recoverAction }));
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(s.undoFirstShort);
+    expect(await keyStore.load()).toBeNull();
+  });
+
   it('has no New recovery code on a reader device', async () => {
     const owner = await ownerRecord();
     const reader = createMemoryKeyStore({ ...(owner.record as DeviceRecord), role: 'reader' });
@@ -271,6 +335,7 @@ describe('SyncSettings', () => {
     expect(await row(s.syncNow)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: s.turnOff })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: s.newCode })).toBeNull();
+    expect(screen.queryByRole('button', { name: s.invite })).toBeNull();
   });
 
   it('turns off the sync on this device after a confirmation', async () => {
@@ -503,20 +568,5 @@ describe('SyncSettings', () => {
     expect(await row(s.turnOn)).toBeInTheDocument();
     expect(await owner.keyStore.load()).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
-  });
-});
-
-describe('failureOf', () => {
-  it('gives the cause of each error', () => {
-    expect(failureOf(new Error('x'))).toBe('failed');
-    expect(failureOf('x')).toBe('failed');
-    expect(failureOf(new VaultError('code'))).toBe('badCode');
-    expect(failureOf(new VaultError('keys'))).toBe('failed');
-    expect(failureOf(new VaultError('relay'))).toBe('failed');
-    expect(failureOf(new VaultError('relay', { status: 0 }))).toBe('noConnection');
-    expect(failureOf(new VaultError('relay', { status: 503 }))).toBe('unavailable');
-    expect(failureOf(new VaultError('relay', { status: 404 }))).toBe('failed');
-    expect(failureOf(new VaultError('relay', { status: 404 }), true)).toBe('badCode');
-    expect(failureOf(new VaultError('relay', { status: 500 }), true)).toBe('failed');
   });
 });

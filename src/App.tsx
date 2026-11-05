@@ -38,6 +38,9 @@ const loadWelcomeModal = () => import('./components/WelcomeModal');
 const loadInstallGuideModal = () => import('./components/InstallGuideModal');
 const loadKeyboardShortcutsModal = () => import('./components/KeyboardShortcutsModal');
 const loadSettingsDialog = () => import('./components/settings/SettingsDialog');
+const JoinDialog = React.lazy(() =>
+  import('./components/JoinDialog').then(m => ({ default: m.JoinDialog }))
+);
 
 const CycleAnalyticsView = React.lazy(() =>
   loadCycleAnalyticsView().then(m => ({ default: m.CycleAnalyticsView }))
@@ -92,6 +95,7 @@ const canAnimateTo = (tab: ActiveTab) => tab !== 'analytics' || analyticsShown;
 
 import type { ChartFileFormat, ChartFileResult } from './utils/chartImage';
 import { getExportFilename } from './utils/exportUtils';
+import { takeInviteFragment } from './utils/inviteUrl';
 import { readStorage } from './utils/storage';
 import { whenIdle } from './utils/whenIdle';
 import type { LaunchShortcut } from './utils/launchShortcut';
@@ -130,6 +134,21 @@ const MainApp: React.FC = () => {
   // The dot on the app icon while today has no observation, when the user turned it on
   useAppBadge(observations);
   const sync = useSync();
+  // An invitation link of the sync opens the join dialog. Without the sync, the link does nothing.
+  const [inviteFragment, setInviteFragment] = useState(() =>
+    sync.enabled ? takeInviteFragment() : null
+  );
+  const closeJoin = () => setInviteFragment(null);
+  // A link opened in a tab of the application changes only the fragment
+  useEffect(() => {
+    if (!sync.enabled) return;
+    const onHashChange = () => {
+      const fragment = takeInviteFragment();
+      if (fragment) setInviteFragment(fragment);
+    };
+    window.addEventListener('hashchange', onHashChange);
+    return () => window.removeEventListener('hashchange', onHashChange);
+  }, [sync.enabled]);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');
@@ -172,10 +191,15 @@ const MainApp: React.FC = () => {
 
   useEffect(() => {
     checkAndRecordVersionSeen();
+  }, []);
+
+  // The welcome guide waits for the join dialog: its demo data must not go into a vault
+  useEffect(() => {
+    if (inviteFragment) return;
     if (!readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) {
       setIsWelcomeModalOpen(true);
     }
-  }, []);
+  }, [inviteFragment]);
 
   // Print after the print view has loaded and rendered the selected cycles.
   // The browser uses the document title as the default PDF file name.
@@ -317,6 +341,14 @@ const MainApp: React.FC = () => {
 
         {/* Each dialog renders only while it is open, so its chunk loads when it opens first.
           Its own boundary shows a failure as a dialog, and closing the dialog removes it. */}
+        {inviteFragment && (
+          <ErrorBoundary onClose={closeJoin}>
+            <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
+              <JoinDialog control={sync} fragment={inviteFragment} onClose={closeJoin} />
+            </React.Suspense>
+          </ErrorBoundary>
+        )}
+
         {isExportModalOpen && (
           <ErrorBoundary onClose={closeExportModal}>
             <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
