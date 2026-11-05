@@ -376,6 +376,10 @@ describe('useSync', () => {
     });
     await waitFor(() => expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01'));
     expect(runs).toEqual({ count: 0, shared: 1 });
+    // The pages get the days of the shared chart after the read
+    await waitFor(() =>
+      expect(result.current.sync.sharedDays).toEqual([{ date: '2026-10-01', bleeding: 'H' }])
+    );
     // The own days of the device stay, and the device has no sync state
     expect(result.current.data.observations.map(o => o.date)).toEqual(['2026-09-01']);
     expect(localStorage.getItem(STATE_KEY)).toBeNull();
@@ -409,6 +413,46 @@ describe('useSync', () => {
     expect(outcome.error?.detail?.status).toBe(401);
     expect(result.current.sync.lastError?.reason).toBe('relay');
     expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01');
+  });
+
+  it('gives the days of a valid shared chart, and reads them again after a change in another tab', async () => {
+    const { load } = await setup();
+    const days = (bleeding: string) =>
+      JSON.stringify([
+        { date: '2026-10-01', day: { bleeding }, clock: { time: 5, counter: 0, member: 'm' } },
+      ]);
+    localStorage.setItem(SHARED_KEY, days('H'));
+    const off = renderHook(() => useSync(false, load), { wrapper });
+    expect(off.result.current.sharedDays).toBeNull();
+    const { result } = renderHook(() => useSync(true, load), { wrapper });
+    expect(result.current.sharedDays).toEqual([{ date: '2026-10-01', bleeding: 'H' }]);
+    const first = result.current.sharedDays;
+    // A sync that does not change the text keeps the same days
+    await act(() => result.current.syncNow());
+    expect(result.current.sharedDays).toBe(first);
+    localStorage.setItem(SHARED_KEY, days('M'));
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: SHARED_KEY }));
+    });
+    expect(result.current.sharedDays).toEqual([{ date: '2026-10-01', bleeding: 'M' }]);
+    // Text that is not JSON, or a list that is not valid, gives no shared chart
+    for (const text of ['not json', '[{"date":"x"}]']) {
+      localStorage.setItem(SHARED_KEY, text);
+      act(() => {
+        window.dispatchEvent(new StorageEvent('storage', { key: null }));
+      });
+      expect(result.current.sharedDays).toBeNull();
+    }
+    localStorage.setItem(SHARED_KEY, days('H'));
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other' }));
+    });
+    expect(result.current.sharedDays).toBeNull();
+    localStorage.removeItem(SHARED_KEY);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: SHARED_KEY }));
+    });
+    expect(result.current.sharedDays).toBeNull();
   });
 
   it('reads the vault as a new device when the observations key was missing at the load', async () => {

@@ -675,7 +675,11 @@ export const en = {
   },
   drawer: {
     editTitle: 'Edit Observation',
+    viewTitle: 'Observation',
     close: 'Close entry panel',
+  },
+  sharedChart: {
+    note: 'This is the shared chart. You can read it, but you cannot change it.',
   },
   printExport: {
     title: 'Creighton Model FertilityCare System Chart Report',

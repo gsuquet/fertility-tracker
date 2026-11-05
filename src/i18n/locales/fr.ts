@@ -681,7 +681,11 @@ export const fr: TranslationSchema = {
   },
   drawer: {
     editTitle: 'Modifier l’observation',
+    viewTitle: 'Observation',
     close: 'Fermer le panneau de saisie',
+  },
+  sharedChart: {
+    note: 'Voici le tableau partagé. Vous pouvez le lire, mais pas le modifier.',
   },
   printExport: {
     title: 'Rapport de graphique du Modèle Creighton FertilityCare System',

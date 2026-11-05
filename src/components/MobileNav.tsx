@@ -12,7 +12,7 @@ interface MobileNavProps {
 
 export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab }) => {
   const { t } = useLanguage();
-  const { setSelectedObservation, setIsDrawerOpen } = useCycle();
+  const { setSelectedObservation, setIsDrawerOpen, readOnly } = useCycle();
 
   const handleQuickAdd = () => {
     haptic('light');
@@ -47,15 +47,18 @@ export const MobileNav: React.FC<MobileNavProps> = ({ activeTab, setActiveTab })
         <span>{t.mobileTabs.chart}</span>
       </button>
 
-      <button
-        type="button"
-        className="mobile-nav-fab"
-        onClick={handleQuickAdd}
-        aria-label={t.mobileTabs.log}
-        title={t.mobileTabs.log}
-      >
-        <Plus size={22} />
-      </button>
+      {/* Nobody adds a day to the shared chart */}
+      {!readOnly && (
+        <button
+          type="button"
+          className="mobile-nav-fab"
+          onClick={handleQuickAdd}
+          aria-label={t.mobileTabs.log}
+          title={t.mobileTabs.log}
+        >
+          <Plus size={22} />
+        </button>
+      )}
 
       <button
         type="button"

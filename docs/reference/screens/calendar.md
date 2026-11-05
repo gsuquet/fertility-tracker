@@ -15,6 +15,8 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
+On a partner device, the [shared chart mode](shared-chart.md) shows the shared chart read only, and changes some parts of this page.
+
 - The grid shows one month in full weeks, from Monday to Sunday. The page has no card around the grid.
 - The first and last weeks show the days of the month before and the month after. Thus, the stamps and codes of a cycle that crosses two months have no gap. These days:
   - Have a muted day number and code (`--text-muted`), a stamp at half opacity and no background. They keep their code and their marks.
@@ -100,6 +102,7 @@ On a touch screen, a swipe on the calendar changes the month. It uses the hook o
 
 ## Related documents
 
+- [Shared chart mode](shared-chart.md)
 - [Application behavior](../application-behavior.md)
 - [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)

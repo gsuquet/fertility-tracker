@@ -114,9 +114,16 @@ describe('App keyboard shortcuts', () => {
   it('opens the shortcuts dialog from the version dialog', async () => {
     render(<App />);
     openVersionNotes();
-    const version = await screen.findByRole('dialog', { name: en.versionTracker.title });
+    // The two dialogs are lazy chunks: a first load can take more than 1 s under coverage
+    const version = await screen.findByRole(
+      'dialog',
+      { name: en.versionTracker.title },
+      { timeout: 5000 }
+    );
     fireEvent.click(within(version).getByRole('button', { name: en.shortcuts.title }));
-    expect(await screen.findByRole('dialog', { name: en.shortcuts.title })).toBeInTheDocument();
+    expect(
+      await screen.findByRole('dialog', { name: en.shortcuts.title }, { timeout: 5000 })
+    ).toBeInTheDocument();
     expect(screen.queryByRole('dialog', { name: en.versionTracker.title })).toBeNull();
   });
 

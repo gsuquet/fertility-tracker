@@ -24,6 +24,7 @@ import { haptic } from '../utils/haptics';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { useTopDialog } from './Modal';
 import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
+import { ReadOnlyFields } from './observation/ReadOnlyFields';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { useToast } from '../hooks/useToast';
 import { PageTitle } from './shell/TopBar';
@@ -43,6 +44,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
     selectedObservation,
     setSelectedObservation,
     setSelectedCycleId,
+    readOnly,
   } = useCycle();
   const { t } = useLanguage();
 
@@ -162,16 +164,18 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
     showToast(t.todayView.deletedNotice);
   };
 
-  const actionsMenu = (variant: 'banner' | 'card') => (
-    <ObservationActionsMenu
-      key={variant}
-      yesterdayCode={copyableCode(yesterdayObs)}
-      onCopyYesterday={() => form.copyCodes(yesterdayObs as NonNullable<typeof yesterdayObs>)}
-      directOnly={directOnly}
-      onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
-      onDelete={currentObs ? () => handleDelete(currentObs.id) : undefined}
-    />
-  );
+  // Nobody changes the shared chart: no copy, no delete and no entry mode
+  const actionsMenu = (variant: 'banner' | 'card') =>
+    !readOnly && (
+      <ObservationActionsMenu
+        key={variant}
+        yesterdayCode={copyableCode(yesterdayObs)}
+        onCopyYesterday={() => form.copyCodes(yesterdayObs as NonNullable<typeof yesterdayObs>)}
+        directOnly={directOnly}
+        onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
+        onDelete={currentObs ? () => handleDelete(currentObs.id) : undefined}
+      />
+    );
 
   return (
     <div
@@ -221,28 +225,33 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
         {/* The progressive observation form and the Save bar */}
         <form ref={formRef} onSubmit={handleSave} className="today-form-card">
           <h2 className="sr-only">{t.todayView.title}</h2>
-          <ProgressiveObservationForm
-            form={form}
-            directOnly={directOnly}
-            idPrefix="today"
-            onTypingChange={setTyping}
-          />
-          <div className={`today-save-bar ${typing ? 'typing' : ''}`}>
-            <button
-              type="submit"
-              className={`btn btn-primary btn-lg submit-save-btn ${!hasUnsavedChanges && currentObs ? 'is-saved' : ''}`}
-              disabled={!hasUnsavedChanges}
-            >
-              {!hasUnsavedChanges && currentObs ? (
-                <>
-                  <Check size={18} />
-                  <span>{t.todayView.savedLabel}</span>
-                </>
-              ) : (
-                <span>{t.actions.save}</span>
-              )}
-            </button>
-          </div>
+          <ReadOnlyFields readOnly={readOnly}>
+            <ProgressiveObservationForm
+              form={form}
+              directOnly={directOnly}
+              idPrefix="today"
+              onTypingChange={setTyping}
+              readOnly={readOnly}
+            />
+          </ReadOnlyFields>
+          {!readOnly && (
+            <div className={`today-save-bar ${typing ? 'typing' : ''}`}>
+              <button
+                type="submit"
+                className={`btn btn-primary btn-lg submit-save-btn ${!hasUnsavedChanges && currentObs ? 'is-saved' : ''}`}
+                disabled={!hasUnsavedChanges}
+              >
+                {!hasUnsavedChanges && currentObs ? (
+                  <>
+                    <Check size={18} />
+                    <span>{t.todayView.savedLabel}</span>
+                  </>
+                ) : (
+                  <span>{t.actions.save}</span>
+                )}
+              </button>
+            </div>
+          )}
         </form>
 
         {/* Phone: the 5 days before the selected day, under the form */}

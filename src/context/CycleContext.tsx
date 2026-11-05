@@ -90,6 +90,8 @@ export interface CycleDataContextType {
   lastSyncDate: string | null;
   /** Records today as the date of the last sync. */
   markSynced: () => void;
+  /** True for the shared chart of a partner device: no part of the pages changes a day. */
+  readOnly: boolean;
 }
 
 export interface CycleUiContextType {
@@ -468,6 +470,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       applySyncedObservations,
       lastSyncDate,
       markSynced,
+      readOnly: false,
     }),
     [
       observations,
@@ -500,6 +503,53 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
 
   return <CycleDataContext.Provider value={dataValue}>{children}</CycleDataContext.Provider>;
 };
+
+const doNothing = () => {};
+
+/**
+ * The data of the pages for the shared chart of a partner device, or null without a shared chart.
+ * See docs/reference/screens/shared-chart.md.
+ */
+export function useSharedCycleData(inputs: ObservationInput[] | null): CycleDataContextType | null {
+  const own = useCycleData();
+  // Null: the newest cycle, until the user selects a cycle
+  const [selected, setSelected] = useState<string | null>(null);
+  const observations = useMemo(
+    () =>
+      inputs &&
+      reprocessObservations(inputs.map(day => toObservation({ ...day, id: `shared_${day.date}` }))),
+    [inputs]
+  );
+  const cycles = useMemo(
+    () => (observations ? groupObservationsIntoCycles(observations) : []),
+    [observations]
+  );
+  return useMemo(() => {
+    if (!observations) return null;
+    const known = selected === 'all' || cycles.some(cycle => cycle.id === selected);
+    return {
+      ...own,
+      observations,
+      cycles,
+      selectedCycleId: known ? (selected as string) : (cycles[0]?.id ?? 'all'),
+      setSelectedCycleId: setSelected,
+      saveObservation: doNothing,
+      deleteObservation: doNothing,
+      readOnly: true,
+    };
+  }, [own, observations, cycles, selected]);
+}
+
+/** Gives the data of the shared chart to its children. Without it, the children keep the own data. */
+export const CycleDataOverride: React.FC<{
+  value: CycleDataContextType | null;
+  children: React.ReactNode;
+}> = ({ value, children }) =>
+  value ? (
+    <CycleDataContext.Provider value={value}>{children}</CycleDataContext.Provider>
+  ) : (
+    children
+  );
 
 export const CycleUiProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   const [selectedObservation, setSelectedObservation] = useState<Observation | null>(null);

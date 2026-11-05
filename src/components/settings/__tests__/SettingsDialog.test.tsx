@@ -695,6 +695,7 @@ describe('SettingsDialog sync', () => {
       lastError: null,
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
+      sharedDays: null,
     };
   };
   const groupNames = () =>
@@ -746,6 +747,7 @@ describe('SettingsDialog sync', () => {
         lastError: null,
         conflicts: [],
         resolveConflict: vi.fn(async () => {}),
+        sharedDays: null,
       },
     });
     fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
@@ -790,6 +792,7 @@ describe('SettingsDialog on a synced device', () => {
       lastError: null,
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
+      sharedDays: null,
     } satisfies SyncControl;
     const keyring = () =>
       (

@@ -8,6 +8,8 @@ This part shows on each page. Its layout is in the screenshots and the ARIA snap
 
 ## Behavior
 
+On a partner device, the [shared chart mode](shared-chart.md) shows the shared chart read only, and changes some parts of this page.
+
 The application has four pages, a header, an observation drawer and dialogs. A phone screen is 640 pixels wide or less. The [statistics bar](statistics-bar.md) is on the **Cycle Analytics** page only.
 
 | Part                                                                  | Wide screen                                                                                                                                    | Phone screen                                                                                                                                                            |
@@ -85,6 +87,7 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 
 ## Related documents
 
+- [Shared chart mode](shared-chart.md)
 - [Application behavior](../application-behavior.md)
 - [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)

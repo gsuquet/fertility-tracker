@@ -15,6 +15,8 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
+On a partner device, the [shared chart mode](shared-chart.md) shows the shared chart read only, and changes some parts of this page.
+
 | Part                                                                       | Content                                                                                                                                                                                                                                                     |
 | -------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [ChartToolbar.tsx](../../../src/components/chart/ChartToolbar.tsx)         | One row: **35-day** and **Strip**, and the ⋮ menu (**Chart options**) with the **Stamp bar** and **Legend** check items. After a line, the menu has **Share chart**, which opens the [export dialog](export-dialog.md). An empty chart shows only the menu. |
@@ -118,6 +120,7 @@ From 1024 px (`DESKTOP_QUERY` in [useMediaQuery.ts](../../../src/hooks/useMediaQ
 
 ## Related documents
 
+- [Shared chart mode](shared-chart.md)
 - [Application behavior](../application-behavior.md)
 - [Dialog component](../dialog-component.md)
 - [User interface](../user-interface.md)

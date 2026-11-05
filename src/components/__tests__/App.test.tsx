@@ -48,9 +48,8 @@ describe('App Root Component Integration', () => {
 
     openVersionNotes();
 
-    await waitFor(() => {
-      expect(screen.getByRole('dialog')).toBeInTheDocument();
-    });
+    // The dialog is a lazy chunk: its first load can take more than 1 s under coverage
+    expect(await screen.findByRole('dialog', undefined, { timeout: 5000 })).toBeInTheDocument();
 
     const closeBtn = screen.getByLabelText(/Close/i);
     fireEvent.click(closeBtn);

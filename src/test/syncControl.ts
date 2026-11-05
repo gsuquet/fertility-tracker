@@ -19,6 +19,7 @@ export const controlOf = (
     lastError: null,
     conflicts: [],
     resolveConflict: vi.fn(async () => {}),
+    sharedDays: null,
     ...extra,
   } as SyncControl & { syncNow: ReturnType<typeof vi.fn> };
 };

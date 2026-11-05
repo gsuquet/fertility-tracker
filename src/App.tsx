@@ -2,7 +2,13 @@ import React, { useState, useEffect, useRef } from 'react';
 import { parseTabHash, useHistoryTab } from './hooks/useHistoryLayer';
 import { LanguageProvider, useLanguage } from './context/LanguageContext';
 import { ThemeProvider } from './context/ThemeContext';
-import { CycleProvider, useCycleData, useCycleUi } from './context/CycleContext';
+import {
+  CycleDataOverride,
+  CycleProvider,
+  useCycleData,
+  useCycleUi,
+  useSharedCycleData,
+} from './context/CycleContext';
 import { isInstalled, isIos, promptInstall, useInstallMode } from './pwa/installPrompt';
 import { useAppBadge } from './pwa/appBadge';
 import { checkAndRecordVersionSeen } from './domain/appVersion';
@@ -134,6 +140,10 @@ const MainApp: React.FC = () => {
   // The dot on the app icon while today has no observation, when the user turned it on
   useAppBadge(observations);
   const sync = useSync();
+  // A partner device shows the shared chart read only, see docs/reference/screens/shared-chart.md
+  const shared = useSharedCycleData(sync.sharedDays);
+  const readOnlyRef = useRef(false);
+  readOnlyRef.current = shared !== null;
   // An invitation link of the sync opens the join dialog. Without the sync, the link does nothing.
   const [inviteFragment, setInviteFragment] = useState(() =>
     sync.enabled ? takeInviteFragment() : null
@@ -176,6 +186,8 @@ const MainApp: React.FC = () => {
       if (shortcut === 'log' && drawerOpenRef.current) return;
       setActiveTab(shortcut === 'chart' ? 'chart' : 'today');
       if (shortcut !== 'log' || !readStorage(STORAGE_HAS_SEEN_WELCOME_KEY)) return;
+      // Nobody changes the shared chart: Today opens without the drawer
+      if (readOnlyRef.current) return;
       setSelectedObservation(null);
       setIsDrawerOpen(true);
     };
@@ -286,12 +298,15 @@ const MainApp: React.FC = () => {
   return (
     <TopBarProvider value={topBarSlot}>
       <div className="app-layout">
-        <Header
-          activeTab={activeTab}
-          setActiveTab={setActiveTab}
-          onOpenSettings={() => setIsSettingsOpen(true)}
-          onTopBarSlot={setTopBarSlot}
-        />
+        {/* The cycle picker of the header selects a cycle of the shared chart */}
+        <CycleDataOverride value={shared}>
+          <Header
+            activeTab={activeTab}
+            setActiveTab={setActiveTab}
+            onOpenSettings={() => setIsSettingsOpen(true)}
+            onTopBarSlot={setTopBarSlot}
+          />
+        </CycleDataOverride>
 
         <main
           className={`main-content tab-${activeTab} ${activeTab === 'today' ? 'today-active' : ''}`}
@@ -299,36 +314,43 @@ const MainApp: React.FC = () => {
           <StorageSaveWarning onBackUp={backUpNow} />
           <StorageRecoveryNotice />
           <BackupReminder onBackUp={backUpNow} />
-          {/* The statistics bar is on Analytics only (RFC 0002) */}
-          {activeTab === 'analytics' && <CycleStatsHeader />}
+          <CycleDataOverride value={shared}>
+            {shared && (
+              <div className="storage-recovery-notice" role="note">
+                <p>{t.sharedChart.note}</p>
+              </div>
+            )}
+            {/* The statistics bar is on Analytics only (RFC 0002) */}
+            {activeTab === 'analytics' && <CycleStatsHeader />}
 
-          {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
-          <div className="page-view">
-            {/* The key resets the alert of a failed page when the tab changes */}
-            <ErrorBoundary key={activeTab}>
-              <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
-                {activeTab === 'today' && <TodayView onOpenChart={() => setActiveTab('chart')} />}
-                {activeTab === 'chart' && (
-                  <ChartRow
-                    onOpenToday={() => setActiveTab('today')}
-                    onShare={() => setIsExportModalOpen(true)}
-                  />
-                )}
-                {activeTab === 'calendar' && (
-                  <CalendarGrid
-                    onOpenToday={() => setActiveTab('today')}
-                    onOpenChart={() => setActiveTab('chart')}
-                  />
-                )}
-                {activeTab === 'analytics' && (
-                  <>
-                    <CycleAnalyticsView />
-                    <ChunkReady onReady={markAnalyticsShown} />
-                  </>
-                )}
-              </React.Suspense>
-            </ErrorBoundary>
-          </div>
+            {/* The page slides on a page change, see docs/reference/application-behavior.md#page-slide */}
+            <div className="page-view">
+              {/* The key resets the alert of a failed page when the tab changes */}
+              <ErrorBoundary key={activeTab}>
+                <React.Suspense fallback={<LoadingStatus className="lazy-page-fallback" />}>
+                  {activeTab === 'today' && <TodayView onOpenChart={() => setActiveTab('chart')} />}
+                  {activeTab === 'chart' && (
+                    <ChartRow
+                      onOpenToday={() => setActiveTab('today')}
+                      onShare={() => setIsExportModalOpen(true)}
+                    />
+                  )}
+                  {activeTab === 'calendar' && (
+                    <CalendarGrid
+                      onOpenToday={() => setActiveTab('today')}
+                      onOpenChart={() => setActiveTab('chart')}
+                    />
+                  )}
+                  {activeTab === 'analytics' && (
+                    <>
+                      <CycleAnalyticsView />
+                      <ChunkReady onReady={markAnalyticsShown} />
+                    </>
+                  )}
+                </React.Suspense>
+              </ErrorBoundary>
+            </div>
+          </CycleDataOverride>
         </main>
 
         {/* The footer landmark is outside main (RFC 0002) */}
@@ -337,7 +359,9 @@ const MainApp: React.FC = () => {
           onOpenLegal={() => setVersionTab('legal')}
         />
 
-        <ObservationDrawer />
+        <CycleDataOverride value={shared}>
+          <ObservationDrawer />
+        </CycleDataOverride>
 
         {/* Each dialog renders only while it is open, so its chunk loads when it opens first.
           Its own boundary shows a failure as a dialog, and closing the dialog removes it. */}
@@ -352,11 +376,13 @@ const MainApp: React.FC = () => {
         {isExportModalOpen && (
           <ErrorBoundary onClose={closeExportModal}>
             <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-              <ExportModal
-                onClose={closeExportModal}
-                onPreparePrint={handlePreparePrint}
-                onFileDone={handleFileDone}
-              />
+              <CycleDataOverride value={shared}>
+                <ExportModal
+                  onClose={closeExportModal}
+                  onPreparePrint={handlePreparePrint}
+                  onFileDone={handleFileDone}
+                />
+              </CycleDataOverride>
             </React.Suspense>
           </ErrorBoundary>
         )}
@@ -420,7 +446,9 @@ const MainApp: React.FC = () => {
         {/* Always rendered, so the browser print command (Ctrl+P) also prints the report */}
         <ErrorBoundary onError={() => setPrintView('failed')}>
           <React.Suspense fallback={null}>
-            <PrintExportView selectedCycleIds={printCycleIds} />
+            <CycleDataOverride value={shared}>
+              <PrintExportView selectedCycleIds={printCycleIds} />
+            </CycleDataOverride>
             <ChunkReady onReady={setPrintView} />
           </React.Suspense>
         </ErrorBoundary>
@@ -437,7 +465,9 @@ const MainApp: React.FC = () => {
         <UpdatePrompt />
         {handleInstall && <InstallBanner onInstall={handleInstall} />}
 
-        <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+        <CycleDataOverride value={shared}>
+          <MobileNav activeTab={activeTab} setActiveTab={setActiveTab} />
+        </CycleDataOverride>
       </div>
     </TopBarProvider>
   );
