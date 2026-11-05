@@ -186,6 +186,27 @@ describe('SyncSettings', () => {
     expect(screen.queryByRole('button', { name: s.recover })).toBeNull();
   });
 
+  it('gives the error code of a general failure, and a clear cause for a refused address', async () => {
+    const harness = createRelayHarness();
+    const original = harness.relay.putVault.bind(harness.relay);
+    let status = 500;
+    let error = 'unknown';
+    harness.relay.putVault = async (...args) =>
+      status === 200 ? original(...args) : { ok: false, status, error };
+    renderSync(controlOf(harness.relay, createMemoryKeyStore()));
+    fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
+    expect(await screen.findByRole('alert')).toHaveTextContent(
+      `${s.failed} Error code: 500 unknown`
+    );
+    status = 403;
+    error = 'host';
+    fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
+    await waitFor(() => expect(screen.getByRole('alert')).toHaveTextContent(s.wrongHost));
+    expect(screen.getByRole('alert')).not.toHaveTextContent('Error code');
+  });
+
   it('gives sync not available when the relay has no bucket', async () => {
     renderSync(controlOf(failingRelay(503), createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));

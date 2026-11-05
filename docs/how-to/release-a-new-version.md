@@ -29,4 +29,4 @@ The **About & Version Tracker** dialog shows the new release notes. The version 
 
 ## Related documents
 
-- [Deploy to Cloudflare Pages](deploy-to-cloudflare.md)
+- [Deploy to Cloudflare](deploy-to-cloudflare.md)

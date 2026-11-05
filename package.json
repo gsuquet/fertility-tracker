@@ -1,6 +1,6 @@
 {
   "name": "fertility-tracker",
-  "version": "1.70.0",
+  "version": "1.70.1",
   "private": true,
   "description": "Offline-first Creighton Model (CrMS) fertility cycle charting app.",
   "type": "module",
@@ -36,8 +36,8 @@
     "dev": "vite",
     "build": "npm run typecheck && vite build",
     "preview": "vite preview",
-    "pages:dev": "wrangler pages dev dist",
-    "deploy": "npm run build && wrangler pages deploy dist",
+    "worker:dev": "wrangler dev",
+    "deploy": "npm run build && wrangler deploy",
     "test": "vitest run",
     "test:watch": "vitest",
     "test:coverage": "vitest run --coverage",

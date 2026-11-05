@@ -29,7 +29,7 @@ Find the file or the folder that you change. Then change its page first.
 | `src/domain/versionTracker.ts`, `src/domain/appVersion.ts`, `scripts/version/`                                                       | [Version tracker](docs/reference/version-tracker.md)                   |
 | `src/domain/vault/`                                                                                                                  | [Vault format](docs/reference/vault-format.md)                         |
 | `src/domain/sync/`                                                                                                                   | [Sync rules](docs/reference/sync-rules.md)                             |
-| `src/relay/`, `functions/`                                                                                                           | [Relay API](docs/reference/relay-api.md)                               |
+| `src/relay/`                                                                                                                         | [Relay API](docs/reference/relay-api.md)                               |
 | `src/sync/`                                                                                                                          | [Sync client](docs/reference/sync-client.md)                           |
 | The other files in `src/domain/`                                                                                                     | [Domain API](docs/reference/domain-api.md)                             |
 | `src/types/crms.ts`                                                                                                                  | [Data format](docs/reference/data-format.md)                           |

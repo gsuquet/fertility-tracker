@@ -1,16 +1,16 @@
 # Deployment
 
-This page gives the rules for the hosting, the offline use, the installation and the security headers. For the deploy procedures, read [Deploy to Cloudflare Pages](../how-to/deploy-to-cloudflare.md). For the CI workflow, read [Commands](commands.md#ci-workflow).
+This page gives the rules for the hosting, the offline use, the installation and the security headers. For the deploy procedures, read [Deploy to Cloudflare](../how-to/deploy-to-cloudflare.md). For the CI workflow, read [Commands](commands.md#ci-workflow).
 
 ## Hosting
 
-| Item             | Value                                                                                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------------- |
-| Platform         | Cloudflare Pages: the static site, and the Pages Function of the relay in [functions/](../../functions/) |
-| Settings         | [wrangler.json](../../wrangler.json): `name` is `fertility-tracker`, `pages_build_output_dir` is `dist`  |
-| Build command    | `npm run build`, that is `npm run typecheck` (`tsc --noEmit` for `src` and `e2e`) then `vite build`      |
-| Deploy command   | `npm run deploy`, that is the build then `wrangler pages deploy dist`                                    |
-| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                              |
+| Item             | Value                                                                                                                            |
+| ---------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Platform         | A Cloudflare Worker: the static site as static assets, and the relay in [src/relay/worker.ts](../../src/relay/worker.ts)         |
+| Settings         | [wrangler.json](../../wrangler.json): `name` is `fertility-tracker`, `main` is the relay entry, and `assets.directory` is `dist` |
+| Build command    | `npm run build`, that is `npm run typecheck` (`tsc --noEmit` for `src` and `e2e`) then `vite build`                              |
+| Deploy command   | `npm run deploy`, that is the build then `wrangler deploy`                                                                       |
+| Automatic deploy | Cloudflare builds each commit on `main` and a preview for each pull request                                                      |
 
 ## Offline use and installation
 
@@ -65,10 +65,17 @@ Other rules:
 - `sw.js` has `Cache-Control: no-cache, no-store, must-revalidate`. Thus, the browser always looks for a new service worker.
 - Files in `assets/` are immutable for one year.
 - `connect-src` is `'self'`. The relay is on the same origin, so the policy allows the requests to `/api/`.
-- Cloudflare does not add the headers of `_headers` to the answers of the Pages Function. Thus, the relay sets its own headers ([Relay API](relay-api.md#all-routes)).
+- Cloudflare adds the headers of `_headers` only to the static assets, not to the answers of the Worker code. Thus, the relay sets its own headers ([Relay API](relay-api.md#all-routes)).
+
+### Requests to the Worker
+
+| Condition                    | Result                                                                                                                                               |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The path starts with `/api/` | The Worker code runs first (`assets.run_worker_first`). It gives the request to `handleRelay()`.                                                     |
+| **Else**                     | The static assets answer. A path without a file gets `index.html` (`not_found_handling` is `single-page-application`). The Worker code does not run. |
 
 ## Related documents
 
-- [Deploy to Cloudflare Pages](../how-to/deploy-to-cloudflare.md)
+- [Deploy to Cloudflare](../how-to/deploy-to-cloudflare.md)
 - [Privacy and data storage](../explanation/privacy-and-data-storage.md)
 - [Commands](commands.md)

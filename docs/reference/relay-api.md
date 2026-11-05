@@ -2,9 +2,9 @@
 
 This page gives the rules of the relay: the routes in `/api/`, the access tokens and the R2 objects. [ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md) gives the design. The vault object is in [Vault format](vault-format.md).
 
-**Source files:** [src/relay/](../../src/relay/) and [functions/api/\[\[path\]\].ts](../../functions/api/[[path]].ts)
+**Source files:** [src/relay/](../../src/relay/), with the Worker entry [src/relay/worker.ts](../../src/relay/worker.ts)
 
-The relay is a Cloudflare Pages Function in the same project as the application. It stores only encrypted objects. It cannot read the days, because it has no key.
+The relay is the code of the Cloudflare Worker that also serves the application ([Deployment](deployment.md#requests-to-the-worker)). It stores only encrypted objects. It cannot read the days, because it has no key.
 
 ## Environment
 

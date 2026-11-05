@@ -22,8 +22,8 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 | `mise run screenshots` | Builds the application. Takes the install screenshots, the screenshots of the screen pages and the [layout captures](layout-checks.md), with demo data. |
 | `mise run build`       | Runs the type check and builds the application in `dist`.                                                                                               |
 | `mise run preview`     | Serves `dist` on port `4173`.                                                                                                                           |
-| `mise run pages:dev`   | Serves `dist` with Wrangler, as Cloudflare Pages does.                                                                                                  |
-| `mise run deploy`      | Builds the application and deploys it to Cloudflare Pages.                                                                                              |
+| `mise run worker:dev`  | Serves `dist` and the relay with Wrangler, as the Cloudflare Worker does.                                                                               |
+| `mise run deploy`      | Builds the application and deploys the Cloudflare Worker.                                                                                               |
 | `mise run validate`    | Runs all the CI quality gates.                                                                                                                          |
 
 ## npm scripts
@@ -44,8 +44,8 @@ The tasks are shell files in `.mise/tasks/`. Run `mise tasks` to see the list.
 | `npm run check`         | Runs the Biome linter and the format check.                       |
 | `npm run check:fix`     | Corrects the lint and format findings that Biome can correct.     |
 | `npm run validate`      | Runs `check`, `typecheck`, `test:coverage` and the build.         |
-| `npm run pages:dev`     | Serves `dist` with Wrangler.                                      |
-| `npm run deploy`        | Builds and deploys to Cloudflare Pages.                           |
+| `npm run worker:dev`    | Serves `dist` and the relay with Wrangler.                        |
+| `npm run deploy`        | Builds and deploys the Cloudflare Worker.                         |
 
 ## Pre-commit hooks
 

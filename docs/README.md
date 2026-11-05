@@ -35,7 +35,7 @@ The docs use Simplified Technical English (ASD-STE100). Read [Why the docs use S
 - [Write a test first](how-to/write-a-test-first.md)
 - [Add a language](how-to/add-a-language.md)
 - [Release a new version](how-to/release-a-new-version.md)
-- [Deploy to Cloudflare Pages](how-to/deploy-to-cloudflare.md)
+- [Deploy to Cloudflare](how-to/deploy-to-cloudflare.md)
 - [Set up the sync relay](how-to/set-up-the-sync-relay.md)
 - [Write documentation](how-to/write-documentation.md)
 - [Check the layout on real devices](how-to/check-the-layout-on-real-devices.md)

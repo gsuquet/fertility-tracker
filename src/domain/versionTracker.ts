@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.70.1',
+    date: '2026-11-05',
+    title: 'Sync Server Fix',
+    titleFr: 'Correction du serveur de synchronisation',
+    tagline: 'Turn on sync now works, and a failed sync tells you why',
+    taglineFr: 'L’activation de la synchronisation fonctionne, et un échec dit pourquoi',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The sync server now runs on the site, so Turn on sync works',
+      'A sync that fails gives its cause: the address, too many requests or the server',
+      'Other failures show an error code that you can report',
+    ],
+    highlightsFr: [
+      'Le serveur de synchronisation fonctionne maintenant sur le site : l’activation de la synchronisation marche',
+      'Une synchronisation qui échoue donne sa cause : l’adresse, trop de requêtes ou le serveur',
+      'Les autres échecs affichent un code d’erreur que vous pouvez signaler',
+    ],
+  },
+  {
     version: '1.70.0',
     date: '2026-11-05',
     title: 'Sync and Partner Sharing',

@@ -791,9 +791,13 @@ export const fr: TranslationSchema = {
     recoverAction: 'Récupérer',
     working: 'En cours…',
     noConnection: 'Pas de connexion. Vérifiez votre connexion et réessayez.',
-    unavailable: 'La synchronisation n’est pas encore disponible.',
+    unavailable: 'Le serveur de synchronisation n’est pas disponible. Réessayez plus tard.',
+    wrongHost:
+      'Cette adresse ne peut pas synchroniser. Ouvrez l’application sur fertility-tracker.gsuquet.com.',
+    busy: 'Trop de requêtes. Attendez une minute et réessayez.',
     badCode: 'Ce code n’est pas valide. Vérifiez chaque caractère.',
     failed: 'La synchronisation a échoué. Réessayez plus tard.',
+    errorCode: 'Code d’erreur : {code}',
     confirmDeletions:
       'La synchronisation supprime {count} jours sur cet appareil, à partir de modifications sur vos autres appareils. Continuer ?',
   },

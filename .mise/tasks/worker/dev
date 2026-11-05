@@ -1,0 +1,5 @@
+#!/usr/bin/env bash
+#MISE description="Serve the production build and the relay with Wrangler locally"
+set -euo pipefail
+
+npm run worker:dev
