@@ -132,17 +132,18 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
-| Device record of this device | Rows                                                                     |
-| ---------------------------- | ------------------------------------------------------------------------ |
-| None                         | **Turn on sync** and **Recover with a code**                             |
-| Owner                        | **Sync now**, **New recovery code** and **Turn off sync on this device** |
-| Reader                       | **Sync now** and **Turn off sync on this device**                        |
+| Device record of this device | Rows                                                                                          |
+| ---------------------------- | --------------------------------------------------------------------------------------------- |
+| None                         | **Turn on sync** and **Recover with a code**                                                  |
+| Owner                        | **Sync now**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
+| Reader                       | **Sync now** and **Turn off sync on this device**                                             |
 
 | Row                              | Result                                                                                                                   |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
 | **Turn on sync**                 | Makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                     |
 | **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                |
 | **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                    |
+| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                      |
 | **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                            |
 | **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay. |
 
@@ -151,6 +152,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 - While a row that makes a recovery code runs, and while the code dialog is open, Settings does not close. Thus, the user sees each new code. A data action, for example **Delete all data**, also keeps Settings open. **Load the demo cycles** does not show.
 - **Turn on sync** and **Recover** first read the key store. When another tab saved a record, they show its rows and make no vault.
 - After a failure, the group reads the key store again. For example, a recovery can save the record before its new code fails.
+- While an undo copy exists, **Recover** shows the alert "Click Undo or Delete the copy first." The device does not join ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
@@ -164,6 +166,49 @@ The dialog shows the code in groups of 4 characters, in a monospace font. The te
 
 - **Copy** copies the code to the clipboard. After the copy, the button shows **Copied**.
 - **I wrote it down** closes the dialog. The dialog has no other close button. `Escape`, Back and a click on the backdrop do nothing.
+
+### Invitation dialog
+
+The owner device adds a device with an invitation, as [Adding a member](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#adding-a-member) gives. [InviteDialog.tsx](../../../src/components/settings/InviteDialog.tsx) shows these steps:
+
+| Step         | Content                                                                                                                                     |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
+| Start        | "Working…" while `startInvitation()` runs with the role `owner`.                                                                            |
+| Waiting      | The link `#invite=<id>.<secret>`, **Copy**, and the text "Open this link on the new device. On iOS, paste it in the installed app."         |
+| Confirmation | The 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**. |
+| Adding       | "Working…" while `approveInvitation()` runs.                                                                                                |
+| Done         | "The device is added." Then the owner device syncs.                                                                                         |
+| End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                   |
+
+- While the dialog waits, it calls `checkAsOwner()` each 3 seconds.
+- **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
+- `approveInvitation()` runs with the sync lock, after the sync that runs.
+- While **Adding** runs, the dialog does not close.
+- The dialog has no QR code yet. The QR code comes before `SYNC_ENABLED` goes on.
+
+### Join dialog
+
+When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
+
+| Step         | Content                                                                                                                       |
+| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Check        | When the device has a record, the message "This device already syncs. Turn off sync on this device first."                    |
+| Check        | When the link is not valid, the message "This invitation link is not valid. Ask for a new invitation."                        |
+| Check        | When an undo copy exists, the message "Click Undo or Delete the copy first, then open the link again."                        |
+| Waiting      | "Waiting for the other device…" while `startJoin()` and `checkAsNewDevice()` run.                                             |
+| Confirmation | The 6-digit code and the question "Does the other device show the same code?". **The codes match** and **They do not match**. |
+| Joining      | "Working…" until the answer of the owner device comes. Then `finishJoin()` runs with the sync lock.                           |
+| Done         | "This device now syncs." Then the device syncs.                                                                               |
+| End          | A message for an invitation that expired, that the relay refused, or that failed.                                             |
+
+- The dialog calls `checkAsNewDevice()` each 3 seconds until the answer comes.
+- When the relay has no invitation with the id of the link, the message is the message of an invitation that expired.
+- After **The codes match** and before the answer comes, **Cancel** stays.
+- The device uses the answer only after its user clicks **The codes match**.
+- Before `finishJoin()`, the device removes its demo days. When the browser refuses this write, the device does not join.
+- **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
+- While **Joining** runs, the dialog does not close.
+- The invitation link needs the sync. While `SYNC_ENABLED` is `false`, the application ignores `#invite=`.
 
 ### Load
 
@@ -184,6 +229,7 @@ Settings is a lazy chunk. The application imports it when the browser is idle, a
 - The messages `exportModal.importError` and `appBadge.denied` have `role="alert"`.
 - The text of **Delete all data** uses `--color-danger-text`. It has a contrast of 4.5:1 or more in both themes ([Design system](../design-system.md)).
 - The confirmation dialog has `aria-labelledby` (its title) and `aria-describedby` (its message). When it opens, the focus goes to **Cancel**.
+- The invitation dialog and the join dialog have their title as their name. Each step text is in a `role="status"` region. A failure message has `role="alert"`.
 
 ## Implementation
 
@@ -191,6 +237,9 @@ Settings is a lazy chunk. The application imports it when the browser is idle, a
 - [AppBadgeSetting.tsx](../../../src/components/AppBadgeSetting.tsx)
 - [ConfirmDialog.tsx](../../../src/components/ConfirmDialog.tsx)
 - [settings/PasswordDialog.tsx](../../../src/components/settings/PasswordDialog.tsx)
+- [settings/SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx)
+- [settings/InviteDialog.tsx](../../../src/components/settings/InviteDialog.tsx)
+- [JoinDialog.tsx](../../../src/components/JoinDialog.tsx)
 - [useBackUpNow.ts](../../../src/hooks/useBackUpNow.ts)
 - [encryptedBackup.ts](../../../src/domain/encryptedBackup.ts)
 - [exportUtils.ts](../../../src/utils/exportUtils.ts)
