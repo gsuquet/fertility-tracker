@@ -24,6 +24,7 @@ import { haptic } from '../utils/haptics';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { useTopDialog } from './Modal';
 import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
+import { ReadOnlyFields } from './observation/ReadOnlyFields';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { useToast } from '../hooks/useToast';
 import { PageTitle } from './shell/TopBar';
@@ -224,7 +225,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
         {/* The progressive observation form and the Save bar */}
         <form ref={formRef} onSubmit={handleSave} className="today-form-card">
           <h2 className="sr-only">{t.todayView.title}</h2>
-          <fieldset className="observation-fieldset" disabled={readOnly}>
+          <ReadOnlyFields readOnly={readOnly}>
             <ProgressiveObservationForm
               form={form}
               directOnly={directOnly}
@@ -232,7 +233,7 @@ export const TodayView: React.FC<TodayViewProps> = ({ onOpenChart }) => {
               onTypingChange={setTyping}
               readOnly={readOnly}
             />
-          </fieldset>
+          </ReadOnlyFields>
           {!readOnly && (
             <div className={`today-save-bar ${typing ? 'typing' : ''}`}>
               <button

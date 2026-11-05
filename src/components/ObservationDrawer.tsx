@@ -15,6 +15,7 @@ import { CycleStartModal } from './CycleStartModal';
 import { Modal, useTopDialog } from './Modal';
 import { TodayFertilityGuidance } from './today/TodayFertilityGuidance';
 import { ObservationActionsMenu } from './observation/ObservationActionsMenu';
+import { ReadOnlyFields } from './observation/ReadOnlyFields';
 import { ProgressiveObservationForm } from './observation/ProgressiveObservationForm';
 import { setDirectCodeOnly, useDirectCodeOnly } from '../hooks/useDirectCodeOnly';
 import { formatMessage } from '../i18n';
@@ -203,7 +204,7 @@ export const ObservationDrawer: React.FC = () => {
           menu={null}
         />
 
-        <fieldset className="observation-fieldset" disabled={readOnly}>
+        <ReadOnlyFields readOnly={readOnly}>
           {/* Date Picker */}
           <div className="form-group">
             <label htmlFor="obs-date">{t.labels.date}</label>
@@ -224,7 +225,7 @@ export const ObservationDrawer: React.FC = () => {
             idPrefix="obs"
             readOnly={readOnly}
           />
-        </fieldset>
+        </ReadOnlyFields>
 
         {/* Footer Actions */}
         <div className="drawer-footer">
