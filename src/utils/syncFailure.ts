@@ -17,6 +17,13 @@ export const failureOf = (error: unknown, recovering = false): SyncFailure => {
   return 'failed';
 };
 
+/** The name of the error of a browser that blocks the storage of the device record. */
+export const STORAGE_BLOCKED = 'StorageBlocked';
+
+/** True when the browser has no IndexedDB or blocks it: such a browser keeps no device record. */
+export const isStorageBlocked = (error: unknown): boolean =>
+  error instanceof Error && error.name === STORAGE_BLOCKED;
+
 /** True when the error tells that the device is no longer in the vault: removed, or no vault. */
 export const isOutOfVault = (error: unknown): boolean => {
   if (!(error instanceof Error) || error.name !== 'VaultError') return false;

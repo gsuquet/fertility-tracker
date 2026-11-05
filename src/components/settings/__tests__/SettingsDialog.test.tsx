@@ -680,13 +680,12 @@ describe('Check for updates', () => {
 });
 
 describe('SettingsDialog sync', () => {
-  const controlOf = async (withRecord: boolean, enabled = true): Promise<SyncControl> => {
+  const controlOf = async (withRecord: boolean): Promise<SyncControl> => {
     const harness = createRelayHarness();
     const keyStore = createMemoryKeyStore();
     if (withRecord) await createVault(harness.relay, keyStore, 'Phone');
     const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
     return {
-      enabled,
       services: async () => services,
       syncNow: vi.fn(
         async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })
@@ -701,13 +700,13 @@ describe('SettingsDialog sync', () => {
   const groupNames = () =>
     screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent);
 
-  it('has no Sync group while the sync is off', async () => {
-    renderSettings(undefined, { sync: await controlOf(true, false) });
+  it('has no Sync group without a sync control', () => {
+    renderSettings();
     expect(groupNames()).not.toContain(en.sync.group);
     expect(screen.getByRole('button', { name: en.settings.loadDemo })).toBeInTheDocument();
   });
 
-  it('shows the Sync group after Backup and restore when the sync is on', async () => {
+  it('shows the Sync group after Backup and restore', async () => {
     renderSettings(undefined, { sync: await controlOf(false) });
     expect(await screen.findByRole('button', { name: en.sync.turnOn })).toBeInTheDocument();
     const names = groupNames();
@@ -738,7 +737,6 @@ describe('SettingsDialog sync', () => {
     const services: SyncServices = { relay, keyStore: createMemoryKeyStore(), runner: syncRunner };
     const props = renderSettings(threeCycles, {
       sync: {
-        enabled: true,
         services: async () => services,
         syncNow: vi.fn(
           async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })
@@ -783,7 +781,6 @@ describe('SettingsDialog on a synced device', () => {
     if (role === 'reader') await keyStore.save({ ...record, role });
     const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
     const control = {
-      enabled: true,
       services: async () => services,
       syncNow: vi.fn(
         async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })

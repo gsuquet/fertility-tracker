@@ -177,6 +177,25 @@ describe('WelcomeModal Component', () => {
     expect(screen.getByTestId('count')).toHaveTextContent('0');
   });
 
+  it('offers and loads the demo data in a browser that blocks the storage of the record', async () => {
+    const { relay } = createRelayHarness();
+    const handleClose = vi.fn();
+    const control = controlOf(relay, {
+      ...createMemoryKeyStore(),
+      load: () => Promise.reject(Object.assign(new Error('blocked'), { name: 'StorageBlocked' })),
+    });
+    renderWithProviders(
+      <>
+        <WelcomeModal onClose={handleClose} sync={control} />
+        <ObservationCount />
+      </>
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    fireEvent.click(await screen.findByText(/Explore Demo Data/i));
+    await waitFor(() => expect(handleClose).toHaveBeenCalledOnce());
+    expect(screen.getByTestId('count')).toHaveTextContent('56');
+  });
+
   it('loads the demo data at the click when the key store still has no record', async () => {
     const { relay } = createRelayHarness();
     const handleClose = vi.fn();

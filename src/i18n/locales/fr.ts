@@ -488,9 +488,9 @@ export const fr: TranslationSchema = {
         title: 'Graphique Clinique & Confidentialité Absolue',
         description:
           'Fertility Tracker est conçu autour du Modèle Creighton (CrMS)—une méthode scientifique et standardisée pour suivre les biomarqueurs naturels de fertilité.',
-        privacyTitle: 'Confidentialité 100% Locale',
+        privacyTitle: 'Confidentialité dès la conception',
         privacyText:
-          'Vos données de santé restent exclusivement enregistrées dans votre navigateur. Aucun compte, aucun serveur distant, aucun suivi tiers.',
+          'Vos données de santé restent enregistrées dans votre navigateur. Aucun compte, aucun suivi tiers. La synchronisation, si vous l’activez, n’envoie qu’une copie chiffrée que le serveur ne peut pas lire.',
         crmsTitle: 'Observation des Biomarqueurs',
         crmsText:
           "Contrairement aux outils de calcul statistique qui prédisent vos règles, le système CrMS s'appuie sur des observations physiques quotidiennes du mucus, des saignements et des sensations.",
@@ -762,6 +762,7 @@ export const fr: TranslationSchema = {
     group: 'Synchronisation',
     turnOn: 'Activer la synchronisation',
     turnOnHint: 'Vos appareils et votre partenaire partagent un tableau chiffré',
+    blocked: 'La synchronisation a besoin du stockage du navigateur, et ce navigateur le bloque.',
     recover: 'Récupérer avec un code',
     recoverHint: 'Utilisez votre code de récupération sur un nouvel appareil',
     syncNow: 'Synchroniser maintenant',

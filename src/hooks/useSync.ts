@@ -6,7 +6,6 @@ import { useCallback, useEffect, useRef, useState } from 'react';
 import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
-import { SYNC_ENABLED } from '../sync/syncFlag';
 import type { VaultError } from '../sync/deviceVault';
 import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
@@ -36,7 +35,7 @@ export interface SyncServices {
   runner: typeof import('../sync/syncRunner');
 }
 
-/** Loads the sync code only when the sync is on. */
+/** Loads the sync code at the start. A device without a record does not call the relay. */
 const loadServices = async (): Promise<SyncServices> => {
   const [runner, relayClient, keyStore] = await Promise.all([
     import('../sync/syncRunner'),
@@ -71,7 +70,6 @@ const SKIPPED: SyncOutcome = { sent: false, skipped: true, error: null };
 
 /** The sync for the Settings screen. */
 export interface SyncControl {
-  enabled: boolean;
   /** The relay client, the key store and the sync code, loaded one time. */
   services: () => Promise<SyncServices>;
   /** Starts a sync at once, or after the sync that runs. It resolves when that sync ends. */
@@ -83,14 +81,14 @@ export interface SyncControl {
   withSync: <T>(action: (services: SyncServices) => Promise<T>) => Promise<T>;
   /** The error of the last sync, or null after a sync without an error. */
   lastError: VaultError | null;
-  /** The days that lost a conflict, sorted by date. Empty while the sync is off. */
+  /** The days that lost a conflict, sorted by date. */
   conflicts: SyncConflict[];
   /**
    * Restores the version of the conflict, or only removes the conflict from the list. Nothing
    * changes when the list no longer has this conflict.
    */
   resolveConflict: (conflict: SyncConflict, restore: boolean) => Promise<void>;
-  /** The days of the shared chart of a partner device, or null. Null while the sync is off. */
+  /** The days of the shared chart of a partner device, or null. */
   sharedDays: ObservationInput[] | null;
 }
 
@@ -110,10 +108,7 @@ const storedSharedDays = (): ObservationInput[] | null => {
   return days && toObservationInputs(days);
 };
 
-export function useSync(
-  enabled: boolean = SYNC_ENABLED,
-  load: () => Promise<SyncServices> = loadServices
-): SyncControl {
+export function useSync(load: () => Promise<SyncServices> = loadServices): SyncControl {
   const data = useCycleData();
   const { t } = useLanguage();
   const latest = useRef({ data, t });
@@ -126,22 +121,17 @@ export function useSync(
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
-  const [conflicts, setConflicts] = useState<SyncConflict[]>(() =>
-    enabled ? storedConflicts() : []
-  );
-  const [sharedDays, setSharedDays] = useState<ObservationInput[] | null>(() =>
-    enabled ? storedSharedDays() : null
-  );
+  const [conflicts, setConflicts] = useState<SyncConflict[]>(storedConflicts);
+  const [sharedDays, setSharedDays] = useState<ObservationInput[] | null>(storedSharedDays);
   // The shared chart changes only when its stored text changes: the pages keep their data
-  const sharedText = useRef(enabled ? readStorage(STORAGE_SHARED_CHART_KEY) : null);
+  const sharedText = useRef(readStorage(STORAGE_SHARED_CHART_KEY));
   const readConflicts = useCallback(() => {
-    if (!enabled) return;
     setConflicts(storedConflicts());
     const text = readStorage(STORAGE_SHARED_CHART_KEY);
     if (text === sharedText.current) return;
     sharedText.current = text;
     setSharedDays(storedSharedDays());
-  }, [enabled]);
+  }, []);
 
   const services = useCallback(() => {
     // A failed load loads again at the next call
@@ -266,7 +256,6 @@ export function useSync(
 
   // Another tab changed the conflict list
   useEffect(() => {
-    if (!enabled) return;
     const onStorage = (event: StorageEvent) => {
       const { key } = event;
       if (key === STORAGE_SYNC_CONFLICTS_KEY || key === STORAGE_SHARED_CHART_KEY || key === null) {
@@ -275,7 +264,7 @@ export function useSync(
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
-  }, [enabled, readConflicts]);
+  }, [readConflicts]);
 
   const withSync = useCallback(
     <T>(action: (loaded: SyncServices) => Promise<T>): Promise<T> =>
@@ -285,7 +274,6 @@ export function useSync(
 
   // The start of the application, the visible page and the online browser
   useEffect(() => {
-    if (!enabled) return;
     void sync();
     const onVisible = () => {
       if (document.visibilityState !== 'visible') return;
@@ -298,7 +286,7 @@ export function useSync(
       document.removeEventListener('visibilitychange', onVisible);
       window.removeEventListener('online', onOnline);
     };
-  }, [enabled, sync]);
+  }, [sync]);
 
   // A change of the observations on this device, but not a change from a sync. A change from a
   // sync does not stop the wait of an earlier change.
@@ -306,7 +294,7 @@ export function useSync(
   const seen = useRef(observations);
   const timer = useRef<ReturnType<typeof setTimeout> | undefined>(undefined);
   useEffect(() => {
-    if (!enabled || seen.current === observations) return;
+    if (seen.current === observations) return;
     seen.current = observations;
     if (appliedBySync.current) {
       appliedBySync.current = false;
@@ -314,11 +302,10 @@ export function useSync(
     }
     clearTimeout(timer.current);
     timer.current = setTimeout(() => void sync(), CHANGE_SYNC_DELAY_MS);
-  }, [enabled, sync, observations]);
+  }, [sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
   return {
-    enabled,
     services,
     syncNow: sync,
     withSync,

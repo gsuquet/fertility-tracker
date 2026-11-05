@@ -39,10 +39,10 @@ const servicesLoad = async () => {
   return vi.fn(async () => services);
 };
 
-const render = (load: () => Promise<SyncServices>, enabled = true) =>
+const render = (load: () => Promise<SyncServices>) =>
   renderHook(
     () => {
-      const control = useSync(enabled, load);
+      const control = useSync(load);
       return { control, data: useCycleData() };
     },
     { wrapper }
@@ -55,15 +55,6 @@ describe('useSync conflict list', () => {
 
   afterEach(() => {
     vi.restoreAllMocks();
-  });
-
-  it('gives no conflict while the sync is off', () => {
-    storeConflicts([conflict('2026-10-01', { bleeding: 'H' })]);
-    const load = vi.fn();
-    const { result } = render(load, false);
-    expect(result.current.control.conflicts).toEqual([]);
-    window.dispatchEvent(new StorageEvent('storage', { key: CONFLICTS_KEY }));
-    expect(result.current.control.conflicts).toEqual([]);
   });
 
   it('reads the list at the start, after a sync and when another tab changes it', async () => {

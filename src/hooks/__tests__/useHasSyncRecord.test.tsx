@@ -6,11 +6,8 @@ import { controlOf } from '../../test/syncControl';
 import { useHasSyncRecord } from '../useHasSyncRecord';
 
 describe('useHasSyncRecord', () => {
-  it('is false without a control and while the sync is off', () => {
+  it('is false without a control', () => {
     expect(renderHook(() => useHasSyncRecord(undefined)).result.current).toBe(false);
-    const { relay } = createRelayHarness();
-    const off = controlOf(relay, createMemoryKeyStore(), { enabled: false });
-    expect(renderHook(() => useHasSyncRecord(off)).result.current).toBe(false);
   });
 
   it('is null while the key store loads, then tells if it has a record', async () => {
@@ -23,6 +20,16 @@ describe('useHasSyncRecord', () => {
     const control = controlOf(relay, keyStore);
     const synced = renderHook(() => useHasSyncRecord(control));
     await waitFor(() => expect(synced.result.current).toBe(true));
+  });
+
+  it('is false in a browser that blocks the storage of the record', async () => {
+    const { relay } = createRelayHarness();
+    const blocked = controlOf(relay, {
+      ...createMemoryKeyStore(),
+      load: () => Promise.reject(Object.assign(new Error('blocked'), { name: 'StorageBlocked' })),
+    });
+    const { result } = renderHook(() => useHasSyncRecord(blocked));
+    await waitFor(() => expect(result.current).toBe(false));
   });
 
   it('stays null after a failed load, and ignores a load that ends after the unmount', async () => {

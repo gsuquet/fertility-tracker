@@ -144,21 +144,18 @@ const MainApp: React.FC = () => {
   const shared = useSharedCycleData(sync.sharedDays);
   const readOnlyRef = useRef(false);
   readOnlyRef.current = shared !== null;
-  // An invitation link of the sync opens the join dialog. Without the sync, the link does nothing.
-  const [inviteFragment, setInviteFragment] = useState(() =>
-    sync.enabled ? takeInviteFragment() : null
-  );
+  // An invitation link of the sync opens the join dialog
+  const [inviteFragment, setInviteFragment] = useState(takeInviteFragment);
   const closeJoin = () => setInviteFragment(null);
   // A link opened in a tab of the application changes only the fragment
   useEffect(() => {
-    if (!sync.enabled) return;
     const onHashChange = () => {
       const fragment = takeInviteFragment();
       if (fragment) setInviteFragment(fragment);
     };
     window.addEventListener('hashchange', onHashChange);
     return () => window.removeEventListener('hashchange', onHashChange);
-  }, [sync.enabled]);
+  }, []);
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');

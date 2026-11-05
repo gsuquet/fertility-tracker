@@ -217,6 +217,10 @@ describe('App flows', () => {
     render(<App />);
     fireEvent.click(screen.getByRole('button', { name: en.settings.open }));
     const settings = await screen.findByRole('dialog', { name: en.settings.title });
+    // Each device has the Sync group: the sync has no flag
+    expect(
+      within(settings).getByRole('heading', { level: 3, name: en.sync.group })
+    ).toBeInTheDocument();
     fireEvent.click(within(settings).getByRole('button', { name: en.settings.welcomeGuide }));
     const guide = await screen.findByRole(
       'dialog',

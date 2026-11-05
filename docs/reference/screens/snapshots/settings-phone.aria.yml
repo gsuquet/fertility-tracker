@@ -32,6 +32,15 @@
       - listitem:
         - button "Restore from a file"
   - paragraph: "Back up now downloads all your observations as a .ftbackup file. It is plain JSON that any text editor can open. It is not encrypted: keep it private. Back up with a password encrypts the file."
+  - region "Sync":
+    - heading "Sync" [level=3]
+    - list:
+      - listitem:
+        - button "Turn on sync": Turn on sync Your devices and your partner share an encrypted chart
+      - listitem:
+        - button "Recover with a code": Recover with a code Use your recovery code on a new device
+      - listitem:
+        - button "Join with a link": Join with a link Paste the invitation link of your other device
   - region "Help":
     - heading "Help" [level=3]
     - list:

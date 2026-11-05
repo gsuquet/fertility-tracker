@@ -35,7 +35,6 @@ const controlOf = (
 ): SyncControl & { syncNow: ReturnType<typeof vi.fn> } => {
   const services: SyncServices = { relay, keyStore, runner };
   return {
-    enabled: true,
     services: () => Promise.resolve(services),
     syncNow: vi.fn(async () => {}),
     withSync: action => action(services),
@@ -63,7 +62,7 @@ const renderSync = (
 
 /** Settings with the real sync control of the application. */
 const SyncHarness = ({ load }: { load: () => Promise<SyncServices> }) => {
-  const control = useSync(true, load);
+  const control = useSync(load);
   return <SyncSettings control={control} onRecordChange={() => {}} onBusyChange={() => {}} />;
 };
 
@@ -173,6 +172,18 @@ describe('SyncSettings', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent(s.noConnection);
     expect(await keyStore.load()).toBeNull();
     expect(screen.getByRole('button', { name: s.turnOn })).toBeEnabled();
+  });
+
+  it('shows a note and no row in a browser that blocks the storage of the record', async () => {
+    const harness = createRelayHarness();
+    const blocked = Object.assign(new Error('blocked'), { name: 'StorageBlocked' });
+    renderSync(
+      controlOf(harness.relay, { ...createMemoryKeyStore(), load: () => Promise.reject(blocked) })
+    );
+    expect(await screen.findByText(s.blocked)).not.toHaveAttribute('role');
+    expect(screen.queryByRole('alert')).toBeNull();
+    expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
+    expect(screen.queryByRole('button', { name: s.recover })).toBeNull();
   });
 
   it('gives sync not available when the relay has no bucket', async () => {
@@ -465,7 +476,6 @@ describe('SyncSettings', () => {
 
   it('gives an error when the sync code does not load', async () => {
     renderSync({
-      enabled: true,
       services: () => Promise.reject(new Error('chunk')),
       syncNow: vi.fn(),
       withSync: () => Promise.reject(new Error('chunk')),
@@ -561,7 +571,6 @@ describe('SyncSettings', () => {
     const services: SyncServices = { relay: failingRelay(500), keyStore, runner };
     let loads = 0;
     renderSync({
-      enabled: true,
       services: () => (loads++ === 0 ? Promise.resolve(services) : Promise.reject(new Error('x'))),
       syncNow: vi.fn(),
       withSync: () => Promise.reject(new Error('chunk')),

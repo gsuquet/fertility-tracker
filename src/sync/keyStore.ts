@@ -1,5 +1,6 @@
 /** The device record of the sync in IndexedDB. See docs/reference/sync-client.md. */
 import type { Member } from '../domain/vault/vaultObject';
+import { STORAGE_BLOCKED } from '../utils/syncFailure';
 
 export interface DeviceRecord {
   vaultId: string;
@@ -39,14 +40,32 @@ const completion = (transaction: IDBTransaction) =>
       reject(transaction.error ?? new DOMException('Aborted', 'AbortError'));
   });
 
-export function openKeyStore(factory: IDBFactory = globalThis.indexedDB): KeyStore {
+/** The errors of a browser that has no IndexedDB or blocks it: such a browser keeps no record. */
+const BLOCKED = new Set(['SecurityError', 'InvalidStateError']);
+
+class StorageBlocked extends Error {
+  override name = STORAGE_BLOCKED;
+}
+
+export function openKeyStore(factory: IDBFactory | undefined = globalThis.indexedDB): KeyStore {
+  const open = async () => {
+    let request: IDBOpenDBRequest;
+    try {
+      if (!factory) throw new StorageBlocked();
+      request = factory.open(DATABASE, 1);
+    } catch {
+      throw new StorageBlocked();
+    }
+    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
+    return result(request).catch((error: unknown) => {
+      throw error instanceof DOMException && BLOCKED.has(error.name) ? new StorageBlocked() : error;
+    });
+  };
   const run = async <T>(
     mode: IDBTransactionMode,
     action: (store: IDBObjectStore) => IDBRequest<T>
   ): Promise<T> => {
-    const request = factory.open(DATABASE, 1);
-    request.onupgradeneeded = () => request.result.createObjectStore(STORE);
-    const database = await result(request);
+    const database = await open();
     try {
       const transaction = database.transaction(STORE, mode);
       const [value] = await Promise.all([

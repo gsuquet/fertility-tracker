@@ -26,14 +26,15 @@ The close button, **Back** and `Escape` close Settings.
 
 Settings has these groups, in this sequence:
 
-| Group                    | Rows                                                                                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                      |
-| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                            |
-| **Backup and restore**   | **Back up now**, **Back up with a password** and **Restore from a file**. Under the group, a note tells which file is encrypted.                      |
-| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                         |
-| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**. |
-| **Data**                 | **Load the demo cycles** and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`).                       |
+| Group                    | Rows                                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                          |
+| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                                |
+| **Backup and restore**   | **Back up now**, **Back up with a password** and **Restore from a file**. Under the group, a note tells which file is encrypted.                          |
+| **Sync**                 | The rows of the sync. They change with the device record ([Sync group](#sync-group)).                                                                     |
+| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                             |
+| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**.     |
+| **Data**                 | **Load the demo cycles**, without a device record, and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`). |
 
 ### Rows
 
@@ -149,13 +150,14 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 ### Sync group
 
-While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
+Settings has a **Sync** group after **Backup and restore** ([Sync client](../sync-client.md#sync-in-the-application)). [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
 | Device record of this device | Rows                                                                                                                                                |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
 | None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                                                                  |
 | Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **Invite a partner**, **New recovery code** and **Turn off sync on this device** |
 | Reader                       | **Sync now** and **Stop viewing**                                                                                                                   |
+| The browser blocks storage   | No row. The note "Sync needs the storage of the browser, and this browser blocks it." shows under the group. It is not an alert.                    |
 
 | Row                              | Result                                                                                                                                                                                     |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
@@ -178,6 +180,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 - After a failure, the group reads the key store again. For example, a recovery can save the record before its new code fails.
 - While an undo copy exists, **Recover** shows the alert "Click Undo or Delete the copy first." The device does not join ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
+- The browser blocks storage when the key store fails with `StorageBlocked` ([Device record](../sync-client.md#device-record)). After another failure of the key store, the group has no row and shows the alert of a general failure.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - The confirmation of **Stop viewing** says that the shared chart goes from this device. To read it again, the device needs a new invitation.
@@ -271,7 +274,7 @@ A conflict occurs when two devices change the same day before a sync. The sync k
 
 ### Join dialog
 
-When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
+When the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
 
 | Step         | Content                                                                                                                                      |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -294,7 +297,6 @@ When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application op
 - Before `finishJoin()`, the device removes its demo days. When the browser refuses this write, the device does not join.
 - **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
 - While **Joining** runs, the dialog does not close.
-- The invitation link needs the sync. While `SYNC_ENABLED` is `false`, the application ignores `#invite=`.
 
 ### Load
 

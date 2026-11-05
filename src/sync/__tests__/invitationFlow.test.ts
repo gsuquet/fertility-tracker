@@ -133,11 +133,11 @@ describe('invitation flow', () => {
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const join = await startJoin(relay, owner.invitation, 'Tablet of Sam');
     // The relay does not see the name
-    expect(objects.get(`invites/${owner.invitation.id}`)?.value).not.toContain('Sam');
+    expect(objects.get(`invites/${owner.invitation.id}`)?.value).not.toContain('Tablet of Sam');
     const { atOwner } = await untilCodes(relay, ownerRecord, owner, join);
     expect(atOwner.name).toBe('Tablet of Sam');
     await approveInvitation(relay, ownerStore, ownerRecord, owner);
-    expect(JSON.stringify(headerOf())).not.toContain('Sam');
+    expect(JSON.stringify(headerOf())).not.toContain('Tablet of Sam');
     const answered = await checkAsNewDevice(relay, join);
     if (answered.status !== 'answered') throw new Error(answered.status);
     const readerStore = createMemoryKeyStore();

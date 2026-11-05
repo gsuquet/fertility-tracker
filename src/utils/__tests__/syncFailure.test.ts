@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { VaultError } from '../../sync/deviceVault';
-import { failureOf, isOutOfVault } from '../syncFailure';
+import { failureOf, isOutOfVault, isStorageBlocked, STORAGE_BLOCKED } from '../syncFailure';
 
 describe('failureOf', () => {
   it('gives the cause of each error', () => {
@@ -26,5 +26,13 @@ describe('isOutOfVault', () => {
     expect(isOutOfVault(new VaultError('keys'))).toBe(false);
     expect(isOutOfVault(new Error('x'))).toBe(false);
     expect(isOutOfVault(null)).toBe(false);
+  });
+});
+
+describe('isStorageBlocked', () => {
+  it('is true only for an error with the name of a blocked storage', () => {
+    expect(isStorageBlocked(Object.assign(new Error('x'), { name: STORAGE_BLOCKED }))).toBe(true);
+    expect(isStorageBlocked(new Error('x'))).toBe(false);
+    expect(isStorageBlocked({ name: STORAGE_BLOCKED })).toBe(false);
   });
 });

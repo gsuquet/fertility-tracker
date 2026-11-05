@@ -2,7 +2,7 @@
 
 Use these procedures to keep a copy of your data in a file. Use the file to move your data to a different browser or device.
 
-The application keeps your data only in this browser. If you clear the browser data, you lose your observations. Make a backup regularly.
+Without sync, the application keeps your data only in this browser. If you clear the browser data, you lose your observations. Make a backup regularly. With sync, the server keeps an encrypted copy, but a backup is still necessary.
 
 ## Make a backup
 
@@ -30,7 +30,7 @@ The file name ends with `-encrypted.ftbackup`.
 
 ## Restore a backup
 
-> **CAUTION:** **Replace** deletes all the observations in this browser. Make a backup of the current data first if you want to keep it.
+> **CAUTION:** **Replace** deletes all the observations in this browser. On a synced owner device, **Replace on all devices** deletes them on each device. Make a backup of the current data first if you want to keep it.
 1. Click the gear (**Settings**) in the header.
 2. In **Backup and restore**, click **Restore from a file**.
 3. Select the backup file.
@@ -38,9 +38,19 @@ The file name ends with `-encrypted.ftbackup`.
 5. If the file is encrypted, type its password and click **Open the file**.
 6. If you have observations, the **Restore this backup?** dialog opens. Read the number of observations and the dates of the file.
 7. Select how to use the file:
-   - To keep only the observations of the file, click **Replace**.
+   - To keep only the observations of the file, click **Replace**. On a synced owner device, use the table in [On a synced device](#on-a-synced-device).
    - To add the file to your observations, click **Merge**. A day of the file replaces your day with the same date.
 8. Look at the chart. If it is not correct, click **Undo** in the toast at the bottom of the page.
+
+### On a synced device
+
+On an owner device that syncs, the dialog has two actions in place of **Replace**. **Merge** does not change.
+
+| Condition                              | Result                                                                                                            |
+| -------------------------------------- | ----------------------------------------------------------------------------------------------------------------- |
+| Only this device must use the file     | Click **Replace on this device only**. The device leaves the vault. Your other devices keep their chart.          |
+| Each of your devices must use the file | Click **Replace on all devices**. The device stays in the vault, and the next sync sends the file to each device. |
+| **Else**                               | Click **Cancel**. The data does not change.                                                                       |
 
 ## Open a backup file with the app
 

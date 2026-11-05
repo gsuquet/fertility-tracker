@@ -10,12 +10,12 @@ Fertility Tracker is a web application to chart fertility signs with the Creight
 
 The application does not predict fertile days from a calendar. It uses only the daily observations. From these observations, it calculates the stamp of each day, the Peak Day, the count of three and the start of each cycle.
 
-| Objective      | Requirement                                                                              |
-| -------------- | ---------------------------------------------------------------------------------------- |
-| Clinical rules | The application follows the standard CrMS codes and stamp rules.                         |
-| Paper chart    | The chart looks like the CrMS paper chart. A calendar and statistics are also available. |
-| Privacy        | All data stays in the browser. There is no server database, no account and no tracking.  |
-| Export         | The user can print a 35-day chart, save it as a PDF file, and back up the data as JSON.  |
+| Objective      | Requirement                                                                                                                             |
+| -------------- | --------------------------------------------------------------------------------------------------------------------------------------- |
+| Clinical rules | The application follows the standard CrMS codes and stamp rules.                                                                        |
+| Paper chart    | The chart looks like the CrMS paper chart. A calendar and statistics are also available.                                                |
+| Privacy        | Data stays in the browser. Optional sync sends only an encrypted copy that the server cannot read. There is no account and no tracking. |
+| Export         | The user can print a 35-day chart, save it as a PDF file, and back up the data as JSON.                                                 |
 
 ## Page of each source file
 

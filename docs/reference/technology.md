@@ -4,7 +4,7 @@ This page gives the architecture, the pinned versions of the tools and the rules
 
 ## Architecture
 
-The application is a single-page React application. It has no backend. Vite builds it into static files, and Cloudflare Pages serves them.
+The application is a single-page React application. Vite builds it into static files, and Cloudflare Pages serves them. Its only backend is the sync relay: a Pages Function in `/api/` on an R2 bucket ([Relay API](relay-api.md)).
 
 ```mermaid
 graph TD

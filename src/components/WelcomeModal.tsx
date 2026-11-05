@@ -25,6 +25,7 @@ import {
 } from 'lucide-react';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 import { writeStorage } from '../utils/storage';
+import { isStorageBlocked } from '../utils/syncFailure';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
@@ -65,11 +66,12 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, 
   const handlePrev = () => setCurrentStep(prev => prev - 1);
 
   const handleLoadDemo = async () => {
-    if (sync?.enabled) {
+    if (sync) {
       const record = await sync
         .services()
         .then(({ keyStore }) => keyStore.load())
-        .catch(() => undefined);
+        // A browser that blocks the storage cannot keep a record
+        .catch(error => (isStorageBlocked(error) ? null : undefined));
       if (record !== null) {
         setJoinedSince(true);
         return;

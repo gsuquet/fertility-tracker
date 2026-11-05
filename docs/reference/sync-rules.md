@@ -4,7 +4,7 @@ This page gives the rules of the sync engine: the canonical day, the clocks, the
 
 **Source folder:** [src/domain/sync/](../../src/domain/sync/)
 
-The engine has no network code and no storage code. A vault store adapter reads and writes the vault content. The [Sync client](sync-client.md) gives the vault store of the relay. Until `SYNC_ENABLED` is `true`, the application does not call the engine.
+The engine has no network code and no storage code. A vault store adapter reads and writes the vault content. The [Sync client](sync-client.md) gives the vault store of the relay.
 
 ## Files
 

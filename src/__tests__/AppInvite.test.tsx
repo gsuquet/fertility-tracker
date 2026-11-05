@@ -4,11 +4,8 @@ import { App } from '../App';
 import { en } from '../i18n';
 import { STORAGE_HAS_SEEN_WELCOME_KEY } from '../utils/storageKeys';
 
-const sync = vi.hoisted(() => ({ enabled: false }));
-
 vi.mock('../hooks/useSync', () => ({
   useSync: () => ({
-    enabled: sync.enabled,
     services: () => Promise.reject(new Error('No sync in this test')),
     syncNow: async () => {},
     withSync: () => Promise.reject(new Error('No sync in this test')),
@@ -27,12 +24,10 @@ describe('App with an invitation link', () => {
     window.history.replaceState(null, '', `/${FRAGMENT}`);
   });
   afterEach(() => {
-    sync.enabled = false;
     window.history.replaceState(null, '', '/');
   });
 
-  it('opens the join dialog and removes the link from the address when the sync is on', async () => {
-    sync.enabled = true;
+  it('opens the join dialog and removes the link from the address', async () => {
     render(<App />);
     expect(window.location.hash).not.toBe(FRAGMENT);
     const dialog = await screen.findByRole('dialog', { name: en.sync.joinTitle });
@@ -42,7 +37,6 @@ describe('App with an invitation link', () => {
   });
 
   it('opens the join dialog for a link opened in an open tab, and the welcome guide after it', async () => {
-    sync.enabled = true;
     localStorage.removeItem(STORAGE_HAS_SEEN_WELCOME_KEY);
     window.history.replaceState(null, '', '/');
     render(<App />);
@@ -59,18 +53,11 @@ describe('App with an invitation link', () => {
   });
 
   it('opens the welcome guide only after the join dialog', async () => {
-    sync.enabled = true;
     localStorage.removeItem(STORAGE_HAS_SEEN_WELCOME_KEY);
     render(<App />);
     const dialog = await screen.findByRole('dialog', { name: en.sync.joinTitle });
     expect(screen.queryByRole('dialog', { name: en.welcomeModal.title })).toBeNull();
     fireEvent.click(await within(dialog).findByRole('button', { name: en.sync.close }));
     expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
-  });
-
-  it('ignores the link while the sync is off', async () => {
-    render(<App />);
-    expect(await screen.findByRole('main')).toBeInTheDocument();
-    expect(screen.queryByRole('dialog', { name: en.sync.joinTitle })).toBeNull();
   });
 });

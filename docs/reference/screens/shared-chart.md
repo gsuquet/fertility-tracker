@@ -6,7 +6,6 @@ This page gives the rules for the shared chart mode of a partner device. A partn
 
 | Condition                                                                  | Result                                                          |
 | -------------------------------------------------------------------------- | --------------------------------------------------------------- |
-| `SYNC_ENABLED` is `false`                                                  | The mode is off.                                                |
 | `fertility_care_shared_chart` holds a list that `parseVaultDays()` accepts | The mode is on. The pages show the days of this list.           |
 | **Else**                                                                   | The mode is off. The pages show the observations of the device. |
 

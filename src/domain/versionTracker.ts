@@ -46,6 +46,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.70.0',
+    date: '2026-11-05',
+    title: 'Sync and Partner Sharing',
+    titleFr: 'Synchronisation et partage',
+    tagline: 'Sync your devices and share your chart with your partner',
+    taglineFr: 'Synchronisez vos appareils et partagez votre tableau avec votre partenaire',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings now has a Sync group on each device',
+      'Turn on sync to keep your devices up to date, and invite your partner to read your chart',
+      'The server only keeps an encrypted copy that it cannot read',
+      'Sync stays off until you turn it on, and nothing changes before that',
+    ],
+    highlightsFr: [
+      'Les Paramètres ont maintenant un groupe Synchronisation sur chaque appareil',
+      'Activez la synchronisation pour garder vos appareils à jour, et invitez votre partenaire à lire votre tableau',
+      'Le serveur garde seulement une copie chiffrée qu’il ne peut pas lire',
+      'La synchronisation reste inactive tant que vous ne l’activez pas, et rien ne change avant',
+    ],
+  },
+  {
     version: '1.69.0',
     date: '2026-11-05',
     title: 'Shared Chart',

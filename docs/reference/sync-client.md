@@ -4,7 +4,7 @@ This page gives the rules of the sync client of the application: the relay clien
 
 **Source folder:** [src/sync/](../../src/sync/)
 
-Until `SYNC_ENABLED` is `true`, the application does not call these functions. The relay has its R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)). The flag stays `false` until the application follows all the rules of [ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md).
+The application syncs on each device that has a device record. A device without a record loads the sync code, but it does not call the relay. The relay has its R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)).
 
 ## Files
 
@@ -15,7 +15,6 @@ Until `SYNC_ENABLED` is `true`, the application does not call these functions. T
 | `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 | `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
-| `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the application follows ADR 0012     |
 | `syncRunner.ts`     | `runSync()`, `finishSync()` and `readShared()`: one sync           |
 
 ## Relay client
@@ -45,6 +44,7 @@ The device record is in the IndexedDB database `fertility-tracker-sync`, version
 
 - `openKeyStore()` gives `load()`, `save(record)` and `clear()`.
 - `load()` gives `null` when the device has no record.
+- When the browser has no IndexedDB, or blocks it with `SecurityError` or `InvalidStateError`, each function fails with the error name `StorageBlocked`. Such a browser cannot keep a record.
 - Each function closes its connection. It gives an error when the request fails or the transaction aborts, for example when the storage is full.
 - The device keeps no data key and no signing private key. It unwraps them from its keyring entry at each read.
 
@@ -262,7 +262,6 @@ A reader device never merges the vault with its own observations ([Partner devic
 - When the device record is a reader, the tab calls `readShared()` in place of `runSync()`. The checks of the stored observations do not apply. It does not call `markSynced()`. Thus, the [backup reminder](data-storage.md#backup-reminder) still counts from the last backup of the own observations.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
-- While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
 
 ### Sync control
 
@@ -270,14 +269,13 @@ A reader device never merges the vault with its own observations ([Partner devic
 
 | Field             | Use                                                                                                                                                        |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`         | The value of `SYNC_ENABLED`                                                                                                                                |
 | `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
 | `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
 | `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
 | `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
-| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date. It is empty while the sync is off.                                                   |
+| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date.                                                                                      |
 | `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
-| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`. It is `null` while the sync is off.             |
+| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`.                                                 |
 
 A `SyncOutcome` has these fields:
 
@@ -289,7 +287,7 @@ A `SyncOutcome` has these fields:
 
 `useSync()` reads `fertility_care_sync_conflicts` and `fertility_care_shared_chart` again in these conditions:
 
-- When the sync is on, at the start.
+- At the start.
 - After each sync and after each action of `withSync()`.
 - When another tab changes one of the two keys (`storage` event).
 
