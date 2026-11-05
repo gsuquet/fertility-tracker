@@ -191,14 +191,14 @@ The dialog shows the code in groups of 4 characters, in a monospace font. The te
 
 The owner device adds a device with an invitation, as [Adding a member](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#adding-a-member) gives. [InviteDialog.tsx](../../../src/components/settings/InviteDialog.tsx) shows these steps:
 
-| Step         | Content                                                                                                                                     |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------- |
-| Start        | "Working…" while `startInvitation()` runs with the role `owner`.                                                                            |
-| Waiting      | The link `#invite=<id>.<secret>`, **Copy**, and the text "Open this link on the new device. On iOS, paste it in the installed app."         |
-| Confirmation | The 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**. |
-| Adding       | "Working…" while `approveInvitation()` runs.                                                                                                |
-| Done         | "The device is added." Then the owner device syncs.                                                                                         |
-| End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                   |
+| Step         | Content                                                                                                                                                                                                                                                 |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Start        | "Working…" while `startInvitation()` runs with the role `owner`.                                                                                                                                                                                        |
+| Waiting      | The [QR code](#qr-code) of the link, the link `#invite=<id>.<secret>` and **Copy**. A text tells the user to scan the code with an Android phone, or to open the link on the new device. On iOS, the user pastes the link in the installed application. |
+| Confirmation | The 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**.                                                                                                             |
+| Adding       | "Working…" while `approveInvitation()` runs.                                                                                                                                                                                                            |
+| Done         | "The device is added." Then the owner device syncs.                                                                                                                                                                                                     |
+| End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                                                                                                                               |
 
 - While the dialog waits, it calls `checkAsOwner()` each 3 seconds.
 - When a check fails with no connection or no relay, the dialog shows the cause and checks again.
@@ -207,7 +207,16 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 - **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
 - `approveInvitation()` runs with the sync lock, after the sync that runs.
 - While **Adding** runs, the dialog does not close.
-- The dialog has no QR code yet. The QR code comes before `SYNC_ENABLED` goes on.
+
+### QR code
+
+[QrCode.tsx](../../../src/components/settings/QrCode.tsx) shows the invitation link as a QR code. On an Android phone, the system camera reads it. Thus, the application needs no camera permission. On iOS, a QR code opens Safari, so the user pastes the link in the installed application ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#adding-a-member)).
+
+- [qrMatrix.ts](../../../src/components/settings/qrMatrix.ts) makes the code in the browser. No other service sees the link.
+- The code follows ISO/IEC 18004: byte mode with UTF-8, error correction level M, and versions 1 to 10. Version 10 holds 213 bytes. An invitation link has about 110 bytes.
+- `qrMatrix()` uses the smallest version that holds the text. It selects the mask with the lowest penalty of the standard.
+- The SVG has dark modules on a white background, with a quiet zone of 4 modules. The colors stay the same in the dark theme, because some cameras do not read a light code on a dark background.
+- The SVG has `role="img"` and the name "QR code of the invitation link". A screen reader user uses the link and **Copy**.
 
 ### Join dialog
 

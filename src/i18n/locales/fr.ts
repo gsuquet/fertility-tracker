@@ -700,7 +700,8 @@ export const fr: TranslationSchema = {
     inviteHint: 'Ajoutez votre téléphone ou votre ordinateur',
     inviteTitle: 'Inviter un appareil',
     inviteLink:
-      'Ouvrez ce lien sur le nouvel appareil. Sur iOS, collez-le dans l’application installée.',
+      'Scannez le code avec l’appareil photo d’un téléphone Android, ou ouvrez ce lien sur le nouvel appareil. Sur iOS, collez-le dans l’application installée.',
+    inviteQrLabel: 'Code QR du lien d’invitation',
     inviteLinkLabel: 'Lien d’invitation',
     inviteConfirm: 'Le nouvel appareil affiche-t-il le même code ?',
     inviteDone: 'L’appareil est ajouté.',

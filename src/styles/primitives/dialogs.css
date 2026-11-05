@@ -134,6 +134,23 @@
     font-family: var(--font-mono);
   }
 
+  /* The QR code of the invitation (QrCode.tsx). The colors stay in the dark theme: some cameras
+     do not read a light code on a dark background. */
+  .sync-qr {
+    display: block;
+    width: min(240px, 100%);
+    height: auto;
+    margin: 0 auto;
+  }
+
+  .sync-qr-light {
+    fill: var(--color-white);
+  }
+
+  .sync-qr-dark {
+    fill: var(--color-black);
+  }
+
   /* The grab handle of a bottom sheet (useSheetDrag.ts). It shows on a phone only. */
   .sheet-handle {
     display: none;
