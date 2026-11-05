@@ -1,10 +1,19 @@
 /** The Sync group of Settings. See docs/reference/screens/settings.md#sync-group. */
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { CloudOff, KeyRound, Link, RefreshCw, RotateCcw, Share2, Smartphone } from 'lucide-react';
+import {
+  CloudOff,
+  History,
+  KeyRound,
+  Link,
+  RefreshCw,
+  RotateCcw,
+  Share2,
+  Smartphone,
+} from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
 import { useLanguage } from '../../context/LanguageContext';
-import { formatMessage } from '../../i18n';
+import { formatMessage, isSingular } from '../../i18n';
 import type { TranslationSchema } from '../../i18n/types';
 import type { SyncControl, SyncServices } from '../../hooks/useSync';
 import { useSheetDrag } from '../../hooks/useSheetDrag';
@@ -18,6 +27,7 @@ import { useDemoRemoval } from '../../hooks/useDemoRemoval';
 import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
+import { ConflictDialog } from './ConflictDialog';
 import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
 
@@ -173,6 +183,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const { lastSyncDate, undoChange } = useCycle();
   const removeDemoDays = useDemoRemoval();
   const [inviting, setInviting] = useState(false);
+  const [checking, setChecking] = useState(false);
   // The invitation link that the user pasted, for an installed app on iOS
   const [pasting, setPasting] = useState(false);
   const [joinFragment, setJoinFragment] = useState<string | null>(null);
@@ -357,6 +368,19 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               onClick={() => void syncNow()}
               disabled={busy}
             />
+            {record.role === 'owner' && control.conflicts.length > 0 && (
+              <ActionRow
+                icon={iconOf(History)}
+                label={s.conflicts}
+                detail={formatMessage(
+                  isSingular(control.conflicts.length, t.locale) ? s.conflictsOne : s.conflictsMany,
+                  { count: control.conflicts.length }
+                )}
+                onClick={() => setChecking(true)}
+                disabled={busy}
+                opens
+              />
+            )}
             {record.role === 'owner' && (
               <ActionRow
                 icon={iconOf(Smartphone)}
@@ -430,6 +454,8 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           }}
         />
       )}
+
+      {checking && <ConflictDialog control={control} onClose={() => setChecking(false)} />}
 
       {inviting && <InviteDialog control={control} onClose={() => setInviting(false)} />}
 

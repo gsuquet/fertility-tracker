@@ -46,6 +46,25 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.65.0',
+    date: '2026-11-05',
+    title: 'Days to Check',
+    titleFr: 'Jours à vérifier',
+    tagline: 'Restore a day that two devices changed, when sync is ready',
+    taglineFr: 'Restaurez un jour modifié sur deux appareils, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'When two devices change the same day, Settings will show the other version',
+      'You will restore the other version or dismiss it, one day at a time',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Quand deux appareils modifient le même jour, les Paramètres afficheront l’autre version',
+      'Vous restaurerez l’autre version ou l’ignorerez, un jour à la fois',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.64.0',
     date: '2026-11-05',
     title: 'Invitation QR Code',

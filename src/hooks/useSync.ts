@@ -11,8 +11,15 @@ import type { VaultError } from '../sync/deviceVault';
 import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
 import { serializeObservations } from '../domain/storageFormat';
+import { compareClocks } from '../domain/sync/clock';
+import type { SyncConflict } from '../domain/sync/merge';
+import { parseConflicts, serializeConflicts } from '../domain/sync/syncStorage';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
-import { STORAGE_OBSERVATIONS_KEY, STORAGE_SYNC_STATE_KEY } from '../utils/storageKeys';
+import {
+  STORAGE_OBSERVATIONS_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../utils/storageKeys';
 import { checkStoredMark, distrustCount } from '../utils/syncTrust';
 
 /** A page that becomes visible syncs only when the last sync started this long ago. */
@@ -73,7 +80,16 @@ export interface SyncControl {
   withSync: <T>(action: (services: SyncServices) => Promise<T>) => Promise<T>;
   /** The error of the last sync, or null after a sync without an error. */
   lastError: VaultError | null;
+  /** The days that lost a conflict, sorted by date. Empty while the sync is off. */
+  conflicts: SyncConflict[];
+  /**
+   * Restores the version of the conflict, or only removes the conflict from the list. Nothing
+   * changes when the list no longer has this conflict.
+   */
+  resolveConflict: (conflict: SyncConflict, restore: boolean) => Promise<void>;
 }
+
+const storedConflicts = () => parseConflicts(readStorage(STORAGE_SYNC_CONFLICTS_KEY));
 
 export function useSync(
   enabled: boolean = SYNC_ENABLED,
@@ -91,6 +107,12 @@ export function useSync(
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
+  const [conflicts, setConflicts] = useState<SyncConflict[]>(() =>
+    enabled ? storedConflicts() : []
+  );
+  const readConflicts = useCallback(() => {
+    if (enabled) setConflicts(storedConflicts());
+  }, [enabled]);
 
   const services = useCallback(() => {
     // A failed load loads again at the next call
@@ -101,11 +123,15 @@ export function useSync(
     return loaded.current;
   }, [load]);
 
-  const exclusive = useCallback(<T>(work: () => Promise<T>): Promise<T> => {
-    const next = queue.current.then(() => withSyncLock(work));
-    queue.current = next.catch(() => {});
-    return next;
-  }, []);
+  // Each sync and each action can change the conflict list
+  const exclusive = useCallback(
+    <T>(work: () => Promise<T>): Promise<T> => {
+      const next = queue.current.then(() => withSyncLock(work)).finally(readConflicts);
+      queue.current = next.catch(() => {});
+      return next;
+    },
+    [readConflicts]
+  );
 
   const sync = useCallback((): Promise<SyncOutcome> => {
     if (waiting.current) return waiting.current;
@@ -172,6 +198,45 @@ export function useSync(
     return next;
   }, [exclusive, services]);
 
+  const resolveConflict = useCallback(
+    (shown: SyncConflict, restore: boolean) =>
+      exclusive(async () => {
+        // Another tab or a sync can change the list: the stored list is the current one. A sync
+        // can replace the conflict of the date with a newer one that the user did not see.
+        const { date } = shown;
+        const list = storedConflicts();
+        const conflict = list.find(
+          item => item.date === date && compareClocks(item.clock, shown.clock) === 0
+        );
+        if (!conflict) return;
+        if (restore) {
+          const { observations, saveObservation, deleteObservation } = latest.current.data;
+          const current = observations.find(observation => observation.date === date);
+          if (conflict.day !== null) {
+            // The Peak Day mark has its own clock: the current mark stays
+            saveObservation({ date, ...conflict.day, isManualPeak: current?.isManualPeak });
+          } else if (current) {
+            deleteObservation(current.id);
+          }
+        }
+        writeStorage(
+          STORAGE_SYNC_CONFLICTS_KEY,
+          serializeConflicts(list.filter(item => item !== conflict))
+        );
+      }),
+    [exclusive]
+  );
+
+  // Another tab changed the conflict list
+  useEffect(() => {
+    if (!enabled) return;
+    const onStorage = (event: StorageEvent) => {
+      if (event.key === STORAGE_SYNC_CONFLICTS_KEY || event.key === null) readConflicts();
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, [enabled, readConflicts]);
+
   const withSync = useCallback(
     <T>(action: (loaded: SyncServices) => Promise<T>): Promise<T> =>
       exclusive(async () => action(await services())),
@@ -212,5 +277,5 @@ export function useSync(
   }, [enabled, sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return { enabled, services, syncNow: sync, withSync, lastError };
+  return { enabled, services, syncNow: sync, withSync, lastError, conflicts, resolveConflict };
 }

@@ -693,6 +693,8 @@ describe('SettingsDialog sync', () => {
       ),
       withSync: action => action(services),
       lastError: null,
+      conflicts: [],
+      resolveConflict: vi.fn(async () => {}),
     };
   };
   const groupNames = () =>
@@ -742,6 +744,8 @@ describe('SettingsDialog sync', () => {
         ),
         withSync: action => action(services),
         lastError: null,
+        conflicts: [],
+        resolveConflict: vi.fn(async () => {}),
       },
     });
     fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
@@ -779,6 +783,8 @@ describe('SettingsDialog on a synced device', () => {
       ),
       withSync: <T,>(action: (loaded: SyncServices) => Promise<T>) => action(services),
       lastError: null,
+      conflicts: [],
+      resolveConflict: vi.fn(async () => {}),
     } satisfies SyncControl;
     const keyring = () =>
       (

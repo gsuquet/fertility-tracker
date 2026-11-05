@@ -696,6 +696,18 @@ export const en = {
     inviteLink:
       'Scan the code with the camera of an Android phone, or open this link on the new device. On iOS, paste it in the installed app.',
     inviteQrLabel: 'QR code of the invitation link',
+    conflicts: 'Days to check',
+    conflictsOne: '{count} day changed on two devices',
+    conflictsMany: '{count} days changed on two devices',
+    conflictsNote:
+      'Two devices changed these days before a sync. The sync kept the latest version. You can restore the other version.',
+    conflictOther: 'Other version',
+    conflictNow: 'Now',
+    conflictDeleted: 'Deleted day',
+    conflictNoCode: 'No code',
+    conflictNone: 'No observation',
+    conflictRestore: 'Restore',
+    conflictDismiss: 'Dismiss',
     inviteLinkLabel: 'Invitation link',
     inviteConfirm: 'Does the new device show the same code?',
     inviteDone: 'The device is added.',

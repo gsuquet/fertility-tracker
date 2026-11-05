@@ -13,6 +13,8 @@ vi.mock('../hooks/useSync', () => ({
     syncNow: async () => {},
     withSync: () => Promise.reject(new Error('No sync in this test')),
     lastError: null,
+    conflicts: [],
+    resolveConflict: vi.fn(async () => {}),
   }),
 }));
 

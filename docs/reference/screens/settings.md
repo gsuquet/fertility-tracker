@@ -151,11 +151,11 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
-| Device record of this device | Rows                                                                                          |
-| ---------------------------- | --------------------------------------------------------------------------------------------- |
-| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                            |
-| Owner                        | **Sync now**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
-| Reader                       | **Sync now** and **Turn off sync on this device**                                             |
+| Device record of this device | Rows                                                                                                             |
+| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
+| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                               |
+| Owner                        | **Sync now**, **Days to check**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
+| Reader                       | **Sync now** and **Turn off sync on this device**                                                                |
 
 | Row                              | Result                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -163,6 +163,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join. |
 | **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                                                                             |
 | **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                                                                                 |
+| **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).   |
 | **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
 | **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                         |
 | **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay.                                                              |
@@ -217,6 +218,24 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 - `qrMatrix()` uses the smallest version that holds the text. It selects the mask with the lowest penalty of the standard.
 - The SVG has dark modules on a white background, with a quiet zone of 4 modules. The colors stay the same in the dark theme, because some cameras do not read a light code on a dark background.
 - The SVG has `role="img"` and the name "QR code of the invitation link". A screen reader user uses the link and **Copy**.
+
+### Conflict dialog
+
+A conflict occurs when two devices change the same day before a sync. The sync keeps the version with the later clock, and the other version goes to the conflict list ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). [ConflictDialog.tsx](../../../src/components/settings/ConflictDialog.tsx) shows each conflict of the list, sorted by date.
+
+| Part of a conflict | Content                                                                                                                       |
+| ------------------ | ----------------------------------------------------------------------------------------------------------------------------- |
+| Title              | The date                                                                                                                      |
+| **Other version**  | The code of the version that lost, then its note. "Deleted day" for a deletion that lost. "No code" for a day without a code. |
+| **Now**            | The code of the current observation of the date, then its note. "No observation" when the date has no observation.            |
+| **Restore**        | Calls `resolveConflict(conflict, true)`. The other version takes the place of the current day.                                |
+| **Dismiss**        | Calls `resolveConflict(conflict, false)`. The current day stays.                                                              |
+
+- While an action runs, the buttons of the dialog are disabled.
+- When the list becomes empty, the dialog closes.
+- **Close** closes the dialog. The list does not change.
+- When a sync replaced the conflict of a date before the action ran, the action changes nothing. The dialog then shows the new conflict.
+- A restored day is a new local change. Thus, it goes to the vault at the next sync ([Sync client](../sync-client.md#conflict-list)).
 
 ### Join dialog
 

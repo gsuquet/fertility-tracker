@@ -232,19 +232,40 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
 
-| Field       | Use                                                                                                                                                        |
-| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`   | The value of `SYNC_ENABLED`                                                                                                                                |
-| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
-| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
-| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
-| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
+| Field             | Use                                                                                                                                                        |
+| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`         | The value of `SYNC_ENABLED`                                                                                                                                |
+| `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
+| `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
+| `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
+| `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
+| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date. It is empty while the sync is off.                                                   |
+| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
 
 A `SyncOutcome` has these fields:
 
 - `sent` is true when the vault has the changes of this device, or when the device has no record.
 - `skipped` is true when the provider has `saveFailed` or `recoveryData`. The tab then does not call `runSync()`.
 - `error` is the `VaultError` of a failed sync, or `null`.
+
+### Conflict list
+
+`useSync()` reads `fertility_care_sync_conflicts` again in these conditions:
+
+- When the sync is on, at the start.
+- After each sync and after each action of `withSync()`.
+- When another tab changes the list (`storage` event).
+
+`resolveConflict(conflict, restore)` runs after the sync that runs, with the sync lock. It reads the stored list again, because another tab or a sync can change it. A sync can replace the conflict of a date with a newer conflict.
+
+| Condition                                                          | Result                                                                                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| The list has no conflict with the date and the clock of `conflict` | Nothing changes. Another tab resolved it, or a sync replaced it. The user did not see the new conflict.                                       |
+| `restore` is `false`                                               | The conflict goes from the list. The observation of the date does not change.                                                                 |
+| `restore` is `true` and the day of the conflict is `null`          | The observation of the date is deleted with `deleteObservation()`. Then the conflict goes from the list.                                      |
+| **Else**                                                           | The day of the conflict is saved with `saveObservation()`. The current Peak Day mark of the date stays. Then the conflict goes from the list. |
+
+A restored day is a new local change. Thus, the next sync gives it a new clock, and the restored version goes to the vault ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). The conflict has no Peak Day mark, because the Peak Day mark has its own clock ([Sync rules](sync-rules.md)).
 
 ## Related documents
 
