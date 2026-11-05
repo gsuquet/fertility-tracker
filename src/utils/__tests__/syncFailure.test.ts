@@ -1,6 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { VaultError } from '../../sync/deviceVault';
-import { failureOf, isOutOfVault, isStorageBlocked, STORAGE_BLOCKED } from '../syncFailure';
+import {
+  failureCodeOf,
+  failureOf,
+  isOutOfVault,
+  isStorageBlocked,
+  STORAGE_BLOCKED,
+} from '../syncFailure';
 
 describe('failureOf', () => {
   it('gives the cause of each error', () => {
@@ -14,6 +20,23 @@ describe('failureOf', () => {
     expect(failureOf(new VaultError('relay', { status: 404 }))).toBe('failed');
     expect(failureOf(new VaultError('relay', { status: 404 }), true)).toBe('badCode');
     expect(failureOf(new VaultError('relay', { status: 500 }), true)).toBe('failed');
+    expect(failureOf(new VaultError('relay', { status: 403, error: 'host' }))).toBe('wrongHost');
+    expect(failureOf(new VaultError('relay', { status: 403, error: 'owner' }))).toBe('failed');
+    expect(failureOf(new VaultError('relay', { status: 429 }))).toBe('busy');
+  });
+});
+
+describe('failureCodeOf', () => {
+  it('gives the status and the error of the relay, the reason, or the name of the error', () => {
+    expect(failureCodeOf(new VaultError('relay', { status: 403, error: 'owner' }))).toBe(
+      '403 owner'
+    );
+    expect(failureCodeOf(new VaultError('relay', { status: 500 }))).toBe('500');
+    expect(failureCodeOf(new VaultError('relay'))).toBe('');
+    expect(failureCodeOf(new VaultError('keys'))).toBe('keys');
+    expect(failureCodeOf(new TypeError('x'))).toBe('TypeError');
+    expect(failureCodeOf('x')).toBeNull();
+    expect(failureCodeOf(null)).toBeNull();
   });
 });
 

@@ -32,7 +32,7 @@ import {
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
-import { failureOf, isStorageBlocked } from '../../utils/syncFailure';
+import { failureCodeOf, failureOf, isStorageBlocked } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
 import { cleanDeviceName } from '../../domain/vault/deviceName';
@@ -227,6 +227,12 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   // An action that makes a recovery code runs
   const [making, setMaking] = useState(false);
   const [failure, setFailure] = useState<Failure | null>(null);
+  // The code of the error of the failure, for the general failure
+  const [failureCode, setFailureCode] = useState<string | null>(null);
+  const failWith = useCallback((error: unknown, recovering = false) => {
+    setFailure(failureOf(error, recovering));
+    setFailureCode(failureCodeOf(error));
+  }, []);
   // The browser blocks the storage of the record: the group has no row and a note, not an alert
   const [blocked, setBlocked] = useState(false);
   const [code, setCode] = useState<string | null>(null);
@@ -252,9 +258,9 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       .then(({ keyStore }) => keyStore.load())
       .then(show, error => {
         if (isStorageBlocked(error)) setBlocked(true);
-        else setFailure('failed');
+        else failWith(error);
       });
-  }, [services, show]);
+  }, [services, show, failWith]);
 
   /** Runs one action with the services. The action gives the new record and a code to show. */
   const run = async (
@@ -272,7 +278,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       setEntering(false);
       if (result.record) void control.syncNow();
     } catch (error) {
-      setFailure(failureOf(error, recovering));
+      failWith(error, recovering);
       // A recovery can save the record before its new code fails: the rows follow the key store
       await control
         .services()
@@ -366,7 +372,9 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           }),
         });
   // The error of the last sync shows only when no action failed
-  const shown = failure ?? (record && control.lastError ? failureOf(control.lastError) : null);
+  const lastError = record ? control.lastError : null;
+  const shown = failure ?? (lastError ? failureOf(lastError) : null);
+  const shownCode = failure ? failureCode : failureCodeOf(lastError);
   // The code dialog shows its own error
   const alert = entering ? null : shown;
 
@@ -482,6 +490,9 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       {alert && (
         <p className="settings-alert" role="alert">
           {s[alert]}
+          {alert === 'failed' && shownCode && (
+            <> {formatMessage(s.errorCode, { code: shownCode })}</>
+          )}
         </p>
       )}
 

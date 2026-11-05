@@ -782,9 +782,12 @@ export const en = {
     recoverAction: 'Recover',
     working: 'Working…',
     noConnection: 'No connection. Check your connection and try again.',
-    unavailable: 'Sync is not available yet.',
+    unavailable: 'The sync server is not available. Try again later.',
+    wrongHost: 'This address cannot sync. Open the application at fertility-tracker.gsuquet.com.',
+    busy: 'Too many requests. Wait one minute and try again.',
     badCode: 'This code is not valid. Check each character.',
     failed: 'The sync failed. Try again later.',
+    errorCode: 'Error code: {code}',
     confirmDeletions:
       'The sync deletes {count} days on this device, from changes on your other devices. Continue?',
   },

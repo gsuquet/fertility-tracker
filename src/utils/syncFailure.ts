@@ -1,7 +1,13 @@
 /** The cause of a failed sync action, as a key of the `sync` texts. See docs/reference/screens/settings.md. */
 import type { VaultError } from '../sync/deviceVault';
 
-export type SyncFailure = 'noConnection' | 'unavailable' | 'badCode' | 'failed';
+export type SyncFailure =
+  | 'noConnection'
+  | 'unavailable'
+  | 'wrongHost'
+  | 'busy'
+  | 'badCode'
+  | 'failed';
 
 /** The cause of a failure, for an alert. The name, not instanceof: the vault code loads late. */
 export const failureOf = (error: unknown, recovering = false): SyncFailure => {
@@ -12,9 +18,23 @@ export const failureOf = (error: unknown, recovering = false): SyncFailure => {
   const status = detail?.status;
   if (status === 0) return 'noConnection';
   if (status === 503) return 'unavailable';
+  if (status === 403 && detail?.error === 'host') return 'wrongHost';
+  if (status === 429) return 'busy';
   // The relay has no lookup object for this code
   if (recovering && status === 404) return 'badCode';
   return 'failed';
+};
+
+/**
+ * A short code of the error for the user to report: the status and the error of the relay, the
+ * reason of a vault error, or the name of another error.
+ */
+export const failureCodeOf = (error: unknown): string | null => {
+  if (!(error instanceof Error)) return null;
+  if (error.name !== 'VaultError') return error.name;
+  const { reason, detail } = error as VaultError;
+  if (reason !== 'relay') return reason;
+  return [detail?.status, detail?.error].filter(part => part !== undefined).join(' ');
 };
 
 /** The name of the error of a browser that blocks the storage of the device record. */
