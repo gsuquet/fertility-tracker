@@ -47,7 +47,7 @@ export const ConflictDialog: React.FC<ConflictDialogProps> = ({ control, onClose
   const resolve = async (conflict: SyncConflict, restore: boolean) => {
     setBusy(true);
     try {
-      await control.resolveConflict(conflict.date, restore);
+      await control.resolveConflict(conflict, restore);
     } finally {
       setBusy(false);
     }

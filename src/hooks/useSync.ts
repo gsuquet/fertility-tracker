@@ -11,6 +11,7 @@ import type { VaultError } from '../sync/deviceVault';
 import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
 import { serializeObservations } from '../domain/storageFormat';
+import { compareClocks } from '../domain/sync/clock';
 import type { SyncConflict } from '../domain/sync/merge';
 import { parseConflicts, serializeConflicts } from '../domain/sync/syncStorage';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
@@ -81,8 +82,11 @@ export interface SyncControl {
   lastError: VaultError | null;
   /** The days that lost a conflict, sorted by date. Empty while the sync is off. */
   conflicts: SyncConflict[];
-  /** Restores the version of the conflict, or only removes the conflict from the list. */
-  resolveConflict: (date: string, restore: boolean) => Promise<void>;
+  /**
+   * Restores the version of the conflict, or only removes the conflict from the list. Nothing
+   * changes when the list no longer has this conflict.
+   */
+  resolveConflict: (conflict: SyncConflict, restore: boolean) => Promise<void>;
 }
 
 const storedConflicts = () => parseConflicts(readStorage(STORAGE_SYNC_CONFLICTS_KEY));
@@ -195,11 +199,15 @@ export function useSync(
   }, [exclusive, services]);
 
   const resolveConflict = useCallback(
-    (date: string, restore: boolean) =>
+    (shown: SyncConflict, restore: boolean) =>
       exclusive(async () => {
-        // Another tab can change the list: the stored list is the current one
+        // Another tab or a sync can change the list: the stored list is the current one. A sync
+        // can replace the conflict of the date with a newer one that the user did not see.
+        const { date } = shown;
         const list = storedConflicts();
-        const conflict = list.find(item => item.date === date);
+        const conflict = list.find(
+          item => item.date === date && compareClocks(item.clock, shown.clock) === 0
+        );
         if (!conflict) return;
         if (restore) {
           const { observations, saveObservation, deleteObservation } = latest.current.data;

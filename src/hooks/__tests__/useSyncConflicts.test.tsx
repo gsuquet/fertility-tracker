@@ -23,6 +23,8 @@ const wrapper = ({ children }: { children: React.ReactNode }) => (
 );
 
 const clock = { time: 1, counter: 0, member: 'other' };
+/** The conflict that the dialog shows: only the date and the clock count. */
+const shown = (date: string) => conflict(date, null);
 const conflict = (date: string, day: SyncConflict['day']): SyncConflict => ({ date, day, clock });
 const storeConflicts = (list: SyncConflict[]) =>
   localStorage.setItem(CONFLICTS_KEY, serializeConflicts(list));
@@ -102,7 +104,7 @@ describe('useSync conflict list', () => {
     storeConflicts([conflict('2026-10-01', { bleeding: 'L' }), conflict('2026-10-02', null)]);
     const { result } = render(await servicesLoad());
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-01', false);
+      await result.current.control.resolveConflict(shown('2026-10-01'), false);
     });
     expect(storedDates()).toEqual(['2026-10-02']);
     expect(result.current.control.conflicts.map(item => item.date)).toEqual(['2026-10-02']);
@@ -119,7 +121,7 @@ describe('useSync conflict list', () => {
     storeConflicts([conflict('2026-10-01', { stretch: '8', modifiers: ['C'], notes: 'n' })]);
     const { result } = render(await servicesLoad());
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-01', true);
+      await result.current.control.resolveConflict(shown('2026-10-01'), true);
     });
     const restored = result.current.data.observations.find(o => o.date === '2026-10-01');
     expect(restored).toMatchObject({ stretch: '8', modifiers: ['C'], notes: 'n' });
@@ -131,7 +133,7 @@ describe('useSync conflict list', () => {
     storeConflicts([conflict('2026-10-03', { bleeding: 'M' })]);
     const { result } = render(await servicesLoad());
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-03', true);
+      await result.current.control.resolveConflict(shown('2026-10-03'), true);
     });
     const restored = result.current.data.observations.find(o => o.date === '2026-10-03');
     expect(restored?.bleeding).toBe('M');
@@ -149,15 +151,34 @@ describe('useSync conflict list', () => {
     storeConflicts([conflict('2026-10-01', null), conflict('2026-10-05', null)]);
     const { result } = render(await servicesLoad());
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-01', true);
+      await result.current.control.resolveConflict(shown('2026-10-01'), true);
     });
     expect(result.current.data.observations.map(o => o.date)).toEqual(['2026-10-02']);
     // A deletion on a date without an observation changes no observation
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-05', true);
+      await result.current.control.resolveConflict(shown('2026-10-05'), true);
     });
     expect(result.current.data.observations.map(o => o.date)).toEqual(['2026-10-02']);
     expect(storedDates()).toEqual([]);
+  });
+
+  it('changes nothing when a sync replaced the conflict that the user saw', async () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      serializeObservations([makeObservation({ date: '2026-10-01', bleeding: 'H' })])
+    );
+    storeConflicts([conflict('2026-10-01', { bleeding: 'L' })]);
+    const { result } = render(await servicesLoad());
+    const seen = result.current.control.conflicts[0] as SyncConflict;
+    const newer = { ...conflict('2026-10-01', { bleeding: 'M' }), clock: { ...clock, time: 2 } };
+    storeConflicts([newer]);
+    for (const restore of [true, false]) {
+      await act(async () => {
+        await result.current.control.resolveConflict(seen, restore);
+      });
+    }
+    expect(result.current.data.observations[0]?.bleeding).toBe('H');
+    expect(result.current.control.conflicts).toEqual([newer]);
   });
 
   it('changes nothing when another tab resolved the conflict', async () => {
@@ -169,7 +190,7 @@ describe('useSync conflict list', () => {
     const { result } = render(await servicesLoad());
     storeConflicts([]);
     await act(async () => {
-      await result.current.control.resolveConflict('2026-10-01', true);
+      await result.current.control.resolveConflict(shown('2026-10-01'), true);
     });
     expect(result.current.data.observations[0]?.bleeding).toBe('H');
     expect(result.current.control.conflicts).toEqual([]);

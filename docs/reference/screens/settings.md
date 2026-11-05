@@ -228,12 +228,13 @@ A conflict occurs when two devices change the same day before a sync. The sync k
 | Title              | The date                                                                                                                      |
 | **Other version**  | The code of the version that lost, then its note. "Deleted day" for a deletion that lost. "No code" for a day without a code. |
 | **Now**            | The code of the current observation of the date, then its note. "No observation" when the date has no observation.            |
-| **Restore**        | Calls `resolveConflict(date, true)`. The other version takes the place of the current day.                                    |
-| **Dismiss**        | Calls `resolveConflict(date, false)`. The current day stays.                                                                  |
+| **Restore**        | Calls `resolveConflict(conflict, true)`. The other version takes the place of the current day.                                |
+| **Dismiss**        | Calls `resolveConflict(conflict, false)`. The current day stays.                                                              |
 
 - While an action runs, the buttons of the dialog are disabled.
 - When the list becomes empty, the dialog closes.
 - **Close** closes the dialog. The list does not change.
+- When a sync replaced the conflict of a date before the action ran, the action changes nothing. The dialog then shows the new conflict.
 - A restored day is a new local change. Thus, it goes to the vault at the next sync ([Sync client](../sync-client.md#conflict-list)).
 
 ### Join dialog

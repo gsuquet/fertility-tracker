@@ -181,7 +181,7 @@ describe('ConflictDialog', () => {
     );
     const dialog = screen.getByRole('dialog', { name: s.conflicts });
     fireEvent.click(within(dialog).getByRole('button', { name: s.conflictDismiss }));
-    expect(resolveConflict).toHaveBeenCalledWith('2026-10-01', false);
+    expect(resolveConflict).toHaveBeenCalledWith(conflict('2026-10-01', null), false);
     for (const button of within(dialog).getAllByRole('button')) expect(button).toBeDisabled();
     fireEvent.keyDown(dialog, { key: 'Escape' });
     expect(onClose).not.toHaveBeenCalled();
@@ -190,7 +190,7 @@ describe('ConflictDialog', () => {
     });
     expect(within(dialog).getByRole('button', { name: s.conflictRestore })).toBeEnabled();
     fireEvent.click(within(dialog).getByRole('button', { name: s.conflictRestore }));
-    expect(resolveConflict).toHaveBeenLastCalledWith('2026-10-01', true);
+    expect(resolveConflict).toHaveBeenLastCalledWith(conflict('2026-10-01', null), true);
   });
 
   it('closes at once without a conflict', async () => {

@@ -240,7 +240,7 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 | `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
 | `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
 | `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date. It is empty while the sync is off.                                                   |
-| `resolveConflict` | Restores or dismisses the conflict of a date, with the sync lock ([Conflict list](#conflict-list)).                                                        |
+| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
 
 A `SyncOutcome` has these fields:
 
@@ -256,14 +256,14 @@ A `SyncOutcome` has these fields:
 - After each sync and after each action of `withSync()`.
 - When another tab changes the list (`storage` event).
 
-`resolveConflict(date, restore)` runs after the sync that runs, with the sync lock. It reads the stored list again, because another tab can change it.
+`resolveConflict(conflict, restore)` runs after the sync that runs, with the sync lock. It reads the stored list again, because another tab or a sync can change it. A sync can replace the conflict of a date with a newer conflict.
 
-| Condition                                                 | Result                                                                                                                                        |
-| --------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------- |
-| The list has no conflict for the date                     | Nothing changes. Another tab resolved it.                                                                                                     |
-| `restore` is `false`                                      | The conflict goes from the list. The observation of the date does not change.                                                                 |
-| `restore` is `true` and the day of the conflict is `null` | The observation of the date is deleted with `deleteObservation()`. Then the conflict goes from the list.                                      |
-| **Else**                                                  | The day of the conflict is saved with `saveObservation()`. The current Peak Day mark of the date stays. Then the conflict goes from the list. |
+| Condition                                                          | Result                                                                                                                                        |
+| ------------------------------------------------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------- |
+| The list has no conflict with the date and the clock of `conflict` | Nothing changes. Another tab resolved it, or a sync replaced it. The user did not see the new conflict.                                       |
+| `restore` is `false`                                               | The conflict goes from the list. The observation of the date does not change.                                                                 |
+| `restore` is `true` and the day of the conflict is `null`          | The observation of the date is deleted with `deleteObservation()`. Then the conflict goes from the list.                                      |
+| **Else**                                                           | The day of the conflict is saved with `saveObservation()`. The current Peak Day mark of the date stays. Then the conflict goes from the list. |
 
 A restored day is a new local change. Thus, the next sync gives it a new clock, and the restored version goes to the vault ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). The conflict has no Peak Day mark, because the Peak Day mark has its own clock ([Sync rules](sync-rules.md)).
 
