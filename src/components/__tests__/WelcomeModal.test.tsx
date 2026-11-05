@@ -1,4 +1,4 @@
-import { render, screen, fireEvent } from '@testing-library/react';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import { describe, it, expect, vi } from 'vitest';
 import { WelcomeModal } from '../WelcomeModal';
 import { LanguageProvider } from '../../context/LanguageContext';
@@ -134,6 +134,62 @@ describe('WelcomeModal Component', () => {
     );
     fireEvent.click(screen.getByTitle('Go to step 4'));
     expect(await screen.findByText(/Explore Demo Data/i)).toBeInTheDocument();
+  });
+
+  it('does not load the demo data when the device joined a vault after the guide opened', async () => {
+    const { relay } = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    const handleClose = vi.fn();
+    renderWithProviders(
+      <>
+        <WelcomeModal onClose={handleClose} sync={controlOf(relay, keyStore)} />
+        <ObservationCount />
+      </>
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    const demo = await screen.findByText(/Explore Demo Data/i);
+    await createVault(relay, keyStore);
+    fireEvent.click(demo);
+    await waitFor(() => expect(screen.queryByText(/Explore Demo Data/i)).toBeNull());
+    expect(screen.getByTestId('count')).toHaveTextContent('0');
+    expect(handleClose).not.toHaveBeenCalled();
+  });
+
+  it('does not load the demo data when the key store fails at the click', async () => {
+    const { relay } = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    let fail = false;
+    const control = controlOf(relay, {
+      ...keyStore,
+      load: () => (fail ? Promise.reject(new Error('blocked')) : keyStore.load()),
+    });
+    renderWithProviders(
+      <>
+        <WelcomeModal onClose={() => {}} sync={control} />
+        <ObservationCount />
+      </>
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    const demo = await screen.findByText(/Explore Demo Data/i);
+    fail = true;
+    fireEvent.click(demo);
+    await waitFor(() => expect(screen.queryByText(/Explore Demo Data/i)).toBeNull());
+    expect(screen.getByTestId('count')).toHaveTextContent('0');
+  });
+
+  it('loads the demo data at the click when the key store still has no record', async () => {
+    const { relay } = createRelayHarness();
+    const handleClose = vi.fn();
+    renderWithProviders(
+      <>
+        <WelcomeModal onClose={handleClose} sync={controlOf(relay, createMemoryKeyStore())} />
+        <ObservationCount />
+      </>
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    fireEvent.click(await screen.findByText(/Explore Demo Data/i));
+    await waitFor(() => expect(handleClose).toHaveBeenCalledOnce());
+    expect(screen.getByTestId('count')).toHaveTextContent('56');
   });
 
   it('closes with Start Fresh, the close button, the overlay and Escape', () => {

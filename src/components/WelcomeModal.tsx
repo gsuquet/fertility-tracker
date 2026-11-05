@@ -48,7 +48,10 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, 
   );
   const { loadDemoData } = useCycle();
   // ADR 0012: a device in a vault never loads the demo days
-  const demoAllowed = useHasSyncRecord(sync) === false;
+  const hasRecord = useHasSyncRecord(sync);
+  // The device joined a vault after the guide opened, for example with an invitation link
+  const [joinedSince, setJoinedSince] = useState(false);
+  const demoAllowed = hasRecord === false && !joinedSince;
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
@@ -61,7 +64,17 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, 
   const handleNext = () => setCurrentStep(prev => prev + 1);
   const handlePrev = () => setCurrentStep(prev => prev - 1);
 
-  const handleLoadDemo = () => {
+  const handleLoadDemo = async () => {
+    if (sync?.enabled) {
+      const record = await sync
+        .services()
+        .then(({ keyStore }) => keyStore.load())
+        .catch(() => undefined);
+      if (record !== null) {
+        setJoinedSince(true);
+        return;
+      }
+    }
     loadDemoData();
     handleDismiss();
   };
@@ -326,7 +339,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, 
                   <button
                     type="button"
                     className="btn btn-secondary load-demo-btn"
-                    onClick={handleLoadDemo}
+                    onClick={() => void handleLoadDemo()}
                   >
                     <PlayCircle size={18} />
                     <span>{welcomeT.loadDemoData}</span>
