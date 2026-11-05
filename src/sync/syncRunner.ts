@@ -1,6 +1,6 @@
 /** One sync of the application with the vault of the device. See docs/reference/sync-client.md. */
 import type { Observation, ObservationInput } from '../types/crms';
-import { dropBase, keepEditsDuringSync, newSyncState, syncOnce } from '../domain/sync/engine';
+import { keepEditsDuringSync, newSyncState, syncOnce } from '../domain/sync/engine';
 import type { SyncResult } from '../domain/sync/engine';
 import { addConflicts } from '../domain/sync/merge';
 import {
@@ -18,6 +18,7 @@ import type { RelayClient } from './relayClient';
 export interface SyncStorage {
   read(key: string): string | null;
   write(key: string, value: string): boolean;
+  remove(key: string): void;
 }
 
 export interface RunInput {
@@ -63,7 +64,7 @@ export interface FinishInput {
 
 /**
  * Saves the result of a sync in the sequence of the sync rules: the observations, then the state,
- * then the conflicts. True when the sync result is saved.
+ * then the conflicts. True when each write succeeds.
  */
 export function finishSync(result: RunResult, input: FinishInput): boolean {
   const { storage } = input;
@@ -74,18 +75,14 @@ export function finishSync(result: RunResult, input: FinishInput): boolean {
   if (result.status !== 'synced') return false;
   const kept = keepEditsDuringSync(result, input.sent, input.current);
   if (!input.applyObservations(kept.observations, result.changed)) return false;
-  storage.write(STORAGE_SYNC_STATE_KEY, serializeSyncState(result.state));
+  if (!storage.write(STORAGE_SYNC_STATE_KEY, serializeSyncState(result.state))) {
+    // An old state would make the days of the vault look like local changes: a first sync is safe
+    storage.remove(STORAGE_SYNC_STATE_KEY);
+    return false;
+  }
   const conflicts = parseConflicts(storage.read(STORAGE_SYNC_CONFLICTS_KEY));
-  storage.write(
+  return storage.write(
     STORAGE_SYNC_CONFLICTS_KEY,
     serializeConflicts(addConflicts(conflicts, kept.conflicts))
   );
-  return true;
-}
-
-/** Removes the base of the stored state at a load with damaged data: the vault wins at the next sync. */
-export function dropBaseAtLoad(storage: SyncStorage, observations: Observation[]): void {
-  const state = parseSyncState(storage.read(STORAGE_SYNC_STATE_KEY));
-  if (state)
-    storage.write(STORAGE_SYNC_STATE_KEY, serializeSyncState(dropBase(state, observations)));
 }

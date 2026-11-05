@@ -7,7 +7,7 @@ import type { ObservationInput } from '../../types/crms';
 import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
 import { createVault, vaultStoreOf } from '../deviceVault';
 import type { DeviceRecord } from '../keyStore';
-import { dropBaseAtLoad, finishSync, runSync } from '../syncRunner';
+import { finishSync, runSync } from '../syncRunner';
 import type { RunInput, SyncStorage } from '../syncRunner';
 
 const memoryStorage = (): SyncStorage & { items: Map<string, string> } => {
@@ -18,6 +18,9 @@ const memoryStorage = (): SyncStorage & { items: Map<string, string> } => {
     write: (key, value) => {
       items.set(key, value);
       return true;
+    },
+    remove: key => {
+      items.delete(key);
     },
   };
 };
@@ -136,6 +139,20 @@ describe('finishSync', () => {
     ]);
   });
 
+  it('deletes the sync state when its write fails, and gives false when the conflicts do not save', async () => {
+    const { input, storage } = await setup();
+    const result = await runSync(input());
+    storage.write(STORAGE_SYNC_STATE_KEY, 'old');
+    const write = storage.write;
+    storage.write = (key, value) => key !== STORAGE_SYNC_STATE_KEY && write(key, value);
+    expect(finishSync(result, { ...base, storage })).toBe(false);
+    expect(storage.read(STORAGE_SYNC_STATE_KEY)).toBeNull();
+    expect(storage.read(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
+    storage.write = (key, value) => key !== STORAGE_SYNC_CONFLICTS_KEY && write(key, value);
+    expect(finishSync(result, { ...base, storage })).toBe(false);
+    expect(storage.read(STORAGE_SYNC_STATE_KEY)).not.toBeNull();
+  });
+
   it('writes the state of a cancelled or busy result, and nothing for the other results', async () => {
     const storage = memoryStorage();
     const state = {
@@ -153,23 +170,5 @@ describe('finishSync', () => {
     for (const result of [{ status: 'off' }, { status: 'skipped', reason: 'saveFailed' }] as const)
       expect(finishSync(result, { ...base, storage })).toBe(false);
     expect(storage.items.size).toBe(0);
-  });
-});
-
-describe('dropBaseAtLoad', () => {
-  it('removes the base of the stored state, and does nothing without a state', () => {
-    const storage = memoryStorage();
-    dropBaseAtLoad(storage, []);
-    expect(storage.items.size).toBe(0);
-    const clock = { time: 1, counter: 0, member: 'm' };
-    const local = [{ date: '2026-10-01', day: null, clock }];
-    storage.write(
-      STORAGE_SYNC_STATE_KEY,
-      serializeSyncState({ member: 'm', clock, local, base: local })
-    );
-    dropBaseAtLoad(storage, [day('2026-10-02', 'H')]);
-    const state = parseSyncState(storage.read(STORAGE_SYNC_STATE_KEY));
-    expect(state?.base).toBeNull();
-    expect(state?.local.map(d => [d.date, d.clock.time])).toEqual([['2026-10-02', 0]]);
   });
 });

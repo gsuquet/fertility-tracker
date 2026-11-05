@@ -145,7 +145,7 @@ The application then saves these observations, then the state of the result, and
 
 `newSyncState(member, observations)` gives the state of a device that joins a vault. Its days come from `firstSyncDays()`, and it has no base.
 
-`dropBase(state, observations)` removes the base and gives the days of `firstSyncDays()` to the state. The application calls it at load when `parseObservationData()` gives `null` or `droppedCount` is more than 0. Thus, the next sync is a first sync, and the vault wins on each date.
+`dropBase(state, observations)` removes the base and gives the days of `firstSyncDays()` to the state. At a damaged load, the application deletes the stored state instead ([Sync in the application](sync-client.md#sync-in-the-application)). The effect is the same: the next sync is a first sync, and the vault wins on each date.
 
 ## Stored state
 

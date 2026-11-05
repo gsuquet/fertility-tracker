@@ -30,6 +30,7 @@ import {
   STORAGE_LAST_SYNC_KEY as LAST_SYNC_KEY,
   STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
   STORAGE_RECOVERY_KEY as RECOVERY_KEY,
+  STORAGE_SYNC_STATE_KEY as SYNC_STATE_KEY,
   STORAGE_UNDO_KEY as UNDO_KEY,
 } from '../utils/storageKeys';
 import type { ImportMode } from '../domain/backupImport';
@@ -86,8 +87,8 @@ export interface CycleDataContextType {
   lastSyncDate: string | null;
   /** Records today as the date of the last sync. */
   markSynced: () => void;
-  /** True when, at this load, the stored observations could not be read or had dropped records. */
-  loadDamaged: boolean;
+  /** True when the observations key was missing from the browser storage at this load. */
+  loadMissing: boolean;
 }
 
 export interface CycleUiContextType {
@@ -150,7 +151,7 @@ const keepOneManualPeak = (list: Observation[], date: string): Observation[] => 
  * key is empty, and returns it as `recoveryData`. `recoveryKept` is false when no copy was
  * written: the app must then not save over the original text.
  */
-const loadStoredState = () => {
+const readStoredState = () => {
   const raw = readStorage(STORAGE_KEY) ?? '[]';
   const parsed = parseObservationData(raw);
   const keepCopy = () => readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
@@ -187,6 +188,17 @@ const loadStoredState = () => {
   };
 };
 
+/**
+ * The stored state, and the facts of this load for the sync. At a damaged load, the sync state
+ * goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
+ */
+const loadStoredState = () => {
+  const missing = readStorage(STORAGE_KEY) === null;
+  const state = readStoredState();
+  if (state.damaged) removeStorage(SYNC_STATE_KEY);
+  return { ...state, missing };
+};
+
 interface UndoState {
   change: DataChange;
   observations: Observation[];
@@ -212,7 +224,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   );
   const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
   const [lastSyncDate, setLastSyncDate] = useState(() => readStorage(LAST_SYNC_KEY));
-  const { damaged: loadDamaged } = initialState;
+  const { missing: loadMissing } = initialState;
   const persistRequested = useRef(false);
   const hasData = observations.length > 0;
   const hasUserData = hasUserObservations(observations);
@@ -233,6 +245,18 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     if (!recoveryKept && observations === initialState.observations) return;
     setSaveFailed(!writeStorage(STORAGE_KEY, serializeObservations(observations)));
   }, [observations, recoveryKept, initialState.observations]);
+
+  // Another tab of the application saved observations: this tab shows them, and a sync in this
+  // tab then starts from them, not from an old list.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      if (event.key !== STORAGE_KEY || event.newValue === null) return;
+      const parsed = parseObservationData(event.newValue);
+      if (parsed) setObservations(reprocessObservations(parsed.observations));
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // Ask once, when there is data to keep, so that the browser does not evict it.
   useEffect(() => {
@@ -418,7 +442,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       applySyncedObservations,
       lastSyncDate,
       markSynced,
-      loadDamaged,
+      loadMissing,
     }),
     [
       observations,
@@ -446,7 +470,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       applySyncedObservations,
       lastSyncDate,
       markSynced,
-      loadDamaged,
+      loadMissing,
     ]
   );
 

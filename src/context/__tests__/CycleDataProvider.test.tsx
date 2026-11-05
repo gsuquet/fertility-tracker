@@ -733,23 +733,50 @@ describe('synced observations', () => {
     expect(result.current.observations).toEqual([]);
   });
 
-  it('saves the date of the last sync, and tells when the load was damaged', () => {
+  it('saves the date of the last sync, and tells when the observations key was missing at the load', () => {
     vi.useFakeTimers();
     vi.setSystemTime(new Date('2026-06-10T12:00:00'));
     const { result } = renderData();
     expect(result.current.lastSyncDate).toBeNull();
-    expect(result.current.loadDamaged).toBe(false);
+    expect(result.current.loadMissing).toBe(true);
     act(() => result.current.markSynced());
     expect(result.current.lastSyncDate).toBe('2026-06-10');
     expect(localStorage.getItem('fertility_care_last_sync')).toBe('2026-06-10');
     vi.useRealTimers();
+    expect(renderData().result.current.loadMissing).toBe(false);
+  });
+
+  it('deletes the sync state at a damaged load, and keeps it at a good load', () => {
+    const SYNC_STATE_KEY = 'fertility_care_sync_state';
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBe('state');
     localStorage.setItem(STORAGE_KEY, '{corrupt');
-    expect(renderData().result.current.loadDamaged).toBe(true);
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+    localStorage.clear();
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
     localStorage.setItem(
       STORAGE_KEY,
       JSON.stringify([{ date: 'bad' }, makeObservation({ date: '2026-06-01' })])
     );
-    localStorage.removeItem(RECOVERY_KEY);
-    expect(renderData().result.current.loadDamaged).toBe(true);
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+  });
+
+  it('shows the observations that another tab saved', () => {
+    const { result } = renderData();
+    const other = JSON.stringify([makeObservation({ date: '2026-06-01', bleeding: 'H' })]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other', newValue: other }));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: null }));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: '{bad' }));
+    });
+    expect(result.current.observations).toEqual([]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: other }));
+    });
+    expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01']);
   });
 });

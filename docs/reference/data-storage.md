@@ -127,7 +127,10 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - When `changed` is `true`, it deletes the undo copy, as `saveObservation()` does. Thus, **Undo** never brings back an old list over remote changes.
 - The selected cycle does not change.
 
-`markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`. `loadDamaged` is `true` when, at this load, `parseObservationData()` gave `null` or `droppedCount` was more than 0.
+`markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`. `loadMissing` is `true` when the observations key was missing at this load.
+
+- When `parseObservationData()` gives `null` or `droppedCount` is more than 0 at the load, the provider deletes `fertility_care_sync_state` at once.
+- When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. A value that is not readable changes nothing.
 
 ## Undo of replaced data
 

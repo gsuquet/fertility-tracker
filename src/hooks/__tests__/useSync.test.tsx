@@ -3,7 +3,8 @@ import { act, renderHook, waitFor } from '@testing-library/react';
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { CycleProvider, useCycleData } from '../../context/CycleContext';
 import { LanguageProvider } from '../../context/LanguageContext';
-import { createVault } from '../../sync/deviceVault';
+import { createVault, vaultStoreOf } from '../../sync/deviceVault';
+import type { DeviceRecord } from '../../sync/keyStore';
 import * as runner from '../../sync/syncRunner';
 import { SYNC_ENABLED } from '../../sync/syncFlag';
 import { makeObservation } from '../../test/factories';
@@ -237,33 +238,46 @@ describe('useSync', () => {
     await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
   });
 
-  it('removes the base at a damaged load, and asks before it deletes more than 7 days', async () => {
+  it('reads the vault as a new device when the observations key was missing at the load', async () => {
+    const { load, relay, keyStore } = await setup();
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([makeObservation({ date: '2026-10-01', bleeding: 'H' })])
+    );
+    const first = render(load);
+    await waitFor(() => expect(first.result.current.lastSyncDate).not.toBeNull());
+    first.unmount();
+    // The browser lost the observations, but not the sync state
+    localStorage.removeItem(STORAGE_KEY);
+    expect(localStorage.getItem(STATE_KEY)).not.toBeNull();
+    const second = render(load);
+    await waitFor(() => expect(second.result.current.observations).toHaveLength(1));
+    const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true]);
+  });
+
+  it('does not sync a list that another tab changed, and uses a Web Lock when the browser has one', async () => {
+    const { load, runs } = await setup();
+    const request = vi.fn((_name: string, run: () => Promise<void>) => run());
+    Object.defineProperty(navigator, 'locks', { configurable: true, value: { request } });
+    const { result } = render(load);
+    await waitFor(() => expect(result.current.lastSyncDate).not.toBeNull());
+    expect(request).toHaveBeenCalledWith('fertility-tracker-sync', expect.any(Function));
+    await settle();
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-10-09' })]));
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await settle();
+    expect(request).toHaveBeenCalledTimes(2);
+    expect(runs.count).toBe(1);
+    Reflect.deleteProperty(navigator, 'locks');
+  });
+
+  it('asks before it deletes more than 7 days', async () => {
     const { load, services } = await setup();
-    const drop = vi.spyOn(services.runner, 'dropBaseAtLoad');
-    localStorage.setItem(STORAGE_KEY, '{corrupt');
-    load.mockRejectedValueOnce(new Error('offline'));
     render(load);
-    await waitFor(() => expect(load).toHaveBeenCalledTimes(1));
-    act(() => {
-      window.dispatchEvent(new Event('online'));
-    });
-    await waitFor(() => expect(drop).toHaveBeenCalledTimes(1));
     await settle();
-    // A second load of the code after an error does not remove the base again
-    services.keyStore.load = vi
-      .fn()
-      .mockRejectedValueOnce(new Error('storage'))
-      .mockImplementation(createMemoryKeyStore().load);
-    act(() => {
-      window.dispatchEvent(new Event('online'));
-    });
-    await settle();
-    act(() => {
-      window.dispatchEvent(new Event('online'));
-    });
-    await waitFor(() => expect(load).toHaveBeenCalledTimes(3));
-    await settle();
-    expect(drop).toHaveBeenCalledTimes(1);
     const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
     const runSync = services.runner.runSync;
     let answer: boolean | undefined;

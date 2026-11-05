@@ -9,7 +9,8 @@ import { formatMessage } from '../i18n';
 import { SYNC_ENABLED } from '../sync/syncFlag';
 import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
-import { readStorage, writeStorage } from '../utils/storage';
+import { serializeObservations } from '../domain/storageFormat';
+import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import { STORAGE_OBSERVATIONS_KEY } from '../utils/storageKeys';
 
 /** A page that becomes visible syncs only when the last sync started this long ago. */
@@ -37,7 +38,13 @@ const loadServices = async (): Promise<SyncServices> => {
   };
 };
 
-const storage = { read: readStorage, write: writeStorage };
+const storage = { read: readStorage, write: writeStorage, remove: removeStorage };
+
+/** One sync at a time for all the tabs of the application, when the browser has Web Locks. */
+const withSyncLock = (run: () => Promise<void>): Promise<void> =>
+  globalThis.navigator?.locks
+    ? globalThis.navigator.locks.request('fertility-tracker-sync', run)
+    : run();
 
 export function useSync(
   enabled: boolean = SYNC_ENABLED,
@@ -52,7 +59,7 @@ export function useSync(
   const again = useRef(false);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
-  const baseDropped = useRef(false);
+  const syncedOnce = useRef(false);
 
   const sync = useCallback(async () => {
     if (running.current) {
@@ -62,42 +69,44 @@ export function useSync(
     running.current = true;
     lastStart.current = Date.now();
     try {
-      services.current ??= load().then(loaded => {
-        // Only one time for each load of the application, before its first sync
-        if (latest.current.data.loadDamaged && !baseDropped.current) {
-          baseDropped.current = true;
-          loaded.runner.dropBaseAtLoad(storage, latest.current.data.observations);
-        }
-        return loaded;
-      });
+      services.current ??= load();
       const { runner, relay, keyStore } = await services.current;
-      const sent = latest.current.data;
-      const result = await runner.runSync({
-        relay,
-        keyStore,
-        storage,
-        observations: sent.observations,
-        observationsMissing: readStorage(STORAGE_OBSERVATIONS_KEY) === null,
-        recoveryData: sent.recoveryData !== null,
-        saveFailed: sent.saveFailed,
-        now: Date.now(),
-        confirmDeletions: async dates =>
-          window.confirm(
-            formatMessage(latest.current.t.sync.confirmDeletions, { count: dates.length })
-          ),
+      await withSyncLock(async () => {
+        const sent = latest.current.data;
+        // Another tab saved other observations: this tab gets them first, with the storage event
+        const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
+        if (stored !== null && stored !== serializeObservations(sent.observations)) return;
+        const result = await runner.runSync({
+          relay,
+          keyStore,
+          storage,
+          observations: sent.observations,
+          // Until the first saved sync, a key that was missing at the load is still missing
+          observationsMissing: sent.loadMissing && !syncedOnce.current,
+          recoveryData: sent.recoveryData !== null,
+          saveFailed: sent.saveFailed,
+          now: Date.now(),
+          confirmDeletions: async dates =>
+            window.confirm(
+              formatMessage(latest.current.t.sync.confirmDeletions, { count: dates.length })
+            ),
+        });
+        const saved = runner.finishSync(result, {
+          storage,
+          sent: sent.observations,
+          current: latest.current.data.observations,
+          applyObservations: (observations, changed) => {
+            appliedBySync.current = true;
+            const ok = latest.current.data.applySyncedObservations(observations, changed);
+            if (!ok) appliedBySync.current = false;
+            return ok;
+          },
+        });
+        if (saved) {
+          syncedOnce.current = true;
+          latest.current.data.markSynced();
+        }
       });
-      const saved = runner.finishSync(result, {
-        storage,
-        sent: sent.observations,
-        current: latest.current.data.observations,
-        applyObservations: (observations, changed) => {
-          appliedBySync.current = true;
-          const ok = latest.current.data.applySyncedObservations(observations, changed);
-          if (!ok) appliedBySync.current = false;
-          return ok;
-        },
-      });
-      if (saved) latest.current.data.markSynced();
     } catch {
       // The key store or the code did not load: the next event loads it again
       services.current = null;
