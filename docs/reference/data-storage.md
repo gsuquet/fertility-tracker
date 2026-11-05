@@ -29,6 +29,10 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_LAST_BACKUP_KEY`           | `fertility_care_last_backup`              | Date of the last JSON backup, `YYYY-MM-DD`                                                                                |
 | `STORAGE_BACKUP_REMINDER_START_KEY` | `fertility_care_backup_reminder_start`    | Start date of the backup reminder, `YYYY-MM-DD`                                                                           |
 | `STORAGE_BACKUP_SNOOZED_UNTIL_KEY`  | `fertility_care_backup_snoozed_until`     | End date of the reminder snooze, `YYYY-MM-DD`                                                                             |
+| `STORAGE_OBSERVATIONS_MARK_KEY`     | `fertility_care_observations_mark`        | The mark of the stored observations ([Synced observations](#synced-observations))                                         |
+| `STORAGE_SYNC_STATE_KEY`            | `fertility_care_sync_state`               | The sync state of the device ([Sync in the application](sync-client.md#sync-in-the-application))                          |
+| `STORAGE_SYNC_CONFLICTS_KEY`        | `fertility_care_sync_conflicts`           | The days that lost a conflict of the sync                                                                                 |
+| `STORAGE_LAST_SYNC_KEY`             | `fertility_care_last_sync`                | Date of the last sync, `YYYY-MM-DD`                                                                                       |
 | `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                                    |
 | `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                                  |
 | `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | **Direct Code Only**: `direct` or `detailed`                                                                              |
@@ -107,13 +111,33 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - `saveObservation()` gives a new `id` (`obs_DATE_TIME`) to a day whose `id` starts with `demo_`. Thus, a changed demo day is an observation of the user.
 - Delete, the manual Peak Day and the merge find a day by its new `id` or by its date.
 
-`isBackupDue({ lastBackupDate, reminderStart, snoozedUntil }, observations, today)` is `true` when all these conditions are true:
+`isBackupDue({ lastBackupDate, lastSyncDate, reminderStart, snoozedUntil }, observations, today)` is `true` when all these conditions are true:
 
 - At least one observation is not demo data. Its `id` does not start with `demo_`.
 - No snooze is active. `snoozedUntil` is missing, is not a valid date, or is not after `today`.
-- `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup. Without a valid backup date, the count starts at `reminderStart`. Without either date, the result is `false`.
+- `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup or the last sync. Without a valid backup date or sync date, the count starts at `reminderStart`. Without these dates, the result is `false`.
 
 `BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** downloads the backup file at once, as in Settings. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`. Thus, the message stays hidden after a reload.
+
+## Synced observations
+
+`applySyncedObservations(inputs, changed)` in `useCycleData()` replaces the observations with the result of a sync ([Sync in the application](sync-client.md#sync-in-the-application)).
+
+- It makes each observation as `saveObservation()` does. Then it calculates the cycles, the Peak Days and the stamps again.
+- It writes `fertility_care_observations` at once. When the write fails, it gives `false`, `saveFailed` becomes `true` and the observations do not change.
+- When `changed` is `true`, it deletes the undo copy, as `saveObservation()` does. Thus, **Undo** never brings back an old list over remote changes.
+- The selected cycle does not change, unless the cycle no longer exists.
+
+`markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`.
+
+These rules keep the sync state safe ([syncTrust.ts](../../src/utils/syncTrust.ts)):
+
+- Each write of `fertility_care_observations` also writes its mark, the FNV-1a hash of the text, to `fertility_care_observations_mark`. A version without the sync writes no mark.
+- `checkStoredMark(text)` deletes `fertility_care_sync_state` when the stored text does not have its mark. The provider calls it at the load, before each write and for each `storage` event.
+- The provider deletes `fertility_care_sync_state` at the load when the observations key is missing. It also deletes it when `parseObservationData()` gives `null` or `droppedCount` is more than 0.
+- When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. This tab does not write them back.
+- A value that is not readable, or that has a record that this version drops, changes nothing. The value stays in the storage.
+- When another tab writes observations that this tab can read, or deletes `fertility_care_observations_undo`, this tab forgets its undo copy. Thus, **Undo** never brings back an old list over a change of another tab.
 
 ## Undo of replaced data
 

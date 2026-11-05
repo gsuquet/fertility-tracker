@@ -14,6 +14,8 @@ export const DEMO_ID_PREFIX = 'demo_';
 export interface BackupReminderDates {
   /** The date of the last JSON backup. */
   lastBackupDate: string | null;
+  /** The date of the last sync. A sync also keeps a copy of the observations. */
+  lastSyncDate?: string | null;
   /** The date when the first observation that is not demo data existed. */
   reminderStart: string | null;
   /** The reminder stays hidden before this date. */
@@ -32,8 +34,8 @@ const validDate = (date: string | null): string | null =>
 
 /**
  * True when the user has observations that are not demo data, no snooze is active, and
- * `BACKUP_REMINDER_DAYS` or more passed since the last backup. Without a valid last backup
- * date, the count starts at `reminderStart`.
+ * `BACKUP_REMINDER_DAYS` or more passed since the last backup or sync. Without a valid backup
+ * or sync date, the count starts at `reminderStart`.
  */
 export function isBackupDue(
   dates: BackupReminderDates,
@@ -43,6 +45,9 @@ export function isBackupDue(
   if (!hasUserObservations(observations)) return false;
   const snoozedUntil = validDate(dates.snoozedUntil);
   if (snoozedUntil !== null && today < snoozedUntil) return false;
-  const since = validDate(dates.lastBackupDate) ?? validDate(dates.reminderStart);
+  const copies = [validDate(dates.lastBackupDate), validDate(dates.lastSyncDate ?? null)].filter(
+    (date): date is string => date !== null
+  );
+  const since = copies.sort().at(-1) ?? validDate(dates.reminderStart);
   return since !== null && getDaysDifference(since, today) >= BACKUP_REMINDER_DAYS;
 }

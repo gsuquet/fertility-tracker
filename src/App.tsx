@@ -11,6 +11,7 @@ import { useToast } from './hooks/useToast';
 import type { ActiveTab } from './types/crms';
 import { useShortcut } from './hooks/useKeyboardShortcuts';
 import { useBackUpNow } from './hooks/useBackUpNow';
+import { useSync } from './hooks/useSync';
 
 import { Header } from './components/Header';
 import { MobileNav } from './components/MobileNav';
@@ -128,6 +129,7 @@ const MainApp: React.FC = () => {
   const installMode = useInstallMode();
   // The dot on the app icon while today has no observation, when the user turned it on
   useAppBadge(observations);
+  useSync();
   const [printCycleIds, setPrintCycleIds] = useState<string[]>(['all']);
   // The print view is a lazy chunk: the app prints only after it has rendered
   const [printView, setPrintView] = useState<'loading' | 'ready' | 'failed'>('loading');

@@ -4,7 +4,7 @@ This page gives the rules of the sync client of the application: the relay clien
 
 **Source folder:** [src/sync/](../../src/sync/)
 
-Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#plan) is complete, the application does not call these functions.
+Until `SYNC_ENABLED` is `true`, the application does not call these functions. The pull request that adds the R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)) also sets the flag.
 
 ## Files
 
@@ -15,6 +15,8 @@ Until step 3 of the [ADR plan](../records/adrs/0012-encrypted-sync-and-partner-s
 | `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 | `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
+| `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the relay has its R2 bucket          |
+| `syncRunner.ts`     | `runSync()` and `finishSync()`: one sync of the application        |
 
 ## Relay client
 
@@ -171,6 +173,51 @@ It gives a `keys` error when the device has no lookup copy. The application show
 It gives a `code` error when the code is not valid or the lookup object does not decrypt. It gives a `keys` error when the recovery blob does not decrypt.
 
 When the vault changed, `removeMember()`, `newRecoveryCode()` and `recoverWithCode()` give a `relay` error with the status `412`.
+
+## Sync in the application
+
+`runSync(input)` does one sync for the device record in the key store. It uses `syncOnce()` of the [sync engine](sync-rules.md#sync) with `vaultStoreOf()`.
+
+- Without a device record, it gives the status `off`. It does not read the sync state or the vault.
+- It reads the sync state from `fertility_care_sync_state`. Without a valid state of the member of the record, it uses `newSyncState()`. Thus, the sync is a first sync.
+- Before it reads the vault, it stamps the local changes with `stampLocalChanges()`. Thus, a change keeps its clock when the relay fails.
+- A `VaultError` gives the status `error` with the error and the stamped state.
+- The other results of `syncOnce()` come back without a change. `runSync()` writes nothing to the browser storage.
+
+For a `synced` result, `finishSync(result, input)` does these steps in this sequence:
+
+- It calls `keepEditsDuringSync()` with the observations of the sync and the current observations.
+- It saves the observations with `applySyncedObservations()`. When the save fails, it stops. The sync state does not change.
+- It writes the state of the result to `fertility_care_sync_state`. When this write fails, it deletes the stored state and stops. Thus, the next sync is a first sync.
+- It adds the conflicts to `fertility_care_sync_conflicts` with `addConflicts()`.
+
+`finishSync()` gives `true` when each write succeeds. Then `useSync()` calls `markSynced()`, which writes today to `fertility_care_last_sync`.
+
+For a `cancelled`, `busy` or `error` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
+
+At load, the provider deletes `fertility_care_sync_state` at once when the stored observations are damaged, missing or without their correct mark. Thus, the next sync is a first sync, and the vault wins on each date ([Safety of the local data](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#safety-of-the-local-data)).
+
+### When the application syncs
+
+`useSync()` in [useSync.ts](../../src/hooks/useSync.ts) starts a sync in these conditions, as [When a sync occurs](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#when-a-sync-occurs) gives:
+
+| Event                                 | Sync                                                 |
+| ------------------------------------- | ---------------------------------------------------- |
+| The application opens                 | At once                                              |
+| The page becomes visible              | When the last sync started 60 seconds ago or earlier |
+| The browser goes online               | At once                                              |
+| An observation changes on this device | 5 seconds after the last change                      |
+
+- Only one sync runs at a time in a tab. A sync that starts while a sync runs occurs after the running sync.
+- When the browser has Web Locks, the lock `fertility-tracker-sync` lets only one tab sync at a time.
+- A tab does not sync when the stored observations are not its observations. The `storage` event gives it a list that it can read, as [Synced observations](data-storage.md#synced-observations) gives. Else, the tab syncs again only after its next save.
+- When the mark of the stored observations is not correct, a version without the sync wrote them. The tab then deletes the sync state before it syncs. Thus, the sync is a first sync.
+- When `checkStoredMark()` deletes the sync state during a sync, the tab deletes the state of that sync after `finishSync()`.
+- `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
+- A change that a sync applies does not start a sync.
+- When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
+- When the key store or the sync code fails, the next event tries again.
+- While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
 
 ## Related documents
 

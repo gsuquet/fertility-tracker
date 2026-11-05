@@ -683,4 +683,8 @@ export const fr: TranslationSchema = {
     exportDate: 'Date d’export : {date}',
     cyclesIncluded: 'Cycles inclus : {count}',
   },
+  sync: {
+    confirmDeletions:
+      'La synchronisation supprime {count} jours sur cet appareil, à partir de modifications sur vos autres appareils. Continuer ?',
+  },
 };

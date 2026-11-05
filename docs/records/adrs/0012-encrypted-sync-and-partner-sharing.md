@@ -268,7 +268,7 @@ When a device with observations joins a vault, its days get clock 0. Thus, on th
 
 ### Safety of the local data
 
-At load, when `parseObservationData()` gives `null` or `droppedCount` is more than 0, the device drops its base from the sync state at once. This occurs before any comparison. The device keeps its keys. Its next sync is a first sync, as [First sync](#first-sync) gives. Then these rules apply:
+At load, when `parseObservationData()` gives `null` or `droppedCount` is more than 0, the device deletes its sync state at once, and thus its base. This occurs before any comparison. The device keeps its keys. Its next sync is a first sync, as [First sync](#first-sync) gives. Then these rules apply:
 
 | Condition                                         | Result                                                                     |
 | ------------------------------------------------- | -------------------------------------------------------------------------- |

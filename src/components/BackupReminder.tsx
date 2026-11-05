@@ -14,6 +14,7 @@ export const BackupReminder: React.FC<BackupReminderProps> = ({ onBackUp }) => {
   const {
     observations,
     lastBackupDate,
+    lastSyncDate,
     backupReminderStart,
     backupSnoozedUntil,
     snoozeBackupReminder,
@@ -22,6 +23,7 @@ export const BackupReminder: React.FC<BackupReminderProps> = ({ onBackUp }) => {
 
   const dates = {
     lastBackupDate,
+    lastSyncDate,
     reminderStart: backupReminderStart,
     snoozedUntil: backupSnoozedUntil,
   };

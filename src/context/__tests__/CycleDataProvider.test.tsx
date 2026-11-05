@@ -5,6 +5,7 @@ import { CycleProvider, useCycleData } from '../CycleContext';
 import { makeObservation } from '../../test/factories';
 import type { Observation } from '../../types/crms';
 import { validateObservation } from '../../domain/dataValidator';
+import { markOf } from '../../utils/textMark';
 
 const STORAGE_KEY = 'fertility_care_observations';
 const RECOVERY_KEY = 'fertility_care_observations_recovery';
@@ -678,5 +679,161 @@ describe('CycleDataProvider', () => {
       expect(localStorage.getItem(SNOOZE_KEY)).toBe('2026-11-03');
       expect(renderData().result.current.backupSnoozedUntil).toBe('2026-11-03');
     });
+  });
+});
+
+describe('synced observations', () => {
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  it('saves the observations of a sync at once, keeps the ids of the dates, and deletes the undo copy for a change', () => {
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([makeObservation({ id: 'obs_kept', date: '2026-06-01' })])
+    );
+    const { result } = renderData();
+    act(() => {
+      result.current.importDataJson(
+        JSON.stringify([makeObservation({ date: '2026-05-01' })]),
+        'merge'
+      );
+    });
+    expect(result.current.undoChange).toBe('merge');
+    let ok = false;
+    act(() => {
+      ok = result.current.applySyncedObservations([{ date: '2026-06-01', bleeding: 'H' }], false);
+    });
+    expect(ok).toBe(true);
+    expect(result.current.undoChange).toBe('merge');
+    expect(storedList()).toHaveLength(1);
+    expect(result.current.observations[0]).toMatchObject({
+      id: 'obs_kept',
+      bleeding: 'H',
+      stamp: 'RED',
+    });
+    act(() => {
+      result.current.applySyncedObservations([{ date: '2026-06-02', bleeding: 'M' }], true);
+    });
+    expect(result.current.undoChange).toBeNull();
+    expect(result.current.observations[0]?.id).toMatch(/^obs_2026-06-02_/);
+  });
+
+  it('gives false and keeps the observations when the browser refuses the write', () => {
+    const { result } = renderData();
+    const spy = vi.spyOn(localStorage, 'setItem').mockImplementation(() => {
+      throw new Error('QuotaExceededError');
+    });
+    let ok = true;
+    act(() => {
+      ok = result.current.applySyncedObservations([{ date: '2026-06-01', bleeding: 'H' }], true);
+    });
+    spy.mockRestore();
+    expect(ok).toBe(false);
+    expect(result.current.saveFailed).toBe(true);
+    expect(result.current.observations).toEqual([]);
+  });
+
+  it('saves the date of the last sync, and the mark of the stored observations', () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(new Date('2026-06-10T12:00:00'));
+    const { result } = renderData();
+    expect(result.current.lastSyncDate).toBeNull();
+    act(() => result.current.markSynced());
+    expect(result.current.lastSyncDate).toBe('2026-06-10');
+    expect(localStorage.getItem('fertility_care_last_sync')).toBe('2026-06-10');
+    vi.useRealTimers();
+    const stored = localStorage.getItem(STORAGE_KEY) as string;
+    expect(localStorage.getItem('fertility_care_observations_mark')).toBe(markOf(stored));
+  });
+
+  it('deletes the sync state at a damaged load, and keeps it at a good load', () => {
+    const SYNC_STATE_KEY = 'fertility_care_sync_state';
+    const text = JSON.stringify([makeObservation({ date: '2026-06-01' })]);
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
+    localStorage.setItem(STORAGE_KEY, text);
+    localStorage.setItem('fertility_care_observations_mark', markOf(text));
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBe('state');
+    // A list without its mark comes from a version without the sync
+    localStorage.setItem(STORAGE_KEY, text);
+    localStorage.setItem('fertility_care_observations_mark', 'other');
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
+    localStorage.setItem(STORAGE_KEY, '{corrupt');
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+    localStorage.clear();
+    localStorage.setItem(SYNC_STATE_KEY, 'state');
+    localStorage.setItem(
+      STORAGE_KEY,
+      JSON.stringify([{ date: 'bad' }, makeObservation({ date: '2026-06-01' })])
+    );
+    renderData();
+    expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
+  });
+
+  it('deletes the sync state when the observations key is missing at the load', () => {
+    localStorage.setItem('fertility_care_sync_state', 'state');
+    renderData();
+    expect(localStorage.getItem('fertility_care_sync_state')).toBeNull();
+  });
+
+  it('does not take or write back a list of another tab with records that it cannot read', () => {
+    const { result } = renderData();
+    const setItem = vi.spyOn(localStorage, 'setItem');
+    const partly = JSON.stringify([{ date: 'bad' }, makeObservation({ date: '2026-06-01' })]);
+    const good = JSON.stringify([makeObservation({ date: '2026-06-02' })]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: partly }));
+    });
+    expect(result.current.observations).toEqual([]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: good }));
+    });
+    expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-02']);
+    expect(setItem.mock.calls.filter(([key]) => key === STORAGE_KEY)).toEqual([]);
+    setItem.mockRestore();
+  });
+
+  it('forgets its undo copy when another tab deletes the copy or changes the observations', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+    const { result } = renderData();
+    const backup = JSON.stringify([makeObservation({ date: '2026-05-01' })]);
+    act(() => {
+      result.current.importDataJson(backup, 'merge');
+    });
+    expect(result.current.undoChange).toBe('merge');
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: UNDO_KEY, newValue: 'x' }));
+    });
+    expect(result.current.undoChange).toBe('merge');
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: UNDO_KEY, newValue: null }));
+    });
+    expect(result.current.undoChange).toBeNull();
+    act(() => {
+      result.current.importDataJson(backup, 'merge');
+    });
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: backup }));
+    });
+    expect(result.current.undoChange).toBeNull();
+  });
+
+  it('shows the observations that another tab saved', () => {
+    const { result } = renderData();
+    const other = JSON.stringify([makeObservation({ date: '2026-06-01', bleeding: 'H' })]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: 'other', newValue: other }));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: null }));
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: '{bad' }));
+    });
+    expect(result.current.observations).toEqual([]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: other }));
+    });
+    expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-01']);
   });
 });

@@ -677,4 +677,8 @@ export const en = {
     exportDate: 'Export Date: {date}',
     cyclesIncluded: 'Cycles Included: {count}',
   },
+  sync: {
+    confirmDeletions:
+      'The sync deletes {count} days on this device, from changes on your other devices. Continue?',
+  },
 };

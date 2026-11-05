@@ -23,12 +23,17 @@ import {
 import { buildDemoObservations } from '../domain/demoData';
 import { parseObservationData, serializeObservations } from '../domain/storageFormat';
 import { mergeObservations } from '../domain/backupImport';
+import { markOf } from '../utils/textMark';
+import { checkStoredMark } from '../utils/syncTrust';
 import {
   STORAGE_BACKUP_REMINDER_START_KEY as REMINDER_START_KEY,
   STORAGE_BACKUP_SNOOZED_UNTIL_KEY as SNOOZE_KEY,
   STORAGE_LAST_BACKUP_KEY as LAST_BACKUP_KEY,
+  STORAGE_LAST_SYNC_KEY as LAST_SYNC_KEY,
   STORAGE_OBSERVATIONS_KEY as STORAGE_KEY,
+  STORAGE_OBSERVATIONS_MARK_KEY as MARK_KEY,
   STORAGE_RECOVERY_KEY as RECOVERY_KEY,
+  STORAGE_SYNC_STATE_KEY as SYNC_STATE_KEY,
   STORAGE_UNDO_KEY as UNDO_KEY,
 } from '../utils/storageKeys';
 import type { ImportMode } from '../domain/backupImport';
@@ -76,6 +81,15 @@ export interface CycleDataContextType {
   dismissUndo: () => void;
   /** False when the browser refused to store the undo copy: undo then works until a reload. */
   undoPersisted: boolean;
+  /**
+   * Replaces the observations with the result of a sync, and writes them at once. False when the
+   * browser refused the write: the observations then do not change.
+   */
+  applySyncedObservations: (inputs: ObservationInput[], changed: boolean) => boolean;
+  /** The date (`YYYY-MM-DD`) of the last sync, or null. */
+  lastSyncDate: string | null;
+  /** Records today as the date of the last sync. */
+  markSynced: () => void;
 }
 
 export interface CycleUiContextType {
@@ -93,6 +107,31 @@ const CycleUiContext = createContext<CycleUiContextType | undefined>(undefined);
 const reprocessObservations = (rawObs: Observation[]): Observation[] => {
   const groupedCycles = groupObservationsIntoCycles(rawObs);
   return groupedCycles.flatMap(c => c.observations).sort((a, b) => a.date.localeCompare(b.date));
+};
+
+/** The observation of an input, with its stamp and code. A demo day gets a real id. */
+const toObservation = (obsData: ObservationInput): Observation => {
+  const date = obsData.date || getTodayStr();
+  return {
+    // A saved demo day becomes the user's own day, with a real id.
+    id:
+      obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
+        ? obsData.id
+        : `obs_${date}_${Date.now()}`,
+    date,
+    cycleDay: obsData.cycleDay || 1,
+    bleeding: obsData.bleeding,
+    stretch: obsData.stretch,
+    modifiers: obsData.modifiers || [],
+    frequency: obsData.frequency,
+    symptoms: obsData.symptoms || [],
+    intercourse: obsData.intercourse || false,
+    notes: obsData.notes || '',
+    isManualPeak: obsData.isManualPeak || false,
+    isCycleStart: obsData.isCycleStart,
+    stamp: calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []),
+    codeString: obsData.codeString || formatCodeString(obsData),
+  };
 };
 
 /** Clears the manual Peak Day on the other days of the cycle that contains `date`. */
@@ -113,23 +152,67 @@ const keepOneManualPeak = (list: Observation[], date: string): Observation[] => 
  * key is empty, and returns it as `recoveryData`. `recoveryKept` is false when no copy was
  * written: the app must then not save over the original text.
  */
-const loadStoredState = () => {
+const readStoredState = () => {
   const raw = readStorage(STORAGE_KEY) ?? '[]';
   const parsed = parseObservationData(raw);
   const keepCopy = () => readStorage(RECOVERY_KEY) === null && writeStorage(RECOVERY_KEY, raw);
   if (parsed === null) {
-    return { observations: [], droppedCount: 0, recoveryData: raw, recoveryKept: keepCopy() };
+    return {
+      observations: [],
+      droppedCount: 0,
+      recoveryData: raw,
+      recoveryKept: keepCopy(),
+      damaged: true,
+    };
   }
   const observations = reprocessObservations(parsed.observations);
   const { droppedCount } = parsed;
   if (droppedCount > 0) {
-    return { observations, droppedCount, recoveryData: raw, recoveryKept: keepCopy() };
+    return {
+      observations,
+      droppedCount,
+      recoveryData: raw,
+      recoveryKept: keepCopy(),
+      damaged: true,
+    };
   }
   // A copy kept in an earlier session: its records give the number of dropped records again.
   const recoveryData = readStorage(RECOVERY_KEY);
   const keptDropped =
     recoveryData === null ? 0 : (parseObservationData(recoveryData)?.droppedCount ?? 0);
-  return { observations, droppedCount: keptDropped, recoveryData, recoveryKept: true };
+  return {
+    observations,
+    droppedCount: keptDropped,
+    recoveryData,
+    recoveryKept: true,
+    damaged: false,
+  };
+};
+
+/**
+ * The stored state. At a damaged load, without the observations key or without their mark, the
+ * sync state goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
+ */
+const loadStoredState = () => {
+  const stored = readStorage(STORAGE_KEY);
+  const state = readStoredState();
+  // A missing key also deletes it: after a reload, the key holds '[]' and looks like deleted days.
+  // A list without its mark comes from a version without the sync.
+  checkStoredMark(stored);
+  if (state.damaged || stored === null) removeStorage(SYNC_STATE_KEY);
+  return state;
+};
+
+/**
+ * Writes the observations and their mark. A version from before the sync writes no mark: a mark
+ * that is not the mark of the stored text shows a list that the sync must not trust.
+ */
+const writeObservations = (text: string): boolean => {
+  // A good mark must never go over a list of a writer without the sync
+  checkStoredMark(readStorage(STORAGE_KEY));
+  if (!writeStorage(STORAGE_KEY, text)) return false;
+  writeStorage(MARK_KEY, markOf(text));
+  return true;
 };
 
 interface UndoState {
@@ -156,7 +239,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     readStorage(REMINDER_START_KEY)
   );
   const [backupSnoozedUntil, setBackupSnoozedUntil] = useState(() => readStorage(SNOOZE_KEY));
+  const [lastSyncDate, setLastSyncDate] = useState(() => readStorage(LAST_SYNC_KEY));
   const persistRequested = useRef(false);
+  const fromOtherTab = useRef<Observation[] | null>(null);
   const hasData = observations.length > 0;
   const hasUserData = hasUserObservations(observations);
 
@@ -174,8 +259,30 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     // Without a recovery copy, keep the unreadable original until the observations change.
     if (!recoveryKept && observations === initialState.observations) return;
-    setSaveFailed(!writeStorage(STORAGE_KEY, serializeObservations(observations)));
+    // A list from another tab is already in the storage: a write back could remove its new data
+    if (observations === fromOtherTab.current) return;
+    setSaveFailed(!writeObservations(serializeObservations(observations)));
   }, [observations, recoveryKept, initialState.observations]);
+
+  // Another tab of the application saved observations: this tab shows them, and a sync in this
+  // tab then starts from them, not from an old list.
+  useEffect(() => {
+    const onStorage = (event: StorageEvent) => {
+      // The other tab deleted the undo copy after a change: Undo must not bring back an old list
+      if (event.key === UNDO_KEY && event.newValue === null) setUndo(null);
+      if (event.key !== STORAGE_KEY || event.newValue === null) return;
+      checkStoredMark(event.newValue);
+      const parsed = parseObservationData(event.newValue);
+      // A list with records that this version cannot read stays only in the storage
+      if (!parsed || parsed.droppedCount > 0) return;
+      const list = reprocessObservations(parsed.observations);
+      fromOtherTab.current = list;
+      setUndo(null);
+      setObservations(list);
+    };
+    window.addEventListener('storage', onStorage);
+    return () => window.removeEventListener('storage', onStorage);
+  }, []);
 
   // Ask once, when there is data to keep, so that the browser does not evict it.
   useEffect(() => {
@@ -209,37 +316,41 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
     setUndo(null);
   }, []);
 
+  const markSynced = useCallback(() => {
+    const today = getTodayStr();
+    writeStorage(LAST_SYNC_KEY, today);
+    setLastSyncDate(today);
+  }, []);
+
+  const applySyncedObservations = useCallback(
+    (inputs: ObservationInput[], changed: boolean): boolean => {
+      // Each date keeps the id of its observation on this device
+      const idOf = new Map(observations.map(o => [o.date, o.id]));
+      const list = reprocessObservations(
+        inputs.map(input =>
+          toObservation({ ...input, id: input.id ?? idOf.get(input.date as string) })
+        )
+      );
+      if (!writeObservations(serializeObservations(list))) {
+        setSaveFailed(true);
+        return false;
+      }
+      // A remote change makes the undo copy old: Undo must not bring it back over the change
+      if (changed) dismissUndo();
+      setObservations(list);
+      return true;
+    },
+    [observations, dismissUndo]
+  );
+
   const saveObservation = useCallback(
     (obsData: ObservationInput) => {
       // A day saved after a replacing change would be lost on undo, so the copy goes.
       dismissUndo();
       setObservations(prev => {
-        const date = obsData.date || getTodayStr();
+        const newObs = toObservation(obsData);
+        const { date } = newObs;
         const existingIdx = prev.findIndex(o => o.date === date);
-
-        const stamp = calculateStamp(obsData.bleeding, obsData.stretch, obsData.modifiers || []);
-        const codeString = obsData.codeString || formatCodeString(obsData);
-
-        const newObs: Observation = {
-          // A saved demo day becomes the user's own day, with a real id.
-          id:
-            obsData.id && !obsData.id.startsWith(DEMO_ID_PREFIX)
-              ? obsData.id
-              : `obs_${date}_${Date.now()}`,
-          date,
-          cycleDay: obsData.cycleDay || 1,
-          bleeding: obsData.bleeding,
-          stretch: obsData.stretch,
-          modifiers: obsData.modifiers || [],
-          frequency: obsData.frequency,
-          symptoms: obsData.symptoms || [],
-          intercourse: obsData.intercourse || false,
-          notes: obsData.notes || '',
-          isManualPeak: obsData.isManualPeak || false,
-          isCycleStart: obsData.isCycleStart,
-          stamp,
-          codeString,
-        };
 
         const updatedList = [...prev];
         if (existingIdx !== -1) {
@@ -354,6 +465,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       undoLastChange,
       dismissUndo,
       undoPersisted: undo ? undo.persisted : true,
+      applySyncedObservations,
+      lastSyncDate,
+      markSynced,
     }),
     [
       observations,
@@ -378,6 +492,9 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       undo,
       undoLastChange,
       dismissUndo,
+      applySyncedObservations,
+      lastSyncDate,
+      markSynced,
     ]
   );
 

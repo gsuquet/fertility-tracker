@@ -4,7 +4,7 @@ This page gives the rules of the sync engine: the canonical day, the clocks, the
 
 **Source folder:** [src/domain/sync/](../../src/domain/sync/)
 
-The engine has no network code and no storage code. A vault store adapter reads and writes the vault content. The relay and the encryption come in step 3 of the ADR plan. Until then, the application does not call the engine.
+The engine has no network code and no storage code. A vault store adapter reads and writes the vault content. The [Sync client](sync-client.md) gives the vault store of the relay. Until `SYNC_ENABLED` is `true`, the application does not call the engine.
 
 ## Files
 
@@ -17,6 +17,7 @@ The engine has no network code and no storage code. A vault store adapter reads 
 | `cycles.ts`       | `cycleOfDates()`: the cycle of each date, from `groupObservationsIntoCycles()`                   |
 | `merge.ts`        | `mergeDays()`, `SyncConflict`, `addConflicts()`                                                  |
 | `engine.ts`       | `SyncState`, `VaultStore`, `newSyncState()`, `syncOnce()`, `dropBase()`, `keepEditsDuringSync()` |
+| `syncStorage.ts`  | The text of the sync state and of the conflict list in the browser storage                       |
 
 ## Canonical form of a day
 
@@ -144,7 +145,15 @@ The application then saves these observations, then the state of the result, and
 
 `newSyncState(member, observations)` gives the state of a device that joins a vault. Its days come from `firstSyncDays()`, and it has no base.
 
-`dropBase(state, observations)` removes the base and gives the days of `firstSyncDays()` to the state. The application calls it at load when `parseObservationData()` gives `null` or `droppedCount` is more than 0. Thus, the next sync is a first sync, and the vault wins on each date.
+`dropBase(state, observations)` removes the base and gives the days of `firstSyncDays()` to the state. At a damaged load, the application deletes the stored state instead ([Sync in the application](sync-client.md#sync-in-the-application)). The effect is the same: the next sync is a first sync, and the vault wins on each date.
+
+## Stored state
+
+`syncStorage.ts` gives the text of the sync state and of the conflict list.
+
+- `serializeSyncState()` and `parseSyncState()` write and read the member, the clock, the local days and the base. The days use `serializeVaultDays()` and `parseVaultDays()`.
+- `parseSyncState()` gives `null` when the text is missing, or when a field is not valid. It also gives `null` when the member of the clock is not the member of the state.
+- `serializeConflicts()` and `parseConflicts()` use the same form as the vault days. `parseConflicts()` gives an empty list for a text that is missing or not valid.
 
 ## Related documents
 
