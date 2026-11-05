@@ -1,10 +1,17 @@
 /** The frame of the invitation dialog and of the join dialog. See docs/reference/screens/settings.md. */
 import type React from 'react';
 import { useId } from 'react';
+import { failureOf } from '../utils/syncFailure';
 import { Modal } from './Modal';
 
 /** The time between two checks of an invitation on the relay. */
 export const INVITE_POLL_MS = 3_000;
+
+/** True for a failure that the next check can repair: no connection, or no relay yet. */
+export const isTemporary = (error: unknown) => {
+  const failure = failureOf(error);
+  return failure === 'noConnection' || failure === 'unavailable';
+};
 
 /** The 6-digit code in two groups of 3. */
 export const codeText = (code: string) => `${code.slice(0, 3)} ${code.slice(3)}`;

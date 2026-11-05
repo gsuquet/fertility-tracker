@@ -10,7 +10,7 @@ import type { VaultError } from '../sync/deviceVault';
 import type { JoinState } from '../sync/invitationFlow';
 import { failureOf } from '../utils/syncFailure';
 import type { SyncFailure } from '../utils/syncFailure';
-import { INVITE_POLL_MS, SyncStepDialog, codeText } from './SyncStepDialog';
+import { INVITE_POLL_MS, SyncStepDialog, codeText, isTemporary } from './SyncStepDialog';
 import type { StepAction } from './SyncStepDialog';
 
 type EndMessage = SyncFailure | 'expired' | 'refused' | 'alreadySynced' | 'undoFirst' | 'badLink';
@@ -58,16 +58,30 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
   const { undoChange } = useCycle();
   const removeDemoDays = useDemoRemoval();
   const [step, setStep] = useState<Step>({ kind: 'waiting' });
+  // A failure that the next check can repair, for example no connection
+  const [problem, setProblem] = useState<SyncFailure | null>(null);
   const join = useRef<JoinState | null>(null);
   const answered = useRef<Answered | null>(null);
   const confirmed = useRef(false);
-  // True when the invitation is used or stopped: nothing to delete on the relay
+  // True when the invitation is used or deleted: nothing to delete on the relay
   const finished = useRef(false);
+  const mounted = useRef(false);
+  const running = useRef(false);
   const latest = useRef({ control, pollMs, undoChange, fragment });
   latest.current = { control, pollMs, undoChange, fragment };
 
-  const end = (message: EndMessage) => {
+  /** Deletes the invitation on the relay one time, so that the owner device stops. */
+  const stop = () => {
+    const state = join.current;
+    if (!state || finished.current) return;
     finished.current = true;
+    void latest.current.control
+      .services()
+      .then(({ relay }) => relay.deleteInvite(state.invitation.id, state.token));
+  };
+
+  const end = (message: EndMessage) => {
+    stop();
     setStep({ kind: 'end', message });
   };
 
@@ -79,6 +93,8 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
       const { finishJoin } = await import('../sync/invitationFlow');
       await control.withSync(async ({ relay, keyStore }) => {
         if (await keyStore.load()) throw new JoinStop('alreadySynced');
+        // The welcome guide or another tab can make an undo copy while the dialog is open
+        if (latest.current.undoChange !== null) throw new JoinStop('undoFirst');
         removeDemoDays();
         return finishJoin(relay, keyStore, join.current as JoinState, reply.offer, reply.content);
       });
@@ -89,62 +105,74 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
       end(endOf(error));
     }
   };
-  const ref = useRef({ end, finish });
-  ref.current = { end, finish };
+  const ref = useRef({ end, finish, stop });
+  ref.current = { end, finish, stop };
 
-  // Sends the join request, then checks the invitation until the answer comes
+  // Sends the join request one time, then checks the invitation until the answer comes. The
+  // checks stop when the dialog goes away.
   useEffect(() => {
-    let live = true;
-    const { control: sync, pollMs: wait, undoChange: undo, fragment: link } = latest.current;
-    const run = async () => {
-      const { relay, keyStore } = await sync.services();
-      if (await keyStore.load()) throw new JoinStop('alreadySynced');
-      // ADR 0012: no join while an undo copy exists
-      if (undo !== null) throw new JoinStop('undoFirst');
-      const { parseInviteFragment } = await import('../domain/vault/invitation');
-      const invitation = parseInviteFragment(link);
-      if (!invitation) throw new JoinStop('badLink');
-      const flow = await import('../sync/invitationFlow');
-      // The relay has no invitation with this id: it expired, or the owner device stopped it
-      const state = await flow.startJoin(relay, invitation).catch((error: unknown) => {
-        throw (error as VaultError).detail?.status === 404 ? new JoinStop('expired') : error;
-      });
-      join.current = state;
-      for (;;) {
-        await new Promise(resolve => setTimeout(resolve, wait));
-        const check = await flow.checkAsNewDevice(relay, state);
-        if (!live) return;
-        if (!('code' in check)) {
-          if (check.status === 'waiting') continue;
-          ref.current.end(check.status);
+    mounted.current = true;
+    if (!running.current) {
+      running.current = true;
+      const { control: sync, pollMs: wait, undoChange: undo, fragment: link } = latest.current;
+      const run = async () => {
+        const { relay, keyStore } = await sync.services();
+        if (await keyStore.load()) throw new JoinStop('alreadySynced');
+        // ADR 0012: no join while an undo copy exists
+        if (undo !== null) throw new JoinStop('undoFirst');
+        const { parseInviteFragment } = await import('../domain/vault/invitation');
+        const invitation = parseInviteFragment(link);
+        if (!invitation) throw new JoinStop('badLink');
+        const flow = await import('../sync/invitationFlow');
+        // The relay has no invitation with this id: it expired, or the owner device stopped it
+        const state = await flow.startJoin(relay, invitation).catch((error: unknown) => {
+          throw (error as VaultError).detail?.status === 404 ? new JoinStop('expired') : error;
+        });
+        join.current = state;
+        // The dialog closed while the request went: the invitation stops
+        if (!mounted.current) {
+          ref.current.stop();
           return;
         }
-        const { code } = check;
-        setStep(now => (now.kind === 'waiting' ? { kind: 'confirm', code } : now));
-        if (check.status === 'answered') {
-          answered.current = { offer: check.offer, content: check.content };
-          if (confirmed.current) void ref.current.finish(code);
-          return;
+        for (;;) {
+          await new Promise(resolve => setTimeout(resolve, wait));
+          if (!mounted.current) return;
+          let check: Awaited<ReturnType<typeof flow.checkAsNewDevice>>;
+          try {
+            check = await flow.checkAsNewDevice(relay, state);
+          } catch (error) {
+            if (!isTemporary(error)) throw error;
+            setProblem(failureOf(error));
+            continue;
+          }
+          setProblem(null);
+          if (!('code' in check)) {
+            if (check.status === 'waiting') continue;
+            ref.current.end(check.status);
+            return;
+          }
+          const { code } = check;
+          setStep(now => (now.kind === 'waiting' ? { kind: 'confirm', code } : now));
+          if (check.status === 'answered') {
+            answered.current = { offer: check.offer, content: check.content };
+            if (confirmed.current) void ref.current.finish(code);
+            return;
+          }
         }
-      }
-    };
-    run().catch(error => {
-      if (live) ref.current.end(endOf(error));
-    });
+      };
+      run().catch(error => ref.current.end(endOf(error)));
+    }
     return () => {
-      live = false;
+      mounted.current = false;
+      // A remount, for example in StrictMode, keeps the invitation
+      setTimeout(() => {
+        if (!mounted.current) ref.current.stop();
+      });
     };
   }, []);
 
-  /** Deletes the invitation on the relay, then closes. */
   const cancel = () => {
-    const state = join.current;
-    if (state && !finished.current) {
-      finished.current = true;
-      void control
-        .services()
-        .then(({ relay }) => relay.deleteInvite(state.invitation.id, state.token));
-    }
+    stop();
     onClose();
   };
 
@@ -181,7 +209,7 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
     <SyncStepDialog
       title={s.joinTitle}
       status={view.status}
-      alert={view.alert ?? null}
+      alert={view.alert ?? (problem && s[problem])}
       actions={view.actions}
       onClose={step.kind === 'joining' && step.finishing ? null : cancel}
     >

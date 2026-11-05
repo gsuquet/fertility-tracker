@@ -678,6 +678,11 @@ export const en = {
     cyclesIncluded: 'Cycles Included: {count}',
   },
   sync: {
+    joinLink: 'Join with a link',
+    joinLinkHint: 'Paste the invitation link of your other device',
+    linkTitle: 'Join with a link',
+    linkNote: 'Paste the invitation link that your other device shows.',
+    joinAction: 'Join',
     badLink: 'This invitation link is not valid. Ask for a new invitation.',
     invite: 'Invite a device',
     inviteHint: 'Add your phone or your computer',

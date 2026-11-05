@@ -1,5 +1,6 @@
-import { cleanup, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { describe, expect, it, vi } from 'vitest';
+import { cleanup, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { useCycle } from '../../context/CycleContext';
+import { describe, expect, it, onTestFinished, vi } from 'vitest';
 import { en } from '../../i18n';
 import { buildDemoObservations } from '../../domain/demoData';
 import { inviteLink } from '../../domain/vault/invitation';
@@ -106,21 +107,14 @@ describe('JoinDialog', () => {
     expect(first.onClose).not.toHaveBeenCalled();
     vault.failWhen(null);
 
-    // A check that ends after the close changes nothing
+    // A close while the request goes: the invitation stops
     const other = await invited();
-    let checks = 0;
-    const relay: RelayClient = {
-      ...other.relay,
-      getInvite: async (...args) => {
-        checks += 1;
-        return other.relay.getInvite(...args);
-      },
-    };
-    const second = renderJoin(relay, createMemoryKeyStore(), other.fragment);
+    const second = renderJoin(other.relay, createMemoryKeyStore(), other.fragment);
     await joinDialog();
     cleanup();
-    await waitFor(() => expect(checks).toBeGreaterThan(0));
-    await new Promise(resolve => setTimeout(resolve, POLL));
+    await waitFor(() =>
+      expect([...other.objects.keys()].some(key => key.startsWith('invites/'))).toBe(false)
+    );
     expect(second.onClose).not.toHaveBeenCalled();
   });
 
@@ -180,6 +174,77 @@ describe('JoinDialog', () => {
       cleanup();
       localStorage.clear();
     }
+  });
+
+  it('sends one join request in StrictMode, and checks again after a lost connection', async () => {
+    configure({ reactStrictMode: true });
+    onTestFinished(() => configure({ reactStrictMode: false }));
+    const vault = await invited();
+    const postInvite = vi.spyOn(vault.relay, 'postInvite');
+    renderWithProviders(
+      <JoinDialog
+        control={controlOf(vault.relay, createMemoryKeyStore())}
+        fragment={vault.fragment}
+        onClose={vi.fn()}
+        pollMs={POLL}
+      />
+    );
+    const dialog = await joinDialog();
+    await waitFor(() => expect(postInvite).toHaveBeenCalledTimes(1));
+    vault.failWhen(request => request.method === 'GET');
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(s.noConnection);
+    vault.failWhen(null);
+    await waitFor(() => expect(within(dialog).queryByRole('alert')).toBeNull());
+    expect(within(dialog).getByRole('status')).toHaveTextContent(s.joinWaiting);
+    expect(postInvite).toHaveBeenCalledTimes(1);
+  });
+
+  it('ends on a relay error that is not temporary', async () => {
+    const vault = await invited();
+    const relay: RelayClient = {
+      ...vault.relay,
+      getInvite: async () => ({ ok: false, status: 500, error: 'x' }),
+    };
+    renderJoin(relay, createMemoryKeyStore(), vault.fragment);
+    expect(await alertText()).toBe(s.failed);
+    await waitFor(() =>
+      expect([...vault.objects.keys()].some(key => key.startsWith('invites/'))).toBe(false)
+    );
+  });
+
+  it('does not join when an undo copy came while the dialog was open', async () => {
+    const vault = await invited();
+    const keyStore = createMemoryKeyStore();
+    const { approveInvitation, checkAsOwner } = await import('../../sync/invitationFlow');
+    const Undo = () => {
+      const { loadDemoData } = useCycle();
+      return (
+        <button type="button" onClick={loadDemoData}>
+          demo
+        </button>
+      );
+    };
+    renderWithProviders(
+      <>
+        <JoinDialog
+          control={controlOf(vault.relay, keyStore)}
+          fragment={vault.fragment}
+          onClose={vi.fn()}
+          pollMs={POLL}
+        />
+        <Undo />
+      </>,
+      { observations: [makeObservation({ date: '2026-10-01', bleeding: 'H' })] }
+    );
+    const dialog = await joinDialog();
+    await waitFor(async () =>
+      expect((await checkAsOwner(vault.relay, vault.record, vault.owner)).status).toBe('confirm')
+    );
+    fireEvent.click(screen.getByRole('button', { name: 'demo', hidden: true }));
+    await approveInvitation(vault.relay, vault.keyStore, vault.record, vault.owner);
+    fireEvent.click(await within(dialog).findByRole('button', { name: s.codesMatch }));
+    expect(await alertText()).toBe(s.undoFirst);
+    expect(await keyStore.load()).toBeNull();
   });
 
   it('keeps the observations of the user at the join', async () => {

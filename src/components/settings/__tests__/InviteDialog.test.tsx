@@ -1,5 +1,5 @@
-import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
-import { afterEach, describe, expect, it, vi } from 'vitest';
+import { act, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { en } from '../../../i18n';
 import { buildDemoObservations } from '../../../domain/demoData';
 import { createVault } from '../../../sync/deviceVault';
@@ -102,9 +102,19 @@ describe('InviteDialog and JoinDialog', () => {
     const newStore = createMemoryKeyStore();
     renderInvite(own.relay, own.keyStore);
     const link = await linkOf();
+    // The new device sees the answer before its user confirms
+    let answerSeen = false;
+    const joinRelay: RelayClient = {
+      ...own.relay,
+      getInvite: async (...args) => {
+        const result = await own.relay.getInvite(...args);
+        if (result.ok && result.text.includes('"answer"')) answerSeen = true;
+        return result;
+      },
+    };
     renderWithProviders(
       <JoinDialog
-        control={controlOf(own.relay, newStore)}
+        control={controlOf(joinRelay, newStore)}
         fragment={link.slice(link.indexOf('#'))}
         onClose={vi.fn()}
         pollMs={POLL}
@@ -114,9 +124,13 @@ describe('InviteDialog and JoinDialog', () => {
     fireEvent.click(await within(invite).findByRole('button', { name: s.codesMatch }));
     await within(invite).findByText(s.inviteDone);
     const join = await screen.findByRole('dialog', { name: s.joinTitle });
+    await waitFor(() => expect(answerSeen).toBe(true));
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, POLL * 3));
+    });
     // The answer came, but the device uses it only after its user confirmed
-    await waitFor(() => expect(own.objects.size).toBeGreaterThan(0));
     expect(await newStore.load()).toBeNull();
+    expect(within(join).getByRole('status')).toHaveTextContent(s.joinConfirm);
     fireEvent.click(await within(join).findByRole('button', { name: s.codesMatch }));
     expect(await within(join).findByText(s.joinDone)).toBeInTheDocument();
     expect(await newStore.load()).not.toBeNull();
@@ -255,6 +269,53 @@ describe('InviteDialog', () => {
     expect(await within(await inviteDialog()).findByRole('alert')).toHaveTextContent(s.refused);
   });
 
+  it('shows a lost connection while it waits, and checks again', async () => {
+    const own = await owner();
+    renderInvite(own.relay, own.keyStore);
+    await linkOf();
+    const invite = await inviteDialog();
+    own.failWhen(request => request.method === 'GET');
+    expect(await within(invite).findByRole('alert')).toHaveTextContent(s.noConnection);
+    own.failWhen(null);
+    await waitFor(() => expect(within(invite).queryByRole('alert')).toBeNull());
+    expect(within(invite).getByRole('status')).toHaveTextContent(s.inviteLink);
+  });
+
+  it('waits while the relay is not available, and ends on another relay error', async () => {
+    const own = await owner();
+    let status = 503;
+    const relay: RelayClient = {
+      ...own.relay,
+      getInvite: async () => ({ ok: false, status, error: 'x' }),
+    };
+    renderInvite(relay, own.keyStore);
+    await linkOf();
+    const invite = await inviteDialog();
+    expect(await within(invite).findByRole('alert')).toHaveTextContent(s.unavailable);
+    status = 500;
+    await waitFor(() => expect(within(invite).getByRole('alert')).toHaveTextContent(s.failed));
+    expect(within(invite).getByRole('button', { name: s.close })).toBeInTheDocument();
+    await waitFor(() => expect(inviteKeys(own.objects)).toHaveLength(0));
+  });
+
+  it('makes one invitation in StrictMode and stays open', async () => {
+    configure({ reactStrictMode: true });
+    onTestFinished(() => configure({ reactStrictMode: false }));
+    const own = await owner();
+    const putInvite = vi.spyOn(own.relay, 'putInvite');
+    const onClose = vi.fn();
+    renderWithProviders(
+      <InviteDialog control={controlOf(own.relay, own.keyStore)} onClose={onClose} pollMs={POLL} />
+    );
+    await linkOf();
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, POLL * 3));
+    });
+    expect(putInvite).toHaveBeenCalledTimes(1);
+    expect(onClose).not.toHaveBeenCalled();
+    expect(inviteKeys(own.objects)).toHaveLength(1);
+  });
+
   it('gives the cause of a failure', async () => {
     renderInvite(createRelayHarness().relay, createMemoryKeyStore());
     expect(await within(await inviteDialog()).findByRole('alert')).toHaveTextContent(s.failed);
@@ -293,5 +354,10 @@ describe('InviteDialog', () => {
     expect(onClose).not.toHaveBeenCalled();
     await act(async () => release());
     expect(await within(invite).findByRole('alert')).toHaveTextContent(s.noConnection);
+    // The invitation stays: the owner can try again
+    block = false;
+    fireEvent.click(within(invite).getByRole('button', { name: s.codesMatch }));
+    expect(await within(invite).findByRole('alert')).toHaveTextContent(s.noConnection);
+    expect(inviteKeys(own.objects)).toHaveLength(1);
   });
 });

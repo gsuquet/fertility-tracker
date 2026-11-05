@@ -1,7 +1,7 @@
 /** The Sync group of Settings. See docs/reference/screens/settings.md#sync-group. */
 import type React from 'react';
 import { useCallback, useEffect, useId, useRef, useState } from 'react';
-import { CloudOff, KeyRound, RefreshCw, RotateCcw, Share2, Smartphone } from 'lucide-react';
+import { CloudOff, KeyRound, Link, RefreshCw, RotateCcw, Share2, Smartphone } from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
 import { useLanguage } from '../../context/LanguageContext';
 import { formatMessage } from '../../i18n';
@@ -17,6 +17,7 @@ import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
 import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
+import { JoinDialog } from '../JoinDialog';
 import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
 
@@ -69,6 +70,8 @@ export const RecoveryCodeDialog: React.FC<RecoveryCodeDialogProps> = ({ code, on
 };
 
 interface RecoveryEntryDialogProps {
+  /** True for an invitation link, for an installed app on iOS. Else a recovery code. */
+  forLink?: boolean;
   /** Recovers with the code. The parent closes the dialog when it worked. */
   onSubmit: (code: string) => void;
   onCancel: () => void;
@@ -78,6 +81,7 @@ interface RecoveryEntryDialogProps {
 
 /** Asks for the recovery code of a vault. */
 export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
+  forLink = false,
   onSubmit,
   onCancel,
   working,
@@ -85,6 +89,10 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
 }) => {
   const { t } = useLanguage();
   const s = t.sync;
+  const isCode = !forLink;
+  const texts = isCode
+    ? { title: s.enterTitle, note: s.enterNote, label: s.codeLabel, action: s.recoverAction }
+    : { title: s.linkTitle, note: s.linkNote, label: s.inviteLinkLabel, action: s.joinAction };
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState('');
@@ -104,7 +112,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
     >
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="modal-header" {...dragHandlers}>
-        <h2 id={`${id}-title`}>{s.enterTitle}</h2>
+        <h2 id={`${id}-title`}>{texts.title}</h2>
       </div>
       <form
         onSubmit={e => {
@@ -114,16 +122,16 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
         noValidate
       >
         <div className="modal-body password-dialog-body" ref={bodyRef}>
-          <p id={`${id}-note`}>{s.enterNote}</p>
+          <p id={`${id}-note`}>{texts.note}</p>
           <div className="form-group">
-            <label htmlFor={`${id}-code`}>{s.codeLabel}</label>
+            <label htmlFor={`${id}-code`}>{texts.label}</label>
             <input
               ref={inputRef}
               id={`${id}-code`}
               className="form-input sync-code-input"
               type="text"
               autoComplete="off"
-              autoCapitalize="characters"
+              autoCapitalize={isCode ? 'characters' : 'off'}
               spellCheck={false}
               value={code}
               onChange={e => setCode(e.target.value)}
@@ -140,7 +148,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
             {t.actions.cancel}
           </button>
           <button type="submit" className="btn btn-primary" disabled={working}>
-            {working ? s.working : s.recoverAction}
+            {working ? s.working : texts.action}
           </button>
         </div>
       </form>
@@ -165,6 +173,9 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const { lastSyncDate, undoChange } = useCycle();
   const removeDemoDays = useDemoRemoval();
   const [inviting, setInviting] = useState(false);
+  // The invitation link that the user pasted, for an installed app on iOS
+  const [pasting, setPasting] = useState(false);
+  const [joinFragment, setJoinFragment] = useState<string | null>(null);
   const { t } = useLanguage();
   const s: SyncText = t.sync;
   const [record, setRecord] = useState<DeviceRecord | null | undefined>(undefined);
@@ -327,6 +338,14 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
               disabled={busy}
               opens
             />
+            <ActionRow
+              icon={iconOf(Link)}
+              label={s.joinLink}
+              detail={s.joinLinkHint}
+              onClick={() => setPasting(true)}
+              disabled={busy}
+              opens
+            />
           </>
         )}
         {record && (
@@ -382,6 +401,33 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
           }}
           working={busy}
           error={shown && s[shown]}
+        />
+      )}
+
+      {pasting && (
+        <RecoveryEntryDialog
+          forLink
+          onSubmit={link => {
+            setPasting(false);
+            setJoinFragment(link.includes('#') ? link.slice(link.indexOf('#')) : '');
+          }}
+          onCancel={() => setPasting(false)}
+          working={false}
+          error={null}
+        />
+      )}
+
+      {joinFragment !== null && (
+        <JoinDialog
+          control={control}
+          fragment={joinFragment}
+          onClose={() => {
+            setJoinFragment(null);
+            // The join saved a record: the group shows its rows
+            void services()
+              .then(({ keyStore }) => keyStore.load())
+              .then(show);
+          }}
         />
       )}
 

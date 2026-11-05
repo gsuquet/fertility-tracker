@@ -7,7 +7,7 @@ import type { DeviceRecord } from '../../sync/keyStore';
 import type { OwnerInvitation } from '../../sync/invitationFlow';
 import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
-import { INVITE_POLL_MS, SyncStepDialog, codeText } from '../SyncStepDialog';
+import { INVITE_POLL_MS, SyncStepDialog, codeText, isTemporary } from '../SyncStepDialog';
 import type { StepAction } from '../SyncStepDialog';
 
 type Step =
@@ -41,81 +41,99 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
   const s = t.sync;
   const [step, setStep] = useState<Step>({ kind: 'start' });
   const [copied, setCopied] = useState(false);
+  // A failure that the next check can repair, for example no connection
+  const [problem, setProblem] = useState<SyncFailure | null>(null);
   const started = useRef<Started | null>(null);
-  // True when the invitation is used or stopped: nothing to delete on the relay
+  // True when the invitation is used or deleted: nothing to delete on the relay
   const finished = useRef(false);
+  const mounted = useRef(false);
+  const running = useRef(false);
   const latest = useRef({ control, pollMs });
   latest.current = { control, pollMs };
 
-  const end = (message: Extract<Step, { kind: 'end' }>['message']) => {
+  /** Deletes the invitation on the relay one time, so that the new device stops. */
+  const stop = () => {
+    const made = started.current;
+    if (!made || finished.current) return;
     finished.current = true;
+    void latest.current.control
+      .services()
+      .then(({ relay }) => relay.deleteInvite(made.owner.invitation.id, made.record.token));
+  };
+
+  const end = (message: Extract<Step, { kind: 'end' }>['message']) => {
+    stop();
     setStep({ kind: 'end', message });
   };
-  const endRef = useRef(end);
-  endRef.current = end;
+  const actions = useRef({ end, stop });
+  actions.current = { end, stop };
 
-  // Makes the invitation, then checks it until the new device sends its reveal
+  // Makes the invitation one time, then checks it until the new device sends its reveal. The
+  // checks stop when the dialog goes away.
   useEffect(() => {
-    let live = true;
-    const { control: sync, pollMs: wait } = latest.current;
-    const run = async () => {
-      const flow = await import('../../sync/invitationFlow');
-      const { inviteLink } = await import('../../domain/vault/invitation');
-      const made = await sync.withSync(async ({ relay, keyStore }) => {
-        const record = await keyStore.load();
-        if (!record) throw new Error('No device record');
-        return { record, owner: await flow.startInvitation(relay, keyStore, record, 'owner') };
-      });
-      started.current = made;
-      // The dialog closed while the invitation started: the invitation stops
-      if (!live) {
-        cancelRef.current();
-        return;
-      }
-      setStep({ kind: 'waiting', link: inviteLink(appUrl(), made.owner.invitation) });
-      const { relay } = await sync.services();
-      for (;;) {
-        await new Promise(resolve => setTimeout(resolve, wait));
-        const check = await flow.checkAsOwner(relay, made.record, made.owner);
-        if (!live) return;
-        if (check.status === 'confirm') {
-          setStep({ kind: 'confirm', code: check.code });
+    mounted.current = true;
+    if (!running.current) {
+      running.current = true;
+      const { control: sync, pollMs: wait } = latest.current;
+      const run = async () => {
+        const flow = await import('../../sync/invitationFlow');
+        const { inviteLink } = await import('../../domain/vault/invitation');
+        const made = await sync.withSync(async ({ relay, keyStore }) => {
+          const record = await keyStore.load();
+          if (!record) throw new Error('No device record');
+          return { record, owner: await flow.startInvitation(relay, keyStore, record, 'owner') };
+        });
+        started.current = made;
+        // The dialog closed while the invitation started: the invitation stops
+        if (!mounted.current) {
+          actions.current.stop();
           return;
         }
-        if (check.status !== 'waiting') {
-          endRef.current(check.status);
-          return;
+        setStep({ kind: 'waiting', link: inviteLink(appUrl(), made.owner.invitation) });
+        const { relay } = await sync.services();
+        for (;;) {
+          await new Promise(resolve => setTimeout(resolve, wait));
+          if (!mounted.current) return;
+          let check: Awaited<ReturnType<typeof flow.checkAsOwner>>;
+          try {
+            check = await flow.checkAsOwner(relay, made.record, made.owner);
+          } catch (error) {
+            if (!isTemporary(error)) throw error;
+            setProblem(failureOf(error));
+            continue;
+          }
+          setProblem(null);
+          if (check.status === 'confirm') {
+            setStep({ kind: 'confirm', code: check.code });
+            return;
+          }
+          if (check.status !== 'waiting') {
+            actions.current.end(check.status);
+            return;
+          }
         }
-      }
-    };
-    run().catch(error => {
-      if (live) endRef.current(failureOf(error));
-    });
+      };
+      run().catch(error => actions.current.end(failureOf(error)));
+    }
     return () => {
-      live = false;
+      mounted.current = false;
+      // A remount, for example in StrictMode, keeps the invitation
+      setTimeout(() => {
+        if (!mounted.current) actions.current.stop();
+      });
     };
   }, []);
 
-  /** Deletes the invitation on the relay, then closes. */
   const cancel = () => {
-    const made = started.current;
-    if (made && !finished.current) {
-      finished.current = true;
-      void control
-        .services()
-        .then(({ relay }) => relay.deleteInvite(made.owner.invitation.id, made.record.token));
-    }
+    stop();
     onClose();
   };
 
-  // The invitation stops when the dialog closes in another way, for example with Settings
-  const cancelRef = useRef(cancel);
-  cancelRef.current = cancel;
-  useEffect(() => () => cancelRef.current(), []);
-
+  // A failed add keeps the invitation: the owner can try again
   const approve = async (code: string) => {
     const made = started.current as Started;
     setStep({ kind: 'adding', code });
+    setProblem(null);
     try {
       const { approveInvitation } = await import('../../sync/invitationFlow');
       await control.withSync(({ relay, keyStore }) =>
@@ -125,7 +143,8 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
       setStep({ kind: 'done' });
       void control.syncNow();
     } catch (error) {
-      end(failureOf(error));
+      setProblem(failureOf(error));
+      setStep({ kind: 'confirm', code });
     }
   };
 
@@ -170,7 +189,7 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
     <SyncStepDialog
       title={s.inviteTitle}
       status={view.status}
-      alert={view.alert ?? null}
+      alert={view.alert ?? (problem && s[problem])}
       actions={view.actions}
       onClose={step.kind === 'adding' ? null : cancel}
     >

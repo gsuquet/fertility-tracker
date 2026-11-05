@@ -38,6 +38,33 @@ describe('App with an invitation link', () => {
     expect(screen.queryByRole('dialog', { name: en.sync.joinTitle })).toBeNull();
   });
 
+  it('opens the join dialog for a link opened in an open tab, and the welcome guide after it', async () => {
+    sync.enabled = true;
+    localStorage.removeItem(STORAGE_HAS_SEEN_WELCOME_KEY);
+    window.history.replaceState(null, '', '/');
+    render(<App />);
+    const welcome = await screen.findByRole('dialog', { name: en.welcomeModal.title });
+    fireEvent.click(within(welcome).getByRole('button', { name: en.actions.close }));
+    window.history.pushState(null, '', `/${FRAGMENT}`);
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    const dialog = await screen.findByRole('dialog', { name: en.sync.joinTitle });
+    expect(window.location.hash).toBe('');
+    // Another fragment does nothing
+    window.history.pushState(null, '', '/#chart');
+    window.dispatchEvent(new HashChangeEvent('hashchange'));
+    expect(screen.getByRole('dialog', { name: en.sync.joinTitle })).toBe(dialog);
+  });
+
+  it('opens the welcome guide only after the join dialog', async () => {
+    sync.enabled = true;
+    localStorage.removeItem(STORAGE_HAS_SEEN_WELCOME_KEY);
+    render(<App />);
+    const dialog = await screen.findByRole('dialog', { name: en.sync.joinTitle });
+    expect(screen.queryByRole('dialog', { name: en.welcomeModal.title })).toBeNull();
+    fireEvent.click(await within(dialog).findByRole('button', { name: en.sync.close }));
+    expect(await screen.findByRole('dialog', { name: en.welcomeModal.title })).toBeInTheDocument();
+  });
+
   it('ignores the link while the sync is off', async () => {
     render(<App />);
     expect(await screen.findByRole('main')).toBeInTheDocument();

@@ -134,18 +134,19 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 
 | Device record of this device | Rows                                                                                          |
 | ---------------------------- | --------------------------------------------------------------------------------------------- |
-| None                         | **Turn on sync** and **Recover with a code**                                                  |
+| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                            |
 | Owner                        | **Sync now**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
 | Reader                       | **Sync now** and **Turn off sync on this device**                                             |
 
-| Row                              | Result                                                                                                                   |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------ |
-| **Turn on sync**                 | Makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                     |
-| **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                |
-| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                    |
-| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                      |
-| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                            |
-| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay. |
+| Row                              | Result                                                                                                                                                                                |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Turn on sync**                 | Makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                                                                                  |
+| **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join. |
+| **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                                                                             |
+| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                                                                                 |
+| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
+| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                         |
+| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay.                                                              |
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
 - While a row runs, the rows of the group are disabled.
@@ -181,6 +182,9 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 | End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                   |
 
 - While the dialog waits, it calls `checkAsOwner()` each 3 seconds.
+- When a check fails with no connection or no relay, the dialog shows the cause and checks again.
+- When `approveInvitation()` fails, the dialog shows the cause and the code again. The owner can click **The codes match** again.
+- At each end, and when the dialog goes away, the owner device deletes the invitation on the relay. Thus, the new device stops.
 - **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
 - `approveInvitation()` runs with the sync lock, after the sync that runs.
 - While **Adding** runs, the dialog does not close.
@@ -188,7 +192,7 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 
 ### Join dialog
 
-When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
+When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
 
 | Step         | Content                                                                                                                       |
 | ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
@@ -201,7 +205,9 @@ When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application op
 | Done         | "This device now syncs." Then the device syncs.                                                                               |
 | End          | A message for an invitation that expired, that the relay refused, or that failed.                                             |
 
-- The dialog calls `checkAsNewDevice()` each 3 seconds until the answer comes.
+- The dialog calls `checkAsNewDevice()` each 3 seconds until the answer comes. When a check fails with no connection or no relay, the dialog shows the cause and checks again.
+- Before `finishJoin()`, the dialog checks again for a record and for an undo copy.
+- At each end, and when the dialog goes away, the new device deletes the invitation on the relay. Thus, the owner device stops.
 - When the relay has no invitation with the id of the link, the message is the message of an invitation that expired.
 - After **The codes match** and before the answer comes, **Cancel** stays.
 - The device uses the answer only after its user clicks **The codes match**.

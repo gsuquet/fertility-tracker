@@ -684,6 +684,11 @@ export const fr: TranslationSchema = {
     cyclesIncluded: 'Cycles inclus : {count}',
   },
   sync: {
+    joinLink: 'Rejoindre avec un lien',
+    joinLinkHint: 'Collez le lien d’invitation de votre autre appareil',
+    linkTitle: 'Rejoindre avec un lien',
+    linkNote: 'Collez le lien d’invitation que votre autre appareil affiche.',
+    joinAction: 'Rejoindre',
     badLink: 'Ce lien d’invitation n’est pas valide. Demandez une nouvelle invitation.',
     invite: 'Inviter un appareil',
     inviteHint: 'Ajoutez votre téléphone ou votre ordinateur',
