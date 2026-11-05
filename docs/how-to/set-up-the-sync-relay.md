@@ -4,7 +4,7 @@ Do this procedure one time, before the first deploy with the bucket binding. The
 
 ## Before you start
 
-- You have a Cloudflare account with the Pages project `fertility-tracker`.
+- You have a Cloudflare account with the Worker `fertility-tracker`.
 - The domain `fertility-tracker.gsuquet.com` is on Cloudflare.
 
 ## Make the R2 bucket
@@ -46,11 +46,11 @@ The relay is the only path to the objects. The objects are encrypted, but their 
 3. In **Custom Domains**, make sure that the bucket has no domain.
 4. In **R2 Object Storage**, open **Manage API tokens**. Delete each token that you do not use.
 
-A new bucket is private. The binding in `wrangler.json` gives access only to the Pages Function.
+A new bucket is private. The binding in `wrangler.json` gives access only to the Worker.
 
 ## Bind the bucket
 
-The Pages project reads its bindings from `wrangler.json`. This binding is in the file:
+The Worker reads its bindings from `wrangler.json`. This binding is in the file:
 
 ```json
 "r2_buckets": [{ "binding": "VAULTS", "bucket_name": "fertility-tracker-vaults" }]
@@ -65,5 +65,5 @@ After the deploy, `GET https://fertility-tracker.gsuquet.com/api/recovery/AAAAAA
 ## Related documents
 
 - [Relay API](../reference/relay-api.md)
-- [Deploy to Cloudflare Pages](deploy-to-cloudflare.md)
+- [Deploy to Cloudflare](deploy-to-cloudflare.md)
 - [Deployment](../reference/deployment.md)

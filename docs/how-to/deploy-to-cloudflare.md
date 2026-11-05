@@ -1,10 +1,10 @@
-# Deploy to Cloudflare Pages
+# Deploy to Cloudflare
 
-Use these procedures to put a new version of the application on [fertility-tracker.gsuquet.com](https://fertility-tracker.gsuquet.com). Cloudflare Pages hosts the site.
+Use these procedures to put a new version of the application on [fertility-tracker.gsuquet.com](https://fertility-tracker.gsuquet.com). A Cloudflare Worker hosts the site and the sync relay.
 
 ## Deploy with a merge to main
 
-Cloudflare Pages has a connection to the GitHub repository. It builds and deploys each commit on `main`.
+Workers Builds has a connection to the GitHub repository. It builds and deploys each commit on `main` with `wrangler deploy`.
 
 1. Open a pull request.
 2. Wait until the CI workflow passes.
@@ -21,7 +21,7 @@ Cloudflare uses these build settings:
 | Node.js version  | `26.12.1`, from the `.node-version` file                 |
 | npm version      | `11.20.0`, the version that comes with Node.js `26.12.1` |
 
-> **CAUTION:** Do not set the `NODE_VERSION` variable in the Cloudflare Pages project. The variable replaces the version in `.node-version`. Then the npm version does not agree with `package.json`, and the build stops.
+> **CAUTION:** Do not set the `NODE_VERSION` variable in the Cloudflare Worker project. The variable replaces the version in `.node-version`. Then the npm version does not agree with `package.json`, and the build stops.
 
 ## Deploy from your computer
 
@@ -47,10 +47,10 @@ Do this procedure only when the automatic deployment is not available.
    mise run build
    ```
 
-2. Serve the `dist` folder as Cloudflare Pages does:
+2. Serve the `dist` folder and the relay as the Worker does:
 
    ```bash
-   mise run pages:dev
+   mise run worker:dev
    ```
 
 ## Test offline use

@@ -12,7 +12,6 @@ fertility-tracker/
 │   └── tasks/                   # mise tasks, one shell file for each task
 ├── docs/                        # Documentation (Diátaxis) and records (RFCs and ADRs)
 ├── e2e/                         # Playwright end-to-end and accessibility tests
-├── functions/api/[[path]].ts    # Pages Function: the sync relay in /api/ (Relay API)
 ├── public/                      # Static files: manifest, icons, headers
 │   └── icons/                   # Logo SVG (favicon), PWA icons (192, 512, maskable 512), Apple touch icon
 ├── scripts/
@@ -37,7 +36,7 @@ fertility-tracker/
 │   ├── i18n/                    # Translations
 │   │   └── locales/             # en.ts (reference) and fr.ts
 │   ├── pwa/                     # Service worker registration
-│   ├── relay/                   # Sync relay: the routes in /api/ on an R2 bucket (Relay API)
+│   ├── relay/                   # Sync relay: the Worker entry and the routes in /api/ on an R2 bucket (Relay API)
 │   ├── styles/                  # CSS in cascade layers and the self-hosted font
 │   ├── sw/                      # Service worker: precache and cache strategies
 │   ├── sync/                    # Sync client: relay client, device record, vault store (Sync client)
@@ -53,7 +52,7 @@ fertility-tracker/
 ├── playwright.config.ts         # End-to-end test settings: browser and web server
 ├── tsconfig.json                # Strict TypeScript settings
 ├── vite.config.ts               # Build, test and coverage settings
-└── wrangler.json                # Cloudflare Pages settings
+└── wrangler.json                # Cloudflare Worker settings: entry, static assets, R2 binding
 ```
 
 ## Domain files

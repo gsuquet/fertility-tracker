@@ -4,7 +4,7 @@ This page gives the architecture, the pinned versions of the tools and the rules
 
 ## Architecture
 
-The application is a single-page React application. Vite builds it into static files, and Cloudflare Pages serves them. Its only backend is the sync relay: a Pages Function in `/api/` on an R2 bucket ([Relay API](relay-api.md)).
+The application is a single-page React application. Vite builds it into static files. A Cloudflare Worker serves them as static assets. Its only backend is the sync relay: the code of the Worker in `/api/`, on an R2 bucket ([Relay API](relay-api.md)).
 
 ```mermaid
 graph TD
@@ -50,7 +50,7 @@ The table gives the place of each version. It does not copy the numbers, because
 | Styles             | CSS                                               | Custom properties, cascade layers, grid and flexbox                                          |
 | Unit tests         | Vitest, React Testing Library, V8 coverage, jsdom | `package.json`                                                                               |
 | End-to-end tests   | Playwright and axe                                | `package.json`                                                                               |
-| Deployment         | Cloudflare Pages                                  | `wrangler` in `package.json`, and `compatibility_date` in `wrangler.json`                    |
+| Deployment         | Cloudflare Workers, with static assets            | `wrangler` in `package.json`, and `compatibility_date` in `wrangler.json`                    |
 | Dependency updates | Dependabot                                        | Weekly updates. Patch and minor updates merge automatically when CI passes                   |
 
 ## Code splitting and lazy loading

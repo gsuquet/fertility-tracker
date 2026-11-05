@@ -4,7 +4,7 @@ This page tells how the application is built and why. For the list of files, rea
 
 ## A browser application with a small relay
 
-The application is a static React site. Vite builds it into HTML, CSS and JavaScript files. Cloudflare Pages serves the files. After the browser loads them, all the work on the chart occurs in the browser.
+The application is a static React site. Vite builds it into HTML, CSS and JavaScript files. A Cloudflare Worker serves the files as static assets. After the browser loads them, all the work on the chart occurs in the browser.
 
 The only server code is the sync relay in `/api/` ([Relay API](../reference/relay-api.md)). It keeps encrypted vaults in R2, and it cannot read them ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md)). A device without sync does not call it.
 

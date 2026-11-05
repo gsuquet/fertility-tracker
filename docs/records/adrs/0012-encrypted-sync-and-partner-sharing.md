@@ -333,6 +333,8 @@ A partner device keeps the shared chart in a separate `localStorage` key. It nev
 
 R2 deletes an object 12 months after its last write. An owner device writes the vault and the recovery object again when the last write is more than 30 days old. When a read of `recovery/<lookup id>` gives `404`, the owner device makes the object again from its keyring copy. Thus, a vault in use never gets to 12 months. A vault without an owner device for 12 months is deleted. The devices still have their local data.
 
+> **Update (version 1.70.1):** The project is a Cloudflare Worker with static assets, not a Pages project. A Worker does not run `functions/`. Thus, the relay is now the entry of that Worker ([Deployment](../../reference/deployment.md#requests-to-the-worker)).
+
 The relay does not need a separate Worker or a second codebase. The Pages project deploys the functions in `functions/` with the static files. The relay has the same origin as the application, so the Content Security Policy does not change. A separate Worker is necessary only for Durable Objects, for example for live updates. This ADR does not select live updates.
 
 ### When a sync occurs
