@@ -57,6 +57,7 @@ export interface SyncOutcome {
 }
 
 const NOT_SENT: SyncOutcome = { sent: false, skipped: false, error: null };
+const SKIPPED: SyncOutcome = { sent: false, skipped: true, error: null };
 
 /** The sync for the Settings screen. */
 export interface SyncControl {
@@ -114,6 +115,8 @@ export function useSync(
       try {
         const { runner, relay, keyStore } = await services();
         const sent = latest.current.data;
+        // The list of this tab cannot sync: a refused save, or data that is not readable
+        if (sent.saveFailed || sent.recoveryData !== null) return SKIPPED;
         // Another tab saved other observations: this tab gets them first, with the storage event
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
         if (stored !== null && stored !== serializeObservations(sent.observations)) {

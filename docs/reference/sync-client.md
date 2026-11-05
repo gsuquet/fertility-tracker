@@ -232,13 +232,19 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
 
-| Field       | Use                                                                                                                                                                                                                                                                                                                                                                                                         |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`   | The value of `SYNC_ENABLED`                                                                                                                                                                                                                                                                                                                                                                                 |
-| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                                                                                                                                                                                                                                                                               |
-| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends, with `{ sent, skipped, error }`. `sent` is true when the vault has the changes of this device, or when the device has no record. `skipped` is true when `syncOnce()` skips the sync for `recoveryData` or `saveFailed`. `error` is the `VaultError` of a failed sync. A sync that did not start yet covers a new call. |
-| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                                                                                                                                                                                                                                                                         |
-| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                                                                                                                                                                                                                                                                  |
+| Field       | Use                                                                                                                                                        |
+| ----------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | The value of `SYNC_ENABLED`                                                                                                                                |
+| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
+| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
+| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
+| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
+
+A `SyncOutcome` has these fields:
+
+- `sent` is true when the vault has the changes of this device, or when the device has no record.
+- `skipped` is true when the provider has `saveFailed` or `recoveryData`. The tab then does not call `runSync()`.
+- `error` is the `VaultError` of a failed sync, or `null`.
 
 ## Related documents
 

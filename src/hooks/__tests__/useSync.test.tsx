@@ -319,6 +319,28 @@ describe('useSync', () => {
     });
   });
 
+  it('tells that the sync is skipped after a refused save of an edit, without a sync', async () => {
+    const { load, runs } = await setup();
+    const { result } = renderHook(() => ({ sync: useSync(false, load), data: useCycleData() }), {
+      wrapper,
+    });
+    const setItem = localStorage.setItem.bind(localStorage);
+    vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === STORAGE_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    act(() => {
+      result.current.data.saveObservation(makeObservation({ date: '2026-10-09' }));
+    });
+    await waitFor(() => expect(result.current.data.saveFailed).toBe(true));
+    expect(await act(() => result.current.sync.syncNow())).toEqual({
+      sent: false,
+      skipped: true,
+      error: null,
+    });
+    expect(runs.count).toBe(0);
+  });
+
   it('reads the vault as a new device when the observations key was missing at the load', async () => {
     const { load, relay, keyStore } = await setup();
     localStorage.setItem(
