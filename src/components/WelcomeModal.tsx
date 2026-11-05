@@ -65,7 +65,7 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, 
   const handlePrev = () => setCurrentStep(prev => prev - 1);
 
   const handleLoadDemo = async () => {
-    if (sync?.enabled) {
+    if (sync) {
       const record = await sync
         .services()
         .then(({ keyStore }) => keyStore.load())

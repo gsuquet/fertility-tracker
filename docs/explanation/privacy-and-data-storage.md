@@ -4,7 +4,7 @@ This page tells where the application keeps your data, why, and what the limits 
 
 ## Your data stays in your browser
 
-The application keeps all observations in the `localStorage` of your browser. It has no user accounts, no server database and no analytics. It sends no observation to a server.
+The application keeps all observations in the `localStorage` of your browser. It has no user accounts, no server database and no analytics. Without sync, it sends no observation to a server. With sync, it sends only an encrypted copy that the server cannot read ([Synchronization](#synchronization)).
 
 Fertility data is very personal health data. Data that is not on a server cannot leak from a server. This is the most important reason for the design.
 
@@ -23,7 +23,7 @@ The service worker keeps a copy of the application files in the browser cache, s
 This design has costs. You must know them:
 
 - If you clear the data of the site in your browser, you lose your observations.
-- A different browser or device does not see your data. There is no automatic synchronization.
+- Without sync, a different browser or device does not see your data.
 - A person who can use your browser can see your data. The application has no password.
 - A private browser window deletes the data when you close it.
 
@@ -41,9 +41,15 @@ The backup file ends with `.ftbackup`. The file of **Back up now** is a JSON fil
 
 **Back up with a password** encrypts the file in the browser, before the download. The browser makes the key from your password, so the key never leaves the device. Without the password, nobody can read the file, and the application cannot reset the password. The file has a size in steps of 16 KB, so its size does not show how many days you recorded.
 
-## Synchronization in the future
+## Synchronization
 
-[ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md) gives the design of a future synchronization between devices and with a partner. The browser encrypts the observations before it sends them, so the server cannot read them. The application does not have synchronization yet.
+Sync is off until you turn it on in Settings. It shares your chart with your other devices and with a partner. [ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md) gives its design.
+
+- The browser encrypts the observations before it sends them. Only your devices and your partner have the keys. Thus, the server cannot read the observations, the notes or the device names.
+- The server keeps one encrypted vault in Cloudflare R2. It sees the vault id, the number of members, the padded size, your IP address and the times of the syncs.
+- The server deletes a vault 12 months after its last write.
+- Your partner can only read the chart. When you remove a device or a partner, it stops syncing at once. It keeps the data that it already shows.
+- Keep your recovery code in a safe place. Without the code and without a device, nobody can open the vault.
 
 ## Related documents
 

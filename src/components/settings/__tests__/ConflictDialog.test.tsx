@@ -28,9 +28,9 @@ const owner = async () => {
   return { ...harness, keyStore, record: made.record };
 };
 
-/** Settings with the real sync control, without the syncs of the start. */
+/** Settings with the real sync control. */
 const Harness = ({ load }: { load: () => Promise<SyncServices> }) => {
-  const control = useSync(true, load);
+  const control = useSync(load);
   return <SyncSettings control={control} onRecordChange={() => {}} onBusyChange={() => {}} />;
 };
 

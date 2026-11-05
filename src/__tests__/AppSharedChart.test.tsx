@@ -12,7 +12,6 @@ const sync = vi.hoisted(() => ({ sharedDays: null as ObservationInput[] | null }
 
 vi.mock('../hooks/useSync', () => ({
   useSync: () => ({
-    enabled: true,
     services: () => Promise.reject(new Error('No sync in this test')),
     syncNow: async () => ({ sent: false, skipped: false, error: null }),
     withSync: () => Promise.reject(new Error('No sync in this test')),

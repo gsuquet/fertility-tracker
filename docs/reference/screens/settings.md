@@ -149,7 +149,7 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 ### Sync group
 
-While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
+Settings has a **Sync** group after **Backup and restore** ([Sync client](../sync-client.md#sync-in-the-application)). [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
 | Device record of this device | Rows                                                                                                                                                |
 | ---------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -271,7 +271,7 @@ A conflict occurs when two devices change the same day before a sync. The sync k
 
 ### Join dialog
 
-When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
+When the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
 
 | Step         | Content                                                                                                                                      |
 | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -294,7 +294,6 @@ When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application op
 - Before `finishJoin()`, the device removes its demo days. When the browser refuses this write, the device does not join.
 - **They do not match** and **Cancel** delete the invitation on the relay and close the dialog.
 - While **Joining** runs, the dialog does not close.
-- The invitation link needs the sync. While `SYNC_ENABLED` is `false`, the application ignores `#invite=`.
 
 ### Load
 

@@ -6,11 +6,8 @@ import { controlOf } from '../../test/syncControl';
 import { useHasSyncRecord } from '../useHasSyncRecord';
 
 describe('useHasSyncRecord', () => {
-  it('is false without a control and while the sync is off', () => {
+  it('is false without a control', () => {
     expect(renderHook(() => useHasSyncRecord(undefined)).result.current).toBe(false);
-    const { relay } = createRelayHarness();
-    const off = controlOf(relay, createMemoryKeyStore(), { enabled: false });
-    expect(renderHook(() => useHasSyncRecord(off)).result.current).toBe(false);
   });
 
   it('is null while the key store loads, then tells if it has a record', async () => {

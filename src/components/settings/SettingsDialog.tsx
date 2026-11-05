@@ -493,7 +493,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           </p>
         )}
 
-        {sync?.enabled && (
+        {sync && (
           <SyncSettings control={sync} onRecordChange={setSyncRole} onBusyChange={setSyncBusy} />
         )}
 

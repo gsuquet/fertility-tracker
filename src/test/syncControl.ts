@@ -12,7 +12,6 @@ export const controlOf = (
 ): SyncControl & { syncNow: ReturnType<typeof vi.fn> } => {
   const services: SyncServices = { relay, keyStore, runner };
   return {
-    enabled: true,
     services: () => Promise.resolve(services),
     syncNow: vi.fn(async () => ({ sent: true, skipped: false, error: null })),
     withSync: action => action(services),

@@ -6,7 +6,6 @@ import { LanguageProvider } from '../../context/LanguageContext';
 import { createVault, vaultStoreOf } from '../../sync/deviceVault';
 import type { DeviceRecord } from '../../sync/keyStore';
 import * as runner from '../../sync/syncRunner';
-import { SYNC_ENABLED } from '../../sync/syncFlag';
 import { makeObservation } from '../../test/factories';
 import { joinMember } from '../../test/joinMember';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
@@ -49,7 +48,7 @@ const setup = async () => {
 const render = (load: () => Promise<SyncServices>) =>
   renderHook(
     () => {
-      useSync(true, load);
+      useSync(load);
       return useCycleData();
     },
     { wrapper }
@@ -76,18 +75,10 @@ describe('useSync', () => {
     vi.restoreAllMocks();
   });
 
-  it('is off by default until the relay has its bucket, and then loads nothing', () => {
-    expect(SYNC_ENABLED).toBe(false);
-    const load = vi.fn();
-    renderHook(() => useSync(undefined, load), { wrapper });
-    renderHook(() => useSync(false, load), { wrapper });
-    expect(load).not.toHaveBeenCalled();
-  });
-
   it('loads the sync code, the relay client and the key store of the browser', async () => {
     const { result } = renderHook(
       () => {
-        useSync(true);
+        useSync();
         return useCycleData();
       },
       { wrapper }
@@ -248,8 +239,7 @@ describe('useSync', () => {
   it('gives the services to Settings, loaded one time, and loads them again after a failure', async () => {
     const { services } = await setup();
     const load = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(services);
-    const { result } = renderHook(() => useSync(false, load), { wrapper });
-    expect(result.current.enabled).toBe(false);
+    const { result } = renderHook(() => useSync(load), { wrapper });
     await expect(result.current.services()).rejects.toThrow('offline');
     expect(await result.current.services()).toBe(services);
     expect(await result.current.services()).toBe(services);
@@ -258,7 +248,7 @@ describe('useSync', () => {
 
   it('runs an action of Settings after the sync that runs, and syncs after a failed action', async () => {
     const { load, runs, services } = await setup();
-    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    const { result } = renderHook(() => useSync(load), { wrapper });
     const order: string[] = [];
     const first = result.current.syncNow().then(() => order.push('sync'));
     const action = result.current.withSync(async loaded => {
@@ -278,7 +268,7 @@ describe('useSync', () => {
   it('gives the error of the last sync, and null after a sync without an error', async () => {
     const { load, failWhen } = await setup();
     failWhen(() => true);
-    const { result } = renderHook(() => useSync(true, load), { wrapper });
+    const { result } = renderHook(() => useSync(load), { wrapper });
     await waitFor(() => expect(result.current.lastError?.reason).toBe('relay'));
     expect(result.current.lastError?.detail?.status).toBe(0);
     failWhen(null);
@@ -290,7 +280,7 @@ describe('useSync', () => {
 
   it('tells whether the vault has the changes of this device at the end of a sync', async () => {
     const { load, failWhen, keyStore } = await setup();
-    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    const { result } = renderHook(() => useSync(load), { wrapper });
     let outcome = await act(() => result.current.syncNow());
     expect(outcome).toEqual({ sent: true, skipped: false, error: null });
     failWhen(() => true);
@@ -314,7 +304,7 @@ describe('useSync', () => {
       error: null,
     });
     const broken = vi.fn().mockRejectedValue(new Error('offline'));
-    const other = renderHook(() => useSync(false, broken), { wrapper });
+    const other = renderHook(() => useSync(broken), { wrapper });
     expect(await act(() => other.result.current.syncNow())).toEqual({
       sent: false,
       skipped: false,
@@ -324,7 +314,7 @@ describe('useSync', () => {
 
   it('tells that the sync is skipped after a refused save of an edit, without a sync', async () => {
     const { load, runs } = await setup();
-    const { result } = renderHook(() => ({ sync: useSync(false, load), data: useCycleData() }), {
+    const { result } = renderHook(() => ({ sync: useSync(load), data: useCycleData() }), {
       wrapper,
     });
     const setItem = localStorage.setItem.bind(localStorage);
@@ -371,7 +361,7 @@ describe('useSync', () => {
     }));
     const own = [makeObservation({ date: '2026-09-01', bleeding: 'M' })];
     localStorage.setItem(STORAGE_KEY, JSON.stringify(own));
-    const { result } = renderHook(() => ({ sync: useSync(true, load), data: useCycleData() }), {
+    const { result } = renderHook(() => ({ sync: useSync(load), data: useCycleData() }), {
       wrapper,
     });
     await waitFor(() => expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01'));
@@ -422,9 +412,7 @@ describe('useSync', () => {
         { date: '2026-10-01', day: { bleeding }, clock: { time: 5, counter: 0, member: 'm' } },
       ]);
     localStorage.setItem(SHARED_KEY, days('H'));
-    const off = renderHook(() => useSync(false, load), { wrapper });
-    expect(off.result.current.sharedDays).toBeNull();
-    const { result } = renderHook(() => useSync(true, load), { wrapper });
+    const { result } = renderHook(() => useSync(load), { wrapper });
     expect(result.current.sharedDays).toEqual([{ date: '2026-10-01', bleeding: 'H' }]);
     const first = result.current.sharedDays;
     // A sync that does not change the text keeps the same days

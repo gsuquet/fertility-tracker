@@ -3,15 +3,14 @@ import { useEffect, useState } from 'react';
 import type { SyncControl } from './useSync';
 
 /**
- * True when the key store has a device record, false when it has none or the sync is off. Null
+ * True when the key store has a device record, false when it has none. Null
  * while the key store loads, and after a failed load.
  */
 export function useHasSyncRecord(control: SyncControl | undefined): boolean | null {
-  const enabled = control?.enabled === true;
   const services = control?.services;
-  const [hasRecord, setHasRecord] = useState<boolean | null>(enabled ? null : false);
+  const [hasRecord, setHasRecord] = useState<boolean | null>(services ? null : false);
   useEffect(() => {
-    if (!enabled || !services) return;
+    if (!services) return;
     let live = true;
     services()
       .then(({ keyStore }) => keyStore.load())
@@ -24,6 +23,6 @@ export function useHasSyncRecord(control: SyncControl | undefined): boolean | nu
     return () => {
       live = false;
     };
-  }, [enabled, services]);
+  }, [services]);
   return hasRecord;
 }

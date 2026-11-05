@@ -483,9 +483,9 @@ export const en = {
         title: 'Clinical Charting, Privacy First',
         description:
           'Fertility Tracker is designed around the Creighton Model System (CrMS)—a standardized, scientific method for charting natural biomarkers of fertility.',
-        privacyTitle: '100% Client-Side Privacy',
+        privacyTitle: 'Privacy by Design',
         privacyText:
-          'Your reproductive health data stays exclusively in your browser storage. No accounts, no backend servers, and zero third-party tracking.',
+          'Your reproductive health data stays in your browser storage. No accounts and zero third-party tracking. Optional sync sends only an encrypted copy that the server cannot read.',
         crmsTitle: 'Natural Biomarker Observation',
         crmsText:
           'Unlike statistical period calculators that guess your cycle, CrMS relies on daily physical observations of mucus, bleeding, and sensation.',
