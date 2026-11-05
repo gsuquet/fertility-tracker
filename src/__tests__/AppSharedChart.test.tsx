@@ -72,7 +72,13 @@ describe('App on a partner device with a shared chart', () => {
     expect(code).toHaveValue('M');
     expect(code).toBeDisabled();
     // The whole note shows as text, because the disabled row cannot open
-    expect(within(page).getByText(LONG_NOTE)).toBeVisible();
+    const note = within(page).getByText(LONG_NOTE);
+    expect(note).toHaveClass('obs-notes-text');
+    expect(note.closest('button')).toBeNull();
+    // The notes row, which a disabled fieldset cannot open, does not show
+    expect(
+      within(page).queryByRole('button', { name: new RegExp(en.observationForm.notes) })
+    ).toBeNull();
     expect(within(page).queryByRole('button', { name: en.actions.save })).toBeNull();
     expect(
       within(page).queryByRole('button', { name: en.observationForm.actionsLabel })
@@ -90,6 +96,10 @@ describe('App on a partner device with a shared chart', () => {
     );
     const drawer = await screen.findByRole('dialog', { name: en.drawer.viewTitle });
     expect(within(drawer).getByLabelText(en.labels.date)).toBeDisabled();
+    expect(
+      within(drawer).queryByRole('button', { name: new RegExp(en.observationForm.notes) })
+    ).toBeNull();
+    expect(drawer.querySelector('.obs-notes-text')).toHaveTextContent(en.observationForm.none);
     expect(within(drawer).queryByRole('button', { name: en.actions.save })).toBeNull();
     expect(
       within(drawer).queryByRole('button', { name: en.observationForm.actionsLabel })
