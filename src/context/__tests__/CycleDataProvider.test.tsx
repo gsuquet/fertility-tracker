@@ -765,6 +765,54 @@ describe('synced observations', () => {
     expect(localStorage.getItem(SYNC_STATE_KEY)).toBeNull();
   });
 
+  it('deletes the sync state when the observations key is missing at the load', () => {
+    localStorage.setItem('fertility_care_sync_state', 'state');
+    renderData();
+    expect(localStorage.getItem('fertility_care_sync_state')).toBeNull();
+  });
+
+  it('does not take or write back a list of another tab with records that it cannot read', () => {
+    const { result } = renderData();
+    const setItem = vi.spyOn(localStorage, 'setItem');
+    const partly = JSON.stringify([{ date: 'bad' }, makeObservation({ date: '2026-06-01' })]);
+    const good = JSON.stringify([makeObservation({ date: '2026-06-02' })]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: partly }));
+    });
+    expect(result.current.observations).toEqual([]);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: good }));
+    });
+    expect(result.current.observations.map(o => o.date)).toEqual(['2026-06-02']);
+    expect(setItem.mock.calls.filter(([key]) => key === STORAGE_KEY)).toEqual([]);
+    setItem.mockRestore();
+  });
+
+  it('forgets its undo copy when another tab deletes the copy or changes the observations', () => {
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-06-01' })]));
+    const { result } = renderData();
+    const backup = JSON.stringify([makeObservation({ date: '2026-05-01' })]);
+    act(() => {
+      result.current.importDataJson(backup, 'merge');
+    });
+    expect(result.current.undoChange).toBe('merge');
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: UNDO_KEY, newValue: 'x' }));
+    });
+    expect(result.current.undoChange).toBe('merge');
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: UNDO_KEY, newValue: null }));
+    });
+    expect(result.current.undoChange).toBeNull();
+    act(() => {
+      result.current.importDataJson(backup, 'merge');
+    });
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: backup }));
+    });
+    expect(result.current.undoChange).toBeNull();
+  });
+
   it('shows the observations that another tab saved', () => {
     const { result } = renderData();
     const other = JSON.stringify([makeObservation({ date: '2026-06-01', bleeding: 'H' })]);

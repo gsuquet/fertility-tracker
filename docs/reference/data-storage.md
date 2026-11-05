@@ -129,8 +129,10 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 
 `markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`. `loadMissing` is `true` when the observations key was missing at this load.
 
-- When `parseObservationData()` gives `null` or `droppedCount` is more than 0 at the load, the provider deletes `fertility_care_sync_state` at once.
-- When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. A value that is not readable changes nothing.
+- The provider deletes `fertility_care_sync_state` at the load when the observations key is missing, `parseObservationData()` gives `null` or `droppedCount` is more than 0.
+- When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. This tab does not write them back.
+- A value that is not readable, or that has a record that this version drops, changes nothing. The value stays in the storage.
+- When another tab changes the observations or deletes `fertility_care_observations_undo`, this tab forgets its undo copy. Thus, **Undo** never brings back an old list over a change of another tab.
 
 ## Undo of replaced data
 

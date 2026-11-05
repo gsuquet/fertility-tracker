@@ -256,6 +256,29 @@ describe('useSync', () => {
     expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true]);
   });
 
+  it('keeps the vault days when the key was missing, a sync failed, and the application loads again', async () => {
+    const { load, relay, keyStore } = await setup();
+    const days = ['2026-10-01', '2026-10-02', '2026-10-03'].map(date =>
+      makeObservation({ date, bleeding: 'H' })
+    );
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+    const first = render(load);
+    await waitFor(() => expect(first.result.current.lastSyncDate).not.toBeNull());
+    first.unmount();
+    localStorage.removeItem(STORAGE_KEY);
+    // The sync after the missing key fails: the device has no record for a moment
+    const load2 = keyStore.load;
+    keyStore.load = async () => null;
+    const second = render(load);
+    await settle();
+    second.unmount();
+    keyStore.load = load2;
+    const third = render(load);
+    await waitFor(() => expect(third.result.current.observations).toHaveLength(3));
+    const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true, true]);
+  });
+
   it('does not sync a list that another tab changed, and uses a Web Lock when the browser has one', async () => {
     const { load, runs } = await setup();
     const request = vi.fn((_name: string, run: () => Promise<void>) => run());

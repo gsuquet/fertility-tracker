@@ -189,13 +189,14 @@ const readStoredState = () => {
 };
 
 /**
- * The stored state, and the facts of this load for the sync. At a damaged load, the sync state
- * goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
+ * The stored state, and the facts of this load for the sync. At a damaged load or without the
+ * observations key, the sync state goes at once: the next sync is a first sync, and the vault wins on each date (ADR 0012).
  */
 const loadStoredState = () => {
   const missing = readStorage(STORAGE_KEY) === null;
   const state = readStoredState();
-  if (state.damaged) removeStorage(SYNC_STATE_KEY);
+  // A missing key also deletes it: after a reload, the key holds '[]' and looks like deleted days
+  if (state.damaged || missing) removeStorage(SYNC_STATE_KEY);
   return { ...state, missing };
 };
 
@@ -226,6 +227,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   const [lastSyncDate, setLastSyncDate] = useState(() => readStorage(LAST_SYNC_KEY));
   const { missing: loadMissing } = initialState;
   const persistRequested = useRef(false);
+  const fromOtherTab = useRef<Observation[] | null>(null);
   const hasData = observations.length > 0;
   const hasUserData = hasUserObservations(observations);
 
@@ -243,6 +245,8 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   useEffect(() => {
     // Without a recovery copy, keep the unreadable original until the observations change.
     if (!recoveryKept && observations === initialState.observations) return;
+    // A list from another tab is already in the storage: a write back could remove its new data
+    if (observations === fromOtherTab.current) return;
     setSaveFailed(!writeStorage(STORAGE_KEY, serializeObservations(observations)));
   }, [observations, recoveryKept, initialState.observations]);
 
@@ -250,9 +254,16 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
   // tab then starts from them, not from an old list.
   useEffect(() => {
     const onStorage = (event: StorageEvent) => {
+      // The other tab deleted the undo copy after a change: Undo must not bring back an old list
+      if (event.key === UNDO_KEY && event.newValue === null) setUndo(null);
       if (event.key !== STORAGE_KEY || event.newValue === null) return;
       const parsed = parseObservationData(event.newValue);
-      if (parsed) setObservations(reprocessObservations(parsed.observations));
+      // A list with records that this version cannot read stays only in the storage
+      if (!parsed || parsed.droppedCount > 0) return;
+      const list = reprocessObservations(parsed.observations);
+      fromOtherTab.current = list;
+      setUndo(null);
+      setObservations(list);
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
