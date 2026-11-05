@@ -4,6 +4,9 @@ import { WelcomeModal } from '../WelcomeModal';
 import { LanguageProvider } from '../../context/LanguageContext';
 import { CycleProvider, useCycleData } from '../../context/CycleContext';
 import { renderWithProviders } from '../../test/render';
+import { createVault } from '../../sync/deviceVault';
+import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
+import { controlOf } from '../../test/syncControl';
 
 const ObservationCount = () => (
   <span data-testid="count">{useCycleData().observations.length}</span>
@@ -109,6 +112,28 @@ describe('WelcomeModal Component', () => {
     fireEvent.click(screen.getByText(/Explore Demo Data/i));
     expect(screen.getByTestId('count')).toHaveTextContent('56');
     expect(handleClose).toHaveBeenCalledOnce();
+  });
+
+  it('does not offer the demo data on a device with a sync record (ADR 0012)', async () => {
+    const { relay } = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    await createVault(relay, keyStore);
+    renderWithProviders(<WelcomeModal onClose={() => {}} sync={controlOf(relay, keyStore)} />);
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    expect(screen.getByText(/Start Fresh/i)).toBeInTheDocument();
+    // Hidden while the key store loads, and after
+    expect(screen.queryByText(/Explore Demo Data/i)).toBeNull();
+    await new Promise(resolve => setTimeout(resolve, 0));
+    expect(screen.queryByText(/Explore Demo Data/i)).toBeNull();
+  });
+
+  it('offers the demo data once the key store has no record', async () => {
+    const { relay } = createRelayHarness();
+    renderWithProviders(
+      <WelcomeModal onClose={() => {}} sync={controlOf(relay, createMemoryKeyStore())} />
+    );
+    fireEvent.click(screen.getByTitle('Go to step 4'));
+    expect(await screen.findByText(/Explore Demo Data/i)).toBeInTheDocument();
   });
 
   it('closes with Start Fresh, the close button, the overlay and Escape', () => {

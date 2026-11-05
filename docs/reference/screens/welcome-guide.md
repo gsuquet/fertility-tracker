@@ -24,6 +24,8 @@ The guide opens at the first visit, when `fertility_tracker_has_seen_welcome` is
 | 3     | How to record: direct code (for example `10KLX3 I AP`) or the form buttons.                      |
 | 4     | The pages, with **Explore Demo Data** and **Start Fresh**.                                       |
 
+While `SYNC_ENABLED` is `true`, slide 4 shows **Explore Demo Data** only when the key store has no device record. A device in a vault never loads the demo days ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)). While the key store loads, or when it fails, the button does not show. [useHasSyncRecord.ts](../../../src/hooks/useHasSyncRecord.ts) reads the key store.
+
 In the installed application on iOS and iPadOS, with no observations, slide 4 also has **Restore a backup**. It closes the guide and opens [Settings](settings.md) ([Install and update](../application-behavior.md#install-and-update)).
 
 Each opening starts on slide 1. The guide has **Previous**, **Next** and **Skip** buttons and step dots. The guide is in English and in French.
