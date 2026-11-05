@@ -1,4 +1,5 @@
 import { act, fireEvent, screen, waitFor, within } from '@testing-library/react';
+import { useState } from 'react';
 import { describe, expect, it, vi } from 'vitest';
 import { en, formatMessage } from '../../../i18n';
 import { createVault } from '../../../sync/deviceVault';
@@ -46,6 +47,19 @@ const vault = async () => {
   const tablet = await join(harness.relay, keyStore, 'owner', 'Tablet');
   const partner = await join(harness.relay, keyStore, 'reader', 'Sam');
   return { ...harness, keyStore, tablet, partner };
+};
+
+/** The dialog under a parent that makes a new control object at each render. */
+const NewControlEachRender = ({ relay, keyStore }: { relay: RelayClient; keyStore: KeyStore }) => {
+  const [renders, setRenders] = useState(0);
+  return (
+    <>
+      <button type="button" onClick={() => setRenders(renders + 1)}>
+        Render {renders}
+      </button>
+      <DevicesDialog control={controlOf(relay, keyStore)} onCode={vi.fn()} onClose={vi.fn()} />
+    </>
+  );
 };
 
 const devicesDialog = () => screen.findByRole('dialog', { name: s.devices });
@@ -128,6 +142,25 @@ describe('DevicesDialog', () => {
     expect(onBusyChange).toHaveBeenLastCalledWith(false);
     await waitFor(async () => expect(await items()).toHaveLength(3));
     expect(screen.queryByText('Tablet')).toBeNull();
+  });
+
+  it('loads the list one time when the parent gives a new control object', async () => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    await createVault(harness.relay, keyStore, 'Phone');
+    const getVault = vi.fn(harness.relay.getVault);
+    const relay: RelayClient = { ...harness.relay, getVault };
+    renderWithProviders(<NewControlEachRender relay={relay} keyStore={keyStore} />);
+    expect(await items()).toHaveLength(2);
+    const calls = getVault.mock.calls.length;
+    fireEvent.click(screen.getByRole('button', { name: 'Render 0' }));
+    fireEvent.click(screen.getByRole('button', { name: 'Render 1' }));
+    await act(async () => {
+      await new Promise(resolve => setTimeout(resolve, 20));
+    });
+    expect(getVault.mock.calls.length).toBe(calls);
+    const dialog = await devicesDialog();
+    expect(within(dialog).getByRole('button', { name: en.actions.close })).toBeEnabled();
   });
 
   it('shows the names that are missing, Working while it loads, and the cause of a failure', async () => {

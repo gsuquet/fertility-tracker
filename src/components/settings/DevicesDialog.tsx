@@ -36,13 +36,17 @@ export const DevicesDialog: React.FC<DevicesDialogProps> = ({ control, onCode, o
   const nameOf = (member: DeviceEntry) =>
     member.kind === 'recovery' ? s.deviceRecovery : (member.name ?? s.deviceNoName);
 
+  // The latest control: a new control object does not load the list again
+  const controlRef = useRef(control);
+  controlRef.current = control;
+
   /** Runs an action with the record of the key store and the sync lock, then loads the list. */
   const run = useCallback(
     async (action?: (services: SyncServices, record: DeviceRecord) => Promise<void>) => {
       setBusy(true);
       setFailure(null);
       try {
-        const list = await control.withSync(async services => {
+        const list = await controlRef.current.withSync(async services => {
           const { relay, keyStore } = services;
           const { listMembers } = await import('../../sync/membership');
           // The record of the key store: a sync or another tab can change it
@@ -58,7 +62,7 @@ export const DevicesDialog: React.FC<DevicesDialogProps> = ({ control, onCode, o
         setBusy(false);
       }
     },
-    [control]
+    []
   );
 
   useEffect(() => {

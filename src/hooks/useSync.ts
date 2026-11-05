@@ -2,7 +2,7 @@
  * Starts the sync of the application: at the start, when the page becomes visible, when the
  * browser goes online and after a change. See docs/reference/sync-client.md.
  */
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 import { useCycleData } from '../context/CycleContext';
 import { useLanguage } from '../context/LanguageContext';
 import { formatMessage } from '../i18n';
@@ -305,13 +305,17 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
   }, [sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return {
-    services,
-    syncNow: sync,
-    withSync,
-    lastError,
-    conflicts,
-    resolveConflict,
-    sharedDays,
-  };
+  // The same object while no field changes: the effects of the dialogs do not start again
+  return useMemo(
+    () => ({
+      services,
+      syncNow: sync,
+      withSync,
+      lastError,
+      conflicts,
+      resolveConflict,
+      sharedDays,
+    }),
+    [services, sync, withSync, lastError, conflicts, resolveConflict, sharedDays]
+  );
 }

@@ -201,7 +201,7 @@ While **Recover** runs, the code dialog does not close. **Cancel** is disabled, 
 
 ### Device list
 
-[DevicesDialog.tsx](../../../src/components/settings/DevicesDialog.tsx) shows the members of the vault, as [Removing a member](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member) gives. When it opens, it calls `listMembers()` with the sync lock ([Sync client](../sync-client.md#device-list)). While the list loads, it shows "Working…".
+[DevicesDialog.tsx](../../../src/components/settings/DevicesDialog.tsx) shows the members of the vault, as [Removing a member](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member) gives. When it opens, it calls `listMembers()` one time, with the sync lock ([Sync client](../sync-client.md#device-list)). It loads the list again only after a removal. While the list loads, it shows "Working…".
 
 | Member              | Name                                 | Detail                                   | Action     |
 | ------------------- | ------------------------------------ | ---------------------------------------- | ---------- |
