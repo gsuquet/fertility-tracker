@@ -4,7 +4,7 @@ This page gives the rules of the sync client of the application: the relay clien
 
 **Source folder:** [src/sync/](../../src/sync/)
 
-Until `SYNC_ENABLED` is `true`, the application does not call these functions. The pull request that adds the R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)) also sets the flag.
+Until `SYNC_ENABLED` is `true`, the application does not call these functions. The relay has its R2 binding ([Set up the sync relay](../how-to/set-up-the-sync-relay.md)). The flag stays `false` until the application follows all the rules of [ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md).
 
 ## Files
 
@@ -15,7 +15,7 @@ Until `SYNC_ENABLED` is `true`, the application does not call these functions. T
 | `deviceVault.ts`    | `createVault()`, the vault session, `vaultStoreOf()`, `VaultError` |
 | `invitationFlow.ts` | The invitation on the owner device and on the new device           |
 | `membership.ts`     | The removal of a member, the new recovery code and the recovery    |
-| `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the relay has its R2 bucket          |
+| `syncFlag.ts`       | `SYNC_ENABLED`: `false` until the application follows ADR 0012     |
 | `syncRunner.ts`     | `runSync()` and `finishSync()`: one sync of the application        |
 
 ## Relay client
