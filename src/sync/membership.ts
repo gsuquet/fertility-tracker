@@ -64,6 +64,36 @@ export async function removeMember(
   return written.record;
 }
 
+/** True when the error tells that the device is no longer in the vault. */
+const isOut = (error: unknown) =>
+  error instanceof VaultError &&
+  (error.reason === 'removed' ||
+    (error.reason === 'relay' && (error.detail?.status === 401 || error.detail?.status === 404)));
+
+/** Removes this device from the vault with a rekey, then deletes its record. The days stay. */
+export async function leaveVault(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord
+): Promise<void> {
+  let session: Awaited<ReturnType<typeof openSession>>;
+  try {
+    session = await openSession(relay, keyStore, record);
+  } catch (error) {
+    if (!isOut(error)) throw error;
+    await keyStore.clear();
+    return;
+  }
+  const keys = await ownerKeys(session);
+  // The record of the rekey is of a removed member: the device does not save it
+  const written = await writeRekeyed(relay, memorySaver(), session, keys, {
+    remove: [record.memberId],
+    rotateSigning: true,
+  });
+  if (!written) throw changed();
+  await keyStore.clear();
+}
+
 /** Replaces the recovery member and the lookup object. Gives the new code. */
 export async function newRecoveryCode(
   relay: RelayClient,

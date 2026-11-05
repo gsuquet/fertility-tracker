@@ -158,8 +158,8 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
 
 interface SyncSettingsProps {
   control: SyncControl;
-  /** Tells Settings when the device has a record, or not. */
-  onRecordChange: (hasRecord: boolean) => void;
+  /** Tells Settings the role of the device record, or null without a record. */
+  onRecordChange: (role: DeviceRecord['role'] | null) => void;
   /** Tells Settings when an action starts and ends. Settings does not close while it runs. */
   onBusyChange: (busy: boolean) => void;
 }
@@ -196,7 +196,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
 
   const show = useCallback((next: DeviceRecord | null) => {
     setRecord(next);
-    onRecordRef.current(next !== null);
+    onRecordRef.current(next?.role ?? null);
   }, []);
 
   // The record loads when the group opens

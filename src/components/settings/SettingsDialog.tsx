@@ -43,6 +43,11 @@ import { PasswordDialog } from './PasswordDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
 import { SyncSettings } from './SyncSettings';
 import type { SyncControl } from '../../hooks/useSync';
+import type { DeviceRecord } from '../../sync/keyStore';
+import { failureOf } from '../../utils/syncFailure';
+import type { SyncFailure } from '../../utils/syncFailure';
+import { removeStorage } from '../../utils/storage';
+import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
 
 interface SettingsDialogProps {
   onClose: () => void;
@@ -125,11 +130,15 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [pending, setPending] = useState<PendingAction | null>(null);
   const [importError, setImportError] = useState(false);
   // A device in a vault does not load the demo cycles (ADR 0012)
-  const [hasSyncRecord, setHasSyncRecord] = useState(false);
+  const [syncRole, setSyncRole] = useState<DeviceRecord['role'] | null>(null);
+  const hasSyncRecord = syncRole !== null;
   // A sync action makes a recovery code that the user must see: Settings stays open
   const [syncBusy, setSyncBusy] = useState(false);
+  // On this device only removes the device from the vault before the data action
+  const [leaving, setLeaving] = useState(false);
+  const [leaveFailure, setLeaveFailure] = useState<SyncFailure | null>(null);
   const close = () => {
-    if (!syncBusy) onClose();
+    if (!syncBusy && !leaving) onClose();
   };
   const [passwordRequest, setPasswordRequest] = useState<
     { mode: 'backup' } | { mode: 'restore'; backup: EncryptedBackup } | null
@@ -161,6 +170,36 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     if (action.kind === 'import') importDataJson(action.text, mode);
     setPending(null);
     close();
+  };
+
+  // ADR 0012: Delete all data and Replace delete days on each device of the vault
+  const runOnAllDevices = (action: PendingAction) => {
+    runAction(action);
+    void sync?.syncNow({ deletionsConfirmed: true });
+  };
+
+  // The device leaves the vault first. When this fails, no data changes.
+  const runOnThisDevice = async (action: PendingAction, control: SyncControl) => {
+    setLeaving(true);
+    setLeaveFailure(null);
+    try {
+      await control.withSync(async ({ relay, keyStore }) => {
+        const current = await keyStore.load();
+        if (current) {
+          const { leaveVault } = await import('../../sync/membership');
+          await leaveVault(relay, keyStore, current);
+        }
+        removeStorage(STORAGE_SYNC_STATE_KEY);
+        removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
+      });
+    } catch (error) {
+      setLeaveFailure(failureOf(error));
+      setLeaving(false);
+      return;
+    }
+    setLeaving(false);
+    setSyncRole(null);
+    runAction(action);
   };
 
   // The contents decide, not the extension: a .ftbackup file and an old .json file both work
@@ -234,6 +273,20 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const confirmContent = (action: PendingAction) => {
     const count = String(observations.length);
     const c = t.confirmDialog;
+    // Only an owner device writes its days to the vault
+    const control = syncRole === 'owner' ? sync : undefined;
+    const scoped = (thisDevice: string, allDevices: string) =>
+      control
+        ? [
+            {
+              label: thisDevice,
+              onClick: () => void runOnThisDevice(action, control),
+              danger: true,
+            },
+            { label: allDevices, onClick: () => runOnAllDevices(action), danger: true },
+          ]
+        : null;
+    const syncedMessages = control ? [c.syncedMessage] : [];
     if (action.kind === 'demo') {
       return {
         title: c.demoTitle,
@@ -244,8 +297,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     if (action.kind === 'clear') {
       return {
         title: c.clearTitle,
-        messages: [formatMessage(c.clearMessage, { count })],
-        actions: [{ label: c.clearConfirm, onClick: () => runAction(action), danger: true }],
+        messages: [formatMessage(c.clearMessage, { count }), ...syncedMessages],
+        actions: scoped(c.clearThisDevice, c.clearAllDevices) ?? [
+          { label: c.clearConfirm, onClick: () => runAction(action), danger: true },
+        ],
       };
     }
     const { summary } = action;
@@ -259,10 +314,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           });
     return {
       title: c.importTitle,
-      messages: [fileMessage, formatMessage(c.importChoice, { count })],
+      messages: [fileMessage, formatMessage(c.importChoice, { count }), ...syncedMessages],
       actions: [
         { label: c.importMerge, onClick: () => runAction(action, 'merge') },
-        { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
+        ...(scoped(c.replaceThisDevice, c.replaceAllDevices) ?? [
+          { label: c.importReplace, onClick: () => runAction(action, 'replace'), danger: true },
+        ]),
       ],
     };
   };
@@ -429,11 +486,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         )}
 
         {sync?.enabled && (
-          <SyncSettings
-            control={sync}
-            onRecordChange={setHasSyncRecord}
-            onBusyChange={setSyncBusy}
-          />
+          <SyncSettings control={sync} onRecordChange={setSyncRole} onBusyChange={setSyncBusy} />
         )}
 
         <Group id="settings-help" title={s.help}>
@@ -504,7 +557,12 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         <ConfirmDialog
           title={confirmation.title}
           actions={confirmation.actions}
-          onCancel={() => setPending(null)}
+          onCancel={() => {
+            setPending(null);
+            setLeaveFailure(null);
+          }}
+          alert={leaveFailure && t.sync[leaveFailure]}
+          busy={leaving}
         >
           {confirmation.messages.map(message => (
             <p key={message}>{message}</p>

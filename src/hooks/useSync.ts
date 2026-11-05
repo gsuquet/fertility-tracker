@@ -53,8 +53,11 @@ export interface SyncControl {
   enabled: boolean;
   /** The relay client, the key store and the sync code, loaded one time. */
   services: () => Promise<SyncServices>;
-  /** Starts a sync at once, or after the sync that runs. It resolves when that sync ends. */
-  syncNow: () => Promise<void>;
+  /**
+   * Starts a sync at once, or after the sync that runs. It resolves when that sync ends. With
+   * `deletionsConfirmed`, the next sync that reads the vault does not ask about the deleted days.
+   */
+  syncNow: (options?: { deletionsConfirmed?: boolean }) => Promise<void>;
   /**
    * Runs an action of Settings after the sync that runs, with the sync lock. No sync starts
    * before the action ends.
@@ -79,6 +82,8 @@ export function useSync(
   const waiting = useRef<Promise<void> | null>(null);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
+  // The user confirmed the deletions of the next sync, for example with Delete on all devices
+  const deletionsConfirmed = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
 
   const services = useCallback(() => {
@@ -109,6 +114,9 @@ export function useSync(
         if (stored !== null && stored !== serializeObservations(sent.observations)) return;
         // A version without the sync wrote the list: the sync starts again as a first sync
         checkStoredMark(stored);
+        // Only a sync that reads the vault uses the confirmation
+        const confirmed = deletionsConfirmed.current;
+        deletionsConfirmed.current = false;
         const trust = distrustCount();
         const result = await runner.runSync({
           relay,
@@ -121,6 +129,7 @@ export function useSync(
           saveFailed: sent.saveFailed,
           now: Date.now(),
           confirmDeletions: async dates =>
+            confirmed ||
             window.confirm(
               formatMessage(latest.current.t.sync.confirmDeletions, { count: dates.length })
             ),
@@ -191,5 +200,13 @@ export function useSync(
   }, [enabled, sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return { enabled, services, syncNow: sync, withSync, lastError };
+  const syncNow = useCallback(
+    (options: { deletionsConfirmed?: boolean } = {}) => {
+      if (options.deletionsConfirmed) deletionsConfirmed.current = true;
+      return sync();
+    },
+    [sync]
+  );
+
+  return { enabled, services, syncNow, withSync, lastError };
 }

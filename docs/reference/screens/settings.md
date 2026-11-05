@@ -128,6 +128,21 @@ Before a backup changes existing observations, the dialog shows a preview from `
 
 During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. When a day of the file is a manual Peak Day, it clears the manual Peak Day of the current days in the same cycle.
 
+#### On a synced device
+
+**Delete all data** and **Replace** delete days on each device of the vault ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). Thus, on an owner device, the confirmation gives two actions in place of one. It also shows the message `confirmDialog.syncedMessage`.
+
+| Action                                                          | Result                                                                                                                                                                                                     |
+| --------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Delete on this device only**, **Replace on this device only** | First, `leaveVault()` removes the device from the vault ([Sync client](../sync-client.md#removal-of-a-member)). Then it deletes the sync state and the conflict list. Then the action runs on this device. |
+| **Delete on all devices**, **Replace on all devices**           | The action runs on this device. Then the device syncs with `syncNow({ deletionsConfirmed: true })`. Thus, the sync does not ask again about the deleted days.                                              |
+
+- **Merge** deletes no day. Thus, it is the same on a synced device.
+- **On this device only** runs after the sync that runs, with the sync lock. While it runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
+- When `leaveVault()` fails, an alert in the confirmation gives the cause, and no data changes. Without a connection, the user can select **Turn off sync on this device** first.
+- A reader device asks no question. Its own days do not go into the vault.
+- Without observations on this device, **Restore from a file** acts immediately, as on all devices.
+
 ### Sync group
 
 While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
@@ -157,7 +172,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
 - When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
-- **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later.
+- **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later. **On this device only** of **Delete all data** and of **Replace** removes it ([On a synced device](#on-a-synced-device)).
 
 While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
 

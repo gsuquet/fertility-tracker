@@ -33,7 +33,7 @@ import {
   startJoin,
 } from '../invitationFlow';
 import type { DeviceRecord, KeyStore } from '../keyStore';
-import { newRecoveryCode, recoverWithCode, removeMember } from '../membership';
+import { leaveVault, newRecoveryCode, recoverWithCode, removeMember } from '../membership';
 import type { RelayClient } from '../relayClient';
 
 const days = [
@@ -196,6 +196,70 @@ describe('removal of a member', () => {
     expect(
       await reasonOf(removeMember(relay, ownerStore, await owner(), second.record.memberId))
     ).toMatchObject({ reason: 'relay', status: 0 });
+  });
+});
+
+describe('leaveVault', () => {
+  it('removes the device with a new signing key, deletes its record, and keeps the days', async () => {
+    const { relay, ownerStore, headerOf } = await setup();
+    const leaving = await join(relay, ownerStore, 'owner');
+    const chain = headerOf().signingChain.length;
+    const saves = leaving.store.saves;
+    await leaveVault(relay, leaving.store, leaving.record);
+    expect(headerOf().keyring.some(m => m.id === leaving.record.memberId)).toBe(false);
+    expect(headerOf().signingChain).toHaveLength(chain + 1);
+    expect(await leaving.store.load()).toBeNull();
+    // Only the read of the vault saves the record, not the rekey
+    expect(leaving.store.saves).toBe(saves + 1);
+    expect(await daysOf(relay, ownerStore)).toEqual(days);
+    expect(await reasonOf(daysOf(relay, createMemoryKeyStore(leaving.record)))).toMatchObject({
+      reason: 'relay',
+      status: 401,
+    });
+  });
+
+  it('only deletes the record of a device that is already out of the vault', async () => {
+    const { relay, ownerStore, owner, objects } = await setup();
+    const removed = await join(relay, ownerStore, 'owner');
+    await removeMember(relay, ownerStore, await owner(), removed.record.memberId);
+    await leaveVault(relay, removed.store, removed.record);
+    expect(await removed.store.load()).toBeNull();
+    // A member that the vault does not list, with a token that the relay still accepts
+    const other = await join(relay, ownerStore, 'owner');
+    await leaveVault(relay, other.store, { ...other.record, memberId: 'gone' });
+    expect(await other.store.load()).toBeNull();
+    // A vault that the lifecycle rule deleted
+    const last = await join(relay, ownerStore, 'owner');
+    objects.delete(`vaults/${last.record.vaultId}`);
+    await leaveVault(relay, last.store, last.record);
+    expect(await last.store.load()).toBeNull();
+  });
+
+  it('keeps the record after a failure, and refuses a reader device', async () => {
+    const { relay, ownerStore, failWhen, bucket } = await setup();
+    const reader = await join(relay, ownerStore, 'reader');
+    expect(await reasonOf(leaveVault(relay, reader.store, reader.record))).toEqual({
+      reason: 'reader',
+    });
+    expect(await reader.store.load()).not.toBeNull();
+    const leaving = await join(relay, ownerStore, 'owner');
+    failWhen(request => request.method === 'GET');
+    expect(await reasonOf(leaveVault(relay, leaving.store, leaving.record))).toMatchObject({
+      reason: 'relay',
+      status: 0,
+    });
+    failWhen(null);
+    const put = bucket.put.bind(bucket);
+    bucket.put = async (key, value, options) => {
+      if (key.startsWith('vaults/')) await put(key, value);
+      return put(key, value, options);
+    };
+    expect(await reasonOf(leaveVault(relay, leaving.store, leaving.record))).toEqual({
+      reason: 'relay',
+      status: 412,
+      error: 'changed',
+    });
+    expect(await leaving.store.load()).not.toBeNull();
   });
 });
 

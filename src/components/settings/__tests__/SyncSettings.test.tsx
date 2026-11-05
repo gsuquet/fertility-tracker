@@ -92,7 +92,7 @@ describe('SyncSettings', () => {
     const { onRecordChange } = renderSync(control);
 
     expect(await row(s.recover)).toHaveAccessibleDescription(s.recoverHint);
-    expect(onRecordChange).toHaveBeenLastCalledWith(false);
+    expect(onRecordChange).toHaveBeenLastCalledWith(null);
     expect(screen.queryByRole('button', { name: s.syncNow })).toBeNull();
     fireEvent.click(await row(s.turnOn));
 
@@ -101,7 +101,7 @@ describe('SyncSettings', () => {
     expect(codeOf(dialog)).toMatch(CODE);
     expect(await keyStore.load()).toMatchObject({ role: 'owner' });
     expect(control.syncNow).toHaveBeenCalledTimes(1);
-    expect(onRecordChange).toHaveBeenLastCalledWith(true);
+    expect(onRecordChange).toHaveBeenLastCalledWith('owner');
 
     // Escape and the backdrop do not close it
     fireEvent.keyDown(dialog, { key: 'Escape' });
@@ -310,7 +310,7 @@ describe('SyncSettings', () => {
     await keyStore.save(owner.record);
     fireEvent.click(within(join).getByRole('button', { name: s.close }));
     expect(await row(s.syncNow)).toBeInTheDocument();
-    expect(onRecordChange).toHaveBeenLastCalledWith(true);
+    expect(onRecordChange).toHaveBeenLastCalledWith('owner');
   });
 
   it('does not recover while an undo copy exists', async () => {
@@ -357,7 +357,7 @@ describe('SyncSettings', () => {
     expect(await owner.keyStore.load()).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
-    expect(onRecordChange).toHaveBeenLastCalledWith(false);
+    expect(onRecordChange).toHaveBeenLastCalledWith(null);
     // The vault stays on the relay for the other devices
     expect(owner.objects.size).toBeGreaterThan(0);
   });
@@ -478,7 +478,7 @@ describe('SyncSettings', () => {
     fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
     expect(await row(s.syncNow)).toBeInTheDocument();
     expect(screen.getByRole('button', { name: s.newCode })).toBeEnabled();
-    expect(onRecordChange).toHaveBeenLastCalledWith(true);
+    expect(onRecordChange).toHaveBeenLastCalledWith('owner');
   });
 
   it('keeps the rows when the key store does not load again after a failure', async () => {

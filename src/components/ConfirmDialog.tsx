@@ -17,6 +17,10 @@ interface ConfirmDialogProps {
   children: React.ReactNode;
   actions: ConfirmAction[];
   onCancel: () => void;
+  /** An error under the message, for an action that failed. */
+  alert?: string | null | undefined;
+  /** While an action runs, the buttons are disabled and nothing closes the dialog. */
+  busy?: boolean | undefined;
 }
 
 /**
@@ -28,10 +32,15 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
   children,
   actions,
   onCancel,
+  alert = null,
+  busy = false,
 }) => {
   const { t } = useLanguage();
+  const cancel = () => {
+    if (!busy) onCancel();
+  };
   // On a phone, a drag down closes the dialog as the close button does
-  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onCancel, true);
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(cancel, true);
   const id = useId();
   const cancelRef = useRef<HTMLButtonElement>(null);
 
@@ -39,7 +48,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
     <Modal
       labelledBy={`${id}-title`}
       describedBy={`${id}-message`}
-      onClose={onCancel}
+      onClose={cancel}
       initialFocusRef={cancelRef}
       className="modal-overlay confirm-overlay"
       panelClassName="modal-container confirm-dialog"
@@ -50,9 +59,20 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
       </div>
       <div className="modal-body" id={`${id}-message`} ref={bodyRef}>
         {children}
+        {alert && (
+          <p className="settings-alert" role="alert">
+            {alert}
+          </p>
+        )}
       </div>
       <div className="modal-footer">
-        <button ref={cancelRef} type="button" className="btn btn-secondary" onClick={onCancel}>
+        <button
+          ref={cancelRef}
+          type="button"
+          className="btn btn-secondary"
+          onClick={cancel}
+          disabled={busy}
+        >
           {t.actions.cancel}
         </button>
         {actions.map(action => (
@@ -61,6 +81,7 @@ export const ConfirmDialog: React.FC<ConfirmDialogProps> = ({
             type="button"
             className={`btn ${action.danger ? 'btn-danger' : 'btn-primary'}`}
             onClick={action.onClick}
+            disabled={busy}
           >
             {action.label}
           </button>

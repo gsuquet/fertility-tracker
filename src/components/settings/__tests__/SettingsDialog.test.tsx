@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { act, screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, cleanup, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { SettingsDialog } from '../SettingsDialog';
 import { useCycleData } from '../../../context/CycleContext';
@@ -17,12 +17,19 @@ import { getAppVersion } from '../../../domain/appVersion';
 import { en, fr } from '../../../i18n';
 import type { Observation } from '../../../types/crms';
 import { getTodayStr } from '../../../utils/dateUtils';
-import { STORAGE_LAST_BACKUP_KEY } from '../../../utils/storageKeys';
+import {
+  STORAGE_LAST_BACKUP_KEY,
+  STORAGE_SYNC_CONFLICTS_KEY,
+  STORAGE_SYNC_STATE_KEY,
+} from '../../../utils/storageKeys';
 import { setShortcutsEnabled } from '../../../hooks/useKeyboardShortcuts';
 import { setHapticsEnabled } from '../../../utils/haptics';
 import type { UpdateCheckResult } from '../../../pwa/registerServiceWorker';
 import type { SyncControl, SyncServices } from '../../../hooks/useSync';
 import { createVault } from '../../../sync/deviceVault';
+import { readVaultObject } from '../../../domain/vault/vaultObject';
+import type { VaultHeader } from '../../../domain/vault/vaultObject';
+import type { DeviceRecord } from '../../../sync/keyStore';
 import * as syncRunner from '../../../sync/syncRunner';
 import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHarness';
 
@@ -750,5 +757,162 @@ describe('SettingsDialog sync', () => {
     expect(close).toBeEnabled();
     fireEvent.click(close);
     expect(props.onClose).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe('SettingsDialog on a synced device', () => {
+  const synced = async (role: DeviceRecord['role'] = 'owner') => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    const { record } = await createVault(harness.relay, keyStore);
+    if (role === 'reader') await keyStore.save({ ...record, role });
+    const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
+    const control = {
+      enabled: true,
+      services: async () => services,
+      syncNow: vi.fn(async (_options?: { deletionsConfirmed?: boolean }) => {}),
+      withSync: <T,>(action: (loaded: SyncServices) => Promise<T>) => action(services),
+      lastError: null,
+    } satisfies SyncControl;
+    const keyring = () =>
+      (
+        readVaultObject(harness.objects.get(`vaults/${record.vaultId}`)?.value as string) as {
+          header: VaultHeader;
+        }
+      ).header.keyring.map(member => member.id);
+    return { ...harness, keyStore, control, record, keyring };
+  };
+  const openDelete = async () => {
+    await screen.findByRole('button', { name: en.sync.syncNow });
+    fireEvent.click(screen.getByRole('button', { name: en.settings.deleteAll }));
+    return screen.getByRole('dialog', { name: en.confirmDialog.clearTitle });
+  };
+  const c = en.confirmDialog;
+
+  beforeEach(() => {
+    localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
+    localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
+  });
+
+  it('deletes on all devices: the data goes, then the device syncs without a second question', async () => {
+    const { control, keyStore } = await synced();
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    expect(dialog).toHaveTextContent(c.syncedMessage);
+    expect(within(dialog).queryByRole('button', { name: c.clearConfirm })).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearAllDevices }));
+    expect(count()).toBe('0');
+    expect(control.syncNow).toHaveBeenCalledWith({ deletionsConfirmed: true });
+    expect(props.onClose).toHaveBeenCalledOnce();
+    expect(await keyStore.load()).not.toBeNull();
+  });
+
+  it('deletes on this device only: the device leaves the vault first, and the vault keeps its days', async () => {
+    const { control, keyStore, keyring, record } = await synced();
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    // The provider deletes a state without its mark at the load: this one comes after
+    localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(count()).toBe('0');
+    expect(await keyStore.load()).toBeNull();
+    expect(keyring()).not.toContain(record.memberId);
+    expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
+    expect(control.syncNow).not.toHaveBeenCalled();
+  });
+
+  it('deletes on this device only when another tab already turned off the sync', async () => {
+    const { control, keyStore, keyring, record } = await synced();
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    await keyStore.clear();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(count()).toBe('0');
+    // No record, so no removal: the vault keeps the member
+    expect(keyring()).toContain(record.memberId);
+  });
+
+  it('replaces on this device only or on all devices, and merges as before', async () => {
+    const file = new File([JSON.stringify(threeCycles.slice(0, 2))], 'backup.json');
+    const first = await synced();
+    renderSettings(threeCycles, { sync: first.control });
+    await screen.findByRole('button', { name: en.sync.syncNow });
+    upload([file]);
+    let dialog = await screen.findByRole('dialog', { name: c.importTitle });
+    expect(dialog).toHaveTextContent(c.syncedMessage);
+    expect(within(dialog).queryByRole('button', { name: c.importReplace })).toBeNull();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.replaceAllDevices }));
+    expect(count()).toBe('2');
+    expect(first.control.syncNow).toHaveBeenCalledWith({ deletionsConfirmed: true });
+    cleanup();
+
+    const second = await synced();
+    const props = renderSettings(threeCycles, { sync: second.control });
+    await screen.findByRole('button', { name: en.sync.syncNow });
+    upload([file]);
+    dialog = await screen.findByRole('dialog', { name: c.importTitle });
+    fireEvent.click(within(dialog).getByRole('button', { name: c.replaceThisDevice }));
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(count()).toBe('2');
+    expect(await second.keyStore.load()).toBeNull();
+    cleanup();
+
+    const third = await synced();
+    renderSettings(threeCycles, { sync: third.control });
+    await screen.findByRole('button', { name: en.sync.syncNow });
+    upload([file]);
+    dialog = await screen.findByRole('dialog', { name: c.importTitle });
+    fireEvent.click(within(dialog).getByRole('button', { name: c.importMerge }));
+    expect(count()).toBe('6');
+    expect(third.control.syncNow).not.toHaveBeenCalled();
+  });
+
+  it('keeps the data and shows the cause when the device cannot leave, and blocks a close while it runs', async () => {
+    const { control, keyStore, failWhen, relay } = await synced();
+    let release: () => void = () => {};
+    const blocked = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const getVault = relay.getVault.bind(relay);
+    relay.getVault = async (...args) => {
+      await blocked;
+      return getVault(...args);
+    };
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    failWhen(request => request.method === 'GET');
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    const cancel = within(dialog).getByRole('button', { name: en.actions.cancel });
+    await waitFor(() => expect(cancel).toBeDisabled());
+    expect(within(dialog).getByRole('button', { name: c.clearAllDevices })).toBeDisabled();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: c.clearTitle })).toBeInTheDocument();
+    await act(async () => release());
+    expect(await within(dialog).findByRole('alert')).toHaveTextContent(en.sync.noConnection);
+    expect(count()).toBe('6');
+    expect(await keyStore.load()).not.toBeNull();
+    expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBe('[]');
+    expect(props.onClose).not.toHaveBeenCalled();
+    fireEvent.click(cancel);
+    expect(screen.queryByRole('dialog', { name: c.clearTitle })).toBeNull();
+    // The next confirmation starts without the old alert
+    fireEvent.click(screen.getByRole('button', { name: en.settings.deleteAll }));
+    expect(
+      within(screen.getByRole('dialog', { name: c.clearTitle })).queryByRole('alert')
+    ).toBeNull();
+  });
+
+  it('asks the usual question on a reader device', async () => {
+    const { control } = await synced('reader');
+    renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    expect(dialog).not.toHaveTextContent(c.syncedMessage);
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearConfirm }));
+    expect(count()).toBe('0');
+    expect(control.syncNow).not.toHaveBeenCalled();
   });
 });
