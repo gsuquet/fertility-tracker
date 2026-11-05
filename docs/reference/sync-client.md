@@ -24,7 +24,8 @@ The application syncs on each device that has a device record. A device without 
 - Each function gives `{ ok: true }` with the text and the ETag of the answer, or `{ ok: false, status, error }`.
 - When the network fails, the result is `{ ok: false, status: 0, error: "network" }`.
 - The ETag of the result has no quotes. The client adds the quotes in `If-Match`.
-- Each request has `cache: "no-store"`.
+- Each request has `cache: "no-store"` and `redirect: "manual"`. The relay never redirects.
+- A redirect comes from Cloudflare Access when its sign-in expired. The browser does not follow it, and the result is `{ ok: false, status: 302, error: "signIn" }`. The Content Security Policy would block the sign-in page.
 - A request that takes more than 30 seconds (`RELAY_TIMEOUT_MS`) fails as a network error.
 
 ## Device record
@@ -224,7 +225,7 @@ For a `synced` result, `finishSync(result, input)` does these steps in this sequ
 - It writes the state of the result to `fertility_care_sync_state`. When this write fails, it deletes the stored state and stops. Thus, the next sync is a first sync.
 - It adds the conflicts to `fertility_care_sync_conflicts` with `addConflicts()`.
 
-`finishSync()` gives `true` when each write succeeds. Then `useSync()` calls `markSynced()`, which writes today to `fertility_care_last_sync`.
+`finishSync()` gives `true` when each write succeeds. Then `useSync()` calls `markSynced()`, which writes today to `fertility_care_last_sync`. It also writes the current time to `fertility_care_last_sync_at` for the [Last sync](screens/settings.md#last-sync) detail.
 
 For a `cancelled`, `busy` or `error` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
 
@@ -260,6 +261,9 @@ A reader device never merges the vault with its own observations ([Partner devic
 - `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
 - When the device record is a reader, the tab calls `readShared()` in place of `runSync()`. The checks of the stored observations do not apply. It does not call `markSynced()`. Thus, the [backup reminder](data-storage.md#backup-reminder) still counts from the last backup of the own observations.
+- After a `readShared()` with `saved` and no error, the tab writes the current time to `fertility_care_last_sync_at`.
+- After an action of `withSync()`, the tab reads the key store again for `hasRecord`. When the device has no record, `failures` becomes 0.
+- Each sync, each action and the `storage` event read `fertility_care_last_sync_at` again. Thus, **Turn off sync on this device** also removes the time from the control.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
 
@@ -267,15 +271,18 @@ A reader device never merges the vault with its own observations ([Partner devic
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it. The control stays the same object until one of its fields changes. Thus, a render of the application does not start the effects of a dialog again.
 
-| Field             | Use                                                                                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
-| `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
-| `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
-| `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
-| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date.                                                                                      |
-| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
-| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`.                                                 |
+| Field             | Use                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                                                               |
+| `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call.                                  |
+| `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                                                         |
+| `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                                                  |
+| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date.                                                                                                                       |
+| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                                                   |
+| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`.                                                                                  |
+| `hasRecord`       | True when the key store had a record at the end of the last sync or action, false without one. `null` until the first sync ends. Thus, an old time does not warn while the first sync runs. |
+| `failures`        | The number of syncs in a row that ended with an error. A sync without an error sets it to 0.                                                                                                |
+| `lastSyncedAt`    | The time of the last full sync in milliseconds, from `fertility_care_last_sync_at`, or `null`.                                                                                              |
 
 A `SyncOutcome` has these fields:
 

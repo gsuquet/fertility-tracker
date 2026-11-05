@@ -20,6 +20,8 @@ interface HeaderProps {
   activeTab: ActiveTab;
   setActiveTab: (tab: ActiveTab) => void;
   onOpenSettings: () => void;
+  /** True when the sync needs the user: the gear shows a dot. See docs/reference/screens/navigation.md#sync-warning. */
+  syncWarning?: boolean;
   /** Receives the element of the top bar that holds the page controls */
   onTopBarSlot?: ((slot: HTMLDivElement | null) => void) | undefined;
 }
@@ -40,6 +42,7 @@ export const Header: React.FC<HeaderProps> = ({
   activeTab,
   setActiveTab,
   onOpenSettings,
+  syncWarning = false,
   onTopBarSlot,
 }) => {
   const { t } = useLanguage();
@@ -52,6 +55,7 @@ export const Header: React.FC<HeaderProps> = ({
   const pickerFirst = !isPhone || activeTab === 'chart';
   // On a second row, the page controls come last
   const slotLast = !isPhone && !isWide;
+  const settingsLabel = syncWarning ? t.settings.openSyncWarning : t.settings.open;
 
   // Today opens on today, not on a day that the chart opened before
   const handleNewEntry = () => {
@@ -84,10 +88,11 @@ export const Header: React.FC<HeaderProps> = ({
         type="button"
         className="icon-button settings-btn"
         onClick={onOpenSettings}
-        title={t.settings.open}
-        aria-label={t.settings.open}
+        title={settingsLabel}
+        aria-label={settingsLabel}
       >
         <Settings size={18} />
+        {syncWarning && <span className="settings-btn-warning" aria-hidden="true" />}
       </button>
     </div>
   );

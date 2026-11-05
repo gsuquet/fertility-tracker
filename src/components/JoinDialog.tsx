@@ -10,6 +10,7 @@ import type { SyncControl } from '../hooks/useSync';
 import type { VaultError } from '../sync/deviceVault';
 import type { JoinState } from '../sync/invitationFlow';
 import { failureOf } from '../utils/syncFailure';
+import { signInAgain } from '../utils/signIn';
 import type { SyncFailure } from '../utils/syncFailure';
 import { DeviceNameField } from './DeviceNameField';
 import { INVITE_POLL_MS, SyncStepDialog, codeText, isTemporary } from './SyncStepDialog';
@@ -244,6 +245,8 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
       title={s.joinTitle}
       status={view.status}
       alert={view.alert ?? (problem && s[problem])}
+      // The tab keeps the invitation during the sign-in
+      onReload={() => signInAgain(fragment)}
       actions={view.actions}
       onClose={step.kind === 'joining' && step.finishing ? null : cancel}
     >

@@ -133,10 +133,10 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 **Delete all data** and **Replace** delete days on each device of the vault ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). Thus, on an owner device, the confirmation gives two actions in place of one. It also shows the message `confirmDialog.syncedMessage`.
 
-| Action                                                          | Result                                                                                                                                                                                                                                                                     |
-| --------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Delete on this device only**, **Replace on this device only** | First, the device syncs, so that the vault gets its last changes. Then `leaveVault()` removes the device from the vault ([Sync client](../sync-client.md#removal-of-a-member)). Then it deletes the sync state and the conflict list. Then the action runs on this device. |
-| **Delete on all devices**, **Replace on all devices**           | The action runs on this device. Then the device syncs. Each other owner device gets the deletions at its next sync. When that sync deletes more than 7 days, that device asks its user first ([Sync client](../sync-client.md#when-the-application-syncs)).                |
+| Action                                                          | Result                                                                                                                                                                                                                                                                                                |
+| --------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Delete on this device only**, **Replace on this device only** | First, the device syncs, so that the vault gets its last changes. Then `leaveVault()` removes the device from the vault ([Sync client](../sync-client.md#removal-of-a-member)). Then it deletes the sync state, the conflict list and the time of the last sync. Then the action runs on this device. |
+| **Delete on all devices**, **Replace on all devices**           | The action runs on this device. Then the device syncs. Each other owner device gets the deletions at its next sync. When that sync deletes more than 7 days, that device asks its user first ([Sync client](../sync-client.md#when-the-application-syncs)).                                           |
 
 - **Merge** deletes no day. Thus, it is the same on a synced device.
 - **On this device only** runs after the sync that runs, with the sync lock. While it runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
@@ -159,19 +159,19 @@ Settings has a **Sync** group after **Backup and restore** ([Sync client](../syn
 | Reader                       | **Sync now** and **Stop viewing**                                                                                                                   |
 | The browser blocks storage   | No row. The note "Sync needs the storage of the browser, and this browser blocks it." shows under the group. It is not an alert.                    |
 
-| Row                              | Result                                                                                                                                                                                     |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| **Turn on sync**                 | Opens the [name dialog](#name-dialog). **Turn on sync** of the dialog makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                 |
-| **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join.      |
-| **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                           |
-| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet". On a reader device, the date is that of `fertility_care_shared_read`.                                |
-| **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).        |
-| **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                            |
-| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                        |
-| **Invite a partner**             | Opens the [invitation dialog](#invitation-dialog) for a reader. Its detail is "Let your partner read the chart".                                                                           |
-| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                              |
-| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the shared chart. The observations stay.                                                 |
-| **Stop viewing**                 | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the [shared chart](../sync-client.md#shared-chart) with its date. The observations stay. |
+| Row                              | Result                                                                                                                                                                                                                |
+| -------------------------------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Turn on sync**                 | Opens the [name dialog](#name-dialog). **Turn on sync** of the dialog makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                                            |
+| **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join.                                 |
+| **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                                                      |
+| **Sync now**                     | Starts a sync at once. While the sync runs, the row is disabled. Its icon turns, and its detail is "Syncing…". Read [Last sync](#last-sync) for the detail after the sync.                                            |
+| **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).                                   |
+| **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                                                       |
+| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                                                   |
+| **Invite a partner**             | Opens the [invitation dialog](#invitation-dialog) for a reader. Its detail is "Let your partner read the chart".                                                                                                      |
+| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                                                         |
+| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list, the shared chart and the time of the last sync. The observations stay.                                                 |
+| **Stop viewing**                 | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list, the [shared chart](../sync-client.md#shared-chart) with its date and the time of the last sync. The observations stay. |
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
 - While a row runs, the rows of the group are disabled.
@@ -181,16 +181,7 @@ Settings has a **Sync** group after **Backup and restore** ([Sync client](../syn
 - While an undo copy exists, **Recover** shows the alert "Click Undo or Delete the copy first." The device does not join ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
 - The browser blocks storage when the key store fails with `StorageBlocked` ([Device record](../sync-client.md#device-record)). After another failure of the key store, the group has no row and shows the alert of a general failure.
-- When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. [syncFailure.ts](../../../src/utils/syncFailure.ts) finds the cause:
-
-| Condition                                                 | Alert                                                                                                                                                                                                                                                                      |
-| --------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| The request has no answer (status `0`)                    | "No connection. Check your connection and try again."                                                                                                                                                                                                                      |
-| The relay has no bucket (`503`)                           | "The sync server is not available. Try again later."                                                                                                                                                                                                                       |
-| The relay refuses the address of the page (`403`, `host`) | "This address cannot sync. Open the application at fertility-tracker.gsuquet.com."                                                                                                                                                                                         |
-| The rate limit blocks the requests (`429`)                | "Too many requests. Wait one minute and try again."                                                                                                                                                                                                                        |
-| The recovery code is not valid                            | "This code is not valid. Check each character."                                                                                                                                                                                                                            |
-| **Else**                                                  | "The sync failed. Try again later." In the Sync group, the alert adds "Error code: " and the code. For a refused request, the code is the status and the error of the relay, for example `403 owner`. Else, it is the reason of the vault error, or the name of the error. |
+- When a row fails, an alert gives the cause. While the device has a record, the alert also gives the cause of a failed sync. Read [Sync alert](#sync-alert).
 
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - The confirmation of **Stop viewing** says that the shared chart goes from this device. To read it again, the device needs a new invitation.
@@ -198,6 +189,57 @@ Settings has a **Sync** group after **Backup and restore** ([Sync client](../syn
 - **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later. **On this device only** of **Delete all data** and of **Replace** removes it ([On a synced device](#on-a-synced-device)).
 
 While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
+
+### Sync alert
+
+The alert of the Sync group is the first row of the group. It has the red text of danger and `role="alert"`. [syncFailure.ts](../../../src/utils/syncFailure.ts) finds the cause:
+
+| Condition                                                  | Alert                                                                                                                                                                                                                                                                      |
+| ---------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Cloudflare Access asks for a new sign-in (`302`, `signIn`) | "Your sign-in to this site expired. Select Reload to sign in again."                                                                                                                                                                                                       |
+| The request has no answer (status `0`)                     | "No connection. Check your connection and try again."                                                                                                                                                                                                                      |
+| The relay has no bucket (`503`)                            | "The sync server is not available. Try again later."                                                                                                                                                                                                                       |
+| The relay refuses the address of the page (`403`, `host`)  | "This address cannot sync. Open the application at fertility-tracker.gsuquet.com."                                                                                                                                                                                         |
+| The rate limit blocks the requests (`429`)                 | "Too many requests. Wait one minute and try again."                                                                                                                                                                                                                        |
+| The recovery code is not valid                             | "This code is not valid. Check each character."                                                                                                                                                                                                                            |
+| **Else**                                                   | "The sync failed. Try again later." In the Sync group, the alert adds "Error code: " and the code. For a refused request, the code is the status and the error of the relay, for example `403 owner`. Else, it is the reason of the vault error, or the name of the error. |
+
+| Condition                                                                 | Button of the alert                                                                               |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| The cause is `signIn`                                                     | **Reload** opens `./sign-in`. Read [Sign-in of Cloudflare Access](#sign-in-of-cloudflare-access). |
+| The alert is about the sync, not about a row, and the device has a record | **Try again** starts a sync, as **Sync now** does. While the sync runs, the button is disabled.   |
+| **Else**                                                                  | No button                                                                                         |
+
+- The code dialog of **Recover with a code** shows its own alert. While it is open, the group has no alert.
+- A row that fails has no **Try again**, because a sync does not run the row again.
+- The last sync can have no error and be more than 24 hours old. Then the alert is "This device did not sync for more than one day." Thus, the group tells why the gear shows the [sync warning](navigation.md#sync-warning). The alert of a row or of a sync error comes first.
+
+### Sign-in of Cloudflare Access
+
+Cloudflare Access protects the site. When its sign-in expires, Access answers a request of the relay with a redirect to its sign-in page. The relay client does not follow the redirect ([Relay client](../sync-client.md#relay-client)). Thus, the cause is `signIn`, not "No connection".
+
+- **Reload** goes to `./sign-in`. The service worker gets this path from the network first. Thus, Access can redirect to its sign-in page.
+- After the sign-in, Access opens `./sign-in` again. The service worker then gives the cached app shell, as for `./` ([Offline use and installation](../deployment.md#offline-use-and-installation)). Thus, the page keeps the version of the active worker.
+- At the start, the application changes the address `./sign-in` to `./` with `history.replaceState()`. Thus, a later reload does not go to the sign-in path again.
+- A normal reload of `./` gets the cached app shell. It does not show the sign-in page. Thus, the alert tells the user to select **Reload**.
+- The alerts of the dialogs of the sync also show **Reload** for this cause. [SyncAlert.tsx](../../../src/components/SyncAlert.tsx) shows these alerts.
+- **Reload** of the join dialog keeps the invitation fragment in the session storage of the tab (`fertility_tracker_sign_in_invite`). At the next start, the application opens the join dialog with it, and removes it. Without the session storage, the user opens the link again.
+
+### Last sync
+
+After a sync, the detail of **Sync now** gives the time of the last sync. The time is in `fertility_care_last_sync_at` ([Sync control](../sync-client.md#sync-control)).
+
+| Condition                                     | Detail                                                                                            |
+| --------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| The last sync occurred less than 1 minute ago | "Synced just now"                                                                                 |
+| The last sync occurred today                  | "Last sync: today at " and the time, for example "Last sync: today at 7:42 PM"                    |
+| The device has a time of an earlier day       | "Last sync: " with the date and the time, for example "Last sync: Nov 4, 2026, 7:42 PM"           |
+| The device has only the date of the last sync | "Last sync: " and the date. On a reader device, the date is that of `fertility_care_shared_read`. |
+| **Else**                                      | "Not synced yet"                                                                                  |
+
+- The date and the time have the short format of the language of the application. In French, the time is "19:42".
+- While the Sync group is open, the detail changes each 30 seconds. Thus, "Synced just now" does not stay.
+- A version before 1.70.3 writes only the date. Thus, the device shows the date until its next sync.
 
 ### Device list
 

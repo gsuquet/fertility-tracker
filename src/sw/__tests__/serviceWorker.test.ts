@@ -5,7 +5,13 @@ import type {
   MessageEventLike,
   ServiceWorkerScopeLike,
 } from '../serviceWorker';
-import { CACHE_PREFIX, SKIP_WAITING, handleFetch, installServiceWorker } from '../serviceWorker';
+import {
+  CACHE_PREFIX,
+  SIGN_IN_PATH,
+  SKIP_WAITING,
+  handleFetch,
+  installServiceWorker,
+} from '../serviceWorker';
 
 const ORIGIN = 'https://app.example';
 const SW_URL = `${ORIGIN}/sw.js`;
@@ -222,6 +228,31 @@ describe('service worker', () => {
       request('/screenshots/phone.png', { navigate: true })
     );
     expect(await response?.text()).toBe(`network:${ORIGIN}/screenshots/phone.png`);
+  });
+
+  it('gives the redirect of Cloudflare Access for the sign-in path, then the shell of this worker', async () => {
+    const redirect = new Response(null, { status: 200 });
+    Object.defineProperty(redirect, 'type', { value: 'opaqueredirect' });
+    const answers: Array<Response | Error> = [
+      redirect,
+      new Response('refused', { status: 403 }),
+      new Response('new version'),
+      new TypeError('Failed to fetch'),
+    ];
+    const { scope, caches } = makeScope(async () => {
+      const answer = answers.shift() as Response | Error;
+      if (answer instanceof Error) throw answer;
+      return answer;
+    });
+    const cache = await caches.open(CACHE);
+    cache.entries.set(`${ORIGIN}/`, new Response('shell of this version'));
+    const signIn = () => handleFetch(scope, CACHE, request(`/${SIGN_IN_PATH}`, { navigate: true }));
+    expect((await signIn())?.type).toBe('opaqueredirect');
+    expect((await signIn())?.status).toBe(403);
+    // After the sign-in, and offline, the page runs the version of this worker
+    expect(await (await signIn())?.text()).toBe('shell of this version');
+    expect(await (await signIn())?.text()).toBe('shell of this version');
+    expect(cache.entries.has(`${ORIGIN}/${SIGN_IN_PATH}`)).toBe(false);
   });
 
   it('serves the cached app shell for an offline navigation', async () => {

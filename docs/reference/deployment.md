@@ -35,6 +35,7 @@ The Vite plugin `serviceWorkerPlugin` runs only in a build. It bundles `src/sw/e
 - Files in `/assets/` use the cache first. On a cache miss, the service worker fetches the file. It saves a successful response that is not `text/html`.
 - After a deploy, the server answers an old file name with `index.html`. The service worker gives this response but does not save it.
 - A navigation to the application (`./` or `./index.html`, with any query) gets the application shell from the cache of the active worker. Without it in the cache, the service worker uses the network first. Thus, a new version starts only when its worker activates ([Update](application-behavior.md#update)).
+- A navigation to `./sign-in` uses the network first ([Sign-in of Cloudflare Access](screens/settings.md#sign-in-of-cloudflare-access)). The service worker gives a redirect or a failed response without a change. Else, it gives the application shell, as for `./`.
 - Other pages and other files use the network first, and the service worker saves a successful response. Without network, it gives the saved response.
 - For a page without a saved response, it gives the application shell (`./`). For other files without a saved response, it gives a network error.
 

@@ -60,6 +60,16 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 - The top bar and the bottom bar use `--bg-surface`, with no blur. Thus, the page does not show through them.
 - The gear (**Settings**) is the last control of the top bar. It opens [Settings](settings.md).
 
+### Sync warning
+
+The gear shows a small red dot when the sync needs the user. `needsAttention()` in [syncFailure.ts](../../../src/utils/syncFailure.ts) decides. The device must have a record, and one of these conditions must be true:
+
+- The cause of the last error is `signIn` ([Sign-in of Cloudflare Access](settings.md#sign-in-of-cloudflare-access)).
+- 2 syncs in a row failed with an error.
+- The last sync occurred more than 24 hours ago.
+
+Without the time of a last sync, the third condition is false. A click on the gear opens [Settings](settings.md). The [Sync alert](settings.md#sync-alert) then gives the cause. The application shows no other message.
+
 ### Footer
 
 - **Legal** opens **About & Version Tracker** on **System Information**, scrolled to the full legal and medical notice. The version opens the release notes.
@@ -74,7 +84,7 @@ The pages put their controls in the top bar with `InTopBar` and `PageTitle` of [
 - The bottom bar stays a `<nav>` of buttons. The button of the open page has `aria-current="page"`.
 - Each page has one `h1`. On a phone, Calendar and Analytics show it in the top bar. Else it is for screen readers only. The logo text is not a heading.
 - Each page has this panel in all its states. For example, the empty analytics page has `id="analytics-panel"`.
-- The gear is a button with `aria-label="Settings"` and the same `title`.
+- The gear is a button with `aria-label="Settings"` and the same `title`. With the sync warning, the label and the title are "Settings: sync needs attention". The dot has `aria-hidden="true"`.
 - The cycle menu has `aria-label="Filter Cycle View"`. Its list of cycles is a `role="listbox"` element. When the menu opens, the focus goes to the selected cycle.
 
 ## Implementation

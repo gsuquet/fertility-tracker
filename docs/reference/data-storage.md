@@ -35,6 +35,7 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_SHARED_CHART_KEY`          | `fertility_care_shared_chart`             | The days of the vault on a reader device ([Shared chart](sync-client.md#shared-chart))                                    |
 | `STORAGE_SHARED_READ_KEY`           | `fertility_care_shared_read`              | Date of the last read of the shared chart on a reader device, `YYYY-MM-DD`                                                |
 | `STORAGE_LAST_SYNC_KEY`             | `fertility_care_last_sync`                | Date of the last sync, `YYYY-MM-DD`                                                                                       |
+| `STORAGE_LAST_SYNC_AT_KEY`          | `fertility_care_last_sync_at`             | Time of the last sync in milliseconds ([Last sync](screens/settings.md#last-sync))                                        |
 | `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                                    |
 | `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                                  |
 | `STORAGE_ENTRY_MODE_KEY`            | `fertility_care_entry_mode`               | **Direct Code Only**: `direct` or `detailed`                                                                              |

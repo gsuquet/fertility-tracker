@@ -14,6 +14,7 @@ export const STORAGE_SYNC_CONFLICTS_KEY = 'fertility_care_sync_conflicts';
 export const STORAGE_SHARED_CHART_KEY = 'fertility_care_shared_chart';
 export const STORAGE_SHARED_READ_KEY = 'fertility_care_shared_read';
 export const STORAGE_LAST_SYNC_KEY = 'fertility_care_last_sync';
+export const STORAGE_LAST_SYNC_AT_KEY = 'fertility_care_last_sync_at';
 export const STORAGE_LANGUAGE_KEY = 'fertility_care_lang';
 export const STORAGE_THEME_KEY = 'fertility_care_theme';
 export const STORAGE_ENTRY_MODE_KEY = 'fertility_care_entry_mode';

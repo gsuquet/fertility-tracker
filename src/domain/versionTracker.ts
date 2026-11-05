@@ -46,6 +46,27 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.70.3',
+    date: '2026-11-05',
+    title: 'Clearer Sync Errors',
+    titleFr: 'Erreurs de synchronisation plus claires',
+    tagline: 'The application tells you when the sync needs you',
+    taglineFr: 'L’application vous signale quand la synchronisation a besoin de vous',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'An expired sign-in to the site no longer shows as no connection, and Reload signs you in again',
+      'A red dot on the Settings gear shows when the sync failed two times or did not occur for one day',
+      'The sync error is a red row at the top of the Sync group, with Try again',
+      'Sync now shows Syncing, then Synced just now, then the time of the last sync',
+    ],
+    highlightsFr: [
+      'Une connexion expirée au site ne s’affiche plus comme une absence de connexion, et Recharger vous reconnecte',
+      'Un point rouge sur l’engrenage des Réglages signale deux échecs de synchronisation ou un jour sans synchronisation',
+      'L’erreur de synchronisation est une ligne rouge en haut du groupe Synchronisation, avec Réessayer',
+      'Synchroniser maintenant affiche Synchronisation, puis Synchronisé à l’instant, puis l’heure de la dernière synchronisation',
+    ],
+  },
+  {
     version: '1.70.2',
     date: '2026-11-05',
     title: 'Device List Fix',

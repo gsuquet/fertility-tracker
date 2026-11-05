@@ -6,6 +6,9 @@
 /** Every cache of this app starts with this prefix. Activate deletes the old ones. */
 export const CACHE_PREFIX = 'fertility-tracker-';
 
+/** The sign-in path of the page (src/utils/signIn.ts). The worker imports no page code. */
+export const SIGN_IN_PATH = 'sign-in';
+
 export interface ServiceWorkerConfig {
   cacheName: string;
   /** URLs relative to the service worker: `./` (the app shell) and every build file. */
@@ -124,9 +127,25 @@ async function shellFirst(
 }
 
 /**
+ * The sign-in path of Cloudflare Access. The network answers first, so that Access can redirect
+ * to its sign-in page. After the sign-in, the page gets the shell of this worker, as at `./`.
+ */
+async function signInFirst(
+  scope: ServiceWorkerScopeLike,
+  cacheName: string,
+  request: Request,
+  shellUrl: string
+) {
+  // Offline, the page gets the shell
+  const response = await scope.fetch(request).catch(() => null);
+  if (response && (response.type === 'opaqueredirect' || !response.ok)) return response;
+  return shellFirst(scope, cacheName, request, shellUrl);
+}
+
+/**
  * Returns the response for a request, or undefined to let the browser handle it.
  * Hashed files in `assets/` are cache-first. A navigation to the app (`./` or `./index.html`)
- * gets the cached app shell first. Other navigations and files are network-first, and an
+ * gets the cached app shell first. The sign-in path gets the network, then the shell. Other navigations and files are network-first, and an
  * offline navigation falls back to the cached app shell.
  */
 export function handleFetch(
@@ -142,6 +161,9 @@ export function handleFetch(
     const shell = new URL('./', scope.location.href);
     const isShell =
       url.pathname === shell.pathname || url.pathname === `${shell.pathname}index.html`;
+    if (url.pathname === `${shell.pathname}${SIGN_IN_PATH}`) {
+      return signInFirst(scope, cacheName, request, shell.href);
+    }
     return isShell
       ? shellFirst(scope, cacheName, request, shell.href)
       : networkFirst(scope, cacheName, request, shell.href);

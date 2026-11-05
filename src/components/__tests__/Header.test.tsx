@@ -12,12 +12,14 @@ const SelectionProbe = () => {
 
 const renderHeader = (
   options: Parameters<typeof renderWithProviders>[1] = {},
-  activeTab: ActiveTab = 'chart'
+  activeTab: ActiveTab = 'chart',
+  syncWarning?: boolean
 ) => {
   const props = {
     activeTab,
     setActiveTab: vi.fn(),
     onOpenSettings: vi.fn(),
+    ...(syncWarning === undefined ? {} : { syncWarning }),
   };
   renderWithProviders(
     <>
@@ -101,5 +103,17 @@ describe('Header', () => {
     expect(props.onOpenSettings).toHaveBeenCalledOnce();
     // The phone menu is gone: Settings has its actions (RFC 0002)
     expect(screen.queryByRole('button', { name: 'More actions' })).toBeNull();
+  });
+
+  it('shows the sync warning on the gear, with its own name', () => {
+    renderHeader({}, 'chart', true);
+    const gear = screen.getByRole('button', { name: 'Settings: sync needs attention' });
+    expect(gear).toHaveAttribute('title', 'Settings: sync needs attention');
+    expect(gear.querySelector('.settings-btn-warning')).toHaveAttribute('aria-hidden', 'true');
+  });
+
+  it('has no sync warning without the prop', () => {
+    renderHeader();
+    expect(document.querySelector('.settings-btn-warning')).toBeNull();
   });
 });

@@ -11,6 +11,7 @@ import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
+import { SyncAlert } from '../SyncAlert';
 
 interface DevicesDialogProps {
   control: SyncControl;
@@ -127,11 +128,7 @@ export const DevicesDialog: React.FC<DevicesDialogProps> = ({ control, onCode, o
               ))}
             </ul>
           )}
-          {failure && (
-            <p className="settings-alert" role="alert">
-              {s[failure]}
-            </p>
-          )}
+          {failure && <SyncAlert text={s[failure]} />}
         </div>
         <div className="modal-footer">
           <button

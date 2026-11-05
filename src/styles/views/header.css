@@ -4,6 +4,22 @@
    ========================================================================== */
 
 @layer views {
+  /* The sync warning: a red dot on the gear (docs/reference/screens/navigation.md#sync-warning) */
+  .settings-btn {
+    position: relative;
+  }
+
+  .settings-btn-warning {
+    position: absolute;
+    top: 6px;
+    right: 6px;
+    width: 9px;
+    height: 9px;
+    border: 2px solid var(--bg-surface);
+    border-radius: 50%;
+    background-color: var(--color-danger);
+  }
+
   .app-header {
     /* The header stays under the status bar and away from the notch. One row of 60 px. */
     height: calc(60px + env(safe-area-inset-top, 0px));

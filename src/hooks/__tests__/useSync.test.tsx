@@ -18,6 +18,7 @@ import type { SyncServices } from '../useSync';
 const STORAGE_KEY = 'fertility_care_observations';
 const STATE_KEY = 'fertility_care_sync_state';
 const SHARED_KEY = 'fertility_care_shared_chart';
+const TIME_KEY = 'fertility_care_last_sync_at';
 
 const wrapper = ({ children }: { children: React.ReactNode }) => (
   <LanguageProvider>
@@ -287,6 +288,72 @@ describe('useSync', () => {
     expect(result.current.lastError).toBeNull();
   });
 
+  it('counts the failed syncs in a row, and saves the time of a full sync', async () => {
+    const { load, failWhen } = await setup();
+    localStorage.setItem(TIME_KEY, 'not a time');
+    failWhen(() => true);
+    const { result } = renderHook(() => useSync(load), { wrapper });
+    expect(result.current.lastSyncedAt).toBeNull();
+    expect(result.current.hasRecord).toBeNull();
+    await waitFor(() => expect(result.current.failures).toBe(1));
+    expect(result.current.hasRecord).toBe(true);
+    await act(async () => {
+      await result.current.syncNow();
+    });
+    expect(result.current.failures).toBe(2);
+    expect(result.current.lastSyncedAt).toBeNull();
+    failWhen(null);
+    await act(async () => {
+      await result.current.syncNow();
+    });
+    expect(result.current.failures).toBe(0);
+    expect(result.current.lastSyncedAt).toBe(Number(localStorage.getItem(TIME_KEY)));
+    expect(Date.now() - (result.current.lastSyncedAt as number)).toBeLessThan(5000);
+    // A refused write keeps the older time
+    const before = result.current.lastSyncedAt;
+    const setItem = localStorage.setItem.bind(localStorage);
+    const refuse = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === TIME_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+      await result.current.syncNow();
+    });
+    expect(result.current.failures).toBe(0);
+    expect(result.current.lastSyncedAt).toBe(before);
+    refuse.mockRestore();
+    // Another tab removes the time
+    localStorage.removeItem(TIME_KEY);
+    act(() => {
+      window.dispatchEvent(new StorageEvent('storage', { key: TIME_KEY }));
+    });
+    expect(result.current.lastSyncedAt).toBeNull();
+  });
+
+  it('reads the record after an action, and forgets the failures without a record', async () => {
+    const { load, failWhen, keyStore } = await setup();
+    failWhen(() => true);
+    const { result } = renderHook(() => useSync(load), { wrapper });
+    await waitFor(() => expect(result.current.failures).toBe(1));
+    // A key store that fails after the action keeps the known record
+    const loadRecord = keyStore.load;
+    await act(async () => {
+      await result.current.withSync(async () => {
+        keyStore.load = () => Promise.reject(new Error('blocked'));
+      });
+    });
+    keyStore.load = loadRecord;
+    expect(result.current.hasRecord).toBe(true);
+    expect(result.current.failures).toBe(1);
+    await act(async () => {
+      await result.current.withSync(({ keyStore: store }) => store.clear());
+    });
+    expect(result.current.hasRecord).toBe(false);
+    expect(result.current.failures).toBe(0);
+    expect(result.current.lastError).toBeNull();
+  });
+
   it('tells whether the vault has the changes of this device at the end of a sync', async () => {
     const { load, failWhen, keyStore } = await setup();
     const { result } = renderHook(() => useSync(load), { wrapper });
@@ -390,6 +457,7 @@ describe('useSync', () => {
     // A read is not a sync of the own days: the backup reminder still counts
     expect(result.current.data.lastSyncDate).toBeNull();
     expect(localStorage.getItem('fertility_care_shared_read')).not.toBeNull();
+    expect(result.current.sync.lastSyncedAt).not.toBeNull();
     // A refused save of its own days does not stop the read
     vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
       throw new Error('QuotaExceededError');
@@ -412,6 +480,7 @@ describe('useSync', () => {
     expect(outcome.error?.detail?.status).toBe(401);
     expect(result.current.sync.lastError?.reason).toBe('relay');
     expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01');
+    expect(result.current.sync.failures).toBe(1);
   });
 
   it('gives the days of a valid shared chart, and reads them again after a change in another tab', async () => {

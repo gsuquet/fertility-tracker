@@ -84,6 +84,18 @@ describe('relay client', () => {
     timeout.mockRestore();
   });
 
+  it('does not follow a redirect, and gives signIn for the redirect of Cloudflare Access', async () => {
+    const requests: Request[] = [];
+    const client = createRelayClient(async request => {
+      requests.push(request);
+      const response = new Response(null, { status: 200 });
+      Object.defineProperty(response, 'type', { value: 'opaqueredirect' });
+      return response;
+    }, 'https://example.com');
+    expect(await client.getVault('v', 't')).toEqual({ ok: false, status: 302, error: 'signIn' });
+    expect(requests[0]?.redirect).toBe('manual');
+  });
+
   it('gives the error network when the fetch fails, and uses the origin of the page by default', async () => {
     const client = createRelayClient(async () => {
       throw new TypeError('Failed to fetch');

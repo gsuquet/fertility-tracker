@@ -11,6 +11,7 @@ import * as runner from '../../../sync/syncRunner';
 import { renderWithProviders } from '../../../test/render';
 import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHarness';
 import {
+  STORAGE_LAST_SYNC_AT_KEY,
   STORAGE_LAST_SYNC_KEY,
   STORAGE_SHARED_CHART_KEY,
   STORAGE_SHARED_READ_KEY,
@@ -18,7 +19,7 @@ import {
   STORAGE_SYNC_STATE_KEY,
   STORAGE_UNDO_KEY,
 } from '../../../utils/storageKeys';
-import { SyncSettings } from '../SyncSettings';
+import { LAST_SYNC_TICK_MS, SyncSettings, lastSyncText } from '../SyncSettings';
 import { useSync } from '../../../hooks/useSync';
 import { buildDemoObservations } from '../../../domain/demoData';
 import { makeObservation } from '../../../test/factories';
@@ -42,6 +43,9 @@ const controlOf = (
     conflicts: [],
     resolveConflict: vi.fn(async () => {}),
     sharedDays: null,
+    hasRecord: null,
+    failures: 0,
+    lastSyncedAt: null,
     ...extra,
   } as SyncControl & { syncNow: ReturnType<typeof vi.fn> };
 };
@@ -442,6 +446,7 @@ describe('SyncSettings', () => {
     const owner = await ownerRecord();
     localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
     localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
+    localStorage.setItem(STORAGE_LAST_SYNC_AT_KEY, '1000');
     const { onRecordChange } = renderSync(controlOf(owner.relay, owner.keyStore));
     fireEvent.click(await row(s.turnOff));
     let confirm = await screen.findByRole('dialog', { name: s.turnOffTitle });
@@ -457,6 +462,7 @@ describe('SyncSettings', () => {
     expect(await owner.keyStore.load()).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
     expect(localStorage.getItem(STORAGE_SYNC_CONFLICTS_KEY)).toBeNull();
+    expect(localStorage.getItem(STORAGE_LAST_SYNC_AT_KEY)).toBeNull();
     expect(onRecordChange).toHaveBeenLastCalledWith(null);
     // The vault stays on the relay for the other devices
     expect(owner.objects.size).toBeGreaterThan(0);
@@ -478,21 +484,111 @@ describe('SyncSettings', () => {
     expect(syncRow).toHaveAccessibleDescription(/12 oct\. 2026/);
     fireEvent.click(syncRow);
     expect(syncRow).toBeDisabled();
+    expect(syncRow).toHaveAccessibleDescription(fr.sync.syncing);
+    expect(syncRow.querySelector('.settings-row-icon-spin')).not.toBeNull();
     fireEvent.click(syncRow);
     expect(syncNow).toHaveBeenCalledTimes(1);
     await act(async () => release());
     expect(syncRow).toBeEnabled();
+    expect(syncRow.querySelector('.settings-row-icon-spin')).toBeNull();
+    expect(syncRow).toHaveAccessibleDescription(/12 oct\. 2026/);
+  });
+
+  it('shows Synced just now after a sync, then the time, and changes it while the group is open', async () => {
+    vi.useFakeTimers({ shouldAdvanceTime: true });
+    try {
+      const owner = await ownerRecord();
+      const lastSyncedAt = Date.now() - 1000;
+      renderSync(controlOf(owner.relay, owner.keyStore, { lastSyncedAt }));
+      const syncRow = await row(s.syncNow);
+      expect(syncRow).toHaveAccessibleDescription(s.syncedJustNow);
+      await act(async () => {
+        await vi.advanceTimersByTimeAsync(2 * LAST_SYNC_TICK_MS);
+      });
+      expect(syncRow).not.toHaveAccessibleDescription(s.syncedJustNow);
+      expect(syncRow.getAttribute('aria-describedby')).toBeTruthy();
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
+  it('gives the time of the last sync today, and the date and the time of an earlier day', () => {
+    const now = new Date(2026, 10, 5, 20, 0).getTime();
+    const today = new Date(2026, 10, 5, 19, 42).getTime();
+    const earlier = new Date(2026, 10, 4, 19, 42).getTime();
+    expect(lastSyncText(s, 'en-US', now - 59_000, null, now)).toBe(s.syncedJustNow);
+    expect(lastSyncText(s, 'en-US', today, null, now)).toBe('Last sync: today at 7:42 PM');
+    expect(lastSyncText(fr.sync, 'fr-FR', today, null, now)).toBe(
+      'Dernière synchronisation : aujourd’hui à 19:42'
+    );
+    expect(lastSyncText(s, 'en-US', earlier, '2026-11-04', now)).toBe(
+      'Last sync: Nov 4, 2026, 7:42 PM'
+    );
+    expect(lastSyncText(s, 'en-US', null, '2026-11-04', now)).toBe('Last sync: Nov 4, 2026');
+    expect(lastSyncText(s, 'en-US', null, null, now)).toBe(s.notSynced);
   });
 
   it('shows the error of the last sync while the device has a record', async () => {
     const owner = await ownerRecord();
     const lastError = new VaultError('relay', { status: 0, error: 'network' });
-    renderSync(controlOf(owner.relay, owner.keyStore, { lastError }));
-    expect(await screen.findByRole('alert')).toHaveTextContent(s.noConnection);
+    const syncNow = vi.fn(async () => ({ sent: true, skipped: false, error: null }));
+    const view = renderSync(controlOf(owner.relay, owner.keyStore, { lastError, syncNow }));
+    const alert = await screen.findByRole('alert');
+    expect(alert).toHaveTextContent(s.noConnection);
+    // The alert is the first row of the group, with Try again
+    const group = screen.getByRole('region', { name: s.group });
+    expect(within(group).getAllByRole('listitem')[0]).toContainElement(alert);
+    fireEvent.click(within(group).getByRole('button', { name: s.tryAgain }));
+    expect(syncNow).toHaveBeenCalledTimes(1);
+    await waitFor(() => expect(screen.getByRole('button', { name: s.tryAgain })).toBeEnabled());
+    view.unmount();
 
     const empty = renderSync(controlOf(owner.relay, createMemoryKeyStore(), { lastError }));
     expect(await within(empty.container).findByRole('button', { name: s.turnOn })).toBeVisible();
     expect(within(empty.container).queryByRole('alert')).toBeNull();
+  });
+
+  it('asks for a new sign-in when Cloudflare Access sign-in expired', async () => {
+    const assign = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign });
+    const owner = await ownerRecord();
+    const lastError = new VaultError('relay', { status: 302, error: 'signIn' });
+    renderSync(controlOf(owner.relay, owner.keyStore, { lastError }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.signIn);
+    expect(screen.queryByRole('button', { name: s.tryAgain })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: s.reload }));
+    expect(assign).toHaveBeenCalledWith(expect.stringMatching(/\/sign-in$/));
+    vi.restoreAllMocks();
+  });
+
+  it('tells why the gear warns after one day without a sync, with Try again', async () => {
+    const owner = await ownerRecord();
+    const syncNow = vi.fn(async () => ({ sent: false, skipped: true, error: null }));
+    const lastSyncedAt = Date.now() - 25 * 60 * 60 * 1000;
+    renderSync(controlOf(owner.relay, owner.keyStore, { lastSyncedAt, syncNow }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.stale);
+    fireEvent.click(screen.getByRole('button', { name: s.tryAgain }));
+    expect(syncNow).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no Try again for the alert of a row, because it syncs and does not run the row again', async () => {
+    const owner = await ownerRecord();
+    const relay: RelayClient = {
+      ...owner.relay,
+      putRecovery: async () => ({ ok: false, status: 429, error: 'rate' }),
+    };
+    renderSync(controlOf(relay, owner.keyStore));
+    fireEvent.click(await row(s.newCode));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.busy);
+    expect(screen.queryByRole('button', { name: s.tryAgain })).toBeNull();
+  });
+
+  it('has no button in the alert of a device without a record', async () => {
+    renderSync(controlOf(failingRelay(503), createMemoryKeyStore()));
+    fireEvent.click(await row(s.turnOn));
+    await nameAndTurnOn();
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.unavailable);
+    expect(screen.queryByRole('button', { name: s.tryAgain })).toBeNull();
   });
 
   it('gives an error when the sync code does not load', async () => {
@@ -504,6 +600,9 @@ describe('SyncSettings', () => {
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
       sharedDays: null,
+      hasRecord: null,
+      failures: 0,
+      lastSyncedAt: null,
     });
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
     expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
@@ -599,6 +698,9 @@ describe('SyncSettings', () => {
       conflicts: [],
       resolveConflict: vi.fn(async () => {}),
       sharedDays: null,
+      hasRecord: null,
+      failures: 0,
+      lastSyncedAt: null,
     });
     fireEvent.click(await row(s.turnOn));
     await nameAndTurnOn();
