@@ -2,7 +2,7 @@
 
 Use these procedures to keep a copy of your data in a file. Use the file to move your data to a different browser or device.
 
-The application keeps your data only in this browser. If you clear the browser data, you lose your observations. Make a backup regularly.
+Without sync, the application keeps your data only in this browser. If you clear the browser data, you lose your observations. Make a backup regularly. With sync, the server keeps an encrypted copy, but a backup is still necessary.
 
 ## Make a backup
 

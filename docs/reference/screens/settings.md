@@ -26,14 +26,15 @@ The close button, **Back** and `Escape` close Settings.
 
 Settings has these groups, in this sequence:
 
-| Group                    | Rows                                                                                                                                                  |
-| ------------------------ | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                      |
-| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                            |
-| **Backup and restore**   | **Back up now**, **Back up with a password** and **Restore from a file**. Under the group, a note tells which file is encrypted.                      |
-| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                         |
-| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**. |
-| **Data**                 | **Load the demo cycles** and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`).                       |
+| Group                    | Rows                                                                                                                                                      |
+| ------------------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Install                  | **Install app**, its hint and an **Install** button. It shows only when the browser can install the application.                                          |
+| **Appearance and input** | **Language**, **Theme**, **Vibration**, **App icon badge** and **Use keyboard shortcuts**.                                                                |
+| **Backup and restore**   | **Back up now**, **Back up with a password** and **Restore from a file**. Under the group, a note tells which file is encrypted.                          |
+| **Sync**                 | The rows of the sync. They change with the device record ([Sync group](#sync-group)).                                                                     |
+| **Help**                 | **Welcome guide** and **Keyboard shortcuts**.                                                                                                             |
+| **About**                | **About Fertility Tracker** (detail "Release notes, storage", with the version at the right), **Legal and medical notice** and **Check for updates**.     |
+| **Data**                 | **Load the demo cycles**, without a device record, and **Delete all data**. **Delete all data** is the last row. Its text is red (`--color-danger-text`). |
 
 ### Rows
 

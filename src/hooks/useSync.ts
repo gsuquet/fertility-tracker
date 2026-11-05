@@ -35,7 +35,7 @@ export interface SyncServices {
   runner: typeof import('../sync/syncRunner');
 }
 
-/** Loads the sync code only when the sync is on. */
+/** Loads the sync code at the start. A device without a record does not call the relay. */
 const loadServices = async (): Promise<SyncServices> => {
   const [runner, relayClient, keyStore] = await Promise.all([
     import('../sync/syncRunner'),

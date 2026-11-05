@@ -44,6 +44,7 @@ The device record is in the IndexedDB database `fertility-tracker-sync`, version
 
 - `openKeyStore()` gives `load()`, `save(record)` and `clear()`.
 - `load()` gives `null` when the device has no record.
+- `load()` also gives `null` when the browser has no IndexedDB, or blocks it with `SecurityError` or `InvalidStateError`. Such a browser cannot keep a record. Thus, Settings shows no error, and the welcome guide offers the demo. `save()` and `clear()` still fail.
 - Each function closes its connection. It gives an error when the request fails or the transaction aborts, for example when the storage is full.
 - The device keeps no data key and no signing private key. It unwraps them from its keyring entry at each read.
 

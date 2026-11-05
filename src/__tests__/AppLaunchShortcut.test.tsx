@@ -124,7 +124,7 @@ describe('App launched from a shortcut of the app icon', () => {
 
     // A second file opens the dialog again, and a file that is not a backup shows the error
     await openFile('not a backup');
-    expect(await screen.findByText(en.exportModal.importError)).toHaveAttribute('role', 'alert');
+    expect(await screen.findByRole('alert')).toHaveTextContent(en.exportModal.importError);
   });
 
   it('opens the Today page without a dialog on a normal launch', () => {

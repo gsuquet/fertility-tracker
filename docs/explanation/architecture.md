@@ -2,11 +2,13 @@
 
 This page tells how the application is built and why. For the list of files, read [Project structure](../reference/project-structure.md).
 
-## A browser application without a server
+## A browser application with a small relay
 
-The application is a static React site. Vite builds it into HTML, CSS and JavaScript files. Cloudflare Pages serves the files. After the browser loads them, all the work occurs in the browser.
+The application is a static React site. Vite builds it into HTML, CSS and JavaScript files. Cloudflare Pages serves the files. After the browser loads them, all the work on the chart occurs in the browser.
 
-This design keeps health data on the device of the user. It also makes the hosting simple and cheap, because there is no database and no API. Read [Privacy and data storage](privacy-and-data-storage.md) for the consequences.
+The only server code is the sync relay in `/api/` ([Relay API](../reference/relay-api.md)). It keeps encrypted vaults in R2, and it cannot read them ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md)). A device without sync does not call it.
+
+This design keeps readable health data on the devices of the user. It also makes the hosting simple and cheap, because there is no database of observations. Read [Privacy and data storage](privacy-and-data-storage.md) for the consequences.
 
 ## The domain layer
 

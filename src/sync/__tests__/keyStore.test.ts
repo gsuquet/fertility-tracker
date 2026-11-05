@@ -44,6 +44,34 @@ describe('key store', () => {
     await expect(store.save(record())).rejects.toThrow('Aborted');
   });
 
+  it('gives no record in a browser without IndexedDB or that blocks it, but fails to save', async () => {
+    const missing = openKeyStore(undefined);
+    expect(await missing.load()).toBeNull();
+    await expect(missing.save(record())).rejects.toThrow();
+    const throwing = openKeyStore({
+      open: () => {
+        throw new DOMException('Blocked', 'SecurityError');
+      },
+    } as unknown as IDBFactory);
+    expect(await throwing.load()).toBeNull();
+    await expect(throwing.clear()).rejects.toThrow();
+    const failing = (name: string) =>
+      openKeyStore({
+        open: () => {
+          const request = { error: new DOMException('No storage', name) } as {
+            error: DOMException;
+            onerror?: () => void;
+          };
+          queueMicrotask(() => request.onerror?.());
+          return request;
+        },
+      } as unknown as IDBFactory);
+    expect(await failing('InvalidStateError').load()).toBeNull();
+    expect(await failing('SecurityError').load()).toBeNull();
+    // Another failure of the open is an error
+    await expect(failing('UnknownError').load()).rejects.toThrow('No storage');
+  });
+
   it('uses the IndexedDB of the browser by default', () => {
     expect(() => openKeyStore()).not.toThrow();
   });
