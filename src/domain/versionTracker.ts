@@ -46,6 +46,28 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.62.0',
+    date: '2026-11-05',
+    title: 'Delete on One or All Devices',
+    titleFr: 'Supprimer sur un ou tous les appareils',
+    tagline: 'Choose where Delete all data and Replace apply, when sync is ready',
+    taglineFr:
+      'Choisissez où Supprimer toutes les données et Remplacer s’appliquent, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'On a synced device, Delete all data will ask: on this device only, or on all devices',
+      'Restore from a file will ask the same question before Replace',
+      'On this device only first removes the device from the sync, and your other devices keep their days',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Sur un appareil synchronisé, Supprimer toutes les données demandera : sur cet appareil seulement, ou sur tous les appareils',
+      'Restaurer depuis un fichier posera la même question avant Remplacer',
+      'Sur cet appareil seulement retire d’abord l’appareil de la synchronisation, et vos autres appareils gardent leurs jours',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.61.1',
     date: '2026-11-05',
     title: 'Sync Storage',

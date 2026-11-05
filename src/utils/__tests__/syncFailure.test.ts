@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { VaultError } from '../../sync/deviceVault';
-import { failureOf } from '../syncFailure';
+import { failureOf, isOutOfVault } from '../syncFailure';
 
 describe('failureOf', () => {
   it('gives the cause of each error', () => {
@@ -14,5 +14,17 @@ describe('failureOf', () => {
     expect(failureOf(new VaultError('relay', { status: 404 }))).toBe('failed');
     expect(failureOf(new VaultError('relay', { status: 404 }), true)).toBe('badCode');
     expect(failureOf(new VaultError('relay', { status: 500 }), true)).toBe('failed');
+  });
+});
+
+describe('isOutOfVault', () => {
+  it('is true only for a removed device, an unknown token or a missing vault', () => {
+    expect(isOutOfVault(new VaultError('removed'))).toBe(true);
+    expect(isOutOfVault(new VaultError('relay', { status: 401 }))).toBe(true);
+    expect(isOutOfVault(new VaultError('relay', { status: 404 }))).toBe(true);
+    expect(isOutOfVault(new VaultError('relay', { status: 0 }))).toBe(false);
+    expect(isOutOfVault(new VaultError('keys'))).toBe(false);
+    expect(isOutOfVault(new Error('x'))).toBe(false);
+    expect(isOutOfVault(null)).toBe(false);
   });
 });

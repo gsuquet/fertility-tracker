@@ -285,6 +285,62 @@ describe('useSync', () => {
     expect(result.current.lastError).toBeNull();
   });
 
+  it('tells whether the vault has the changes of this device at the end of a sync', async () => {
+    const { load, failWhen, keyStore } = await setup();
+    const { result } = renderHook(() => useSync(false, load), { wrapper });
+    let outcome = await act(() => result.current.syncNow());
+    expect(outcome).toEqual({ sent: true, skipped: false, error: null });
+    failWhen(() => true);
+    outcome = await act(() => result.current.syncNow());
+    expect(outcome.sent).toBe(false);
+    expect(outcome.error?.detail?.status).toBe(0);
+    failWhen(null);
+    // Another tab saved other observations: this sync sends nothing
+    localStorage.setItem(STORAGE_KEY, JSON.stringify([makeObservation({ date: '2026-10-09' })]));
+    expect(await act(() => result.current.syncNow())).toEqual({
+      sent: false,
+      skipped: false,
+      error: null,
+    });
+    localStorage.removeItem(STORAGE_KEY);
+    // Without a record, nothing waits to go
+    await keyStore.clear();
+    expect(await act(() => result.current.syncNow())).toEqual({
+      sent: true,
+      skipped: false,
+      error: null,
+    });
+    const broken = vi.fn().mockRejectedValue(new Error('offline'));
+    const other = renderHook(() => useSync(false, broken), { wrapper });
+    expect(await act(() => other.result.current.syncNow())).toEqual({
+      sent: false,
+      skipped: false,
+      error: null,
+    });
+  });
+
+  it('tells that the sync is skipped after a refused save of an edit, without a sync', async () => {
+    const { load, runs } = await setup();
+    const { result } = renderHook(() => ({ sync: useSync(false, load), data: useCycleData() }), {
+      wrapper,
+    });
+    const setItem = localStorage.setItem.bind(localStorage);
+    vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === STORAGE_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    act(() => {
+      result.current.data.saveObservation(makeObservation({ date: '2026-10-09' }));
+    });
+    await waitFor(() => expect(result.current.data.saveFailed).toBe(true));
+    expect(await act(() => result.current.sync.syncNow())).toEqual({
+      sent: false,
+      skipped: true,
+      error: null,
+    });
+    expect(runs.count).toBe(0);
+  });
+
   it('reads the vault as a new device when the observations key was missing at the load', async () => {
     const { load, relay, keyStore } = await setup();
     localStorage.setItem(

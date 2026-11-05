@@ -190,3 +190,7 @@ jspm_packages/
 /playwright-report/
 /blob-report/
 /playwright/.cache/
+
+### Wrangler ###
+# The local state of wrangler pages dev
+.wrangler/

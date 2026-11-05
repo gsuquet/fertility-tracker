@@ -364,6 +364,12 @@ export const en = {
     clearMessage:
       'This deletes the {count} observations in this browser. A copy stays on this device until you click Delete the copy in the undo message.',
     clearConfirm: 'Delete all data',
+    syncedMessage:
+      'This device syncs. On all devices deletes the days on each synced device. On this device only first removes this device from the sync, and the other devices keep their days. With On all devices, the copy goes when a sync brings a change from another device.',
+    clearThisDevice: 'Delete on this device only',
+    clearAllDevices: 'Delete on all devices',
+    replaceThisDevice: 'Replace on this device only',
+    replaceAllDevices: 'Replace on all devices',
     recoveryTitle: 'Delete the unreadable data?',
     recoveryMessage:
       'The application keeps no other copy of this data. Download it first if you want to keep it.',

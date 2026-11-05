@@ -368,6 +368,12 @@ export const fr: TranslationSchema = {
     clearMessage:
       "Cette action supprime les {count} observations de ce navigateur. Une copie reste sur cet appareil jusqu'à ce que vous cliquiez sur Supprimer la copie dans le message d'annulation.",
     clearConfirm: 'Tout supprimer',
+    syncedMessage:
+      'Cet appareil est synchronisé. Sur tous les appareils supprime les jours sur chaque appareil synchronisé. Sur cet appareil seulement retire d’abord cet appareil de la synchronisation, et les autres appareils gardent leurs jours. Avec Sur tous les appareils, la copie disparaît quand une synchronisation apporte une modification d’un autre appareil.',
+    clearThisDevice: 'Supprimer sur cet appareil seulement',
+    clearAllDevices: 'Supprimer sur tous les appareils',
+    replaceThisDevice: 'Remplacer sur cet appareil seulement',
+    replaceAllDevices: 'Remplacer sur tous les appareils',
     recoveryTitle: 'Supprimer les données illisibles ?',
     recoveryMessage:
       "L'application ne garde aucune autre copie de ces données. Téléchargez-les d'abord si vous voulez les garder.",

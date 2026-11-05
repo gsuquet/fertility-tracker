@@ -26,6 +26,7 @@ import {
 import type { RecordSaver } from './deviceVault';
 import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
+import { isOutOfVault } from '../utils/syncFailure';
 
 const ECDH = { name: 'ECDH', namedCurve: 'P-256' } as const;
 const newId = (bytes: number) => toBase64Url(randomBytes(bytes));
@@ -62,6 +63,30 @@ export async function removeMember(
   });
   if (!written) throw changed();
   return written.record;
+}
+
+/** Removes this device from the vault with a rekey, then deletes its record. The days stay. */
+export async function leaveVault(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord
+): Promise<void> {
+  let session: Awaited<ReturnType<typeof openSession>>;
+  try {
+    session = await openSession(relay, keyStore, record);
+  } catch (error) {
+    if (!isOutOfVault(error)) throw error;
+    await keyStore.clear();
+    return;
+  }
+  const keys = await ownerKeys(session);
+  // The record of the rekey is of a removed member: the device does not save it
+  const written = await writeRekeyed(relay, memorySaver(), session, keys, {
+    remove: [record.memberId],
+    rotateSigning: true,
+  });
+  if (!written) throw changed();
+  await keyStore.clear();
 }
 
 /** Replaces the recovery member and the lookup object. Gives the new code. */
