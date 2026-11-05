@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react';
-import { screen, fireEvent, waitFor, within } from '@testing-library/react';
+import { act, screen, fireEvent, waitFor, within } from '@testing-library/react';
 import { afterEach, beforeEach, describe, it, expect, vi } from 'vitest';
 import { SettingsDialog } from '../SettingsDialog';
 import { useCycleData } from '../../../context/CycleContext';
@@ -678,7 +678,13 @@ describe('SettingsDialog sync', () => {
     const keyStore = createMemoryKeyStore();
     if (withRecord) await createVault(harness.relay, keyStore);
     const services: SyncServices = { relay: harness.relay, keyStore, runner: syncRunner };
-    return { enabled, services: async () => services, syncNow: vi.fn(), lastError: null };
+    return {
+      enabled,
+      services: async () => services,
+      syncNow: vi.fn(),
+      withSync: action => action(services),
+      lastError: null,
+    };
   };
   const groupNames = () =>
     screen.getAllByRole('heading', { level: 3 }).map(heading => heading.textContent);
@@ -702,5 +708,41 @@ describe('SettingsDialog sync', () => {
     expect(await screen.findByRole('button', { name: en.sync.syncNow })).toBeInTheDocument();
     expect(screen.queryByRole('button', { name: en.settings.loadDemo })).toBeNull();
     expect(screen.getByRole('button', { name: en.settings.deleteAll })).toBeInTheDocument();
+  });
+
+  it('stays open while a sync action runs', async () => {
+    const harness = createRelayHarness();
+    let release: () => void = () => {};
+    const blocked = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const relay = {
+      ...harness.relay,
+      putVault: async (...args: Parameters<typeof harness.relay.putVault>) => {
+        await blocked;
+        return harness.relay.putVault(...args);
+      },
+    };
+    const services: SyncServices = { relay, keyStore: createMemoryKeyStore(), runner: syncRunner };
+    const props = renderSettings(undefined, {
+      sync: {
+        enabled: true,
+        services: async () => services,
+        syncNow: vi.fn(async () => {}),
+        withSync: action => action(services),
+        lastError: null,
+      },
+    });
+    fireEvent.click(await screen.findByRole('button', { name: en.sync.turnOn }));
+    const close = screen.getByRole('button', { name: en.settings.close });
+    await waitFor(() => expect(close).toBeDisabled());
+    fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
+    expect(props.onClose).not.toHaveBeenCalled();
+    await act(async () => release());
+    expect(await screen.findByRole('dialog', { name: en.sync.codeTitle })).toBeInTheDocument();
+    fireEvent.click(screen.getByRole('button', { name: en.sync.wroteItDown }));
+    expect(close).toBeEnabled();
+    fireEvent.click(close);
+    expect(props.onClose).toHaveBeenCalledTimes(1);
   });
 });

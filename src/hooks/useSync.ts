@@ -43,7 +43,7 @@ const loadServices = async (): Promise<SyncServices> => {
 const storage = { read: readStorage, write: writeStorage, remove: removeStorage };
 
 /** One sync at a time for all the tabs of the application, when the browser has Web Locks. */
-const withSyncLock = (run: () => Promise<void>): Promise<void> =>
+const withSyncLock = <T>(run: () => Promise<T>): Promise<T> =>
   globalThis.navigator?.locks
     ? globalThis.navigator.locks.request('fertility-tracker-sync', run)
     : run();
@@ -53,8 +53,13 @@ export interface SyncControl {
   enabled: boolean;
   /** The relay client, the key store and the sync code, loaded one time. */
   services: () => Promise<SyncServices>;
-  /** Starts a sync at once, or after the sync that runs. */
+  /** Starts a sync at once, or after the sync that runs. It resolves when that sync ends. */
   syncNow: () => Promise<void>;
+  /**
+   * Runs an action of Settings after the sync that runs, with the sync lock. No sync starts
+   * before the action ends.
+   */
+  withSync: <T>(action: (services: SyncServices) => Promise<T>) => Promise<T>;
   /** The error of the last sync, or null after a sync without an error. */
   lastError: VaultError | null;
 }
@@ -68,8 +73,10 @@ export function useSync(
   const latest = useRef({ data, t });
   latest.current = { data, t };
   const loaded = useRef<Promise<SyncServices> | null>(null);
-  const running = useRef(false);
-  const again = useRef(false);
+  // The syncs and the actions of this tab, one after the other
+  const queue = useRef<Promise<unknown>>(Promise.resolve());
+  // A sync that did not start yet. A new call does not add a second one.
+  const waiting = useRef<Promise<void> | null>(null);
   const lastStart = useRef(0);
   const appliedBySync = useRef(false);
   const [lastError, setLastError] = useState<VaultError | null>(null);
@@ -83,16 +90,19 @@ export function useSync(
     return loaded.current;
   }, [load]);
 
-  const sync = useCallback(async () => {
-    if (running.current) {
-      again.current = true;
-      return;
-    }
-    running.current = true;
-    lastStart.current = Date.now();
-    try {
-      const { runner, relay, keyStore } = await services();
-      await withSyncLock(async () => {
+  const exclusive = useCallback(<T>(work: () => Promise<T>): Promise<T> => {
+    const next = queue.current.then(() => withSyncLock(work));
+    queue.current = next.catch(() => {});
+    return next;
+  }, []);
+
+  const sync = useCallback((): Promise<void> => {
+    if (waiting.current) return waiting.current;
+    const next = exclusive(async () => {
+      waiting.current = null;
+      lastStart.current = Date.now();
+      try {
+        const { runner, relay, keyStore } = await services();
         const sent = latest.current.data;
         // Another tab saved other observations: this tab gets them first, with the storage event
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
@@ -132,18 +142,20 @@ export function useSync(
         if (saved) {
           latest.current.data.markSynced();
         }
-      });
-    } catch {
-      // The key store or the code did not load: the next event loads it again
-      loaded.current = null;
-    } finally {
-      running.current = false;
-      if (again.current) {
-        again.current = false;
-        void sync();
+      } catch {
+        // The key store or the code did not load: the next event loads it again
+        loaded.current = null;
       }
-    }
-  }, [services]);
+    });
+    waiting.current = next;
+    return next;
+  }, [exclusive, services]);
+
+  const withSync = useCallback(
+    <T>(action: (loaded: SyncServices) => Promise<T>): Promise<T> =>
+      exclusive(async () => action(await services())),
+    [exclusive, services]
+  );
 
   // The start of the application, the visible page and the online browser
   useEffect(() => {
@@ -179,5 +191,5 @@ export function useSync(
   }, [enabled, sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return { enabled, services, syncNow: sync, lastError };
+  return { enabled, services, syncNow: sync, withSync, lastError };
 }

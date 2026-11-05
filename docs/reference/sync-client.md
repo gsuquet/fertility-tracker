@@ -223,12 +223,13 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
 
-| Field       | Use                                                                                                           |
-| ----------- | ------------------------------------------------------------------------------------------------------------- |
-| `enabled`   | The value of `SYNC_ENABLED`                                                                                   |
-| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call. |
-| `syncNow`   | Starts a sync at once, or after the sync that runs                                                            |
-| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                    |
+| Field       | Use                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | The value of `SYNC_ENABLED`                                                                                                           |
+| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                         |
+| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends. A sync that did not start yet covers a new call. |
+| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.   |
+| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                            |
 
 ## Related documents
 

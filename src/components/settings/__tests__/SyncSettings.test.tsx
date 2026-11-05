@@ -16,6 +16,11 @@ import {
   STORAGE_SYNC_STATE_KEY,
 } from '../../../utils/storageKeys';
 import { SyncSettings, failureOf } from '../SyncSettings';
+import { useSync } from '../../../hooks/useSync';
+import { buildDemoObservations } from '../../../domain/demoData';
+import { makeObservation } from '../../../test/factories';
+import type { Observation } from '../../../types/crms';
+import { STORAGE_OBSERVATIONS_KEY } from '../../../utils/storageKeys';
 
 const s = en.sync;
 const CODE = /^[0-9A-Z]{4}(-[0-9A-Z]{1,4})+$/;
@@ -30,18 +35,30 @@ const controlOf = (
     enabled: true,
     services: () => Promise.resolve(services),
     syncNow: vi.fn(async () => {}),
+    withSync: action => action(services),
     lastError: null,
     ...extra,
   } as SyncControl & { syncNow: ReturnType<typeof vi.fn> };
 };
 
-const renderSync = (control: SyncControl, language: 'en' | 'fr' = 'en') => {
+const renderSync = (
+  control: SyncControl,
+  language: 'en' | 'fr' = 'en',
+  observations?: Observation[]
+) => {
   const onRecordChange = vi.fn();
+  const onBusyChange = vi.fn();
   const view = renderWithProviders(
-    <SyncSettings control={control} onRecordChange={onRecordChange} />,
-    { language }
+    <SyncSettings control={control} onRecordChange={onRecordChange} onBusyChange={onBusyChange} />,
+    { language, ...(observations ? { observations } : {}) }
   );
-  return { onRecordChange, ...view };
+  return { onRecordChange, onBusyChange, ...view };
+};
+
+/** Settings with the real sync control of the application. */
+const SyncHarness = ({ load }: { load: () => Promise<SyncServices> }) => {
+  const control = useSync(true, load);
+  return <SyncSettings control={control} onRecordChange={() => {}} onBusyChange={() => {}} />;
 };
 
 const row = (name: string) => screen.findByRole('button', { name });
@@ -223,6 +240,10 @@ describe('SyncSettings', () => {
     fireEvent.submit(input);
     const working = await within(dialog).findByRole('button', { name: s.working });
     expect(working).toBeDisabled();
+    // The recovery makes a new code: the dialog does not close while it runs
+    expect(within(dialog).getByRole('button', { name: en.actions.cancel })).toBeDisabled();
+    fireEvent.keyDown(dialog, { key: 'Escape' });
+    expect(screen.getByRole('dialog', { name: s.enterTitle })).toBeInTheDocument();
     // A second submit waits for the first one
     fireEvent.submit(input);
     await act(async () => release());
@@ -314,10 +335,92 @@ describe('SyncSettings', () => {
       enabled: true,
       services: () => Promise.reject(new Error('chunk')),
       syncNow: vi.fn(),
+      withSync: () => Promise.reject(new Error('chunk')),
       lastError: null,
     });
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
     expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
+  });
+
+  it('tells Settings when an action runs', async () => {
+    const harness = createRelayHarness();
+    const { onBusyChange } = renderSync(controlOf(harness.relay, createMemoryKeyStore()));
+    fireEvent.click(await row(s.turnOn));
+    await screen.findByRole('dialog', { name: s.codeTitle });
+    expect(onBusyChange.mock.calls.map(([busy]) => busy)).toEqual([false, true, false]);
+  });
+
+  it('removes the demo days before the device joins a vault', async () => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    const own = makeObservation({ date: '2026-10-01', bleeding: 'H' });
+    const demo = buildDemoObservations('2026-10-20');
+    renderSync(controlOf(harness.relay, keyStore), 'en', [...demo, own]);
+    fireEvent.click(await row(s.turnOn));
+    await screen.findByRole('dialog', { name: s.codeTitle });
+    const stored = JSON.parse(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) as string);
+    expect(stored.map((o: Observation) => o.date)).toEqual(['2026-10-01']);
+  });
+
+  it('does not join a vault when the browser refuses the list without the demo days', async () => {
+    const harness = createRelayHarness();
+    const keyStore = createMemoryKeyStore();
+    renderSync(controlOf(harness.relay, keyStore), 'en', buildDemoObservations('2026-10-20'));
+    const turnOn = await row(s.turnOn);
+    const write = localStorage.setItem.bind(localStorage);
+    const setItem = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === STORAGE_OBSERVATIONS_KEY) throw new Error('QuotaExceededError');
+      write(key, value);
+    });
+    fireEvent.click(turnOn);
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
+    setItem.mockRestore();
+    expect(await keyStore.load()).toBeNull();
+    expect(harness.objects.size).toBe(0);
+  });
+
+  it('shows Turn on sync when the record went away before New recovery code', async () => {
+    const owner = await ownerRecord();
+    renderSync(controlOf(owner.relay, owner.keyStore));
+    const newCode = await row(s.newCode);
+    await owner.keyStore.clear();
+    fireEvent.click(newCode);
+    expect(await row(s.turnOn)).toBeInTheDocument();
+    expect(screen.queryByRole('dialog', { name: s.codeTitle })).toBeNull();
+  });
+
+  it('turns off the sync only after the sync that runs, so that the sync cannot undo it', async () => {
+    const owner = await ownerRecord();
+    let release: () => void = () => {};
+    const blocked = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    let started = false;
+    const services: SyncServices = {
+      relay: owner.relay,
+      keyStore: owner.keyStore,
+      runner: {
+        ...runner,
+        runSync: async input => {
+          started = true;
+          await blocked;
+          return runner.runSync(input);
+        },
+      },
+    };
+    const load = async () => services;
+    renderWithProviders(<SyncHarness load={load} />);
+    fireEvent.click(await row(s.turnOff));
+    await waitFor(() => expect(started).toBe(true));
+    const confirm = await screen.findByRole('dialog', { name: s.turnOffTitle });
+    fireEvent.click(within(confirm).getByRole('button', { name: s.turnOffConfirm }));
+    // The turn off waits: the rows stay disabled
+    await waitFor(() => expect(screen.getByRole('button', { name: s.syncNow })).toBeDisabled());
+    expect(await owner.keyStore.load()).not.toBeNull();
+    await act(async () => release());
+    expect(await row(s.turnOn)).toBeInTheDocument();
+    expect(await owner.keyStore.load()).toBeNull();
+    expect(localStorage.getItem(STORAGE_SYNC_STATE_KEY)).toBeNull();
   });
 });
 

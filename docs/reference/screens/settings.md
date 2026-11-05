@@ -146,10 +146,14 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                            |
 | **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay. |
 
-- While a row runs, the rows of the group are disabled.
-- When a row fails, an alert under the group gives the cause. The causes are no connection, sync not available yet, a code that is not valid, or another error.
+- Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
+- While a row runs, the rows of the group are disabled. Settings does not close, so that the user sees the new recovery code.
+- **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.
+- When a row fails, an alert under the group gives the cause. While the device has a record, the alert also gives the cause of a failed sync. The causes are no connection, sync not available yet, a code that is not valid, or another error.
 - While the device has a record, the **Data** group does not show **Load the demo cycles** ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#data-that-syncs)).
 - **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later.
+
+While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
 
 ### Recovery code dialog
 

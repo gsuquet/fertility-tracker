@@ -126,6 +126,11 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   const [importError, setImportError] = useState(false);
   // A device in a vault does not load the demo cycles (ADR 0012)
   const [hasSyncRecord, setHasSyncRecord] = useState(false);
+  // A sync action makes a recovery code that the user must see: Settings stays open
+  const [syncBusy, setSyncBusy] = useState(false);
+  const close = () => {
+    if (!syncBusy) onClose();
+  };
   const [passwordRequest, setPasswordRequest] = useState<
     { mode: 'backup' } | { mode: 'restore'; backup: EncryptedBackup } | null
   >(null);
@@ -300,13 +305,18 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   return (
     <Modal
       labelledBy="settings-title"
-      onClose={onClose}
+      onClose={close}
       className="modal-overlay settings-overlay"
       panelClassName="modal-container settings-dialog"
       {...(focusRestore ? { initialFocusRef: restoreButtonRef } : {})}
     >
       <div className="modal-header settings-header">
-        <button type="button" className="icon-button settings-close" onClick={onClose}>
+        <button
+          type="button"
+          className="icon-button settings-close"
+          onClick={close}
+          disabled={syncBusy}
+        >
           <span className="sr-only">{s.close}</span>
           <ChevronLeft size={22} className="settings-close-back" aria-hidden="true" />
           <X size={20} className="settings-close-x" aria-hidden="true" />
@@ -418,7 +428,13 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
           </p>
         )}
 
-        {sync?.enabled && <SyncSettings control={sync} onRecordChange={setHasSyncRecord} />}
+        {sync?.enabled && (
+          <SyncSettings
+            control={sync}
+            onRecordChange={setHasSyncRecord}
+            onBusyChange={setSyncBusy}
+          />
+        )}
 
         <Group id="settings-help" title={s.help}>
           <ActionRow icon={iconOf(BookOpen)} label={s.welcomeGuide} onClick={onOpenWelcome} opens />

@@ -4,6 +4,7 @@ import { useCallback, useEffect, useId, useRef, useState } from 'react';
 import { CloudOff, KeyRound, RefreshCw, RotateCcw, Share2 } from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
 import { useLanguage } from '../../context/LanguageContext';
+import { isUserObservation } from '../../domain/backupReminder';
 import { formatMessage } from '../../i18n';
 import type { TranslationSchema } from '../../i18n/types';
 import type { SyncControl, SyncServices } from '../../hooks/useSync';
@@ -100,12 +101,16 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
   const id = useId();
   const inputRef = useRef<HTMLInputElement>(null);
   const [code, setCode] = useState('');
-  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(onCancel, true);
+  // The recovery makes a new code: the dialog stays open until it ends
+  const cancel = () => {
+    if (!working) onCancel();
+  };
+  const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLDivElement>(cancel, true);
   return (
     <Modal
       labelledBy={`${id}-title`}
       describedBy={`${id}-note`}
-      onClose={onCancel}
+      onClose={cancel}
       initialFocusRef={inputRef}
       className="modal-overlay confirm-overlay"
       panelClassName="modal-container confirm-dialog"
@@ -144,7 +149,7 @@ export const RecoveryEntryDialog: React.FC<RecoveryEntryDialogProps> = ({
           )}
         </div>
         <div className="modal-footer">
-          <button type="button" className="btn btn-secondary" onClick={onCancel}>
+          <button type="button" className="btn btn-secondary" onClick={cancel} disabled={working}>
             {t.actions.cancel}
           </button>
           <button type="submit" className="btn btn-primary" disabled={working}>
@@ -160,11 +165,17 @@ interface SyncSettingsProps {
   control: SyncControl;
   /** Tells Settings when the device has a record, or not. */
   onRecordChange: (hasRecord: boolean) => void;
+  /** Tells Settings when an action starts and ends. Settings does not close while it runs. */
+  onBusyChange: (busy: boolean) => void;
 }
 
 /** The rows of the sync. While a row runs, all the rows are disabled. */
-export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordChange }) => {
-  const { lastSyncDate } = useCycle();
+export const SyncSettings: React.FC<SyncSettingsProps> = ({
+  control,
+  onRecordChange,
+  onBusyChange,
+}) => {
+  const { lastSyncDate, observations, applySyncedObservations } = useCycle();
   const { t } = useLanguage();
   const s: SyncText = t.sync;
   const [record, setRecord] = useState<DeviceRecord | null | undefined>(undefined);
@@ -175,6 +186,10 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordCha
   const [confirmOff, setConfirmOff] = useState(false);
   const onRecordRef = useRef(onRecordChange);
   onRecordRef.current = onRecordChange;
+  const onBusyRef = useRef(onBusyChange);
+  onBusyRef.current = onBusyChange;
+  // A new recovery code must show: Settings stays open until the action ends
+  useEffect(() => onBusyRef.current(busy), [busy]);
 
   const show = useCallback((next: DeviceRecord | null) => {
     setRecord(next);
@@ -198,7 +213,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordCha
     setBusy(true);
     setFailure(null);
     try {
-      const result = await action(await control.services());
+      const result = await control.withSync(action);
       show(result.record);
       if (result.code) setCode(result.code);
       setEntering(false);
@@ -210,8 +225,16 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordCha
     }
   };
 
+  // The demo days never go into a vault (ADR 0012): they go before the device joins
+  const removeDemoDays = () => {
+    const kept = observations.filter(isUserObservation);
+    if (kept.length === observations.length) return;
+    if (!applySyncedObservations(kept, false)) throw new Error('The browser refused the write');
+  };
+
   const turnOn = () =>
     run(async ({ relay, keyStore }) => {
+      removeDemoDays();
       const { createVault } = await import('../../sync/deviceVault');
       const made = await createVault(relay, keyStore);
       return { record: made.record, code: made.recoveryCode };
@@ -219,13 +242,17 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordCha
 
   const recover = (typed: string) =>
     run(async ({ relay, keyStore }) => {
+      removeDemoDays();
       const { recoverWithCode } = await import('../../sync/membership');
       const made = await recoverWithCode(relay, keyStore, typed);
       return { record: made.record, code: made.recoveryCode };
     }, true);
 
-  const newCode = (current: DeviceRecord) =>
+  const newCode = () =>
     run(async ({ relay, keyStore }) => {
+      // The record of the key store: a sync can change it after the group opens
+      const current = await keyStore.load();
+      if (!current) return { record: null };
       const { newRecoveryCode } = await import('../../sync/membership');
       const made = await newRecoveryCode(relay, keyStore, current);
       return { record: made.record, code: made.recoveryCode };
@@ -302,7 +329,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({ control, onRecordCha
                 icon={iconOf(RotateCcw)}
                 label={s.newCode}
                 detail={s.newCodeHint}
-                onClick={() => void newCode(record)}
+                onClick={() => void newCode()}
                 disabled={busy}
               />
             )}
