@@ -271,18 +271,18 @@ A reader device never merges the vault with its own observations ([Partner devic
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it. The control stays the same object until one of its fields changes. Thus, a render of the application does not start the effects of a dialog again.
 
-| Field             | Use                                                                                                                                                        |
-| ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                              |
-| `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call. |
-| `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                        |
-| `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
-| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date.                                                                                      |
-| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
-| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`.                                                 |
-| `hasRecord`       | True when the key store had a record at the last sync or action, false without one. `null` before the first sync.                                          |
-| `failures`        | The number of syncs in a row that ended with an error. A sync without an error sets it to 0.                                                               |
-| `lastSyncedAt`    | The time of the last full sync in milliseconds, from `fertility_care_last_sync_at`, or `null`.                                                             |
+| Field             | Use                                                                                                                                                                                         |
+| ----------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `services`        | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                                                               |
+| `syncNow`         | Starts a sync at once, or after the sync that runs. It resolves with a `SyncOutcome` when that sync ends. A sync that did not start yet covers a new call.                                  |
+| `withSync`        | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                                                         |
+| `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                                                  |
+| `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date.                                                                                                                       |
+| `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                                                   |
+| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`.                                                                                  |
+| `hasRecord`       | True when the key store had a record at the end of the last sync or action, false without one. `null` until the first sync ends. Thus, an old time does not warn while the first sync runs. |
+| `failures`        | The number of syncs in a row that ended with an error. A sync without an error sets it to 0.                                                                                                |
+| `lastSyncedAt`    | The time of the last full sync in milliseconds, from `fertility_care_last_sync_at`, or `null`.                                                                                              |
 
 A `SyncOutcome` has these fields:
 

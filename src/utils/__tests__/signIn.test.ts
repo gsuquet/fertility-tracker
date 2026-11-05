@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import { SIGN_IN_PATH as WORKER_SIGN_IN_PATH } from '../../sw/serviceWorker';
-import { SIGN_IN_PATH, leaveSignInPath, signInAgain } from '../signIn';
+import { KEPT_INVITE_KEY, SIGN_IN_PATH, leaveSignInPath, signInAgain } from '../signIn';
 
 describe('signIn', () => {
   afterEach(() => {
@@ -18,6 +18,16 @@ describe('signIn', () => {
     });
     signInAgain();
     expect(assign).toHaveBeenCalledWith(`${window.location.origin}/app/sign-in`);
+    expect(sessionStorage.getItem(KEPT_INVITE_KEY)).toBeNull();
+    signInAgain('#invite=a.b');
+    expect(sessionStorage.getItem(KEPT_INVITE_KEY)).toBe('#invite=a.b');
+    sessionStorage.clear();
+    // Without the session storage, the sign-in still occurs
+    vi.spyOn(Storage.prototype, 'setItem').mockImplementation(() => {
+      throw new Error('SecurityError');
+    });
+    signInAgain('#invite=a.b');
+    expect(assign).toHaveBeenCalledTimes(3);
   });
 
   it('changes the sign-in path to the app address, and keeps the query, the fragment and the state', () => {

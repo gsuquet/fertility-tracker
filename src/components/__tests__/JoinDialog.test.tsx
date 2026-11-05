@@ -14,6 +14,7 @@ import { renderWithProviders } from '../../test/render';
 import { controlOf } from '../../test/syncControl';
 import type { Observation } from '../../types/crms';
 import { STORAGE_OBSERVATIONS_KEY, STORAGE_UNDO_KEY } from '../../utils/storageKeys';
+import { KEPT_INVITE_KEY } from '../../utils/signIn';
 import { JoinDialog } from '../JoinDialog';
 
 const s = en.sync;
@@ -302,6 +303,26 @@ describe('JoinDialog', () => {
     await new Promise(resolve => setTimeout(resolve, POLL * 5));
     expect(await keyStore.load()).toBeNull();
     expect(control.syncNow).not.toHaveBeenCalled();
+  });
+
+  it('keeps the invitation in the tab when Reload signs in again', async () => {
+    const assign = vi.fn();
+    vi.spyOn(window, 'location', 'get').mockReturnValue({ ...window.location, assign });
+    onTestFinished(() => {
+      vi.restoreAllMocks();
+      sessionStorage.clear();
+    });
+    const vault = await invited();
+    const relay: RelayClient = {
+      ...vault.relay,
+      getInvite: async () => ({ ok: false, status: 302, error: 'signIn' }),
+    };
+    renderJoin(relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
+    expect(await alertText()).toContain(s.signIn);
+    fireEvent.click(within(await joinDialog()).getByRole('button', { name: s.reload }));
+    expect(assign).toHaveBeenCalledWith(expect.stringMatching(/\/sign-in$/));
+    expect(sessionStorage.getItem(KEPT_INVITE_KEY)).toBe(vault.fragment);
   });
 
   it('ends on a relay error that is not temporary', async () => {

@@ -309,6 +309,20 @@ describe('useSync', () => {
     expect(result.current.failures).toBe(0);
     expect(result.current.lastSyncedAt).toBe(Number(localStorage.getItem(TIME_KEY)));
     expect(Date.now() - (result.current.lastSyncedAt as number)).toBeLessThan(5000);
+    // A refused write keeps the older time
+    const before = result.current.lastSyncedAt;
+    const setItem = localStorage.setItem.bind(localStorage);
+    const refuse = vi.spyOn(localStorage, 'setItem').mockImplementation((key, value) => {
+      if (key === TIME_KEY) throw new Error('QuotaExceededError');
+      setItem(key, value);
+    });
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(10);
+      await result.current.syncNow();
+    });
+    expect(result.current.failures).toBe(0);
+    expect(result.current.lastSyncedAt).toBe(before);
+    refuse.mockRestore();
     // Another tab removes the time
     localStorage.removeItem(TIME_KEY);
     act(() => {

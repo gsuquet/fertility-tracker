@@ -204,13 +204,15 @@ The alert of the Sync group is the first row of the group. It has the red text o
 | The recovery code is not valid                             | "This code is not valid. Check each character."                                                                                                                                                                                                                            |
 | **Else**                                                   | "The sync failed. Try again later." In the Sync group, the alert adds "Error code: " and the code. For a refused request, the code is the status and the error of the relay, for example `403 owner`. Else, it is the reason of the vault error, or the name of the error. |
 
-| Condition               | Button of the alert                                                                               |
-| ----------------------- | ------------------------------------------------------------------------------------------------- |
-| The cause is `signIn`   | **Reload** opens `./sign-in`. Read [Sign-in of Cloudflare Access](#sign-in-of-cloudflare-access). |
-| The device has a record | **Try again** starts a sync, as **Sync now** does. While the sync runs, the button is disabled.   |
-| **Else**                | No button                                                                                         |
+| Condition                                                                 | Button of the alert                                                                               |
+| ------------------------------------------------------------------------- | ------------------------------------------------------------------------------------------------- |
+| The cause is `signIn`                                                     | **Reload** opens `./sign-in`. Read [Sign-in of Cloudflare Access](#sign-in-of-cloudflare-access). |
+| The alert is about the sync, not about a row, and the device has a record | **Try again** starts a sync, as **Sync now** does. While the sync runs, the button is disabled.   |
+| **Else**                                                                  | No button                                                                                         |
 
 - The code dialog of **Recover with a code** shows its own alert. While it is open, the group has no alert.
+- A row that fails has no **Try again**, because a sync does not run the row again.
+- The last sync can have no error and be more than 24 hours old. Then the alert is "This device did not sync for more than one day." Thus, the group tells why the gear shows the [sync warning](navigation.md#sync-warning). The alert of a row or of a sync error comes first.
 
 ### Sign-in of Cloudflare Access
 
@@ -221,6 +223,7 @@ Cloudflare Access protects the site. When its sign-in expires, Access answers a 
 - At the start, the application changes the address `./sign-in` to `./` with `history.replaceState()`. Thus, a later reload does not go to the sign-in path again.
 - A normal reload of `./` gets the cached app shell. It does not show the sign-in page. Thus, the alert tells the user to select **Reload**.
 - The alerts of the dialogs of the sync also show **Reload** for this cause. [SyncAlert.tsx](../../../src/components/SyncAlert.tsx) shows these alerts.
+- **Reload** of the join dialog keeps the invitation fragment in the session storage of the tab (`fertility_tracker_sign_in_invite`). At the next start, the application opens the join dialog with it, and removes it. Without the session storage, the user opens the link again.
 
 ### Last sync
 

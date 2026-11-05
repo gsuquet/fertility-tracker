@@ -105,9 +105,6 @@ const storedSyncTime = (): number | null => {
   return Number.isFinite(time) ? time : null;
 };
 
-/** Saves the time of a full sync. A refused write keeps the older time. */
-const saveSyncTime = () => writeStorage(STORAGE_LAST_SYNC_AT_KEY, String(Date.now()));
-
 const storedConflicts = () => parseConflicts(readStorage(STORAGE_SYNC_CONFLICTS_KEY));
 
 /** The days of the stored shared chart, or null without a valid one. */
@@ -140,6 +137,11 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
   const [hasRecord, setHasRecord] = useState<boolean | null>(null);
   const [failures, setFailures] = useState(0);
   const [lastSyncedAt, setLastSyncedAt] = useState(storedSyncTime);
+  /** Saves the time of a full sync. A refused write keeps the older time. */
+  const saveSyncTime = useCallback(() => {
+    const time = Date.now();
+    if (writeStorage(STORAGE_LAST_SYNC_AT_KEY, String(time))) setLastSyncedAt(time);
+  }, []);
   /** Counts a sync that ended with an error, or starts the count again. */
   const endSync = useCallback((error: VaultError | null) => {
     setLastError(error);
@@ -186,63 +188,67 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
         const { runner, relay, keyStore } = await services();
         // A reader device only reads the shared chart: the checks of its own days do not apply
         const record = await keyStore.load();
-        setHasRecord(record !== null);
-        if (record?.role === 'reader') {
-          const shared = await runner.readShared(relay, keyStore, record, storage);
-          // No markSynced(): the own days go nowhere, so the backup reminder still counts
-          endSync(shared.error);
-          if (shared.saved && !shared.error) saveSyncTime();
-          return { sent: shared.error === null, skipped: false, error: shared.error };
+        // The record shows only after the sync: an old time does not warn while the sync runs
+        try {
+          if (record?.role === 'reader') {
+            const shared = await runner.readShared(relay, keyStore, record, storage);
+            // No markSynced(): the own days go nowhere, so the backup reminder still counts
+            endSync(shared.error);
+            if (shared.saved && !shared.error) saveSyncTime();
+            return { sent: shared.error === null, skipped: false, error: shared.error };
+          }
+          const sent = latest.current.data;
+          // The list of this tab cannot sync: a refused save, or data that is not readable
+          if (sent.saveFailed || sent.recoveryData !== null) return SKIPPED;
+          // Another tab saved other observations: this tab gets them first, with the storage event
+          const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
+          if (stored !== null && stored !== serializeObservations(sent.observations)) {
+            return NOT_SENT;
+          }
+          // A version without the sync wrote the list: the sync starts again as a first sync
+          checkStoredMark(stored);
+          const trust = distrustCount();
+          const result = await runner.runSync({
+            relay,
+            keyStore,
+            storage,
+            observations: sent.observations,
+            // The provider deleted the sync state when the key was missing at the load
+            observationsMissing: false,
+            recoveryData: sent.recoveryData !== null,
+            saveFailed: sent.saveFailed,
+            now: Date.now(),
+            confirmDeletions: async dates =>
+              window.confirm(
+                formatMessage(latest.current.t.sync.confirmDeletions, { count: dates.length })
+              ),
+          });
+          const saved = runner.finishSync(result, {
+            storage,
+            sent: sent.observations,
+            current: latest.current.data.observations,
+            applyObservations: (observations, changed) => {
+              appliedBySync.current = true;
+              const ok = latest.current.data.applySyncedObservations(observations, changed);
+              if (!ok) appliedBySync.current = false;
+              return ok;
+            },
+          });
+          endSync(result.status === 'error' ? result.error : null);
+          // A list without its mark came during the sync: the state of the sync must not stay
+          if (distrustCount() !== trust) removeStorage(STORAGE_SYNC_STATE_KEY);
+          if (saved) {
+            latest.current.data.markSynced();
+            saveSyncTime();
+          }
+          return {
+            sent: result.status === 'synced' || result.status === 'off',
+            skipped: result.status === 'skipped',
+            error: result.status === 'error' ? result.error : null,
+          };
+        } finally {
+          setHasRecord(record !== null);
         }
-        const sent = latest.current.data;
-        // The list of this tab cannot sync: a refused save, or data that is not readable
-        if (sent.saveFailed || sent.recoveryData !== null) return SKIPPED;
-        // Another tab saved other observations: this tab gets them first, with the storage event
-        const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
-        if (stored !== null && stored !== serializeObservations(sent.observations)) {
-          return NOT_SENT;
-        }
-        // A version without the sync wrote the list: the sync starts again as a first sync
-        checkStoredMark(stored);
-        const trust = distrustCount();
-        const result = await runner.runSync({
-          relay,
-          keyStore,
-          storage,
-          observations: sent.observations,
-          // The provider deleted the sync state when the key was missing at the load
-          observationsMissing: false,
-          recoveryData: sent.recoveryData !== null,
-          saveFailed: sent.saveFailed,
-          now: Date.now(),
-          confirmDeletions: async dates =>
-            window.confirm(
-              formatMessage(latest.current.t.sync.confirmDeletions, { count: dates.length })
-            ),
-        });
-        const saved = runner.finishSync(result, {
-          storage,
-          sent: sent.observations,
-          current: latest.current.data.observations,
-          applyObservations: (observations, changed) => {
-            appliedBySync.current = true;
-            const ok = latest.current.data.applySyncedObservations(observations, changed);
-            if (!ok) appliedBySync.current = false;
-            return ok;
-          },
-        });
-        endSync(result.status === 'error' ? result.error : null);
-        // A list without its mark came during the sync: the state of the sync must not stay
-        if (distrustCount() !== trust) removeStorage(STORAGE_SYNC_STATE_KEY);
-        if (saved) {
-          latest.current.data.markSynced();
-          saveSyncTime();
-        }
-        return {
-          sent: result.status === 'synced' || result.status === 'off',
-          skipped: result.status === 'skipped',
-          error: result.status === 'error' ? result.error : null,
-        };
       } catch {
         // The key store or the code did not load: the next event loads it again
         loaded.current = null;
@@ -251,7 +257,7 @@ export function useSync(load: () => Promise<SyncServices> = loadServices): SyncC
     });
     waiting.current = next;
     return next;
-  }, [exclusive, services, endSync]);
+  }, [exclusive, services, endSync, saveSyncTime]);
 
   const resolveConflict = useCallback(
     (shown: SyncConflict, restore: boolean) =>

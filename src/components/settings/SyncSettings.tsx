@@ -33,7 +33,7 @@ import {
 import { ConfirmDialog } from '../ConfirmDialog';
 import { Modal } from '../Modal';
 import { useDemoRemoval } from '../../hooks/useDemoRemoval';
-import { failureCodeOf, failureOf, isStorageBlocked } from '../../utils/syncFailure';
+import { failureCodeOf, failureOf, isStale, isStorageBlocked } from '../../utils/syncFailure';
 import { signInAgain } from '../../utils/signIn';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { JoinDialog } from '../JoinDialog';
@@ -47,7 +47,7 @@ import { ActionRow, Group, iconOf } from './settingsRows';
 import { SyncAlert } from '../SyncAlert';
 
 type SyncText = TranslationSchema['sync'];
-type Failure = SyncFailure | 'undoFirstShort';
+type Failure = SyncFailure | 'undoFirstShort' | 'stale';
 
 /** The detail of Sync now changes this often while the group is open. */
 export const LAST_SYNC_TICK_MS = 30_000;
@@ -410,15 +410,18 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     : lastSyncText(s, t.locale, control.lastSyncedAt, syncDate, now);
   // The error of the last sync shows only when no action failed
   const lastError = record ? control.lastError : null;
-  const shown = failure ?? (lastError ? failureOf(lastError) : null);
+  // The gear warns of an old sync without an error: the group tells why
+  const stale = record && isStale(control.lastSyncedAt, now) ? 'stale' : null;
+  const shown = failure ?? (lastError ? failureOf(lastError) : stale);
   const shownCode = failure ? failureCode : failureCodeOf(lastError);
   // The code dialog shows its own error
   const alert = entering ? null : shown;
   // An expired sign-in needs a reload. Else, a device with a record can sync again.
+  // Try again syncs: it shows only for the alert of a sync, not for the alert of a row
   const alertAction =
     alert === 'signIn'
-      ? { label: s.reload, run: signInAgain }
-      : record
+      ? { label: s.reload, run: () => signInAgain() }
+      : record && failure === null
         ? { label: s.tryAgain, run: () => void syncNow() }
         : null;
 

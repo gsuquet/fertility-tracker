@@ -5,8 +5,21 @@
 /** The path of the sign-in. The service worker gets it from the network, not from its app shell. */
 export const SIGN_IN_PATH = 'sign-in';
 
-/** Goes to the sign-in path. Access then shows its sign-in page, and opens the path again after it. */
-export function signInAgain(): void {
+/** The session key of an invitation fragment that the join dialog keeps during the sign-in. */
+export const KEPT_INVITE_KEY = 'fertility_tracker_sign_in_invite';
+
+/**
+ * Goes to the sign-in path. Access then shows its sign-in page, and opens the path again after it.
+ * The tab keeps the invitation fragment of a join, for the next start.
+ */
+export function signInAgain(inviteFragment?: string): void {
+  if (inviteFragment) {
+    try {
+      sessionStorage.setItem(KEPT_INVITE_KEY, inviteFragment);
+    } catch {
+      // Without the session storage, the user opens the link again
+    }
+  }
   window.location.assign(new URL(`./${SIGN_IN_PATH}`, window.location.href).href);
 }
 

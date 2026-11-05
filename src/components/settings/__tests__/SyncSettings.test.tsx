@@ -561,6 +561,28 @@ describe('SyncSettings', () => {
     vi.restoreAllMocks();
   });
 
+  it('tells why the gear warns after one day without a sync, with Try again', async () => {
+    const owner = await ownerRecord();
+    const syncNow = vi.fn(async () => ({ sent: false, skipped: true, error: null }));
+    const lastSyncedAt = Date.now() - 25 * 60 * 60 * 1000;
+    renderSync(controlOf(owner.relay, owner.keyStore, { lastSyncedAt, syncNow }));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.stale);
+    fireEvent.click(screen.getByRole('button', { name: s.tryAgain }));
+    expect(syncNow).toHaveBeenCalledTimes(1);
+  });
+
+  it('has no Try again for the alert of a row, because it syncs and does not run the row again', async () => {
+    const owner = await ownerRecord();
+    const relay: RelayClient = {
+      ...owner.relay,
+      putRecovery: async () => ({ ok: false, status: 429, error: 'rate' }),
+    };
+    renderSync(controlOf(relay, owner.keyStore));
+    fireEvent.click(await row(s.newCode));
+    expect(await screen.findByRole('alert')).toHaveTextContent(s.busy);
+    expect(screen.queryByRole('button', { name: s.tryAgain })).toBeNull();
+  });
+
   it('has no button in the alert of a device without a record', async () => {
     renderSync(controlOf(failingRelay(503), createMemoryKeyStore()));
     fireEvent.click(await row(s.turnOn));

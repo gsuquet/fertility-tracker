@@ -63,6 +63,10 @@ export const WARNING_FAILURES = 2;
 /** The gear shows the sync warning when the last sync is older than this. */
 export const WARNING_AGE_MS = 24 * 60 * 60 * 1000;
 
+/** True when the last sync occurred more than one day ago. False without the time of a sync. */
+export const isStale = (lastSyncedAt: number | null, now: number): boolean =>
+  lastSyncedAt !== null && now - lastSyncedAt > WARNING_AGE_MS;
+
 /** True when the sync needs the user. See docs/reference/screens/navigation.md#sync-warning. */
 export const needsAttention = (
   control: Pick<SyncControl, 'hasRecord' | 'lastError' | 'failures' | 'lastSyncedAt'>,
@@ -72,5 +76,5 @@ export const needsAttention = (
   if (hasRecord !== true) return false;
   if (lastError && failureOf(lastError) === 'signIn') return true;
   if (failures >= WARNING_FAILURES) return true;
-  return lastSyncedAt !== null && now - lastSyncedAt > WARNING_AGE_MS;
+  return isStale(lastSyncedAt, now);
 };

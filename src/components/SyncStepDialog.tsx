@@ -34,6 +34,8 @@ interface SyncStepDialogProps {
   actions: StepAction[];
   /** Escape, Back and the backdrop. Null while a step must not stop. */
   onClose: (() => void) | null;
+  /** Reload of an expired sign-in, in place of the default one. */
+  onReload?: () => void;
 }
 
 export const SyncStepDialog: React.FC<SyncStepDialogProps> = ({
@@ -43,6 +45,7 @@ export const SyncStepDialog: React.FC<SyncStepDialogProps> = ({
   children,
   actions,
   onClose,
+  onReload,
 }) => {
   const id = useId();
   return (
@@ -58,7 +61,7 @@ export const SyncStepDialog: React.FC<SyncStepDialogProps> = ({
       <div className="modal-body password-dialog-body">
         <p role="status">{status}</p>
         {children}
-        {alert && <SyncAlert text={alert} />}
+        {alert && <SyncAlert text={alert} onReload={onReload} />}
       </div>
       {actions.length > 0 && (
         <div className="modal-footer">

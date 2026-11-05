@@ -4,7 +4,10 @@ import { useLanguage } from '../context/LanguageContext';
 import { signInAgain } from '../utils/signIn';
 
 /** The text of the failure, with role alert. An expired sign-in also has **Reload**. */
-export const SyncAlert: React.FC<{ text: string }> = ({ text }) => {
+export const SyncAlert: React.FC<{ text: string; onReload?: (() => void) | undefined }> = ({
+  text,
+  onReload = signInAgain,
+}) => {
   const { t } = useLanguage();
   return (
     <p className="settings-alert" role="alert">
@@ -15,7 +18,7 @@ export const SyncAlert: React.FC<{ text: string }> = ({ text }) => {
           <button
             type="button"
             className="btn btn-secondary settings-alert-button"
-            onClick={signInAgain}
+            onClick={() => onReload()}
           >
             {t.sync.reload}
           </button>
