@@ -51,10 +51,12 @@ const withSyncLock = <T>(run: () => Promise<T>): Promise<T> =>
 /** The end of one sync. `sent` is true when the vault has the changes of this device, or without a record. */
 export interface SyncOutcome {
   sent: boolean;
+  /** True when the device cannot sync its list: unreadable data or a refused save. */
+  skipped: boolean;
   error: VaultError | null;
 }
 
-const NOT_SENT: SyncOutcome = { sent: false, error: null };
+const NOT_SENT: SyncOutcome = { sent: false, skipped: false, error: null };
 
 /** The sync for the Settings screen. */
 export interface SyncControl {
@@ -154,6 +156,7 @@ export function useSync(
         }
         return {
           sent: result.status === 'synced' || result.status === 'off',
+          skipped: result.status === 'skipped',
           error: result.status === 'error' ? result.error : null,
         };
       } catch {

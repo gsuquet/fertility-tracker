@@ -14,7 +14,7 @@ export const controlOf = (
   return {
     enabled: true,
     services: () => Promise.resolve(services),
-    syncNow: vi.fn(async () => ({ sent: true, error: null })),
+    syncNow: vi.fn(async () => ({ sent: true, skipped: false, error: null })),
     withSync: action => action(services),
     lastError: null,
     ...extra,

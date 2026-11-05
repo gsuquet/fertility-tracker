@@ -688,7 +688,9 @@ describe('SettingsDialog sync', () => {
     return {
       enabled,
       services: async () => services,
-      syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
+      syncNow: vi.fn(
+        async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })
+      ),
       withSync: action => action(services),
       lastError: null,
     };
@@ -735,7 +737,9 @@ describe('SettingsDialog sync', () => {
       sync: {
         enabled: true,
         services: async () => services,
-        syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
+        syncNow: vi.fn(
+          async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })
+        ),
         withSync: action => action(services),
         lastError: null,
       },
@@ -770,7 +774,9 @@ describe('SettingsDialog on a synced device', () => {
     const control = {
       enabled: true,
       services: async () => services,
-      syncNow: vi.fn(async (): Promise<SyncOutcome> => ({ sent: true, error: null })),
+      syncNow: vi.fn(
+        async (): Promise<SyncOutcome> => ({ sent: true, skipped: false, error: null })
+      ),
       withSync: <T,>(action: (loaded: SyncServices) => Promise<T>) => action(services),
       lastError: null,
     } satisfies SyncControl;
@@ -911,8 +917,12 @@ describe('SettingsDialog on a synced device', () => {
     const { control, keyStore, keyring, record } = await synced();
     const { VaultError } = await import('../../../sync/deviceVault');
     control.syncNow
-      .mockResolvedValueOnce({ sent: false, error: new VaultError('relay', { status: 0 }) })
-      .mockResolvedValueOnce({ sent: false, error: null });
+      .mockResolvedValueOnce({
+        sent: false,
+        skipped: false,
+        error: new VaultError('relay', { status: 0 }),
+      })
+      .mockResolvedValueOnce({ sent: false, skipped: false, error: null });
     const props = renderSettings(threeCycles, { sync: control });
     const dialog = await openDelete();
     fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
@@ -930,7 +940,22 @@ describe('SettingsDialog on a synced device', () => {
   it('deletes on this device only when the device is already out of the vault', async () => {
     const { control, keyStore } = await synced();
     const { VaultError } = await import('../../../sync/deviceVault');
-    control.syncNow.mockResolvedValueOnce({ sent: false, error: new VaultError('removed') });
+    control.syncNow.mockResolvedValueOnce({
+      sent: false,
+      skipped: false,
+      error: new VaultError('removed'),
+    });
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(count()).toBe('0');
+    expect(await keyStore.load()).toBeNull();
+  });
+
+  it('deletes on this device only when the sync is skipped, for example after a refused save', async () => {
+    const { control, keyStore } = await synced();
+    control.syncNow.mockResolvedValueOnce({ sent: false, skipped: true, error: null });
     const props = renderSettings(threeCycles, { sync: control });
     const dialog = await openDelete();
     fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));

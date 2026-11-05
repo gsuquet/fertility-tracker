@@ -184,9 +184,9 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setLeaveFailure(null);
     try {
       // The last changes of this device go to the vault before it leaves. A device that is
-      // already out of the vault has nothing to send.
+      // already out of the vault, or that cannot sync its list, has nothing to send.
       const outcome = await control.syncNow();
-      if (!outcome.sent && !isOutOfVault(outcome.error)) {
+      if (!outcome.sent && !outcome.skipped && !isOutOfVault(outcome.error)) {
         setLeaveFailure(outcome.error ? failureOf(outcome.error) : 'failed');
         setLeaving(false);
         return;

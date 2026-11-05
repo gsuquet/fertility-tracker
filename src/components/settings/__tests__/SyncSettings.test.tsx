@@ -369,7 +369,7 @@ describe('SyncSettings', () => {
     const syncNow = vi.fn(
       () =>
         new Promise<SyncOutcome>(resolve => {
-          release = () => resolve({ sent: true, error: null });
+          release = () => resolve({ sent: true, skipped: false, error: null });
         })
     );
     renderSync(controlOf(owner.relay, owner.keyStore, { syncNow }), 'fr');
