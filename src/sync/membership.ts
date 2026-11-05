@@ -18,12 +18,13 @@ import {
   VaultError,
   lookupCopyOf,
   memberFor,
+  memberNames,
   openSession,
   ownerKeys,
   writeRekeyed,
   writeSession,
 } from './deviceVault';
-import type { RecordSaver } from './deviceVault';
+import type { MemberName, RecordSaver } from './deviceVault';
 import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
 import { isOutOfVault } from '../utils/syncFailure';
@@ -56,13 +57,52 @@ export async function removeMember(
   const session = await openSession(relay, keyStore, record);
   const keys = await ownerKeys(session);
   const target = session.header.keyring.find(member => member.id === memberId);
-  if (!target || memberId === record.memberId) throw new VaultError('member');
+  // A new recovery code replaces the recovery member
+  const recoveryId = lookupCopyOf(keys.lookupCopy)?.memberId;
+  if (!target || memberId === record.memberId || memberId === recoveryId)
+    throw new VaultError('member');
   const written = await writeRekeyed(relay, keyStore, session, keys, {
     remove: [memberId],
     rotateSigning: target.role === 'owner',
   });
   if (!written) throw changed();
   return written.record;
+}
+
+/**
+ * Removes a member. After an owner device, it makes a new recovery code, because that device can
+ * know the old one. The code is null for a reader.
+ */
+export async function removeDevice(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord,
+  memberId: string
+): Promise<{ record: DeviceRecord; recoveryCode: string | null }> {
+  const session = await openSession(relay, keyStore, record);
+  const role = session.header.keyring.find(member => member.id === memberId)?.role;
+  const next = await removeMember(relay, keyStore, session.record, memberId);
+  if (role !== 'owner') return { record: next, recoveryCode: null };
+  return newRecoveryCode(relay, keyStore, next);
+}
+
+export interface DeviceEntry extends MemberName {
+  kind: 'this' | 'recovery' | 'other';
+}
+
+/** The members of the vault, with their names, for the device list of an owner device. */
+export async function listMembers(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord
+): Promise<DeviceEntry[]> {
+  const session = await openSession(relay, keyStore, record);
+  const keys = await ownerKeys(session);
+  const recoveryId = lookupCopyOf(keys.lookupCopy)?.memberId;
+  return (await memberNames(session)).map(member => ({
+    ...member,
+    kind: member.id === record.memberId ? 'this' : member.id === recoveryId ? 'recovery' : 'other',
+  }));
 }
 
 /** Removes this device from the vault with a rekey, then deletes its record. The days stay. */

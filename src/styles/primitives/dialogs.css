@@ -151,6 +151,36 @@
     fill: var(--color-black);
   }
 
+  /* The members of the vault (DevicesDialog.tsx) */
+  .sync-devices {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-sm);
+    margin: var(--space-md) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sync-device {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: var(--space-sm);
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+  }
+
+  .sync-device p {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sync-device-detail {
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+  }
+
   /* The days that lost a conflict of the sync (ConflictDialog.tsx) */
   .sync-conflicts {
     display: flex;

@@ -151,11 +151,11 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](../sync-client.md#sync-in-the-application)). When it is `true`, the group is after **Backup and restore**. [SyncSettings.tsx](../../../src/components/settings/SyncSettings.tsx) shows these rows:
 
-| Device record of this device | Rows                                                                                                             |
-| ---------------------------- | ---------------------------------------------------------------------------------------------------------------- |
-| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                               |
-| Owner                        | **Sync now**, **Days to check**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
-| Reader                       | **Sync now** and **Turn off sync on this device**                                                                |
+| Device record of this device | Rows                                                                                                                          |
+| ---------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| None                         | **Turn on sync**, **Recover with a code** and **Join with a link**                                                            |
+| Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **New recovery code** and **Turn off sync on this device** |
+| Reader                       | **Sync now** and **Turn off sync on this device**                                                                             |
 
 | Row                              | Result                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
@@ -164,6 +164,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                      |
 | **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                                                                                 |
 | **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).   |
+| **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                       |
 | **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
 | **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                         |
 | **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state and the conflict list. The observations stay.                                                              |
@@ -180,6 +181,24 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 - **Turn off sync on this device** does not remove the device from the keyring. An owner device can remove it later. **On this device only** of **Delete all data** and of **Replace** removes it ([On a synced device](#on-a-synced-device)).
 
 While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
+
+### Device list
+
+[DevicesDialog.tsx](../../../src/components/settings/DevicesDialog.tsx) shows the members of the vault, as [Removing a member](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member) gives. When it opens, it calls `listMembers()` with the sync lock ([Sync client](../sync-client.md#device-list)). While the list loads, it shows "Working…".
+
+| Member              | Name                                 | Detail                                   | Action     |
+| ------------------- | ------------------------------------ | ---------------------------------------- | ---------- |
+| This device         | The name, or "Device without a name" | "This device", then the text of its role | None       |
+| The recovery member | "Recovery code"                      | "Use it when you lose all your devices"  | None       |
+| **Else**            | The name, or "Device without a name" | The text of its role                     | **Remove** |
+
+- The text of the role `owner` is "Can change the chart". The text of the role `reader` is "Can only read the chart".
+- **Remove** asks for a confirmation. The title is "Remove" and the name, with a question mark. The message says that the device stops syncing at once, and keeps what it already shows.
+- For an owner device, the message also says that a new recovery code follows. The removed device can know the old code.
+- After the confirmation, the dialog calls `removeDevice()` with the sync lock. Then it loads the list again.
+- When `removeDevice()` gives a new code, Settings shows the [recovery code dialog](#recovery-code-dialog). Settings stays open until the user closes it.
+- While the list loads or a removal runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
+- When a call fails, an alert in the dialog gives the cause, as in the [Sync group](#sync-group).
 
 ### Name dialog
 

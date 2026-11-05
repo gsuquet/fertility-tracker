@@ -10,6 +10,7 @@ import {
   RotateCcw,
   Share2,
   Smartphone,
+  Users,
 } from 'lucide-react';
 import { useCycle } from '../../context/CycleContext';
 import { useLanguage } from '../../context/LanguageContext';
@@ -30,6 +31,7 @@ import { JoinDialog } from '../JoinDialog';
 import { cleanDeviceName } from '../../domain/vault/deviceName';
 import { DeviceNameField } from '../DeviceNameField';
 import { ConflictDialog } from './ConflictDialog';
+import { DevicesDialog } from './DevicesDialog';
 import { NameDialog } from './NameDialog';
 import { InviteDialog } from './InviteDialog';
 import { ActionRow, Group, iconOf } from './settingsRows';
@@ -207,6 +209,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const [inviting, setInviting] = useState(false);
   const [checking, setChecking] = useState(false);
   const [naming, setNaming] = useState(false);
+  const [listing, setListing] = useState(false);
   // The invitation link that the user pasted, for an installed app on iOS
   const [pasting, setPasting] = useState(false);
   const [joinFragment, setJoinFragment] = useState<string | null>(null);
@@ -410,6 +413,16 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
             )}
             {record.role === 'owner' && (
               <ActionRow
+                icon={iconOf(Users)}
+                label={s.devices}
+                detail={s.devicesHint}
+                onClick={() => setListing(true)}
+                disabled={busy}
+                opens
+              />
+            )}
+            {record.role === 'owner' && (
+              <ActionRow
                 icon={iconOf(Smartphone)}
                 label={s.invite}
                 detail={s.inviteHint}
@@ -493,6 +506,10 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
       )}
 
       {checking && <ConflictDialog control={control} onClose={() => setChecking(false)} />}
+
+      {listing && (
+        <DevicesDialog control={control} onCode={setCode} onClose={() => setListing(false)} />
+      )}
 
       {inviting && <InviteDialog control={control} onClose={() => setInviting(false)} />}
 

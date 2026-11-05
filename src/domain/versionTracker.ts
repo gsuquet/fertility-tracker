@@ -46,6 +46,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.67.0',
+    date: '2026-11-05',
+    title: 'Device List',
+    titleFr: 'Liste des appareils',
+    tagline: 'See and remove the devices of your synced chart, when sync is ready',
+    taglineFr:
+      'Voyez et retirez les appareils de votre tableau synchronisé, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'Settings will list each device and partner with its name and what it can do',
+      'You will remove a lost device or a partner, and it stops syncing at once',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Les Paramètres listeront chaque appareil et partenaire avec son nom et ce qu’il peut faire',
+      'Vous retirerez un appareil perdu ou un partenaire, et il arrête la synchronisation tout de suite',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.66.0',
     date: '2026-11-05',
     title: 'Device Names',
