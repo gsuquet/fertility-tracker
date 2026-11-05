@@ -74,13 +74,22 @@ The additional data is the UTF-8 text `fertility-tracker-key:1:<vault id>:<membe
 | `signing`  | Vault id | The member    | `keyId` of the same header | The signing private key in PKCS #8                                                                              |
 | `lookup`   | Vault id | The member    | `keyId` of the same header | The UTF-8 JSON `{ "lookupId", "object", "memberId" }`: the lookup id, the lookup object and the recovery member |
 | `earlier`  | Vault id | `-`           | The id of the earlier key  | The 32 bytes of the earlier data key                                                                            |
+| `name`     | Vault id | The member    | `keyId` of the same header | The UTF-8 name of the member, encrypted with `wrapWithKey()` and the data key                                   |
 | `recovery` | Vault id | The lookup id | `-`                        | The recovery blob                                                                                               |
 | `lookup`   | `-`      | The lookup id | `-`                        | The lookup object: the UTF-8 vault id                                                                           |
 
 - `recoveryBlobContext()`, `earlierKeyContext()` and `lookupObjectContext()` give the three contexts without a member.
 - The recovery blob is the UTF-8 JSON `{ "privateKey", "signingPublicKey", "counter" }`. `privateKey` is the ECDH private key of the recovery member in PKCS #8. The recovering device knows the vault id and the lookup id, so it can make the context.
 - The lookup object is the content of `recovery/<lookup id>`. It is the JSON of the result of `wrapWithKey()` with the lookup key.
-- When the data key changes, an owner device wraps each `data`, `signing`, `lookup` and `earlier` key again. It cannot change the recovery blob, so the context of the blob has no key id.
+- When the data key changes, an owner device wraps each `data`, `signing`, `lookup`, `earlier` and `name` value again. It cannot change the recovery blob, so the context of the blob has no key id.
+
+## Device name
+
+A device name is the text that the user types for a device or a partner ([ADR 0012](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#device-names)).
+
+- `cleanDeviceName(text)` removes the spaces at the start and at the end. It gives `null` when the result has 0 characters or more than 40 characters. It counts the characters as code points.
+- `sealName(name, dataKey, context)` gives the `name` field of a member. It uses `wrapWithKey()` with the context of the purpose `name`.
+- `openName(field, dataKey, context)` gives the name, or `null` when the field is missing, the key or the context is wrong, or the name is not valid.
 
 ## Signing key chain
 
@@ -117,15 +126,16 @@ The signed bytes are the UTF-8 header text, one zero byte, then the bytes of the
 
 A member of the keyring has these fields:
 
-| Field        | Content                                                                                      |
-| ------------ | -------------------------------------------------------------------------------------------- |
-| `id`         | 8 random bytes in base64url                                                                  |
-| `role`       | `owner` or `reader`                                                                          |
-| `publicKey`  | The ECDH public key of the member                                                            |
-| `tokenHash`  | The hash of the access token of the member                                                   |
-| `dataKey`    | The data key, wrapped for the member with the purpose `data`                                 |
-| `signingKey` | Owner only. The signing private key in PKCS #8, wrapped with the purpose `signing`           |
-| `lookup`     | Owner only, optional. The lookup id and the lookup object, wrapped with the purpose `lookup` |
+| Field        | Content                                                                                       |
+| ------------ | --------------------------------------------------------------------------------------------- |
+| `id`         | 8 random bytes in base64url                                                                   |
+| `role`       | `owner` or `reader`                                                                           |
+| `publicKey`  | The ECDH public key of the member                                                             |
+| `tokenHash`  | The hash of the access token of the member                                                    |
+| `dataKey`    | The data key, wrapped for the member with the purpose `data`                                  |
+| `signingKey` | Owner only. The signing private key in PKCS #8, wrapped with the purpose `signing`            |
+| `lookup`     | Owner only, optional. The lookup id and the lookup object, wrapped with the purpose `lookup`  |
+| `name`       | Optional. The [device name](#device-name), encrypted with the data key and the purpose `name` |
 
 `sealVault(input)` encrypts the days with AES-256-GCM after `compressAndPad()`. The additional data is `fertility-tracker-vault:1:<vault id>:<key id>:<counter>`. Then it signs the header and the ciphertext with the current signing private key.
 
@@ -156,16 +166,17 @@ An invitation adds a member to the vault ([ADR 0012](../records/adrs/0012-encryp
 - `parseInviteFragment(hash)` gives the invitation of a fragment, or `null` when the fragment is not of this form.
 - The owner device keeps the role of the invitation. The link does not have it.
 
-| Message   | Sender         | Fields                                       | Function            |
-| --------- | -------------- | -------------------------------------------- | ------------------- |
-| `request` | The new device | `publicKey`, `tokenHash`, `nonceHash`, `mac` | `makeJoinRequest()` |
-| `offer`   | The owner      | `nonce`, `vaultId`, `signingPublicKey`       | `makeOffer()`       |
-| `reveal`  | The new device | `nonce`                                      | `makeReveal()`      |
-| `answer`  | The owner      | `content`, `signature`                       | `signAnswer()`      |
+| Message   | Sender         | Fields                                               | Function            |
+| --------- | -------------- | ---------------------------------------------------- | ------------------- |
+| `request` | The new device | `publicKey`, `tokenHash`, `nonceHash`, `name`, `mac` | `makeJoinRequest()` |
+| `offer`   | The owner      | `nonce`, `vaultId`, `signingPublicKey`               | `makeOffer()`       |
+| `reveal`  | The new device | `nonce`                                              | `makeReveal()`      |
+| `answer`  | The owner      | `content`, `signature`                               | `signAnswer()`      |
 
 - Each nonce is 32 random bytes in base64url. `nonceHash` is the SHA-256 of the nonce of the new device.
-- `mac` is the HMAC-SHA256 with the secret as key. It covers `fertility-tracker-join:1:<invite id>:<publicKey>:<tokenHash>:<nonceHash>`.
-- `checkJoinRequest(invitation, request)` checks the fields and the `mac`.
+- `name` is the device name, encrypted with AES-256-GCM and a random 12-byte IV, as `{ "iv", "data" }`. The key comes from HKDF-SHA256 with the secret, the salt `fertility-tracker-join-name:1` and the invite id as info. The additional data is `fertility-tracker-join-name:1:<invite id>:<publicKey>`.
+- `mac` is the HMAC-SHA256 with the secret as key. It covers `fertility-tracker-join:1:<invite id>:<publicKey>:<tokenHash>:<nonceHash>:<name iv>:<name data>`.
+- `checkJoinRequest(invitation, request)` checks the fields and the `mac`. Then it decrypts the name with `cleanDeviceName()`. It gives the name, or `null` when a check fails.
 - `checkReveal(request, reveal)` checks the nonce against `nonceHash`.
 
 `confirmationCode(invitation, request, offer, reveal)` gives the 6-digit code that the two devices show:

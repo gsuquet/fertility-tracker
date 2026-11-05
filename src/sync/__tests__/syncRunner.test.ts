@@ -31,7 +31,7 @@ const day = (date: string, bleeding: 'H' | 'M') =>
 const setup = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  await createVault(harness.relay, keyStore);
+  await createVault(harness.relay, keyStore, 'Phone');
   const storage = memoryStorage();
   const input = (observations = [day('2026-10-01', 'H')]): RunInput => ({
     relay: harness.relay,

@@ -702,6 +702,12 @@ export const fr: TranslationSchema = {
     inviteLink:
       'Scannez le code avec l’appareil photo d’un téléphone Android, ou ouvrez ce lien sur le nouvel appareil. Sur iOS, collez-le dans l’application installée.',
     inviteQrLabel: 'Code QR du lien d’invitation',
+    nameTitle: 'Nommer cet appareil',
+    nameNote: 'Vos autres appareils affichent ce nom dans la liste des appareils.',
+    nameLabel: 'Nom de l’appareil',
+    nameInvalid: 'Saisissez un nom de 1 à 40 caractères.',
+    nameContinue: 'Continuer',
+    inviteName: 'Nouvel appareil : {name}',
     conflicts: 'Jours à vérifier',
     conflictsOne: '{count} jour modifié sur deux appareils',
     conflictsMany: '{count} jours modifiés sur deux appareils',

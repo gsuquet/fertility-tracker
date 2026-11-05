@@ -1,5 +1,5 @@
 import { describe, expect, it } from 'vitest';
-import { randomBytes, sha256, toBase64Url, utf8 } from '../bytes';
+import { fromBase64Url, randomBytes, sha256, toBase64Url, utf8 } from '../bytes';
 import {
   checkAnswer,
   checkJoinRequest,
@@ -22,7 +22,7 @@ const flow = async () => {
   const invitation = newInvitation();
   const publicKey = id(65);
   const tokenHash = toBase64Url(await sha256(utf8('token')));
-  const { request, nonce } = await makeJoinRequest(invitation, publicKey, tokenHash);
+  const { request, nonce } = await makeJoinRequest(invitation, publicKey, tokenHash, 'Tablet');
   const signing = await newSigningChain();
   const vaultId = id(16);
   const offer = makeOffer(vaultId, signing.chain[0]?.publicKey as string);
@@ -69,10 +69,10 @@ describe('invitation', () => {
 
   it('checks the join request with the secret of the invitation', async () => {
     const { invitation, request } = await flow();
-    expect(await checkJoinRequest(invitation, request)).toBe(true);
+    expect(await checkJoinRequest(invitation, request)).toBe('Tablet');
     const other: Invitation = { ...invitation, secret: newInvitation().secret };
-    expect(await checkJoinRequest(other, request)).toBe(false);
-    expect(await checkJoinRequest({ ...invitation, id: id(16) }, request)).toBe(false);
+    expect(await checkJoinRequest(other, request)).toBeNull();
+    expect(await checkJoinRequest({ ...invitation, id: id(16) }, request)).toBeNull();
     for (const change of [
       { publicKey: id(65) },
       { tokenHash: id(32) },
@@ -80,10 +80,58 @@ describe('invitation', () => {
       { mac: id(32) },
       { mac: 7 },
       { publicKey: '' },
+      { name: { ...request.name, data: id(30) } },
+      { name: { ...request.name, iv: id(12) } },
+      { name: { iv: 7, data: request.name.data } },
+      { name: { iv: request.name.iv } },
+      { name: 'x' },
     ])
-      expect(await checkJoinRequest(invitation, { ...request, ...change } as never)).toBe(false);
+      expect(await checkJoinRequest(invitation, { ...request, ...change } as never)).toBeNull();
     for (const value of [null, 'x', []])
-      expect(await checkJoinRequest(invitation, value as never)).toBe(false);
+      expect(await checkJoinRequest(invitation, value as never)).toBeNull();
+  });
+
+  it('encrypts the device name of the join request with the secret of the invitation', async () => {
+    const invitation = newInvitation();
+    const publicKey = id(65);
+    const tokenHash = id(32);
+    const { request } = await makeJoinRequest(invitation, publicKey, tokenHash, 'Ma tablette ✨');
+    expect(JSON.stringify(request)).not.toContain('tablette');
+    expect(await checkJoinRequest(invitation, request)).toBe('Ma tablette ✨');
+
+    // A request with a valid HMAC, but a name that is not valid or that does not decrypt
+    const macFor = async (name: { iv: string; data: string }) => {
+      const key = await crypto.subtle.importKey(
+        'raw',
+        fromBase64Url(invitation.secret) as Uint8Array<ArrayBuffer>,
+        { name: 'HMAC', hash: 'SHA-256' },
+        false,
+        ['sign']
+      );
+      const text = [
+        'fertility-tracker-join:1',
+        invitation.id,
+        publicKey,
+        tokenHash,
+        request.nonceHash,
+        name.iv,
+        name.data,
+      ].join(':');
+      return toBase64Url(new Uint8Array(await crypto.subtle.sign('HMAC', key, utf8(text))));
+    };
+    for (const name of [' Tablet', '', 'x'.repeat(41)]) {
+      const sealed = (await makeJoinRequest(invitation, publicKey, tokenHash, name)).request;
+      expect(await checkJoinRequest(invitation, sealed)).toBeNull();
+    }
+    const shortIv = { iv: id(8), data: request.name.data };
+    expect(
+      await checkJoinRequest(invitation, { ...request, name: shortIv, mac: await macFor(shortIv) })
+    ).toBeNull();
+    // The name of another public key does not decrypt
+    const moved = (await makeJoinRequest(invitation, id(65), tokenHash, 'Tablet')).request.name;
+    expect(
+      await checkJoinRequest(invitation, { ...request, name: moved, mac: await macFor(moved) })
+    ).toBeNull();
   });
 
   it('checks the nonce of the reveal against the hash of the request', async () => {

@@ -696,6 +696,12 @@ export const en = {
     inviteLink:
       'Scan the code with the camera of an Android phone, or open this link on the new device. On iOS, paste it in the installed app.',
     inviteQrLabel: 'QR code of the invitation link',
+    nameTitle: 'Name this device',
+    nameNote: 'Your other devices show this name in the list of devices.',
+    nameLabel: 'Device name',
+    nameInvalid: 'Type a name of 1 to 40 characters.',
+    nameContinue: 'Continue',
+    inviteName: 'New device: {name}',
     conflicts: 'Days to check',
     conflictsOne: '{count} day changed on two devices',
     conflictsMany: '{count} days changed on two devices',

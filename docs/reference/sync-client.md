@@ -50,11 +50,11 @@ The device record is in the IndexedDB database `fertility-tracker-sync`, version
 
 ## New vault
 
-`createVault(relay, keyStore)` makes a vault for this device, as the first owner. It gives the device record and the recovery code.
+`createVault(relay, keyStore, name)` makes a vault for this device, as the first owner. It gives the device record and the recovery code.
 
 - It makes the ECDH key pair of the device, the access token, the vault id, the key id and the data key.
 - It makes the signing key chain, the recovery secret and the key pair of the recovery member.
-- The keyring has the device and the recovery member. Both are owners.
+- The keyring has the device and the recovery member. Both are owners. The entry of the device has its [name](vault-format.md#device-name).
 - The entry of the device also has the lookup copy, wrapped with the purpose `lookup`.
 - The vault has counter 1 and no days.
 - It writes the vault with `If-None-Match: *`. Then it writes the lookup object of the recovery code with `If-None-Match: *`.
@@ -68,7 +68,8 @@ A vault session is the last vault that the device read or wrote: the record, the
 
 - `openSession(relay, keyStore, record)` reads, checks and decrypts the vault. It saves the new trusted signing key, the counter and the role in the record.
 - `ownerKeys(session)` unwraps the signing private key and the lookup copy of the device. It gives a `reader` error when the entry is not an owner with a signing key.
-- `memberFor(session, keys, member)` makes a keyring entry for a new member. It wraps the data key, and for an owner also the signing key and the lookup copy.
+- `memberFor(session, keys, member)` makes a keyring entry for a new member. It wraps the data key, and for an owner also the signing key and the lookup copy. It encrypts the name of the member with the data key.
+- `memberNames(session)` gives the id, the role and the name of each member of the keyring. The name is `null` when the member has no name or the name does not decrypt.
 - `writeSession(relay, keyStore, session, change)` writes the next vault with new days or a new keyring. It gives `null` for `412`.
 
 ## Vault store
@@ -116,7 +117,8 @@ On the owner device:
 - It also makes the offer of the owner device, with the current signing key. The owner device keeps this offer.
 - `checkAsOwner(relay, record, owner)` reads the messages. When the join request is valid and the offer is missing, it sends its offer.
 - It gives `refused` and deletes the invitation for a wrong HMAC, a wrong reveal, or an offer on the relay that is not its offer.
-- It gives `confirm` with the code after a valid reveal. The code uses the offer that the owner device keeps, not the offer on the relay.
+- It gives `confirm` with the code and the name of the new device after a valid reveal. The code uses the offer that the owner device keeps, not the offer on the relay.
+- It also gives `refused` when the name of the request does not decrypt, or is not a valid name.
 - `approveInvitation(relay, keyStore, record, owner)` checks the messages again, adds the member to the vault and sends the signed answer.
 - The application calls `approveInvitation()` only after its user confirms the codes. Before the confirm status, it gives an `invitation` error.
 - When the keyring has the public key of the request already, `approveInvitation()` keeps that member and sends the answer again. Thus, a second call after a failed answer adds no member.
@@ -124,7 +126,7 @@ On the owner device:
 
 On the new device:
 
-- `startJoin(relay, invitation)` makes the key pair and the token of the device, and sends the join request.
+- `startJoin(relay, invitation, name)` makes the key pair and the token of the device, and sends the join request with the encrypted name.
 - `checkAsNewDevice(relay, join)` sends the reveal after the offer. It gives `confirm` with the code, then `answered` with the checked answer.
 - `finishJoin(relay, keyStore, join, offer, content)` makes the device record and reads the vault with it. Then it deletes the invitation.
 - The application calls `finishJoin()` only after its user confirms the codes. Thus, the device shows no data before the confirmation.
@@ -145,6 +147,7 @@ Each device keeps the first valid message of the other device in its state. The 
 - It makes a new data key and a new key id. The days are encrypted again with the new key.
 - It adds the old data key to the earlier keys. It encrypts each earlier key again with the new data key.
 - It wraps the new data key for each member that stays. It wraps the signing key and the lookup copy for each owner that stays.
+- It decrypts the name of each member that stays, and encrypts it again with the new data key. A name that does not decrypt goes.
 - When the removed member is an owner, it adds a new signing key to the chain, signed with the old key. The device then trusts the new key.
 
 It gives a `member` error when the member is not in the keyring or is the device itself. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
@@ -171,12 +174,12 @@ It gives a `keys` error when the device has no lookup copy. The application show
 
 ## Recovery
 
-`recoverWithCode(relay, keyStore, code)` adds this device to the vault with the recovery code. It gives the device record and a new recovery code.
+`recoverWithCode(relay, keyStore, code, name)` adds this device to the vault with the recovery code. It gives the device record and a new recovery code.
 
 - It reads the lookup object, and decrypts the vault id with the lookup key.
 - It reads the vault with the access token of the code. It decrypts the recovery blob with the wrapping key.
 - It opens the vault with the signing key and the counter of the blob, as the recovery member. It keeps this record only in memory.
-- It adds the device as an owner, with a lookup copy of the old code. It saves the device record.
+- It adds the device as an owner with its name, and with a lookup copy of the old code. It saves the device record.
 - Then it makes a new recovery code, which removes the old recovery member. When this step fails, the device can call `newRecoveryCode()` again.
 
 It gives a `code` error when the code is not valid or the lookup object does not decrypt. It gives a `keys` error when the recovery blob does not decrypt.

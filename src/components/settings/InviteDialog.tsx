@@ -2,6 +2,7 @@
 import type React from 'react';
 import { useEffect, useRef, useState } from 'react';
 import { useLanguage } from '../../context/LanguageContext';
+import { formatMessage } from '../../i18n';
 import type { SyncControl } from '../../hooks/useSync';
 import type { DeviceRecord } from '../../sync/keyStore';
 import type { OwnerInvitation } from '../../sync/invitationFlow';
@@ -14,8 +15,8 @@ import type { StepAction } from '../SyncStepDialog';
 type Step =
   | { kind: 'start' }
   | { kind: 'waiting'; link: string }
-  | { kind: 'confirm'; code: string }
-  | { kind: 'adding'; code: string }
+  | { kind: 'confirm'; code: string; name: string }
+  | { kind: 'adding'; code: string; name: string }
   | { kind: 'done' }
   | { kind: 'end'; message: SyncFailure | 'expired' | 'refused' };
 
@@ -105,7 +106,7 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
           }
           setProblem(null);
           if (check.status === 'confirm') {
-            setStep({ kind: 'confirm', code: check.code });
+            setStep({ kind: 'confirm', code: check.code, name: check.name });
             return;
           }
           if (check.status !== 'waiting') {
@@ -131,9 +132,9 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
   };
 
   // A failed add keeps the invitation: the owner can try again
-  const approve = async (code: string) => {
+  const approve = async (code: string, name: string) => {
     const made = started.current as Started;
-    setStep({ kind: 'adding', code });
+    setStep({ kind: 'adding', code, name });
     setProblem(null);
     try {
       const { approveInvitation } = await import('../../sync/invitationFlow');
@@ -145,7 +146,7 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
       void control.syncNow();
     } catch (error) {
       setProblem(failureOf(error));
-      setStep({ kind: 'confirm', code });
+      setStep({ kind: 'confirm', code, name });
     }
   };
 
@@ -176,7 +177,11 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
           status: s.inviteConfirm,
           actions: [
             { label: s.codesDiffer, onClick: cancel },
-            { label: s.codesMatch, onClick: () => void approve(step.code), primary: true },
+            {
+              label: s.codesMatch,
+              onClick: () => void approve(step.code, step.name),
+              primary: true,
+            },
           ],
         };
       case 'done':
@@ -205,7 +210,10 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
         />
       )}
       {(step.kind === 'confirm' || step.kind === 'adding') && (
-        <p className="sync-code">{codeText(step.code)}</p>
+        <>
+          <p>{formatMessage(s.inviteName, { name: step.name })}</p>
+          <p className="sync-code">{codeText(step.code)}</p>
+        </>
       )}
     </SyncStepDialog>
   );

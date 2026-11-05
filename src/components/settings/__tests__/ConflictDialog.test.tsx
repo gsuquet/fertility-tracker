@@ -24,7 +24,7 @@ const conflict = (date: string, day: SyncConflict['day']): SyncConflict => ({ da
 const owner = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  const made = await createVault(harness.relay, keyStore);
+  const made = await createVault(harness.relay, keyStore, 'Phone');
   return { ...harness, keyStore, record: made.record };
 };
 

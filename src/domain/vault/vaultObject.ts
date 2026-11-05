@@ -20,6 +20,8 @@ export interface Member {
   dataKey: WrappedKey;
   signingKey?: WrappedKey;
   lookup?: WrappedKey;
+  /** The name of the member, encrypted with the data key (deviceName.ts). */
+  name?: SealedBytes;
 }
 
 export interface EarlierKey {
@@ -124,7 +126,8 @@ const isMember = (value: unknown): value is Member =>
   isText(value.tokenHash) &&
   isWrapped(value.dataKey) &&
   isOptional(value.signingKey, isWrapped) &&
-  isOptional(value.lookup, isWrapped);
+  isOptional(value.lookup, isWrapped) &&
+  isOptional(value.name, isSealed);
 
 const isLink = (value: unknown, index: number): boolean =>
   isRecord(value) &&

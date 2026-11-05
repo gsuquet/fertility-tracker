@@ -5,7 +5,7 @@
  */
 import { fromBase64Url, randomBytes, toBase64Url, utf8 } from './bytes';
 
-export type KeyPurpose = 'data' | 'signing' | 'lookup' | 'earlier' | 'recovery';
+export type KeyPurpose = 'data' | 'signing' | 'lookup' | 'earlier' | 'recovery' | 'name';
 
 export interface KeyContext {
   vaultId: string;

@@ -117,7 +117,7 @@ describe('WelcomeModal Component', () => {
   it('does not offer the demo data on a device with a sync record (ADR 0012)', async () => {
     const { relay } = createRelayHarness();
     const keyStore = createMemoryKeyStore();
-    await createVault(relay, keyStore);
+    await createVault(relay, keyStore, 'Phone');
     renderWithProviders(<WelcomeModal onClose={() => {}} sync={controlOf(relay, keyStore)} />);
     fireEvent.click(screen.getByTitle('Go to step 4'));
     expect(screen.getByText(/Start Fresh/i)).toBeInTheDocument();
@@ -148,7 +148,7 @@ describe('WelcomeModal Component', () => {
     );
     fireEvent.click(screen.getByTitle('Go to step 4'));
     const demo = await screen.findByText(/Explore Demo Data/i);
-    await createVault(relay, keyStore);
+    await createVault(relay, keyStore, 'Phone');
     fireEvent.click(demo);
     await waitFor(() => expect(screen.queryByText(/Explore Demo Data/i)).toBeNull());
     expect(screen.getByTestId('count')).toHaveTextContent('0');

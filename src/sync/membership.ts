@@ -145,11 +145,12 @@ export async function newRecoveryCode(
   return { record: written.record, recoveryCode: await formatRecoveryCode(secret) };
 }
 
-/** Adds this device to the vault with the recovery code, then makes a new code. */
+/** Adds this device to the vault with the recovery code and its name, then makes a new code. */
 export async function recoverWithCode(
   relay: RelayClient,
   keyStore: KeyStore,
-  code: string
+  code: string,
+  name: string
 ): Promise<{ record: DeviceRecord; recoveryCode: string }> {
   const secret = await parseRecoveryCode(code);
   if (!secret) throw new VaultError('code');
@@ -215,6 +216,7 @@ export async function recoverWithCode(
       role: 'owner',
       publicKey,
       tokenHash: await hashOf(token),
+      name,
     }
   );
   const written = await writeSession(relay, temporary, session, {

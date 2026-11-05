@@ -23,7 +23,7 @@ const POLL = 10;
 const invited = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  const { record } = await createVault(harness.relay, keyStore);
+  const { record } = await createVault(harness.relay, keyStore, 'Phone');
   const owner = await startInvitation(harness.relay, keyStore, record, 'owner');
   const link = inviteLink('https://app.test/', owner.invitation);
   return { ...harness, keyStore, record, owner, fragment: link.slice(link.indexOf('#')) };
@@ -55,6 +55,14 @@ const Undo = () => {
 };
 
 const joinDialog = () => screen.findByRole('dialog', { name: s.joinTitle });
+/** Types the name of the device and continues. */
+const typeName = async (name = 'Tablet') => {
+  const dialog = await joinDialog();
+  fireEvent.change(await within(dialog).findByLabelText(s.nameLabel), {
+    target: { value: name },
+  });
+  fireEvent.click(within(dialog).getByRole('button', { name: s.nameContinue }));
+};
 const alertText = async () => (await within(await joinDialog()).findByRole('alert')).textContent;
 
 describe('JoinDialog', () => {
@@ -79,16 +87,50 @@ describe('JoinDialog', () => {
     expect(await alertText()).toBe(s.badLink);
   });
 
+  it('asks for the name of the device before it sends the join request', async () => {
+    const vault = await invited();
+    const postInvite = vi.spyOn(vault.relay, 'postInvite');
+    const { onClose } = renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    const dialog = await joinDialog();
+    const field = await within(dialog).findByLabelText(s.nameLabel);
+    expect(within(dialog).getByRole('status')).toHaveTextContent(s.nameNote);
+    fireEvent.click(within(dialog).getByRole('button', { name: s.nameContinue }));
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(s.nameInvalid);
+    fireEvent.change(field, { target: { value: 'x'.repeat(41) } });
+    expect(within(dialog).queryByRole('alert')).toBeNull();
+    fireEvent.submit(field);
+    expect(within(dialog).getByRole('alert')).toHaveTextContent(s.nameInvalid);
+    await new Promise(resolve => setTimeout(resolve, POLL * 3));
+    expect(postInvite).not.toHaveBeenCalled();
+
+    // Enter sends the name, without the spaces at the ends
+    fireEvent.change(field, { target: { value: ' Tablet ' } });
+    fireEvent.submit(field);
+    expect(within(dialog).getByRole('status')).toHaveTextContent(s.joinWaiting);
+    await waitFor(() => expect(postInvite).toHaveBeenCalledTimes(1));
+    const { checkAsOwner } = await import('../../sync/invitationFlow');
+    await waitFor(async () =>
+      expect(await checkAsOwner(vault.relay, vault.record, vault.owner)).toMatchObject({
+        status: 'confirm',
+        name: 'Tablet',
+      })
+    );
+    fireEvent.click(await within(dialog).findByRole('button', { name: s.codesDiffer }));
+    expect(onClose).toHaveBeenCalled();
+  });
+
   it('gives the cause of a failure', async () => {
     const vault = await invited();
     vault.failWhen(() => true);
     renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     expect(await alertText()).toBe(s.noConnection);
   });
 
   it('deletes the invitation on Cancel', async () => {
     const vault = await invited();
     const { onClose } = renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     const dialog = await joinDialog();
     await waitFor(async () =>
       expect(
@@ -109,6 +151,7 @@ describe('JoinDialog', () => {
   it('stops its checks when it goes away', async () => {
     const vault = await invited();
     const first = renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     await joinDialog();
     await new Promise(resolve => setTimeout(resolve, POLL * 3));
     vault.failWhen(request => request.method === 'GET');
@@ -131,6 +174,7 @@ describe('JoinDialog', () => {
       },
     };
     const second = renderJoin(relay, createMemoryKeyStore(), other.fragment);
+    await typeName();
     await joinDialog();
     cleanup();
     release();
@@ -152,12 +196,14 @@ describe('JoinDialog', () => {
     const vault = await invited();
     await vault.relay.deleteInvite(vault.owner.invitation.id, vault.record.token);
     renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     expect(await alertText()).toBe(s.expired);
   });
 
   it('stops when the offer is not valid', async () => {
     const vault = await invited();
     renderJoin(vault.relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     await joinDialog();
     // The relay gives an offer that is not an offer
     await waitFor(async () => {
@@ -178,6 +224,7 @@ describe('JoinDialog', () => {
       const vault = await invited();
       const keyStore = createMemoryKeyStore();
       renderJoin(vault.relay, keyStore, vault.fragment, buildDemoObservations('2026-10-20'));
+      await typeName();
       const dialog = await joinDialog();
       await waitFor(async () =>
         expect((await checkAsOwner(vault.relay, vault.record, vault.owner)).status).toBe('confirm')
@@ -211,6 +258,7 @@ describe('JoinDialog', () => {
         pollMs={POLL}
       />
     );
+    await typeName();
     const dialog = await joinDialog();
     await waitFor(() => expect(postInvite).toHaveBeenCalledTimes(1));
     vault.failWhen(request => request.method === 'GET');
@@ -235,6 +283,7 @@ describe('JoinDialog', () => {
       },
     };
     const { onClose, control } = renderJoin(relay, keyStore, vault.fragment);
+    await typeName();
     const dialog = await joinDialog();
     const { approveInvitation, checkAsOwner } = await import('../../sync/invitationFlow');
     await waitFor(async () =>
@@ -262,6 +311,7 @@ describe('JoinDialog', () => {
       getInvite: async () => ({ ok: false, status: 500, error: 'x' }),
     };
     renderJoin(relay, createMemoryKeyStore(), vault.fragment);
+    await typeName();
     expect(await alertText()).toBe(s.failed);
     await waitFor(() =>
       expect([...vault.objects.keys()].some(key => key.startsWith('invites/'))).toBe(false)
@@ -284,6 +334,7 @@ describe('JoinDialog', () => {
       </>,
       { observations: [makeObservation({ date: '2026-10-01', bleeding: 'H' })] }
     );
+    await typeName();
     const dialog = await joinDialog();
     await waitFor(async () =>
       expect((await checkAsOwner(vault.relay, vault.record, vault.owner)).status).toBe('confirm')
@@ -300,6 +351,7 @@ describe('JoinDialog', () => {
     const keyStore = createMemoryKeyStore();
     const day = makeObservation({ date: '2026-10-01', bleeding: 'H' });
     renderJoin(vault.relay, keyStore, vault.fragment, [day]);
+    await typeName();
     const dialog = await joinDialog();
     const { approveInvitation, checkAsOwner } = await import('../../sync/invitationFlow');
     await waitFor(async () =>

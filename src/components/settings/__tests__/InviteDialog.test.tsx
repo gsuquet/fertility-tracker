@@ -22,7 +22,7 @@ const POLL = 10;
 const owner = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  const made = await createVault(harness.relay, keyStore);
+  const made = await createVault(harness.relay, keyStore, 'Phone');
   return { ...harness, keyStore, record: made.record };
 };
 
@@ -38,6 +38,12 @@ const renderInvite = (relay: RelayClient, keyStore = createMemoryKeyStore()) => 
   return { onClose, control, ...view };
 };
 
+/** Types the name of the new device in the join dialog and continues. */
+const typeJoinName = async (name = 'Tablet') => {
+  const join = await screen.findByRole('dialog', { name: s.joinTitle });
+  fireEvent.change(await within(join).findByLabelText(s.nameLabel), { target: { value: name } });
+  fireEvent.click(within(join).getByRole('button', { name: s.nameContinue }));
+};
 const inviteDialog = () => screen.findByRole('dialog', { name: s.inviteTitle });
 const linkOf = async () =>
   ((await screen.findByRole('textbox', { name: s.inviteLinkLabel })) as HTMLInputElement).value;
@@ -72,11 +78,13 @@ describe('InviteDialog and JoinDialog', () => {
       />,
       { observations: [...buildDemoObservations('2026-10-20'), own2] }
     );
+    await typeJoinName();
     const join = await screen.findByRole('dialog', { name: s.joinTitle });
     expect(within(join).getByRole('status')).toHaveTextContent(s.joinWaiting);
 
     const invite = await inviteDialog();
     await within(invite).findByText(s.inviteConfirm);
+    expect(invite).toHaveTextContent('New device: Tablet');
     await within(join).findByText(s.joinConfirm);
     expect(codeIn(invite)).toBe(codeIn(join));
 
@@ -121,6 +129,7 @@ describe('InviteDialog and JoinDialog', () => {
         pollMs={POLL}
       />
     );
+    await typeJoinName();
     const invite = await inviteDialog();
     fireEvent.click(await within(invite).findByRole('button', { name: s.codesMatch }));
     await within(invite).findByText(s.inviteDone);
@@ -247,6 +256,7 @@ describe('InviteDialog', () => {
         pollMs={POLL}
       />
     );
+    await typeJoinName();
     const invite = await inviteDialog();
     fireEvent.click(await within(invite).findByRole('button', { name: s.codesDiffer }));
     expect(onClose).toHaveBeenCalled();
@@ -274,7 +284,8 @@ describe('InviteDialog', () => {
     const { request } = await makeJoinRequest(
       wrong,
       toBase64Url(randomBytes(65)),
-      toBase64Url(randomBytes(32))
+      toBase64Url(randomBytes(32)),
+      'Tablet'
     );
     expect((await own.relay.postInvite(id, 'request', request)).ok).toBe(true);
     expect(await within(await inviteDialog()).findByRole('alert')).toHaveTextContent(s.refused);
@@ -356,6 +367,7 @@ describe('InviteDialog', () => {
         pollMs={POLL}
       />
     );
+    await typeJoinName();
     const invite = await inviteDialog();
     block = true;
     fireEvent.click(await within(invite).findByRole('button', { name: s.codesMatch }));

@@ -159,9 +159,9 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 
 | Row                              | Result                                                                                                                                                                                |
 | -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Turn on sync**                 | Makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                                                                                  |
+| **Turn on sync**                 | Opens the [name dialog](#name-dialog). **Turn on sync** of the dialog makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).            |
 | **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join. |
-| **Recover with a code**          | Opens the code dialog. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                                                                             |
+| **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                      |
 | **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                                                                                 |
 | **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).   |
 | **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
@@ -181,6 +181,14 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 
 While **Recover** runs, the code dialog does not close. **Cancel** is disabled, and `Escape`, Back and a drag down do nothing.
 
+### Name dialog
+
+**Turn on sync** opens this dialog. It has the field **Device name**, **Cancel** and **Turn on sync**. The text tells the user that the other devices show this name in the device list ([Device names](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#device-names)).
+
+- The field is empty at the start. It accepts at most 40 characters.
+- When the name is not valid, the dialog shows "Type a name of 1 to 40 characters." It does not close.
+- The code dialog of **Recover with a code** and the Name step of the join dialog check the name in the same way.
+
 ### Recovery code dialog
 
 The dialog shows the code in groups of 4 characters, in a monospace font. The text tells the user to write down the code and to keep it in a safe place. Without the code and without a device, nobody can open the vault.
@@ -196,7 +204,7 @@ The owner device adds a device with an invitation, as [Adding a member](../../re
 | ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Start        | "Working…" while `startInvitation()` runs with the role `owner`.                                                                                                                                                                                        |
 | Waiting      | The [QR code](#qr-code) of the link, the link `#invite=<id>.<secret>` and **Copy**. A text tells the user to scan the code with an Android phone, or to open the link on the new device. On iOS, the user pastes the link in the installed application. |
-| Confirmation | The 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**.                                                                                                             |
+| Confirmation | The name of the new device, the 6-digit code in groups of 3, and the question "Does the new device show the same code?". **The codes match** and **They do not match**.                                                                                 |
 | Adding       | "Working…" while `approveInvitation()` runs.                                                                                                                                                                                                            |
 | Done         | "The device is added." Then the owner device syncs.                                                                                                                                                                                                     |
 | End          | A message for an invitation that expired, that the relay refused, or that failed. The causes are those of the Sync group.                                                                                                                               |
@@ -241,16 +249,17 @@ A conflict occurs when two devices change the same day before a sync. The sync k
 
 When `SYNC_ENABLED` is `true` and the address has `#invite=`, the application opens the join dialog. It removes the fragment from the address at once with `history.replaceState()`. This also occurs when the user opens the link in a tab of the application (`hashchange`). While the join dialog is open, the welcome guide does not open. [JoinDialog.tsx](../../../src/components/JoinDialog.tsx) shows these steps:
 
-| Step         | Content                                                                                                                       |
-| ------------ | ----------------------------------------------------------------------------------------------------------------------------- |
-| Check        | When the device has a record, the message "This device already syncs. Turn off sync on this device first."                    |
-| Check        | When the link is not valid, the message "This invitation link is not valid. Ask for a new invitation."                        |
-| Check        | When an undo copy exists, the message "Click Undo or Delete the copy first, then open the link again."                        |
-| Waiting      | "Waiting for the other device…" while `startJoin()` and `checkAsNewDevice()` run.                                             |
-| Confirmation | The 6-digit code and the question "Does the other device show the same code?". **The codes match** and **They do not match**. |
-| Joining      | "Working…" until the answer of the owner device comes. Then `finishJoin()` runs with the sync lock.                           |
-| Done         | "This device now syncs." Then the device syncs.                                                                               |
-| End          | A message for an invitation that expired, that the relay refused, or that failed.                                             |
+| Step         | Content                                                                                                                                      |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------- |
+| Check        | When the device has a record, the message "This device already syncs. Turn off sync on this device first."                                   |
+| Check        | When the link is not valid, the message "This invitation link is not valid. Ask for a new invitation."                                       |
+| Check        | When an undo copy exists, the message "Click Undo or Delete the copy first, then open the link again."                                       |
+| Name         | "Working…" while the checks run. Then the field **Device name** and **Continue**. The device sends nothing to the relay before **Continue**. |
+| Waiting      | "Waiting for the other device…" while `startJoin()` and `checkAsNewDevice()` run.                                                            |
+| Confirmation | The 6-digit code and the question "Does the other device show the same code?". **The codes match** and **They do not match**.                |
+| Joining      | "Working…" until the answer of the owner device comes. Then `finishJoin()` runs with the sync lock.                                          |
+| Done         | "This device now syncs." Then the device syncs.                                                                                              |
+| End          | A message for an invitation that expired, that the relay refused, or that failed.                                                            |
 
 - The dialog calls `checkAsNewDevice()` each 3 seconds until the answer comes. When a check fails with no connection or no relay, the dialog shows the cause and checks again.
 - Before `finishJoin()`, the dialog checks again for a record and for an undo copy.

@@ -24,7 +24,7 @@ const days: VaultDay[] = [
 const created = async () => {
   const harness = createRelayHarness();
   const keyStore = createMemoryKeyStore();
-  const { record, recoveryCode } = await createVault(harness.relay, keyStore);
+  const { record, recoveryCode } = await createVault(harness.relay, keyStore, 'Phone');
   return { ...harness, keyStore, record, recoveryCode };
 };
 
@@ -133,7 +133,7 @@ describe('new vault', () => {
     const harness = createRelayHarness();
     const keyStore = createMemoryKeyStore();
     harness.env.VAULTS = undefined;
-    expect(await reasonOf(createVault(harness.relay, keyStore))).toEqual({
+    expect(await reasonOf(createVault(harness.relay, keyStore, 'Phone'))).toEqual({
       reason: 'relay',
       ok: false,
       status: 503,
@@ -141,7 +141,7 @@ describe('new vault', () => {
     });
     const second = createRelayHarness();
     second.failWhen(request => request.url.includes('/recovery/'));
-    expect(await reasonOf(createVault(second.relay, keyStore))).toMatchObject({
+    expect(await reasonOf(createVault(second.relay, keyStore, 'Phone'))).toMatchObject({
       reason: 'relay',
       status: 0,
     });

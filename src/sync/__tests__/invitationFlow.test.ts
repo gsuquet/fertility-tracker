@@ -4,7 +4,14 @@ import { makeJoinRequest, newInvitation } from '../../domain/vault/invitation';
 import { readVaultObject } from '../../domain/vault/vaultObject';
 import type { VaultHeader } from '../../domain/vault/vaultObject';
 import { createMemoryKeyStore, createRelayHarness } from '../../test/relayHarness';
-import { VaultError, createVault, openSession, vaultStoreOf, writeSession } from '../deviceVault';
+import {
+  VaultError,
+  createVault,
+  memberNames,
+  openSession,
+  vaultStoreOf,
+  writeSession,
+} from '../deviceVault';
 import {
   approveInvitation,
   checkAsNewDevice,
@@ -24,7 +31,7 @@ const days = [
 const setup = async () => {
   const harness = createRelayHarness();
   const ownerStore = createMemoryKeyStore();
-  const { record } = await createVault(harness.relay, ownerStore);
+  const { record } = await createVault(harness.relay, ownerStore, 'Phone');
   const owner = vaultStoreOf(harness.relay, ownerStore, record);
   const first = await owner.read();
   await owner.write(days, first?.etag ?? null);
@@ -74,7 +81,7 @@ const joined = async (
   role: 'owner' | 'reader'
 ) => {
   const owner = await startInvitation(relay, ownerStore, ownerRecord, role);
-  const join = await startJoin(relay, owner.invitation);
+  const join = await startJoin(relay, owner.invitation, 'Tablet');
   await untilCodes(relay, ownerRecord, owner, join);
   await approveInvitation(relay, ownerStore, ownerRecord, owner);
   const answered = await checkAsNewDevice(relay, join);
@@ -89,7 +96,7 @@ describe('invitation flow', () => {
     const { relay, ownerStore, ownerRecord, objects, headerOf } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     expect(owner.offer.signingPublicKey).toBe(ownerRecord.trustedSigningKey);
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'waiting' });
     const { atNewDevice, atOwner } = await untilCodes(relay, ownerRecord, owner, join);
     expect(atNewDevice.code).toMatch(/^\d{6}$/);
@@ -121,6 +128,31 @@ describe('invitation flow', () => {
     expect(entry?.lookup).toBeUndefined();
   });
 
+  it('gives the name of the new device to the owner, and keeps it encrypted in the keyring', async () => {
+    const { relay, ownerStore, ownerRecord, headerOf, objects } = await setup();
+    const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
+    const join = await startJoin(relay, owner.invitation, 'Tablet of Sam');
+    // The relay does not see the name
+    expect(objects.get(`invites/${owner.invitation.id}`)?.value).not.toContain('Sam');
+    const { atOwner } = await untilCodes(relay, ownerRecord, owner, join);
+    expect(atOwner.name).toBe('Tablet of Sam');
+    await approveInvitation(relay, ownerStore, ownerRecord, owner);
+    expect(JSON.stringify(headerOf())).not.toContain('Sam');
+    const answered = await checkAsNewDevice(relay, join);
+    if (answered.status !== 'answered') throw new Error(answered.status);
+    const readerStore = createMemoryKeyStore();
+    const record = await finishJoin(relay, readerStore, join, answered.offer, answered.content);
+    const expected = [
+      { id: ownerRecord.memberId, role: 'owner', name: 'Phone' },
+      { id: expect.any(String), role: 'owner', name: null },
+      { id: record.memberId, role: 'reader', name: 'Tablet of Sam' },
+    ];
+    const ownerSession = await openSession(relay, ownerStore, (await ownerStore.load()) as never);
+    expect(await memberNames(ownerSession)).toEqual(expected);
+    // A reader has the data key, so it reads the names too
+    expect(await memberNames(await openSession(relay, readerStore, record))).toEqual(expected);
+  });
+
   it('adds an owner device that writes, and that can invite in turn', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const { record, newStore } = await joined(relay, ownerStore, ownerRecord, 'owner');
@@ -149,7 +181,7 @@ describe('invitation flow', () => {
     const { relay, ownerStore, ownerRecord, objects } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'waiting' });
-    await startJoin(relay, { ...owner.invitation, secret: newInvitation().secret });
+    await startJoin(relay, { ...owner.invitation, secret: newInvitation().secret }, 'Tablet');
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
     expect(objects.has(`invites/${owner.invitation.id}`)).toBe(false);
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'expired' });
@@ -158,7 +190,7 @@ describe('invitation flow', () => {
   it('refuses a reveal that is not the nonce of the request', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     await checkAsOwner(relay, ownerRecord, owner);
     // The offer is sent, and the reveal is not there yet
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'waiting' });
@@ -169,7 +201,7 @@ describe('invitation flow', () => {
   it('refuses an offer that is not the offer of the owner device', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     // A relay that gives its own offer, with its own signing key, to the two devices
     const offer = { ...owner.offer, signingPublicKey: toBase64Url(new Uint8Array(65)) };
     await relay.postInvite(owner.invitation.id, 'offer', offer, ownerRecord.token);
@@ -180,7 +212,7 @@ describe('invitation flow', () => {
   it('refuses a request or an offer that the relay changes after the first one', async () => {
     const { relay, ownerStore, ownerRecord, objects } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     await untilCodes(relay, ownerRecord, owner, join);
     const key = `invites/${owner.invitation.id}`;
     const change = (field: 'request' | 'offer', value: Record<string, unknown>) => {
@@ -194,7 +226,7 @@ describe('invitation flow', () => {
     change('offer', { nonce: 'other' });
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'refused' });
     // The owner device keeps the first request, also a new request with a valid HMAC
-    const other = await makeJoinRequest(owner.invitation, join.publicKey, 'AA');
+    const other = await makeJoinRequest(owner.invitation, join.publicKey, 'AA', 'Tablet');
     change('request', other.request as never);
     expect(await checkAsOwner(relay, ownerRecord, owner)).toEqual({ status: 'refused' });
   });
@@ -202,7 +234,7 @@ describe('invitation flow', () => {
   it('refuses an offer on the relay when the owner device kept no request', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    await startJoin(relay, owner.invitation);
+    await startJoin(relay, owner.invitation, 'Tablet');
     await checkAsOwner(relay, ownerRecord, owner);
     const { request: _request, ...lost } = owner;
     expect(await checkAsOwner(relay, ownerRecord, lost)).toEqual({ status: 'refused' });
@@ -211,11 +243,11 @@ describe('invitation flow', () => {
   it('refuses an offer or an answer that is not valid on the new device', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     await relay.postInvite(owner.invitation.id, 'offer', { nonce: 7 }, ownerRecord.token);
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'refused' });
     const second = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const other = await startJoin(relay, second.invitation);
+    const other = await startJoin(relay, second.invitation, 'Tablet');
     await untilCodes(relay, ownerRecord, second, other);
     const answer = { content: '{}', signature: 'AA' };
     await relay.postInvite(second.invitation.id, 'answer', answer, ownerRecord.token);
@@ -225,7 +257,7 @@ describe('invitation flow', () => {
   it('approves only a confirmed invitation, and keeps the same member on a second call', async () => {
     const { relay, ownerStore, ownerRecord, headerOf, failWhen } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     expect(await reasonOf(approveInvitation(relay, ownerStore, ownerRecord, owner))).toEqual({
       reason: 'invitation',
       error: 'waiting',
@@ -258,7 +290,8 @@ describe('invitation flow', () => {
     const { request, nonce } = await makeJoinRequest(
       owner.invitation,
       own?.publicKey as string,
-      tokenHash
+      tokenHash,
+      'Tablet'
     );
     await relay.postInvite(owner.invitation.id, 'request', request);
     await checkAsOwner(relay, ownerRecord, owner);
@@ -273,7 +306,7 @@ describe('invitation flow', () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
     const tokenHash = toBase64Url(await sha256(utf8('joiner')));
-    const { request, nonce } = await makeJoinRequest(owner.invitation, 'AA', tokenHash);
+    const { request, nonce } = await makeJoinRequest(owner.invitation, 'AA', tokenHash, 'Tablet');
     await relay.postInvite(owner.invitation.id, 'request', request);
     await checkAsOwner(relay, ownerRecord, owner);
     await relay.postInvite(owner.invitation.id, 'reveal', { nonce }, 'joiner');
@@ -285,7 +318,7 @@ describe('invitation flow', () => {
   it('gives expired on the new device', async () => {
     const { relay, ownerStore, ownerRecord } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     await relay.deleteInvite(owner.invitation.id, ownerRecord.token);
     expect(await checkAsNewDevice(relay, join)).toEqual({ status: 'expired' });
   });
@@ -293,9 +326,9 @@ describe('invitation flow', () => {
   it('gives a relay error when the relay fails', async () => {
     const { relay, ownerStore, ownerRecord, env, failWhen } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     // The request was sent already
-    expect(await reasonOf(startJoin(relay, owner.invitation))).toMatchObject({
+    expect(await reasonOf(startJoin(relay, owner.invitation, 'Tablet'))).toMatchObject({
       reason: 'relay',
       status: 409,
     });
@@ -318,7 +351,7 @@ describe('invitation flow', () => {
   it('gives a relay error when the vault changed before the approval writes', async () => {
     const { relay, ownerStore, ownerRecord, bucket } = await setup();
     const owner = await startInvitation(relay, ownerStore, ownerRecord, 'reader');
-    const join = await startJoin(relay, owner.invitation);
+    const join = await startJoin(relay, owner.invitation, 'Tablet');
     await untilCodes(relay, ownerRecord, owner, join);
     const put = bucket.put.bind(bucket);
     bucket.put = async (key, value, options) => {
