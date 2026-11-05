@@ -17,6 +17,8 @@ export const controlOf = (
     syncNow: vi.fn(async () => ({ sent: true, skipped: false, error: null })),
     withSync: action => action(services),
     lastError: null,
+    conflicts: [],
+    resolveConflict: vi.fn(async () => {}),
     ...extra,
   } as SyncControl & { syncNow: ReturnType<typeof vi.fn> };
 };

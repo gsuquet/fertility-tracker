@@ -151,6 +151,50 @@
     fill: var(--color-black);
   }
 
+  /* The days that lost a conflict of the sync (ConflictDialog.tsx) */
+  .sync-conflicts {
+    display: flex;
+    flex-direction: column;
+    gap: var(--space-md);
+    margin: var(--space-md) 0 0;
+    padding: 0;
+    list-style: none;
+  }
+
+  .sync-conflict {
+    padding: var(--space-sm) var(--space-md);
+    border: 1px solid var(--bg-surface-border);
+    border-radius: var(--radius-md);
+  }
+
+  .sync-conflict h3 {
+    margin: 0 0 var(--space-xs);
+    font-size: var(--font-size-md);
+  }
+
+  .sync-conflict dl {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: var(--space-xs) var(--space-sm);
+    margin: 0;
+  }
+
+  .sync-conflict dt {
+    color: var(--text-muted);
+  }
+
+  .sync-conflict dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .sync-conflict-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: var(--space-sm);
+    margin-top: var(--space-sm);
+  }
+
   /* The grab handle of a bottom sheet (useSheetDrag.ts). It shows on a phone only. */
   .sheet-handle {
     display: none;

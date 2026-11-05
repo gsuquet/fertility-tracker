@@ -38,6 +38,8 @@ const controlOf = (
     syncNow: vi.fn(async () => {}),
     withSync: action => action(services),
     lastError: null,
+    conflicts: [],
+    resolveConflict: vi.fn(async () => {}),
     ...extra,
   } as SyncControl & { syncNow: ReturnType<typeof vi.fn> };
 };
@@ -402,6 +404,8 @@ describe('SyncSettings', () => {
       syncNow: vi.fn(),
       withSync: () => Promise.reject(new Error('chunk')),
       lastError: null,
+      conflicts: [],
+      resolveConflict: vi.fn(async () => {}),
     });
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);
     expect(screen.queryByRole('button', { name: s.turnOn })).toBeNull();
@@ -491,6 +495,8 @@ describe('SyncSettings', () => {
       syncNow: vi.fn(),
       withSync: () => Promise.reject(new Error('chunk')),
       lastError: null,
+      conflicts: [],
+      resolveConflict: vi.fn(async () => {}),
     });
     fireEvent.click(await row(s.turnOn));
     expect(await screen.findByRole('alert')).toHaveTextContent(s.failed);

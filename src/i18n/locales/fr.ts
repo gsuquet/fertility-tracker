@@ -702,6 +702,18 @@ export const fr: TranslationSchema = {
     inviteLink:
       'Scannez le code avec l’appareil photo d’un téléphone Android, ou ouvrez ce lien sur le nouvel appareil. Sur iOS, collez-le dans l’application installée.',
     inviteQrLabel: 'Code QR du lien d’invitation',
+    conflicts: 'Jours à vérifier',
+    conflictsOne: '{count} jour modifié sur deux appareils',
+    conflictsMany: '{count} jours modifiés sur deux appareils',
+    conflictsNote:
+      'Deux appareils ont modifié ces jours avant une synchronisation. La synchronisation a gardé la version la plus récente. Vous pouvez restaurer l’autre version.',
+    conflictOther: 'Autre version',
+    conflictNow: 'Actuellement',
+    conflictDeleted: 'Jour supprimé',
+    conflictNoCode: 'Aucun code',
+    conflictNone: 'Aucune observation',
+    conflictRestore: 'Restaurer',
+    conflictDismiss: 'Ignorer',
     inviteLinkLabel: 'Lien d’invitation',
     inviteConfirm: 'Le nouvel appareil affiche-t-il le même code ?',
     inviteDone: 'L’appareil est ajouté.',
