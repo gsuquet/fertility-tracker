@@ -221,6 +221,9 @@ export async function confirmationCode(
     invitation.id,
     invitation.secret,
     request.publicKey,
+    // A server with the link could encrypt another name: the code covers the name too
+    request.name.iv,
+    request.name.data,
     offer.nonce,
     reveal.nonce,
     offer.vaultId,

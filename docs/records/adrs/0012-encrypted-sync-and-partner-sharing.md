@@ -201,7 +201,7 @@ A device or a partner joins with a one-time invitation and an approval on an own
 4. The new device also sends an HMAC of these values with the invitation secret.
 5. The owner device checks the HMAC. Then it sends a random nonce A, the vault id and the current signing public key to the new device.
 6. The new device sends B. The owner device checks B against its hash.
-7. The two devices show a 6-digit code from a hash. The hash covers the invitation secret, the public key, A, B, the vault id and the signing public key.
+7. The two devices show a 6-digit code from a hash. The hash covers the secret, the public key, the encrypted name, A, B, the vault id and the signing key.
 8. The owner compares the two codes in person or by voice. The owner device and the new device each ask their user to confirm that the codes match.
 9. After the confirmation on the owner device, the owner device wraps the keys for the new member. It encrypts the name of the new member with the data key.
 10. The owner device writes the vault with the new member. Then it signs an answer with the signing private key of the vault.
@@ -211,7 +211,7 @@ A device or a partner joins with a one-time invitation and an approval on an own
 - The answer holds the vault id, the member id, the role and the counter of the new vault. The wrapped keys are in the keyring.
 - The invitation sets the role. The joining device cannot select its role.
 - The HMAC of step 4 stops a server that does not have the link. The 6-digit code stops a person who has the link.
-- The server does not have the invitation secret. Thus, it cannot read the name in the join request. The owner device shows the name with the 6-digit code.
+- The server does not have the invitation secret. Thus, it cannot read the name in the join request. The owner device shows the name with the 6-digit code, and the code covers the encrypted name.
 - Each device fixes its nonce before it sees the nonce of the other device. Thus, a person with the link cannot try many keys or nonces to get the same code.
 - The code covers the signing public key, and the signature of step 10 needs the signing private key. Thus, a server with the link cannot send false keys to the new device.
 - Until its user confirms the codes, the new device sends no day and shows no data of the vault.

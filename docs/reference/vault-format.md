@@ -181,7 +181,8 @@ An invitation adds a member to the vault ([ADR 0012](../records/adrs/0012-encryp
 
 `confirmationCode(invitation, request, offer, reveal)` gives the 6-digit code that the two devices show:
 
-- It makes the SHA-256 of `fertility-tracker-code:1:<invite id>:<secret>:<publicKey>:<offer nonce>:<reveal nonce>:<vaultId>:<signingPublicKey>`.
+- It makes the SHA-256 of `fertility-tracker-code:1:<invite id>:<secret>:<publicKey>:<name iv>:<name data>:<offer nonce>:<reveal nonce>:<vaultId>:<signingPublicKey>`.
+- Thus, a server with the link cannot change the name without a change of the code.
 - It reads the first 4 bytes as a big-endian number, and keeps the remainder of a division by 1,000,000.
 - It writes the result with 6 digits, with zeros first.
 

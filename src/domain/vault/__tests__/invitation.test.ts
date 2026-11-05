@@ -150,6 +150,19 @@ describe('invitation', () => {
     const others = [
       confirmationCode({ ...invitation, secret: newInvitation().secret }, request, offer, reveal),
       confirmationCode(invitation, { ...request, publicKey: id(65) }, offer, reveal),
+      // A server with the link can encrypt another name: the code changes
+      confirmationCode(
+        invitation,
+        { ...request, name: { ...request.name, data: id(30) } },
+        offer,
+        reveal
+      ),
+      confirmationCode(
+        invitation,
+        { ...request, name: { ...request.name, iv: id(12) } },
+        offer,
+        reveal
+      ),
       confirmationCode(invitation, request, { ...offer, nonce: id(32) }, reveal),
       confirmationCode(invitation, request, offer, makeReveal(id(32))),
       confirmationCode(invitation, request, { ...offer, vaultId: id(16) }, reveal),
