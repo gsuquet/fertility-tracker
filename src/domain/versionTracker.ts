@@ -46,6 +46,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.63.0',
+    date: '2026-11-05',
+    title: 'No Demo on a Synced Device',
+    titleFr: 'Pas de démo sur un appareil synchronisé',
+    tagline: 'The welcome guide will keep demo cycles out of your synced chart',
+    taglineFr: 'Le guide de bienvenue gardera les cycles de démo hors de votre tableau synchronisé',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'On a synced device, the welcome guide will not show Explore Demo Data',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'Sur un appareil synchronisé, le guide de bienvenue n’affichera pas Explorer le Cycle Démo',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.62.0',
     date: '2026-11-05',
     title: 'Delete on One or All Devices',

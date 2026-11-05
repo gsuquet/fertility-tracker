@@ -396,7 +396,7 @@ const MainApp: React.FC = () => {
         {isWelcomeModalOpen && (
           <ErrorBoundary onClose={closeWelcomeModal}>
             <React.Suspense fallback={<LoadingStatus className="sr-only" />}>
-              <WelcomeModal onClose={closeWelcomeModal} onRestore={handleRestore} />
+              <WelcomeModal onClose={closeWelcomeModal} onRestore={handleRestore} sync={sync} />
             </React.Suspense>
           </ErrorBoundary>
         )}

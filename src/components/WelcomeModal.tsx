@@ -28,14 +28,18 @@ import { writeStorage } from '../utils/storage';
 import { Modal } from './Modal';
 import { useSheetDrag } from '../hooks/useSheetDrag';
 import { formatMessage } from '../i18n';
+import { useHasSyncRecord } from '../hooks/useHasSyncRecord';
+import type { SyncControl } from '../hooks/useSync';
 
 interface WelcomeModalProps {
   onClose: () => void;
   /** Opens the restore of a backup. Given only in the installed app on iOS, without data. */
   onRestore?: (() => void) | undefined;
+  /** The sync of the application. A device with a sync record does not load the demo days. */
+  sync?: SyncControl | undefined;
 }
 
-export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }) => {
+export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore, sync }) => {
   const { t } = useLanguage();
   // On a phone, a drag down closes the dialog as the close button does
   const { handlers: dragHandlers, bodyRef } = useSheetDrag<HTMLElement>(
@@ -43,6 +47,11 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
     true
   );
   const { loadDemoData } = useCycle();
+  // ADR 0012: a device in a vault never loads the demo days
+  const hasRecord = useHasSyncRecord(sync);
+  // The device joined a vault after the guide opened, for example with an invitation link
+  const [joinedSince, setJoinedSince] = useState(false);
+  const demoAllowed = hasRecord === false && !joinedSince;
   const [currentStep, setCurrentStep] = useState(1);
   const totalSteps = 4;
 
@@ -55,7 +64,17 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
   const handleNext = () => setCurrentStep(prev => prev + 1);
   const handlePrev = () => setCurrentStep(prev => prev - 1);
 
-  const handleLoadDemo = () => {
+  const handleLoadDemo = async () => {
+    if (sync?.enabled) {
+      const record = await sync
+        .services()
+        .then(({ keyStore }) => keyStore.load())
+        .catch(() => undefined);
+      if (record !== null) {
+        setJoinedSince(true);
+        return;
+      }
+    }
     loadDemoData();
     handleDismiss();
   };
@@ -316,14 +335,16 @@ export const WelcomeModal: React.FC<WelcomeModalProps> = ({ onClose, onRestore }
               <h4>{slides.slide4.quickStartTitle}</h4>
               <p>{slides.slide4.quickStartDesc}</p>
               <div className="quick-start-actions">
-                <button
-                  type="button"
-                  className="btn btn-secondary load-demo-btn"
-                  onClick={handleLoadDemo}
-                >
-                  <PlayCircle size={18} />
-                  <span>{welcomeT.loadDemoData}</span>
-                </button>
+                {demoAllowed && (
+                  <button
+                    type="button"
+                    className="btn btn-secondary load-demo-btn"
+                    onClick={() => void handleLoadDemo()}
+                  >
+                    <PlayCircle size={18} />
+                    <span>{welcomeT.loadDemoData}</span>
+                  </button>
+                )}
 
                 {onRestore && (
                   <button
