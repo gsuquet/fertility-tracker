@@ -34,7 +34,14 @@ import {
   startJoin,
 } from '../invitationFlow';
 import type { DeviceRecord, KeyStore } from '../keyStore';
-import { leaveVault, newRecoveryCode, recoverWithCode, removeMember } from '../membership';
+import {
+  leaveVault,
+  listMembers,
+  newRecoveryCode,
+  recoverWithCode,
+  removeDevice,
+  removeMember,
+} from '../membership';
 import type { RelayClient } from '../relayClient';
 
 const days = [
@@ -165,6 +172,81 @@ describe('removal of a member', () => {
       earlierKeyContext(end.record.vaultId, start.header.keyId)
     );
     expect(raw).toEqual(start.rawDataKey);
+  });
+
+  it('lists the members with their names and kinds, on an owner device only', async () => {
+    const { relay, ownerStore, owner, headerOf } = await setup();
+    const tablet = await join(relay, ownerStore, 'owner');
+    const reader = await join(relay, ownerStore, 'reader');
+    const recoveryId = headerOf().keyring[1]?.id;
+    expect(await listMembers(relay, ownerStore, await owner())).toEqual([
+      { id: (await owner()).memberId, role: 'owner', name: 'Phone', kind: 'this' },
+      { id: recoveryId, role: 'owner', name: null, kind: 'recovery' },
+      { id: tablet.record.memberId, role: 'owner', name: 'Tablet', kind: 'other' },
+      { id: reader.record.memberId, role: 'reader', name: 'Tablet', kind: 'other' },
+    ]);
+    // On the tablet, the tablet is this device
+    const onTablet = await listMembers(relay, tablet.store, tablet.record);
+    expect(onTablet.find(m => m.kind === 'this')?.id).toBe(tablet.record.memberId);
+    expect(onTablet.find(m => m.kind === 'recovery')?.id).toBe(recoveryId);
+    expect(await reasonOf(listMembers(relay, reader.store, reader.record))).toEqual({
+      reason: 'reader',
+    });
+    // The recovery member goes only with a new recovery code
+    expect(
+      await reasonOf(removeMember(relay, ownerStore, await owner(), recoveryId as string))
+    ).toEqual({ reason: 'member' });
+  });
+
+  it('removes a reader without a new code, and an owner device with a new code', async () => {
+    const { relay, ownerStore, owner, recoveryCode, failWhen, headerOf } = await setup();
+    const reader = await join(relay, ownerStore, 'reader');
+    const tablet = await join(relay, ownerStore, 'owner');
+    const first = await removeDevice(relay, ownerStore, await owner(), reader.record.memberId);
+    expect(first.recoveryCode).toBeNull();
+    expect(first.record).toEqual(await owner());
+    // A failure of the new code leaves the device and the old code in the vault
+    failWhen(request => request.url.includes('/recovery/'));
+    expect(
+      await reasonOf(removeDevice(relay, ownerStore, await owner(), tablet.record.memberId))
+    ).toMatchObject({ reason: 'relay' });
+    failWhen(null);
+    expect((await listMembers(relay, ownerStore, await owner())).map(m => m.name)).toEqual([
+      'Phone',
+      null,
+      'Tablet',
+    ]);
+    const oldRecoveryId = headerOf().keyring[1]?.id;
+    const second = await removeDevice(relay, ownerStore, await owner(), tablet.record.memberId);
+    expect(second.recoveryCode).toEqual(expect.any(String));
+    // One rekey removed the device and the old recovery member
+    expect(headerOf().keyring.some(m => m.id === oldRecoveryId)).toBe(false);
+    expect(headerOf().keyring.some(m => m.id === tablet.record.memberId)).toBe(false);
+    expect(await reasonOf(daysOf(relay, tablet.store))).toMatchObject({
+      reason: 'relay',
+      status: 401,
+    });
+    expect(second.record).toEqual(await owner());
+    const names = (await listMembers(relay, ownerStore, await owner())).map(m => m.name);
+    expect(names).toEqual(['Phone', null]);
+    // The old code stops working, and the new one works
+    expect(
+      await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
+    ).toMatchObject({ reason: 'relay', status: 404 });
+    expect(
+      (
+        await recoverWithCode(
+          relay,
+          createMemoryKeyStore(),
+          second.recoveryCode as string,
+          'Laptop'
+        )
+      ).record.vaultId
+    ).toBe((await owner()).vaultId);
+    // A member that is not in the keyring
+    expect(await reasonOf(removeDevice(relay, ownerStore, await owner(), 'nobody'))).toEqual({
+      reason: 'member',
+    });
   });
 
   it('removes an owner device with a new signing key, and the other owners follow the chain', async () => {
@@ -484,9 +566,12 @@ describe('recovery code', () => {
       error: 'changed',
     });
     bucket.put = put;
-    // An owner device removes the recovery member: the token of the code stops working
+    // A vault without the recovery member: the token of the code stops working
     const recoveryId = headerOf().keyring.find(m => m.lookup === undefined)?.id as string;
-    await removeMember(relay, ownerStore, await owner(), recoveryId);
+    const session = await openSession(relay, ownerStore, await owner());
+    await writeSession(relay, ownerStore, session, {
+      keyring: session.header.keyring.filter(m => m.id !== recoveryId),
+    });
     expect(
       await reasonOf(recoverWithCode(relay, createMemoryKeyStore(), recoveryCode, 'Laptop'))
     ).toMatchObject({ reason: 'relay', status: 401 });

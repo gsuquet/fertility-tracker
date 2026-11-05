@@ -150,7 +150,16 @@ Each device keeps the first valid message of the other device in its state. The 
 - It decrypts the name of each member that stays, and encrypts it again with the new data key. A name that does not decrypt goes.
 - When the removed member is an owner, it adds a new signing key to the chain, signed with the old key. The device then trusts the new key.
 
-It gives a `member` error when the member is not in the keyring or is the device itself. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
+It gives a `member` error when the member is not in the keyring, is the device itself, or is the recovery member. **New recovery code** replaces the recovery member. It gives a `keys` error when the device has no lookup copy and the vault has a recovery blob. After the removal of an owner device, the application also makes a new recovery code.
+
+`removeDevice(relay, keyStore, record, memberId)` removes a member, as [Removing a member](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member) gives. It gives the device record and the new code, or `null` for a removed reader.
+
+| Condition              | Result                                                                                                                                                  |
+| ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| The member is a reader | It calls `removeMember()`. The recovery code does not change.                                                                                           |
+| **Else**               | One rekey removes the member and the old recovery member, and adds a new recovery member, as `newRecoveryCode()` does. Thus, a failure removes neither. |
+
+It refuses the same members as `removeMember()`.
 
 `leaveVault(relay, keyStore, record)` removes the device itself from the vault, then deletes the device record. **On this device only** of **Delete all data** and of **Replace** uses it ([On a synced device](screens/settings.md#on-a-synced-device)).
 
@@ -159,6 +168,18 @@ It gives a `member` error when the member is not in the keyring or is the device
 - It does not make a new recovery code ([Removing a member](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member)). The recovery blob still names the old signing key.
 - When the device is already out of the vault, it only deletes the record. The device is out after a `removed` error, or a `relay` error with the status `401` or `404`.
 - A device that is not an owner gives a `reader` error.
+
+## Device list
+
+`listMembers(relay, keyStore, record)` reads the vault and gives each member of the keyring with `memberNames()`. Each member also has a kind:
+
+| Condition                                       | Kind       |
+| ----------------------------------------------- | ---------- |
+| The member is this device                       | `this`     |
+| The lookup copy of this device names the member | `recovery` |
+| **Else**                                        | `other`    |
+
+It gives a `reader` error on a device that is not an owner, as `ownerKeys()` does.
 
 ## New recovery code
 

@@ -18,12 +18,13 @@ import {
   VaultError,
   lookupCopyOf,
   memberFor,
+  memberNames,
   openSession,
   ownerKeys,
   writeRekeyed,
   writeSession,
 } from './deviceVault';
-import type { RecordSaver } from './deviceVault';
+import type { MemberName, OwnerKeys, RecordSaver, VaultSession } from './deviceVault';
 import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
 import { isOutOfVault } from '../utils/syncFailure';
@@ -46,6 +47,15 @@ const parseJson = (text: string): unknown => {
 /** A record saver in memory, for the record of the recovery member, which the device never saves. */
 const memorySaver = (): RecordSaver => ({ save: async () => {} });
 
+/** The member to remove. Not this device, and not the recovery member: a new code replaces it. */
+function targetOf(session: VaultSession, keys: OwnerKeys, memberId: string) {
+  const target = session.header.keyring.find(member => member.id === memberId);
+  const recoveryId = lookupCopyOf(keys.lookupCopy)?.memberId;
+  if (!target || memberId === session.record.memberId || memberId === recoveryId)
+    throw new VaultError('member');
+  return target;
+}
+
 /** Removes a member with a rekey. A removed owner also gets a new signing key in the chain. */
 export async function removeMember(
   relay: RelayClient,
@@ -55,14 +65,53 @@ export async function removeMember(
 ): Promise<DeviceRecord> {
   const session = await openSession(relay, keyStore, record);
   const keys = await ownerKeys(session);
-  const target = session.header.keyring.find(member => member.id === memberId);
-  if (!target || memberId === record.memberId) throw new VaultError('member');
+  const target = targetOf(session, keys, memberId);
   const written = await writeRekeyed(relay, keyStore, session, keys, {
     remove: [memberId],
     rotateSigning: target.role === 'owner',
   });
   if (!written) throw changed();
   return written.record;
+}
+
+/**
+ * Removes a member. After an owner device, it makes a new recovery code, because that device can
+ * know the old one. The code is null for a reader.
+ */
+export async function removeDevice(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord,
+  memberId: string
+): Promise<{ record: DeviceRecord; recoveryCode: string | null }> {
+  const session = await openSession(relay, keyStore, record);
+  const keys = await ownerKeys(session);
+  const target = targetOf(session, keys, memberId);
+  if (target.role !== 'owner') {
+    const next = await removeMember(relay, keyStore, session.record, memberId);
+    return { record: next, recoveryCode: null };
+  }
+  // One rekey removes the device and the old code: a failure leaves both in the vault
+  return replaceRecovery(relay, keyStore, session, keys, [memberId]);
+}
+
+export interface DeviceEntry extends MemberName {
+  kind: 'this' | 'recovery' | 'other';
+}
+
+/** The members of the vault, with their names, for the device list of an owner device. */
+export async function listMembers(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  record: DeviceRecord
+): Promise<DeviceEntry[]> {
+  const session = await openSession(relay, keyStore, record);
+  const keys = await ownerKeys(session);
+  const recoveryId = lookupCopyOf(keys.lookupCopy)?.memberId;
+  return (await memberNames(session)).map(member => ({
+    ...member,
+    kind: member.id === record.memberId ? 'this' : member.id === recoveryId ? 'recovery' : 'other',
+  }));
 }
 
 /** Removes this device from the vault with a rekey, then deletes its record. The days stay. */
@@ -96,7 +145,18 @@ export async function newRecoveryCode(
   record: DeviceRecord
 ): Promise<{ record: DeviceRecord; recoveryCode: string }> {
   const session = await openSession(relay, keyStore, record);
-  const keys = await ownerKeys(session);
+  return replaceRecovery(relay, keyStore, session, await ownerKeys(session), []);
+}
+
+/** Replaces the recovery member, and removes the other members in the same rekey. */
+async function replaceRecovery(
+  relay: RelayClient,
+  keyStore: KeyStore,
+  session: VaultSession,
+  keys: OwnerKeys,
+  remove: string[]
+): Promise<{ record: DeviceRecord; recoveryCode: string }> {
+  const { record } = session;
   const old = lookupCopyOf(keys.lookupCopy);
   if (!old) throw new VaultError('keys');
   const { vaultId } = record;
@@ -125,7 +185,7 @@ export async function newRecoveryCode(
       recoveryBlobContext(vaultId, values.lookupId)
     );
   const written = await writeRekeyed(relay, keyStore, session, keys, {
-    remove: [old.memberId],
+    remove: [old.memberId, ...remove],
     add: [
       {
         id: recoveryId,
