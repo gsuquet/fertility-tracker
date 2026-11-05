@@ -11,12 +11,8 @@ import type { KeyStore } from '../sync/keyStore';
 import type { RelayClient } from '../sync/relayClient';
 import { serializeObservations } from '../domain/storageFormat';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
-import {
-  STORAGE_OBSERVATIONS_KEY,
-  STORAGE_OBSERVATIONS_MARK_KEY,
-  STORAGE_SYNC_STATE_KEY,
-} from '../utils/storageKeys';
-import { markOf } from '../utils/textMark';
+import { STORAGE_OBSERVATIONS_KEY, STORAGE_SYNC_STATE_KEY } from '../utils/storageKeys';
+import { checkStoredMark, distrustCount } from '../utils/syncTrust';
 
 /** A page that becomes visible syncs only when the last sync started this long ago. */
 export const VISIBLE_SYNC_INTERVAL_MS = 60_000;
@@ -81,9 +77,8 @@ export function useSync(
         const stored = readStorage(STORAGE_OBSERVATIONS_KEY);
         if (stored !== null && stored !== serializeObservations(sent.observations)) return;
         // A version without the sync wrote the list: the sync starts again as a first sync
-        if (stored !== null && readStorage(STORAGE_OBSERVATIONS_MARK_KEY) !== markOf(stored)) {
-          removeStorage(STORAGE_SYNC_STATE_KEY);
-        }
+        checkStoredMark(stored);
+        const trust = distrustCount();
         const result = await runner.runSync({
           relay,
           keyStore,
@@ -110,6 +105,8 @@ export function useSync(
             return ok;
           },
         });
+        // A list without its mark came during the sync: the state of the sync must not stay
+        if (distrustCount() !== trust) removeStorage(STORAGE_SYNC_STATE_KEY);
         if (saved) {
           latest.current.data.markSynced();
         }

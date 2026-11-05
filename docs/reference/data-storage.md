@@ -126,16 +126,18 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - It makes each observation as `saveObservation()` does. Then it calculates the cycles, the Peak Days and the stamps again.
 - It writes `fertility_care_observations` at once. When the write fails, it gives `false`, `saveFailed` becomes `true` and the observations do not change.
 - When `changed` is `true`, it deletes the undo copy, as `saveObservation()` does. Thus, **Undo** never brings back an old list over remote changes.
-- The selected cycle does not change.
+- The selected cycle does not change, unless the cycle no longer exists.
 
 `markSynced()` saves today in `fertility_care_last_sync` and in `lastSyncDate`.
 
-- Each write of `fertility_care_observations` also writes its mark, the FNV-1a hash of the text, to `fertility_care_observations_mark`. A version without the sync writes no mark.
+These rules keep the sync state safe ([syncTrust.ts](../../src/utils/syncTrust.ts)):
 
-- The provider deletes `fertility_care_sync_state` at the load when the observations key or its correct mark is missing. It also deletes it when `parseObservationData()` gives `null` or `droppedCount` is more than 0.
+- Each write of `fertility_care_observations` also writes its mark, the FNV-1a hash of the text, to `fertility_care_observations_mark`. A version without the sync writes no mark.
+- `checkStoredMark(text)` deletes `fertility_care_sync_state` when the stored text does not have its mark. The provider calls it at the load, before each write and for each `storage` event.
+- The provider deletes `fertility_care_sync_state` at the load when the observations key is missing. It also deletes it when `parseObservationData()` gives `null` or `droppedCount` is more than 0.
 - When another tab writes `fertility_care_observations`, the `storage` event gives the new observations to this tab. This tab does not write them back.
 - A value that is not readable, or that has a record that this version drops, changes nothing. The value stays in the storage.
-- When another tab changes the observations or deletes `fertility_care_observations_undo`, this tab forgets its undo copy. Thus, **Undo** never brings back an old list over a change of another tab.
+- When another tab writes observations that this tab can read, or deletes `fertility_care_observations_undo`, this tab forgets its undo copy. Thus, **Undo** never brings back an old list over a change of another tab.
 
 ## Undo of replaced data
 

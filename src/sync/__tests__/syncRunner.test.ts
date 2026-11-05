@@ -100,9 +100,22 @@ describe('runSync', () => {
 
   it('gives an error for a vault error, and throws the other errors', async () => {
     const { input, failWhen, keyStore } = await setup();
+    const storage = input().storage;
+    const first = await runSync(input());
+    finishSync(first, { sent: [], current: [], applyObservations: () => true, storage });
     failWhen(() => true);
-    const result = await runSync(input());
+    const result = await runSync({ ...input([day('2026-10-01', 'M')]), now: 7_000 });
     expect(result.status === 'error' && result.error.reason).toBe('relay');
+    // The clock of the local change stays for the next sync
+    expect(
+      finishSync(result, {
+        sent: [],
+        current: [],
+        applyObservations: () => true,
+        storage: input().storage,
+      })
+    ).toBe(false);
+    expect(parseSyncState(storage.read(STORAGE_SYNC_STATE_KEY))?.local[0]?.clock.time).toBe(7_000);
     failWhen(null);
     keyStore.load = async () => {
       throw new Error('storage');

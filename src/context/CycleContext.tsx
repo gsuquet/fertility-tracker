@@ -24,6 +24,7 @@ import { buildDemoObservations } from '../domain/demoData';
 import { parseObservationData, serializeObservations } from '../domain/storageFormat';
 import { mergeObservations } from '../domain/backupImport';
 import { markOf } from '../utils/textMark';
+import { checkStoredMark } from '../utils/syncTrust';
 import {
   STORAGE_BACKUP_REMINDER_START_KEY as REMINDER_START_KEY,
   STORAGE_BACKUP_SNOOZED_UNTIL_KEY as SNOOZE_KEY,
@@ -197,8 +198,8 @@ const loadStoredState = () => {
   const state = readStoredState();
   // A missing key also deletes it: after a reload, the key holds '[]' and looks like deleted days.
   // A list without its mark comes from a version without the sync.
-  const unknownWriter = stored !== null && readStorage(MARK_KEY) !== markOf(stored);
-  if (state.damaged || stored === null || unknownWriter) removeStorage(SYNC_STATE_KEY);
+  checkStoredMark(stored);
+  if (state.damaged || stored === null) removeStorage(SYNC_STATE_KEY);
   return state;
 };
 
@@ -207,6 +208,8 @@ const loadStoredState = () => {
  * that is not the mark of the stored text shows a list that the sync must not trust.
  */
 const writeObservations = (text: string): boolean => {
+  // A good mark must never go over a list of a writer without the sync
+  checkStoredMark(readStorage(STORAGE_KEY));
   if (!writeStorage(STORAGE_KEY, text)) return false;
   writeStorage(MARK_KEY, markOf(text));
   return true;
@@ -268,6 +271,7 @@ export const CycleDataProvider: React.FC<{ children: React.ReactNode }> = ({ chi
       // The other tab deleted the undo copy after a change: Undo must not bring back an old list
       if (event.key === UNDO_KEY && event.newValue === null) setUndo(null);
       if (event.key !== STORAGE_KEY || event.newValue === null) return;
+      checkStoredMark(event.newValue);
       const parsed = parseObservationData(event.newValue);
       // A list with records that this version cannot read stays only in the storage
       if (!parsed || parsed.droppedCount > 0) return;

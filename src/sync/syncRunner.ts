@@ -1,7 +1,8 @@
 /** One sync of the application with the vault of the device. See docs/reference/sync-client.md. */
 import type { Observation, ObservationInput } from '../types/crms';
 import { keepEditsDuringSync, newSyncState, syncOnce } from '../domain/sync/engine';
-import type { SyncResult } from '../domain/sync/engine';
+import type { SyncResult, SyncState } from '../domain/sync/engine';
+import { stampLocalChanges } from '../domain/sync/localChanges';
 import { addConflicts } from '../domain/sync/merge';
 import {
   parseConflicts,
@@ -33,7 +34,10 @@ export interface RunInput {
   confirmDeletions: (dates: string[]) => Promise<boolean>;
 }
 
-export type RunResult = { status: 'off' } | { status: 'error'; error: VaultError } | SyncResult;
+export type RunResult =
+  | { status: 'off' }
+  | { status: 'error'; error: VaultError; state: SyncState }
+  | SyncResult;
 
 /** One sync for the device record in the key store. It writes nothing to the browser storage. */
 export async function runSync(input: RunInput): Promise<RunResult> {
@@ -42,12 +46,15 @@ export async function runSync(input: RunInput): Promise<RunResult> {
   if (!record) return { status: 'off' };
   const stored = parseSyncState(storage.read(STORAGE_SYNC_STATE_KEY));
   // A state of another member, for example of an earlier vault, gives a first sync
-  const state =
+  const first =
     stored?.member === record.memberId ? stored : newSyncState(record.memberId, observations);
+  // The clocks of the local changes stay also when the relay fails, for example offline
+  const stamped = stampLocalChanges(observations, first.local, first.clock, input.now);
+  const state = { ...first, local: stamped.days, clock: stamped.clock };
   try {
     return await syncOnce({ ...input, state, store: vaultStoreOf(relay, keyStore, record) });
   } catch (error) {
-    if (error instanceof VaultError) return { status: 'error', error };
+    if (error instanceof VaultError) return { status: 'error', error, state };
     throw error;
   }
 }
@@ -68,7 +75,7 @@ export interface FinishInput {
  */
 export function finishSync(result: RunResult, input: FinishInput): boolean {
   const { storage } = input;
-  if (result.status === 'cancelled' || result.status === 'busy') {
+  if (result.status === 'cancelled' || result.status === 'busy' || result.status === 'error') {
     storage.write(STORAGE_SYNC_STATE_KEY, serializeSyncState(result.state));
     return false;
   }

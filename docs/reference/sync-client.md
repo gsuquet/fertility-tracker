@@ -180,7 +180,8 @@ When the vault changed, `removeMember()`, `newRecoveryCode()` and `recoverWithCo
 
 - Without a device record, it gives the status `off`. It does not read the sync state or the vault.
 - It reads the sync state from `fertility_care_sync_state`. Without a valid state of the member of the record, it uses `newSyncState()`. Thus, the sync is a first sync.
-- A `VaultError` gives the status `error` with the error. The sync state does not change.
+- Before it reads the vault, it stamps the local changes with `stampLocalChanges()`. Thus, a change keeps its clock when the relay fails.
+- A `VaultError` gives the status `error` with the error and the stamped state.
 - The other results of `syncOnce()` come back without a change. `runSync()` writes nothing to the browser storage.
 
 For a `synced` result, `finishSync(result, input)` does these steps in this sequence:
@@ -192,7 +193,7 @@ For a `synced` result, `finishSync(result, input)` does these steps in this sequ
 
 `finishSync()` gives `true` when each write succeeds. Then `useSync()` calls `markSynced()`, which writes today to `fertility_care_last_sync`.
 
-For a `cancelled` or `busy` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
+For a `cancelled`, `busy` or `error` result, `finishSync()` writes the state of the result. This state has the clocks of the local changes.
 
 At load, the provider deletes `fertility_care_sync_state` at once when the stored observations are damaged, missing or without their correct mark. Thus, the next sync is a first sync, and the vault wins on each date ([Safety of the local data](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#safety-of-the-local-data)).
 
@@ -211,6 +212,7 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 - When the browser has Web Locks, the lock `fertility-tracker-sync` lets only one tab sync at a time.
 - A tab does not sync when the stored observations are not its observations. The `storage` event gives it a list that it can read, as [Synced observations](data-storage.md#synced-observations) gives. Else, the tab syncs again only after its next save.
 - When the mark of the stored observations is not correct, a version without the sync wrote them. The tab then deletes the sync state before it syncs. Thus, the sync is a first sync.
+- When `checkStoredMark()` deletes the sync state during a sync, the tab deletes the state of that sync after `finishSync()`.
 - `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.

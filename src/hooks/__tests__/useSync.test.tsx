@@ -343,6 +343,53 @@ describe('useSync', () => {
     expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true]);
   });
 
+  it('forgets the sync state when a tab without the sync writes during a sync or before a save', async () => {
+    const { load, relay, keyStore, services } = await setup();
+    const days = ['2026-10-01', '2026-10-02'].map(date => makeObservation({ date, bleeding: 'H' }));
+    localStorage.setItem(STORAGE_KEY, JSON.stringify(days));
+    const runSync = services.runner.runSync;
+    let during: (() => void) | null = null;
+    services.runner = {
+      ...services.runner,
+      runSync: async input => {
+        const result = await runSync(input);
+        during?.();
+        during = null;
+        return result;
+      },
+    };
+    const { result } = render(load);
+    await waitFor(() => expect(result.current.lastSyncDate).not.toBeNull());
+    await settle();
+    const store = vaultStoreOf(relay, keyStore, (await keyStore.load()) as DeviceRecord);
+    const oldList = serializeObservations(result.current.observations.slice(0, 1));
+    const writeOld = () => {
+      localStorage.setItem(STORAGE_KEY, oldList);
+      window.dispatchEvent(new StorageEvent('storage', { key: STORAGE_KEY, newValue: oldList }));
+    };
+    // During a sync
+    during = writeOld;
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(during).toBeNull());
+    await waitFor(() => expect(localStorage.getItem(STATE_KEY)).toBeNull());
+    act(() => {
+      window.dispatchEvent(new Event('online'));
+    });
+    await waitFor(() => expect(result.current.observations).toHaveLength(2));
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true]);
+    // Before a save in this tab
+    await settle();
+    act(() => writeOld());
+    act(() => result.current.saveObservation({ date: '2026-10-05', bleeding: 'H' }));
+    await act(async () => {
+      await vi.advanceTimersByTimeAsync(CHANGE_SYNC_DELAY_MS);
+    });
+    await waitFor(() => expect(result.current.observations).toHaveLength(3));
+    expect((await store.read())?.days.map(d => d.day !== null)).toEqual([true, true, true]);
+  });
+
   it('does not sync a list that another tab changed, and uses a Web Lock when the browser has one', async () => {
     const { load, runs } = await setup();
     const request = vi.fn((_name: string, run: () => Promise<void>) => run());
