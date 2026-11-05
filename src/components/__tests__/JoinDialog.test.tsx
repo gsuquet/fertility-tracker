@@ -44,6 +44,16 @@ const renderJoin = (
   return { onClose, control };
 };
 
+/** Loads the demo cycles, which makes an undo copy. */
+const Undo = () => {
+  const { loadDemoData } = useCycle();
+  return (
+    <button type="button" onClick={loadDemoData}>
+      demo
+    </button>
+  );
+};
+
 const joinDialog = () => screen.findByRole('dialog', { name: s.joinTitle });
 const alertText = async () => (await within(await joinDialog()).findByRole('alert')).textContent;
 
@@ -216,14 +226,6 @@ describe('JoinDialog', () => {
     const vault = await invited();
     const keyStore = createMemoryKeyStore();
     const { approveInvitation, checkAsOwner } = await import('../../sync/invitationFlow');
-    const Undo = () => {
-      const { loadDemoData } = useCycle();
-      return (
-        <button type="button" onClick={loadDemoData}>
-          demo
-        </button>
-      );
-    };
     renderWithProviders(
       <>
         <JoinDialog
