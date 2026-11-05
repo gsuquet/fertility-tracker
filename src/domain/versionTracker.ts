@@ -46,6 +46,23 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.70.2',
+    date: '2026-11-05',
+    title: 'Device List Fix',
+    titleFr: 'Correction de la liste des appareils',
+    tagline: 'The device list in Settings works again',
+    taglineFr: 'La liste des appareils dans les Paramètres fonctionne de nouveau',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The device list loads one time, and its buttons work',
+      'Close, Escape and a drag down close the device list again',
+    ],
+    highlightsFr: [
+      'La liste des appareils se charge une seule fois, et ses boutons fonctionnent',
+      'Fermer, Échap et un glissement vers le bas ferment de nouveau la liste des appareils',
+    ],
+  },
+  {
     version: '1.70.1',
     date: '2026-11-05',
     title: 'Sync Server Fix',

@@ -265,7 +265,7 @@ A reader device never merges the vault with its own observations ([Partner devic
 
 ### Sync control
 
-`useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
+`useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it. The control stays the same object until one of its fields changes. Thus, a render of the application does not start the effects of a dialog again.
 
 | Field             | Use                                                                                                                                                        |
 | ----------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------- |

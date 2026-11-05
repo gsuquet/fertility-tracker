@@ -236,6 +236,15 @@ describe('useSync', () => {
     await waitFor(() => expect(load).toHaveBeenCalledTimes(2));
   });
 
+  it('gives the same control object at a render that changes no field', async () => {
+    const { load } = await setup();
+    const { result, rerender } = renderHook(() => useSync(load), { wrapper });
+    await settle();
+    const first = result.current;
+    rerender();
+    expect(result.current).toBe(first);
+  });
+
   it('gives the services to Settings, loaded one time, and loads them again after a failure', async () => {
     const { services } = await setup();
     const load = vi.fn().mockRejectedValueOnce(new Error('offline')).mockResolvedValue(services);
