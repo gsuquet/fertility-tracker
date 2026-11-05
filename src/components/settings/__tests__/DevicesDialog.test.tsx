@@ -122,7 +122,8 @@ describe('DevicesDialog', () => {
     expect(confirm).toHaveTextContent(s.removeOwnerMessage);
     fireEvent.click(within(confirm).getByRole('button', { name: s.deviceRemove }));
     const code = await screen.findByRole('dialog', { name: s.codeTitle });
-    expect(onBusyChange).toHaveBeenLastCalledWith(true);
+    // Settings learns it in an effect after the render of the code dialog
+    await waitFor(() => expect(onBusyChange).toHaveBeenLastCalledWith(true));
     fireEvent.click(within(code).getByRole('button', { name: s.wroteItDown }));
     expect(onBusyChange).toHaveBeenLastCalledWith(false);
     await waitFor(async () => expect(await items()).toHaveLength(3));

@@ -140,6 +140,14 @@ export function useSync(
       lastStart.current = Date.now();
       try {
         const { runner, relay, keyStore } = await services();
+        // A reader device only reads the shared chart: the checks of its own days do not apply
+        const record = await keyStore.load();
+        if (record?.role === 'reader') {
+          const shared = await runner.readShared(relay, keyStore, record, storage);
+          // No markSynced(): the own days go nowhere, so the backup reminder still counts
+          setLastError(shared.error);
+          return { sent: shared.error === null, skipped: false, error: shared.error };
+        }
         const sent = latest.current.data;
         // The list of this tab cannot sync: a refused save, or data that is not readable
         if (sent.saveFailed || sent.recoveryData !== null) return SKIPPED;

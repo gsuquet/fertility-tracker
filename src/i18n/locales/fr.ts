@@ -698,6 +698,9 @@ export const fr: TranslationSchema = {
     badLink: 'Ce lien d’invitation n’est pas valide. Demandez une nouvelle invitation.',
     invite: 'Inviter un appareil',
     inviteHint: 'Ajoutez votre téléphone ou votre ordinateur',
+    invitePartner: 'Inviter votre partenaire',
+    invitePartnerHint: 'Votre partenaire peut lire le tableau',
+    invitePartnerDone: 'Votre partenaire peut maintenant lire le tableau.',
     inviteTitle: 'Inviter un appareil',
     inviteLink:
       'Scannez le code avec l’appareil photo d’un téléphone Android, ou ouvrez ce lien sur le nouvel appareil. Sur iOS, collez-le dans l’application installée.',
@@ -767,6 +770,10 @@ export const fr: TranslationSchema = {
     turnOffMessage:
       'Cet appareil ne se synchronise plus. Vos observations restent sur cet appareil. Vos autres appareils gardent le tableau partagé.',
     turnOffConfirm: 'Désactiver',
+    stopViewing: 'Ne plus voir le tableau',
+    stopViewingTitle: 'Ne plus voir le tableau partagé ?',
+    stopViewingMessage:
+      'Le tableau partagé est supprimé de cet appareil. Pour le lire à nouveau, il faut une nouvelle invitation. Vos propres observations restent.',
     codeTitle: 'Votre code de récupération',
     codeNote:
       'Notez ce code et gardez-le en lieu sûr. Sans ce code et sans appareil, personne ne peut ouvrir votre tableau synchronisé.',

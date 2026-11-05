@@ -12,6 +12,8 @@ import { renderWithProviders } from '../../../test/render';
 import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHarness';
 import {
   STORAGE_LAST_SYNC_KEY,
+  STORAGE_SHARED_CHART_KEY,
+  STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
   STORAGE_UNDO_KEY,
@@ -294,6 +296,17 @@ describe('SyncSettings', () => {
     expect(screen.queryByRole('dialog', { name: s.inviteTitle })).toBeNull();
   });
 
+  it('opens the invitation dialog of a partner on an owner device', async () => {
+    const owner = await ownerRecord();
+    renderSync(controlOf(owner.relay, owner.keyStore));
+    expect(await row(s.invitePartner)).toHaveAccessibleDescription(s.invitePartnerHint);
+    fireEvent.click(screen.getByRole('button', { name: s.invitePartner }));
+    const dialog = await screen.findByRole('dialog', { name: s.invitePartner });
+    expect(await within(dialog).findByRole('textbox', { name: s.inviteLinkLabel })).toBeVisible();
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(screen.queryByRole('dialog', { name: s.invitePartner })).toBeNull();
+  });
+
   it('joins with a pasted link, for an installed app on iOS', async () => {
     const harness = createRelayHarness();
     const keyStore = createMemoryKeyStore();
@@ -353,9 +366,43 @@ describe('SyncSettings', () => {
     const reader = createMemoryKeyStore({ ...(owner.record as DeviceRecord), role: 'reader' });
     renderSync(controlOf(owner.relay, reader));
     expect(await row(s.syncNow)).toBeInTheDocument();
-    expect(screen.getByRole('button', { name: s.turnOff })).toBeInTheDocument();
+    expect(screen.getByRole('button', { name: s.stopViewing })).toBeInTheDocument();
+    expect(screen.queryByRole('button', { name: s.turnOff })).toBeNull();
     expect(screen.queryByRole('button', { name: s.newCode })).toBeNull();
     expect(screen.queryByRole('button', { name: s.invite })).toBeNull();
+    expect(screen.queryByRole('button', { name: s.invitePartner })).toBeNull();
+    expect(screen.queryByRole('button', { name: s.devices })).toBeNull();
+  });
+
+  it('stops viewing the shared chart on a reader device after a confirmation', async () => {
+    const owner = await ownerRecord();
+    const reader = createMemoryKeyStore({ ...(owner.record as DeviceRecord), role: 'reader' });
+    const own = [makeObservation({ date: '2026-09-01', bleeding: 'M' })];
+    localStorage.setItem(STORAGE_OBSERVATIONS_KEY, JSON.stringify(own));
+    localStorage.setItem(STORAGE_SHARED_CHART_KEY, '[]');
+    localStorage.setItem(STORAGE_SHARED_READ_KEY, '2026-10-12');
+    // The date of the own days is not the date of the shared chart
+    localStorage.setItem(STORAGE_LAST_SYNC_KEY, '2026-01-02');
+    localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
+    localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
+    const { onRecordChange } = renderSync(controlOf(owner.relay, reader), 'en', own);
+    expect(await row(s.syncNow)).toHaveAccessibleDescription('Last sync: Oct 12, 2026');
+    fireEvent.click(await row(s.stopViewing));
+    const confirm = await screen.findByRole('dialog', { name: s.stopViewingTitle });
+    expect(confirm).toHaveTextContent(s.stopViewingMessage);
+    fireEvent.click(within(confirm).getByRole('button', { name: s.stopViewing }));
+    expect(await row(s.turnOn)).toBeInTheDocument();
+    expect(await reader.load()).toBeNull();
+    for (const key of [
+      STORAGE_SHARED_CHART_KEY,
+      STORAGE_SYNC_STATE_KEY,
+      STORAGE_SYNC_CONFLICTS_KEY,
+    ])
+      expect(localStorage.getItem(key)).toBeNull();
+    expect(localStorage.getItem(STORAGE_OBSERVATIONS_KEY)).toContain('2026-09-01');
+    expect(onRecordChange).toHaveBeenLastCalledWith(null);
+    // A reader cannot write the vault: the owner device removes it in the device list
+    expect(owner.objects.size).toBeGreaterThan(0);
   });
 
   it('turns off the sync on this device after a confirmation', async () => {

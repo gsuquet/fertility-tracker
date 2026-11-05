@@ -29,11 +29,15 @@ const owner = async () => {
 const inviteKeys = (objects: Map<string, unknown>) =>
   [...objects.keys()].filter(key => key.startsWith('invites/'));
 
-const renderInvite = (relay: RelayClient, keyStore = createMemoryKeyStore()) => {
+const renderInvite = (
+  relay: RelayClient,
+  keyStore = createMemoryKeyStore(),
+  role: 'owner' | 'reader' = 'owner'
+) => {
   const onClose = vi.fn();
   const control = controlOf(relay, keyStore);
   const view = renderWithProviders(
-    <InviteDialog control={control} onClose={onClose} pollMs={POLL} />
+    <InviteDialog control={control} invitedRole={role} onClose={onClose} pollMs={POLL} />
   );
   return { onClose, control, ...view };
 };
@@ -104,6 +108,39 @@ describe('InviteDialog and JoinDialog', () => {
     // The demo days go before the join
     const stored = JSON.parse(localStorage.getItem(STORAGE_OBSERVATIONS_KEY) as string);
     expect(stored.map((o: Observation) => o.date)).toEqual(['2026-10-01']);
+  });
+
+  it('adds a partner as a reader, with the title and the end of the partner', async () => {
+    const own = await owner();
+    const newStore = createMemoryKeyStore();
+    renderInvite(own.relay, own.keyStore, 'reader');
+    const invite = await screen.findByRole('dialog', { name: s.invitePartner });
+    const link = await linkOf();
+    renderWithProviders(
+      <JoinDialog
+        control={controlOf(own.relay, newStore)}
+        fragment={link.slice(link.indexOf('#'))}
+        onClose={vi.fn()}
+        pollMs={POLL}
+      />
+    );
+    await typeJoinName('Phone of Sam');
+    await within(invite).findByText(s.inviteConfirm);
+    expect(invite).toHaveTextContent('New device: Phone of Sam');
+    fireEvent.click(within(invite).getByRole('button', { name: s.codesMatch }));
+    expect(await within(invite).findByText(s.invitePartnerDone)).toBeInTheDocument();
+    const join = await screen.findByRole('dialog', { name: s.joinTitle });
+    fireEvent.click(await within(join).findByRole('button', { name: s.codesMatch }));
+    await within(join).findByText(s.joinDone);
+    expect(await newStore.load()).toMatchObject({ vaultId: own.record.vaultId, role: 'reader' });
+  });
+
+  it('shows the title of the partner at the end of a failed invitation', async () => {
+    const own = await owner();
+    renderInvite(own.relay, createMemoryKeyStore(), 'reader');
+    const invite = await screen.findByRole('dialog', { name: s.invitePartner });
+    expect(await within(invite).findByRole('alert')).toBeInTheDocument();
+    expect(within(invite).getByRole('status')).toHaveTextContent(s.invitePartner);
   });
 
   it('add a device when the owner confirms first', async () => {
@@ -327,7 +364,12 @@ describe('InviteDialog', () => {
     const putInvite = vi.spyOn(own.relay, 'putInvite');
     const onClose = vi.fn();
     renderWithProviders(
-      <InviteDialog control={controlOf(own.relay, own.keyStore)} onClose={onClose} pollMs={POLL} />
+      <InviteDialog
+        control={controlOf(own.relay, own.keyStore)}
+        invitedRole="owner"
+        onClose={onClose}
+        pollMs={POLL}
+      />
     );
     await linkOf();
     await act(async () => {
