@@ -8,10 +8,12 @@ import { parseVaultDays } from '../../domain/sync/vaultContent';
 import { joinMember } from '../../test/joinMember';
 import {
   STORAGE_SHARED_CHART_KEY,
+  STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../../utils/storageKeys';
 import { removeMember } from '../membership';
+import { getTodayStr } from '../../utils/dateUtils';
 import { createVault, vaultStoreOf } from '../deviceVault';
 import type { DeviceRecord } from '../keyStore';
 import { finishSync, readShared, runSync } from '../syncRunner';
@@ -217,8 +219,12 @@ describe('readShared', () => {
     });
     const shared = parseVaultDays(JSON.parse(readerStorage.read(STORAGE_SHARED_CHART_KEY) ?? ''));
     expect(shared?.map(d => [d.date, d.day?.bleeding])).toEqual([['2026-10-01', 'H']]);
-    // No sync state and no conflict list: the device does not merge the vault
-    expect([...readerStorage.items.keys()]).toEqual([STORAGE_SHARED_CHART_KEY]);
+    // No sync state, no conflict list and no sync date: the device does not merge the vault
+    expect([...readerStorage.items.keys()]).toEqual([
+      STORAGE_SHARED_CHART_KEY,
+      STORAGE_SHARED_READ_KEY,
+    ]);
+    expect(readerStorage.read(STORAGE_SHARED_READ_KEY)).toBe(getTodayStr());
     // The record keeps the counter of the vault that it read
     const owner = (await keyStore.load()) as DeviceRecord;
     expect((await reader.keyStore.load())?.last?.counter).toBe(owner.last?.counter);
@@ -229,6 +235,12 @@ describe('readShared', () => {
     const { relay, reader, readerStorage, keyStore } = await withReader();
     await readShared(relay, reader.keyStore, reader.record, readerStorage);
     const kept = readerStorage.read(STORAGE_SHARED_CHART_KEY);
+    const write = readerStorage.write;
+    readerStorage.write = (key, value) => key !== STORAGE_SHARED_READ_KEY && write(key, value);
+    expect(await readShared(relay, reader.keyStore, reader.record, readerStorage)).toEqual({
+      saved: false,
+      error: null,
+    });
     readerStorage.write = () => false;
     expect(await readShared(relay, reader.keyStore, reader.record, readerStorage)).toEqual({
       saved: false,

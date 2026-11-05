@@ -13,6 +13,7 @@ import { createMemoryKeyStore, createRelayHarness } from '../../../test/relayHar
 import {
   STORAGE_LAST_SYNC_KEY,
   STORAGE_SHARED_CHART_KEY,
+  STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
   STORAGE_UNDO_KEY,
@@ -379,9 +380,13 @@ describe('SyncSettings', () => {
     const own = [makeObservation({ date: '2026-09-01', bleeding: 'M' })];
     localStorage.setItem(STORAGE_OBSERVATIONS_KEY, JSON.stringify(own));
     localStorage.setItem(STORAGE_SHARED_CHART_KEY, '[]');
+    localStorage.setItem(STORAGE_SHARED_READ_KEY, '2026-10-12');
+    // The date of the own days is not the date of the shared chart
+    localStorage.setItem(STORAGE_LAST_SYNC_KEY, '2026-01-02');
     localStorage.setItem(STORAGE_SYNC_STATE_KEY, '{}');
     localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
     const { onRecordChange } = renderSync(controlOf(owner.relay, reader), 'en', own);
+    expect(await row(s.syncNow)).toHaveAccessibleDescription('Last sync: Oct 12, 2026');
     fireEvent.click(await row(s.stopViewing));
     const confirm = await screen.findByRole('dialog', { name: s.stopViewingTitle });
     expect(confirm).toHaveTextContent(s.stopViewingMessage);

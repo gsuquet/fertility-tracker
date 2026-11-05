@@ -33,6 +33,7 @@ This page gives the rules for the state of the application and the data in the b
 | `STORAGE_SYNC_STATE_KEY`            | `fertility_care_sync_state`               | The sync state of the device ([Sync in the application](sync-client.md#sync-in-the-application))                          |
 | `STORAGE_SYNC_CONFLICTS_KEY`        | `fertility_care_sync_conflicts`           | The days that lost a conflict of the sync                                                                                 |
 | `STORAGE_SHARED_CHART_KEY`          | `fertility_care_shared_chart`             | The days of the vault on a reader device ([Shared chart](sync-client.md#shared-chart))                                    |
+| `STORAGE_SHARED_READ_KEY`           | `fertility_care_shared_read`              | Date of the last read of the shared chart on a reader device, `YYYY-MM-DD`                                                |
 | `STORAGE_LAST_SYNC_KEY`             | `fertility_care_last_sync`                | Date of the last sync, `YYYY-MM-DD`                                                                                       |
 | `STORAGE_LANGUAGE_KEY`              | `fertility_care_lang`                     | Language: `en` or `fr`                                                                                                    |
 | `STORAGE_THEME_KEY`                 | `fertility_care_theme`                    | Theme: `light` or `dark`                                                                                                  |
@@ -117,6 +118,7 @@ When the saved list is readable but `droppedCount` is more than 0, the applicati
 - At least one observation is not demo data. Its `id` does not start with `demo_`.
 - No snooze is active. `snoozedUntil` is missing, is not a valid date, or is not after `today`.
 - `BACKUP_REMINDER_DAYS` (30) days or more passed since the last backup or the last sync. Without a valid backup date or sync date, the count starts at `reminderStart`. Without these dates, the result is `false`.
+- On a reader device, a read of the shared chart is not a sync. It does not change `lastSyncDate` ([Shared chart](sync-client.md#shared-chart)).
 
 `BackupReminder` shows a message (`role="note"`, `backupReminder.*`) above the pages while the backup is due. **Back up now** downloads the backup file at once, as in Settings. **Later** calls `snoozeBackupReminder()`, which saves today plus `BACKUP_SNOOZE_DAYS` (7) in `fertility_care_backup_snoozed_until`. Thus, the message stays hidden after a reload.
 

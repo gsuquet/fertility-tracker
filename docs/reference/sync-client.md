@@ -236,8 +236,9 @@ A reader device never merges the vault with its own observations ([Partner devic
 
 - It reads the vault with `openSession()`. Thus, it checks the vault and saves the new counter in the record, as `read()` does.
 - It writes the days of the vault to `fertility_care_shared_chart` with `serializeVaultDays()`. It writes no vault.
+- After that write, it writes today to `fertility_care_shared_read`. It does not write `fertility_care_last_sync`, because the observations of the device go nowhere.
 - It does not read or write the sync state or the conflict list. The observations of the device do not change.
-- It gives `{ saved, error }`. `saved` is true when the browser accepted the write. `error` is the `VaultError` of a failed read, or `null`.
+- It gives `{ saved, error }`. `saved` is true when the browser accepted the two writes. `error` is the `VaultError` of a failed read, or `null`.
 - After a failure, the shared chart stays. A removed partner keeps the data that the device already shows.
 
 ### When the application syncs
@@ -258,7 +259,7 @@ A reader device never merges the vault with its own observations ([Partner devic
 - When `checkStoredMark()` deletes the sync state during a sync, the tab deletes the state of that sync after `finishSync()`.
 - `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
-- When the device record is a reader, the tab calls `readShared()` in place of `runSync()`. The checks of the stored observations do not apply. After a saved read, it calls `markSynced()`.
+- When the device record is a reader, the tab calls `readShared()` in place of `runSync()`. The checks of the stored observations do not apply. It does not call `markSynced()`. Thus, the [backup reminder](data-storage.md#backup-reminder) still counts from the last backup of the own observations.
 - When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
 - While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.

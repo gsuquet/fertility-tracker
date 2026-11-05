@@ -374,9 +374,8 @@ describe('useSync', () => {
     const { result } = renderHook(() => ({ sync: useSync(true, load), data: useCycleData() }), {
       wrapper,
     });
-    await waitFor(() => expect(result.current.data.lastSyncDate).not.toBeNull());
+    await waitFor(() => expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01'));
     expect(runs).toEqual({ count: 0, shared: 1 });
-    expect(localStorage.getItem(SHARED_KEY)).toContain('2026-10-01');
     // The own days of the device stay, and the device has no sync state
     expect(result.current.data.observations.map(o => o.date)).toEqual(['2026-09-01']);
     expect(localStorage.getItem(STATE_KEY)).toBeNull();
@@ -385,6 +384,9 @@ describe('useSync', () => {
       skipped: false,
       error: null,
     });
+    // A read is not a sync of the own days: the backup reminder still counts
+    expect(result.current.data.lastSyncDate).toBeNull();
+    expect(localStorage.getItem('fertility_care_shared_read')).not.toBeNull();
     // A refused save of its own days does not stop the read
     vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
       throw new Error('QuotaExceededError');
@@ -393,14 +395,8 @@ describe('useSync', () => {
       result.current.data.saveObservation(makeObservation({ date: '2026-09-02' }));
     });
     await waitFor(() => expect(result.current.data.saveFailed).toBe(true));
-    // A write that the browser refuses does not mark a sync
-    localStorage.removeItem('fertility_care_last_sync');
-    vi.spyOn(localStorage, 'setItem').mockImplementationOnce(() => {
-      throw new Error('QuotaExceededError');
-    });
     expect((await act(() => result.current.sync.syncNow())).error).toBeNull();
     expect(runs.shared).toBe(3);
-    expect(localStorage.getItem('fertility_care_last_sync')).toBeNull();
     // A removed partner gets the error, and keeps the shared chart
     await removeMember(
       relay,

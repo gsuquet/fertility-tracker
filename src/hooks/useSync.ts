@@ -144,8 +144,8 @@ export function useSync(
         const record = await keyStore.load();
         if (record?.role === 'reader') {
           const shared = await runner.readShared(relay, keyStore, record, storage);
+          // No markSynced(): the own days go nowhere, so the backup reminder still counts
           setLastError(shared.error);
-          if (shared.saved) latest.current.data.markSynced();
           return { sent: shared.error === null, skipped: false, error: shared.error };
         }
         const sent = latest.current.data;

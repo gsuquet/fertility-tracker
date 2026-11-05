@@ -157,19 +157,19 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 | Owner                        | **Sync now**, **Days to check**, **Devices**, **Invite a device**, **Invite a partner**, **New recovery code** and **Turn off sync on this device** |
 | Reader                       | **Sync now** and **Stop viewing**                                                                                                                   |
 
-| Row                              | Result                                                                                                                                                                                |
-| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Turn on sync**                 | Opens the [name dialog](#name-dialog). **Turn on sync** of the dialog makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).            |
-| **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join. |
-| **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                      |
-| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet".                                                                                                 |
-| **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).   |
-| **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                       |
-| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                   |
-| **Invite a partner**             | Opens the [invitation dialog](#invitation-dialog) for a reader. Its detail is "Let your partner read the chart".                                                                      |
-| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                         |
-| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the shared chart. The observations stay.                                            |
-| **Stop viewing**                 | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the [shared chart](../sync-client.md#shared-chart). The observations stay.          |
+| Row                              | Result                                                                                                                                                                                     |
+| -------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| **Turn on sync**                 | Opens the [name dialog](#name-dialog). **Turn on sync** of the dialog makes a vault with `createVault()`, then syncs. It shows the [recovery code](#recovery-code-dialog).                 |
+| **Join with a link**             | Opens a dialog with the field **Invitation link** and **Join**. **Join** opens the [join dialog](#join-dialog) with the fragment of the link. Thus, an installed app on iOS can join.      |
+| **Recover with a code**          | Opens the code dialog, with the fields **Recovery code** and **Device name**. **Recover** calls `recoverWithCode()`, then syncs. It shows the new recovery code.                           |
+| **Sync now**                     | Starts a sync at once. The detail is "Last sync: " and the date, or "Not synced yet". On a reader device, the date is that of `fertility_care_shared_read`.                                |
+| **Days to check**                | Shows only when the conflict list is not empty. Its detail gives the number of days, for example "2 days changed on two devices". It opens the [conflict dialog](#conflict-dialog).        |
+| **Devices**                      | Opens the [device list](#device-list). Its detail is "See or remove your devices and partners".                                                                                            |
+| **Invite a device**              | Opens the [invitation dialog](#invitation-dialog). Its detail is "Add your phone or your computer".                                                                                        |
+| **Invite a partner**             | Opens the [invitation dialog](#invitation-dialog) for a reader. Its detail is "Let your partner read the chart".                                                                           |
+| **New recovery code**            | Makes a new code with `newRecoveryCode()`. It shows the new code. The old code stops working.                                                                                              |
+| **Turn off sync on this device** | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the shared chart. The observations stay.                                                 |
+| **Stop viewing**                 | Asks for a confirmation. Then it deletes the device record, the sync state, the conflict list and the [shared chart](../sync-client.md#shared-chart) with its date. The observations stay. |
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
 - While a row runs, the rows of the group are disabled.

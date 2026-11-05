@@ -22,9 +22,10 @@ import type { SyncControl, SyncServices } from '../../hooks/useSync';
 import { useSheetDrag } from '../../hooks/useSheetDrag';
 import type { DeviceRecord } from '../../sync/keyStore';
 import { formatDateDisplay } from '../../utils/dateUtils';
-import { removeStorage } from '../../utils/storage';
+import { readStorage, removeStorage } from '../../utils/storage';
 import {
   STORAGE_SHARED_CHART_KEY,
+  STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../../utils/storageKeys';
@@ -331,6 +332,7 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
         removeStorage(STORAGE_SYNC_STATE_KEY);
         removeStorage(STORAGE_SYNC_CONFLICTS_KEY);
         removeStorage(STORAGE_SHARED_CHART_KEY);
+        removeStorage(STORAGE_SHARED_READ_KEY);
         return { record: null };
       },
       { makesCode: false }
@@ -344,11 +346,15 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
     setBusy(false);
   };
 
+  // A reader device stops viewing the shared chart in place of a sync of its own days
+  const reading = record?.role === 'reader';
+  // A reader device shows the date of its last read of the shared chart
+  const syncDate = reading ? readStorage(STORAGE_SHARED_READ_KEY) : lastSyncDate;
   const lastSync =
-    lastSyncDate === null
+    syncDate === null
       ? s.notSynced
       : formatMessage(s.lastSync, {
-          date: formatDateDisplay(lastSyncDate, t.locale, {
+          date: formatDateDisplay(syncDate, t.locale, {
             year: 'numeric',
             month: 'short',
             day: 'numeric',
@@ -358,8 +364,6 @@ export const SyncSettings: React.FC<SyncSettingsProps> = ({
   const shown = failure ?? (record && control.lastError ? failureOf(control.lastError) : null);
   // The code dialog shows its own error
   const alert = entering ? null : shown;
-  // A reader device stops viewing the shared chart in place of a sync of its own days
-  const reading = record?.role === 'reader';
 
   return (
     <>

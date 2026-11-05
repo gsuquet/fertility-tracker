@@ -13,10 +13,12 @@ import {
 import { serializeVaultDays } from '../domain/sync/vaultContent';
 import {
   STORAGE_SHARED_CHART_KEY,
+  STORAGE_SHARED_READ_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../utils/storageKeys';
 import { VaultError, openSession, vaultStoreOf } from './deviceVault';
+import { getTodayStr } from '../utils/dateUtils';
 import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
 
@@ -111,10 +113,11 @@ export async function readShared(
 ): Promise<{ saved: boolean; error: VaultError | null }> {
   try {
     const session = await openSession(relay, keyStore, record);
-    return {
-      saved: storage.write(STORAGE_SHARED_CHART_KEY, serializeVaultDays(session.days)),
-      error: null,
-    };
+    // The own observations go nowhere: the read is not a sync, and the backup reminder stays
+    const saved =
+      storage.write(STORAGE_SHARED_CHART_KEY, serializeVaultDays(session.days)) &&
+      storage.write(STORAGE_SHARED_READ_KEY, getTodayStr());
+    return { saved, error: null };
   } catch (error) {
     if (error instanceof VaultError) return { saved: false, error };
     throw error;
