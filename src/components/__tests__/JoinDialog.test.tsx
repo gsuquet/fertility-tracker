@@ -119,9 +119,21 @@ describe('JoinDialog', () => {
 
     // A close while the request goes: the invitation stops
     const other = await invited();
-    const second = renderJoin(other.relay, createMemoryKeyStore(), other.fragment);
+    let release: () => void = () => {};
+    const sent = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    const relay: RelayClient = {
+      ...other.relay,
+      postInvite: async (...args) => {
+        await sent;
+        return other.relay.postInvite(...args);
+      },
+    };
+    const second = renderJoin(relay, createMemoryKeyStore(), other.fragment);
     await joinDialog();
     cleanup();
+    release();
     await waitFor(() =>
       expect([...other.objects.keys()].some(key => key.startsWith('invites/'))).toBe(false)
     );
@@ -207,6 +219,40 @@ describe('JoinDialog', () => {
     await waitFor(() => expect(within(dialog).queryByRole('alert')).toBeNull());
     expect(within(dialog).getByRole('status')).toHaveTextContent(s.joinWaiting);
     expect(postInvite).toHaveBeenCalledTimes(1);
+  });
+
+  it('does not join when the user cancels while a check runs', async () => {
+    const vault = await invited();
+    const keyStore = createMemoryKeyStore();
+    let hold: Promise<void> | null = null;
+    let release: () => void = () => {};
+    const relay: RelayClient = {
+      ...vault.relay,
+      getInvite: async (...args) => {
+        const result = await vault.relay.getInvite(...args);
+        if (hold) await hold;
+        return result;
+      },
+    };
+    const { onClose, control } = renderJoin(relay, keyStore, vault.fragment);
+    const dialog = await joinDialog();
+    const { approveInvitation, checkAsOwner } = await import('../../sync/invitationFlow');
+    await waitFor(async () =>
+      expect((await checkAsOwner(vault.relay, vault.record, vault.owner)).status).toBe('confirm')
+    );
+    fireEvent.click(await within(dialog).findByRole('button', { name: s.codesMatch }));
+    await approveInvitation(vault.relay, vault.keyStore, vault.record, vault.owner);
+    // The next check reads the answer, then waits until the user cancelled
+    hold = new Promise<void>(resolve => {
+      release = resolve;
+    });
+    await new Promise(resolve => setTimeout(resolve, POLL * 3));
+    fireEvent.click(within(dialog).getByRole('button', { name: en.actions.cancel }));
+    expect(onClose).toHaveBeenCalled();
+    release();
+    await new Promise(resolve => setTimeout(resolve, POLL * 5));
+    expect(await keyStore.load()).toBeNull();
+    expect(control.syncNow).not.toHaveBeenCalled();
   });
 
   it('ends on a relay error that is not temporary', async () => {

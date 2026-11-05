@@ -145,6 +145,8 @@ export const JoinDialog: React.FC<JoinDialogProps> = ({
             setProblem(failureOf(error));
             continue;
           }
+          // The user cancelled, or the dialog went away, while the check ran
+          if (finished.current || !mounted.current) return;
           setProblem(null);
           if (!('code' in check)) {
             if (check.status === 'waiting') continue;
