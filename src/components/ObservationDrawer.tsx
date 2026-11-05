@@ -33,6 +33,7 @@ export const ObservationDrawer: React.FC = () => {
     setIsDrawerOpen,
     saveObservation,
     deleteObservation,
+    readOnly,
   } = useCycle();
   const { t } = useLanguage();
 
@@ -160,7 +161,9 @@ export const ObservationDrawer: React.FC = () => {
       <div className="sheet-handle" aria-hidden="true" {...dragHandlers} />
       <div className="drawer-header" {...dragHandlers}>
         <div className="drawer-title-group">
-          <h2 id="drawer-title">{savedId ? t.drawer.editTitle : t.actions.newEntry}</h2>
+          <h2 id="drawer-title">
+            {readOnly ? t.drawer.viewTitle : savedId ? t.drawer.editTitle : t.actions.newEntry}
+          </h2>
           <p className="drawer-day-status">
             {cycleDay !== undefined && (
               <span>{formatMessage(t.common.dayNumber, { day: cycleDay })} · </span>
@@ -168,13 +171,16 @@ export const ObservationDrawer: React.FC = () => {
             <span>{saved ? t.todayView.loggedStatus : t.todayView.notLoggedStatus}</span>
           </p>
         </div>
-        <ObservationActionsMenu
-          yesterdayCode={copyableCode(yesterdayObs)}
-          onCopyYesterday={() => form.copyCodes(yesterdayObs as Observation)}
-          directOnly={directOnly}
-          onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
-          onDelete={savedId ? () => handleDelete(savedId) : undefined}
-        />
+        {/* Nobody changes the shared chart */}
+        {!readOnly && (
+          <ObservationActionsMenu
+            yesterdayCode={copyableCode(yesterdayObs)}
+            onCopyYesterday={() => form.copyCodes(yesterdayObs as Observation)}
+            directOnly={directOnly}
+            onToggleDirectOnly={() => setDirectCodeOnly(!directOnly)}
+            onDelete={savedId ? () => handleDelete(savedId) : undefined}
+          />
+        )}
         <button
           ref={closeRef}
           type="button"
@@ -197,21 +203,23 @@ export const ObservationDrawer: React.FC = () => {
           menu={null}
         />
 
-        {/* Date Picker */}
-        <div className="form-group">
-          <label htmlFor="obs-date">{t.labels.date}</label>
-          <input
-            id="obs-date"
-            type="date"
-            className="form-input"
-            value={date}
-            max={date > getTodayStr() ? undefined : getTodayStr()}
-            onChange={e => changeDate(e.target.value)}
-            required
-          />
-        </div>
+        <fieldset className="observation-fieldset" disabled={readOnly}>
+          {/* Date Picker */}
+          <div className="form-group">
+            <label htmlFor="obs-date">{t.labels.date}</label>
+            <input
+              id="obs-date"
+              type="date"
+              className="form-input"
+              value={date}
+              max={date > getTodayStr() ? undefined : getTodayStr()}
+              onChange={e => changeDate(e.target.value)}
+              required
+            />
+          </div>
 
-        <ProgressiveObservationForm form={form} directOnly={directOnly} idPrefix="obs" />
+          <ProgressiveObservationForm form={form} directOnly={directOnly} idPrefix="obs" />
+        </fieldset>
 
         {/* Footer Actions */}
         <div className="drawer-footer">
@@ -221,11 +229,13 @@ export const ObservationDrawer: React.FC = () => {
               className="btn btn-secondary"
               onClick={() => setIsDrawerOpen(false)}
             >
-              {t.actions.cancel}
+              {readOnly ? t.sync.close : t.actions.cancel}
             </button>
-            <button type="submit" className="btn btn-primary">
-              {t.actions.save}
-            </button>
+            {!readOnly && (
+              <button type="submit" className="btn btn-primary">
+                {t.actions.save}
+              </button>
+            )}
           </div>
         </div>
       </form>

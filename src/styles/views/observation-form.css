@@ -303,3 +303,11 @@
     }
   }
 }
+
+/* The fields of the form, disabled together on the shared chart of a partner device */
+.observation-fieldset {
+  min-width: 0;
+  margin: 0;
+  padding: 0;
+  border: 0;
+}

@@ -4,6 +4,7 @@ import { formatMessage } from '../../i18n';
 import type { Observation } from '../../types/crms';
 import { formatDateDisplay } from '../../utils/dateUtils';
 import { hasObservationCode, showsEmptyStamp } from '../../domain/stampCalculator';
+import { useCycleData } from '../../context/CycleContext';
 import { StampBadge } from '../StampBadge';
 import { fertilityGuidance } from '../today/fertilityGuidance';
 
@@ -46,6 +47,7 @@ export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
   onOpenInChart,
   variant = 'bar',
 }) => {
+  const { readOnly } = useCycleData();
   const obs = day?.obs;
   const hasCode = !!obs && hasObservationCode(obs);
   // A saved day with no code, for example with notes only, is not a day with no observation
@@ -100,9 +102,12 @@ export const ChartDayDetail: React.FC<ChartDayDetailProps> = ({
       </div>
       {day && (
         <div className="chart-day-detail-actions">
-          <button type="button" className="btn btn-secondary" onClick={onEdit}>
-            {t.chartStrip.editDay}
-          </button>
+          {/* Nobody changes the shared chart */}
+          {!readOnly && (
+            <button type="button" className="btn btn-secondary" onClick={onEdit}>
+              {t.chartStrip.editDay}
+            </button>
+          )}
           {onOpenInChart && (
             <button type="button" className="btn btn-secondary" onClick={onOpenInChart}>
               {t.chartStrip.openInChart}

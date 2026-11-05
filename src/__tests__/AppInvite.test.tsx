@@ -15,6 +15,7 @@ vi.mock('../hooks/useSync', () => ({
     lastError: null,
     conflicts: [],
     resolveConflict: vi.fn(async () => {}),
+    sharedDays: null,
   }),
 }));
 

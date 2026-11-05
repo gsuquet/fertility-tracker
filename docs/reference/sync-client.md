@@ -277,6 +277,7 @@ A reader device never merges the vault with its own observations ([Partner devic
 | `lastError`       | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                 |
 | `conflicts`       | The conflict list of `fertility_care_sync_conflicts`, sorted by date. It is empty while the sync is off.                                                   |
 | `resolveConflict` | Restores or dismisses a conflict that the user saw, with the sync lock ([Conflict list](#conflict-list)).                                                  |
+| `sharedDays`      | The days of `fertility_care_shared_chart` for the [shared chart mode](screens/shared-chart.md), or `null`. It is `null` while the sync is off.             |
 
 A `SyncOutcome` has these fields:
 
@@ -286,11 +287,11 @@ A `SyncOutcome` has these fields:
 
 ### Conflict list
 
-`useSync()` reads `fertility_care_sync_conflicts` again in these conditions:
+`useSync()` reads `fertility_care_sync_conflicts` and `fertility_care_shared_chart` again in these conditions:
 
 - When the sync is on, at the start.
 - After each sync and after each action of `withSync()`.
-- When another tab changes the list (`storage` event).
+- When another tab changes one of the two keys (`storage` event).
 
 `resolveConflict(conflict, restore)` runs after the sync that runs, with the sync lock. It reads the stored list again, because another tab or a sync can change it. A sync can replace the conflict of a date with a newer conflict.
 

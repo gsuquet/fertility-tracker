@@ -210,6 +210,7 @@ If a page or a dialog cannot load, the application shows the message **This part
   - [Today page](screens/today.md)
   - [Paper Chart Strip page](screens/chart.md)
   - [Monthly Calendar page](screens/calendar.md)
+  - [Shared chart mode](screens/shared-chart.md)
   - [Cycle Analytics page](screens/analytics.md)
   - [Observation drawer](screens/observation-drawer.md)
   - [Export dialog](screens/export-dialog.md)

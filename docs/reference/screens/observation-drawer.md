@@ -17,6 +17,8 @@ On a phone, the drawer opens from **Log**. On a wide screen, it opens from the c
 
 ## Behavior
 
+On a partner device, the [shared chart mode](shared-chart.md) shows the shared chart read only, and changes some parts of this page.
+
 - The drawer has the date field and the same form as the **Today** page ([Observation form](today.md#observation-form)).
 - The date field has today as its `max`. A later date becomes today. A saved observation after today, from an older version, still opens, so that it can be changed or deleted.
 - From 1024 pixels, the drawer is a panel of 480 pixels at the right. The page behind it has no blur, so that the chart stays visible.
@@ -76,6 +78,7 @@ The rules below apply to all these sheets. The body is the part that scrolls. It
 
 ## Related documents
 
+- [Shared chart mode](shared-chart.md)
 - [Today page](today.md)
 - [Application behavior](../application-behavior.md)
 - [Dialog component](../dialog-component.md)

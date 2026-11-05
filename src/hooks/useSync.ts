@@ -14,9 +14,12 @@ import { serializeObservations } from '../domain/storageFormat';
 import { compareClocks } from '../domain/sync/clock';
 import type { SyncConflict } from '../domain/sync/merge';
 import { parseConflicts, serializeConflicts } from '../domain/sync/syncStorage';
+import { parseVaultDays, toObservationInputs } from '../domain/sync/vaultContent';
+import type { ObservationInput } from '../types/crms';
 import { readStorage, removeStorage, writeStorage } from '../utils/storage';
 import {
   STORAGE_OBSERVATIONS_KEY,
+  STORAGE_SHARED_CHART_KEY,
   STORAGE_SYNC_CONFLICTS_KEY,
   STORAGE_SYNC_STATE_KEY,
 } from '../utils/storageKeys';
@@ -87,9 +90,25 @@ export interface SyncControl {
    * changes when the list no longer has this conflict.
    */
   resolveConflict: (conflict: SyncConflict, restore: boolean) => Promise<void>;
+  /** The days of the shared chart of a partner device, or null. Null while the sync is off. */
+  sharedDays: ObservationInput[] | null;
 }
 
 const storedConflicts = () => parseConflicts(readStorage(STORAGE_SYNC_CONFLICTS_KEY));
+
+/** The days of the stored shared chart, or null without a valid one. */
+const storedSharedDays = (): ObservationInput[] | null => {
+  const text = readStorage(STORAGE_SHARED_CHART_KEY);
+  if (text === null) return null;
+  let value: unknown;
+  try {
+    value = JSON.parse(text);
+  } catch {
+    return null;
+  }
+  const days = parseVaultDays(value);
+  return days && toObservationInputs(days);
+};
 
 export function useSync(
   enabled: boolean = SYNC_ENABLED,
@@ -110,8 +129,18 @@ export function useSync(
   const [conflicts, setConflicts] = useState<SyncConflict[]>(() =>
     enabled ? storedConflicts() : []
   );
+  const [sharedDays, setSharedDays] = useState<ObservationInput[] | null>(() =>
+    enabled ? storedSharedDays() : null
+  );
+  // The shared chart changes only when its stored text changes: the pages keep their data
+  const sharedText = useRef(enabled ? readStorage(STORAGE_SHARED_CHART_KEY) : null);
   const readConflicts = useCallback(() => {
-    if (enabled) setConflicts(storedConflicts());
+    if (!enabled) return;
+    setConflicts(storedConflicts());
+    const text = readStorage(STORAGE_SHARED_CHART_KEY);
+    if (text === sharedText.current) return;
+    sharedText.current = text;
+    setSharedDays(storedSharedDays());
   }, [enabled]);
 
   const services = useCallback(() => {
@@ -239,7 +268,10 @@ export function useSync(
   useEffect(() => {
     if (!enabled) return;
     const onStorage = (event: StorageEvent) => {
-      if (event.key === STORAGE_SYNC_CONFLICTS_KEY || event.key === null) readConflicts();
+      const { key } = event;
+      if (key === STORAGE_SYNC_CONFLICTS_KEY || key === STORAGE_SHARED_CHART_KEY || key === null) {
+        readConflicts();
+      }
     };
     window.addEventListener('storage', onStorage);
     return () => window.removeEventListener('storage', onStorage);
@@ -285,5 +317,14 @@ export function useSync(
   }, [enabled, sync, observations]);
   useEffect(() => () => clearTimeout(timer.current), []);
 
-  return { enabled, services, syncNow: sync, withSync, lastError, conflicts, resolveConflict };
+  return {
+    enabled,
+    services,
+    syncNow: sync,
+    withSync,
+    lastError,
+    conflicts,
+    resolveConflict,
+    sharedDays,
+  };
 }

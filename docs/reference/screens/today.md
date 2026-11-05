@@ -15,6 +15,8 @@ The test `e2e/screenLayout.spec.ts` compares the ARIA snapshots with the screen,
 
 ## Behavior
 
+On a partner device, the [shared chart mode](shared-chart.md) shows the shared chart read only, and changes some parts of this page.
+
 | Part                                                                                                 | Content                                                                                                                                                                                                                                                                                                                                                                                                                                        |
 | ---------------------------------------------------------------------------------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | [TodayDateNav.tsx](../../../src/components/today/TodayDateNav.tsx)                                   | Previous and next day (44 px), date picker and date. The day status: **Today** or **Jump to Today**, the cycle day, and **Saved** or **Not saved**. On a phone, **Jump to Today** is 32 px high, with a tap area of 44 px. Thus, the day status has the same height on each day. The day buttons and the short date are in the top bar ([Navigation](navigation.md#top-bar-on-a-wider-screen)). The day status stays in the page, as one line. |
@@ -113,6 +115,7 @@ On a touch screen, a swipe on the **Today** page changes the day. The hook [useD
 
 ## Related documents
 
+- [Shared chart mode](shared-chart.md)
 - [Dialog component](../dialog-component.md)
 - [Application behavior](../application-behavior.md)
 - [User interface](../user-interface.md)

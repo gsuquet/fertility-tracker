@@ -46,6 +46,28 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.69.0',
+    date: '2026-11-05',
+    title: 'Shared Chart',
+    titleFr: 'Tableau partagé',
+    tagline: 'Your partner will read your chart on their device, when sync is ready',
+    taglineFr:
+      'Votre partenaire lira votre tableau sur son appareil, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'A partner device will show your chart on all its pages, with your notes',
+      'Nobody can change the chart there: the fields are read only',
+      'The own days of the partner device stay, and come back after Stop viewing',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’appareil de votre partenaire affichera votre tableau sur toutes ses pages, avec vos notes',
+      'Personne ne peut y modifier le tableau : les champs sont en lecture seule',
+      'Les propres jours de cet appareil restent, et reviennent après « Ne plus voir le tableau »',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.68.0',
     date: '2026-11-05',
     title: 'Partner Invitation',
