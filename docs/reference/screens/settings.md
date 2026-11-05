@@ -148,7 +148,7 @@ While `SYNC_ENABLED` is `false`, Settings has no **Sync** group ([Sync client](.
 
 - Each row runs after the sync that runs, with the sync lock ([Sync control](../sync-client.md#sync-control)). Thus, a sync cannot write the record or the state again after **Turn off sync on this device**.
 - While a row runs, the rows of the group are disabled.
-- While a row that makes a recovery code runs, and while the code dialog is open, Settings does not close. Thus, the user sees each new code.
+- While a row that makes a recovery code runs, and while the code dialog is open, Settings does not close. Thus, the user sees each new code. A data action, for example **Delete all data**, also keeps Settings open. **Load the demo cycles** does not show.
 - **Turn on sync** and **Recover** first read the key store. When another tab saved a record, they show its rows and make no vault.
 - After a failure, the group reads the key store again. For example, a recovery can save the record before its new code fails.
 - **Turn on sync** and **Recover** remove the demo days from this device before the device joins the vault. When the browser refuses this write, the device does not join.

@@ -160,7 +160,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     if (action.kind === 'clear') clearAllData();
     if (action.kind === 'import') importDataJson(action.text, mode);
     setPending(null);
-    onClose();
+    close();
   };
 
   // The contents decide, not the extension: a .ftbackup file and an old .json file both work
@@ -474,7 +474,8 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
         </p>
 
         <Group id="settings-data" title={s.data}>
-          {!hasSyncRecord && (
+          {/* While a sync action runs, the device can join a vault */}
+          {!hasSyncRecord && !syncBusy && (
             <ActionRow
               icon={iconOf(Database)}
               label={s.loadDemo}

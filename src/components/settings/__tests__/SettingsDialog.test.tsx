@@ -724,7 +724,7 @@ describe('SettingsDialog sync', () => {
       },
     };
     const services: SyncServices = { relay, keyStore: createMemoryKeyStore(), runner: syncRunner };
-    const props = renderSettings(undefined, {
+    const props = renderSettings(threeCycles, {
       sync: {
         enabled: true,
         services: async () => services,
@@ -737,6 +737,12 @@ describe('SettingsDialog sync', () => {
     const close = screen.getByRole('button', { name: en.settings.close });
     await waitFor(() => expect(close).toBeDisabled());
     fireEvent.keyDown(screen.getByRole('dialog', { name: en.settings.title }), { key: 'Escape' });
+    // The device joins a vault: no demo days. A data action does not close Settings.
+    expect(screen.queryByRole('button', { name: en.settings.loadDemo })).toBeNull();
+    fireEvent.click(screen.getByRole('button', { name: en.settings.deleteAll }));
+    const confirm = screen.getByRole('dialog', { name: en.confirmDialog.clearTitle });
+    fireEvent.click(within(confirm).getByRole('button', { name: en.confirmDialog.clearConfirm }));
+    expect(count()).toBe('0');
     expect(props.onClose).not.toHaveBeenCalled();
     await act(async () => release());
     expect(await screen.findByRole('dialog', { name: en.sync.codeTitle })).toBeInTheDocument();
