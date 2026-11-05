@@ -1,3 +1,4 @@
+import { qrMatrix } from '../qrMatrix';
 import { act, configure, fireEvent, screen, waitFor, within } from '@testing-library/react';
 import { afterEach, describe, expect, it, onTestFinished, vi } from 'vitest';
 import { en } from '../../../i18n';
@@ -139,6 +140,16 @@ describe('InviteDialog and JoinDialog', () => {
 });
 
 describe('InviteDialog', () => {
+  it('shows the QR code of the link while it waits', async () => {
+    const own = await owner();
+    renderInvite(own.relay, own.keyStore);
+    const link = await linkOf();
+    const qr = within(await inviteDialog()).getByRole('img', { name: s.inviteQrLabel });
+    // The code of the link, with a quiet zone of 4 modules
+    const size = (qrMatrix(link) as boolean[][]).length + 8;
+    expect(qr.getAttribute('viewBox')).toBe(`0 0 ${size} ${size}`);
+  });
+
   it('copies the link', async () => {
     const writeText = vi.fn(async () => {});
     vi.stubGlobal('navigator', { ...navigator, clipboard: { writeText } });

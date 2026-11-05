@@ -7,6 +7,7 @@ import type { DeviceRecord } from '../../sync/keyStore';
 import type { OwnerInvitation } from '../../sync/invitationFlow';
 import { failureOf } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
+import { QrCode } from './QrCode';
 import { INVITE_POLL_MS, SyncStepDialog, codeText, isTemporary } from '../SyncStepDialog';
 import type { StepAction } from '../SyncStepDialog';
 
@@ -193,6 +194,7 @@ export const InviteDialog: React.FC<InviteDialogProps> = ({
       actions={view.actions}
       onClose={step.kind === 'adding' ? null : cancel}
     >
+      {step.kind === 'waiting' && <QrCode text={step.link} label={s.inviteQrLabel} />}
       {step.kind === 'waiting' && (
         <input
           className="form-input sync-code-input"

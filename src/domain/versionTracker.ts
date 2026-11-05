@@ -46,6 +46,26 @@ export const CRMS_SPEC_VERSION = '1.1.0';
 /** Release notes, newest first. The tuple type guarantees at least one release. */
 export const VERSION_HISTORY: [VersionRelease, ...VersionRelease[]] = [
   {
+    version: '1.64.0',
+    date: '2026-11-05',
+    title: 'Invitation QR Code',
+    titleFr: 'Code QR d’invitation',
+    tagline: 'Scan the invitation with an Android phone, when sync is ready',
+    taglineFr:
+      'Scannez l’invitation avec un téléphone Android, quand la synchronisation sera prête',
+    crmsSpecVersion: '1.1.0',
+    highlights: [
+      'The invitation will show a QR code that the camera of an Android phone can read',
+      'The app makes the code on your device, so no other service sees the link',
+      'Sync is not on yet, and nothing changes on your device',
+    ],
+    highlightsFr: [
+      'L’invitation affichera un code QR que l’appareil photo d’un téléphone Android peut lire',
+      'L’application crée le code sur votre appareil, donc aucun autre service ne voit le lien',
+      'La synchronisation n’est pas encore active, et rien ne change sur votre appareil',
+    ],
+  },
+  {
     version: '1.63.0',
     date: '2026-11-05',
     title: 'No Demo on a Synced Device',

@@ -693,7 +693,9 @@ export const en = {
     invite: 'Invite a device',
     inviteHint: 'Add your phone or your computer',
     inviteTitle: 'Invite a device',
-    inviteLink: 'Open this link on the new device. On iOS, paste it in the installed app.',
+    inviteLink:
+      'Scan the code with the camera of an Android phone, or open this link on the new device. On iOS, paste it in the installed app.',
+    inviteQrLabel: 'QR code of the invitation link',
     inviteLinkLabel: 'Invitation link',
     inviteConfirm: 'Does the new device show the same code?',
     inviteDone: 'The device is added.',
