@@ -139,7 +139,8 @@ During a merge, `mergeObservations()` keeps one manual Peak Day in each cycle. W
 
 - **Merge** deletes no day. Thus, it is the same on a synced device.
 - **On this device only** runs after the sync that runs, with the sync lock. While it runs, the buttons are disabled, and `Escape`, Back and a drag down do nothing.
-- When the sync does not send the changes, or `leaveVault()` fails, an alert in the confirmation gives the cause, and no data changes. Without a connection, the user can select **Turn off sync on this device** first.
+- When the sync does not send the changes, or `leaveVault()` fails, an alert in the confirmation gives the cause. The delete or the replace does not run.
+- When the sync tells that the device is already out of the vault, the device does not need to send its changes. Thus, the action goes on ([Sync client](../sync-client.md#removal-of-a-member)). Without a connection, the user can select **Turn off sync on this device** first.
 - After **On all devices**, the undo copy stays until a sync brings a change from another device ([ADR 0012](../../records/adrs/0012-encrypted-sync-and-partner-sharing.md#conflict-list)). The message `confirmDialog.syncedMessage` says so.
 - A reader device asks no question. Its own days do not go into the vault.
 - Without observations on this device, **Restore from a file** acts immediately, as on all devices.

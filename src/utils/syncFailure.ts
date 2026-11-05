@@ -16,3 +16,13 @@ export const failureOf = (error: unknown, recovering = false): SyncFailure => {
   if (recovering && status === 404) return 'badCode';
   return 'failed';
 };
+
+/** True when the error tells that the device is no longer in the vault: removed, or no vault. */
+export const isOutOfVault = (error: unknown): boolean => {
+  if (!(error instanceof Error) || error.name !== 'VaultError') return false;
+  const { reason, detail } = error as VaultError;
+  return (
+    reason === 'removed' ||
+    (reason === 'relay' && (detail?.status === 401 || detail?.status === 404))
+  );
+};

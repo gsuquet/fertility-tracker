@@ -44,7 +44,7 @@ import { ActionRow, Group, iconOf } from './settingsRows';
 import { SyncSettings } from './SyncSettings';
 import type { SyncControl } from '../../hooks/useSync';
 import type { DeviceRecord } from '../../sync/keyStore';
-import { failureOf } from '../../utils/syncFailure';
+import { failureOf, isOutOfVault } from '../../utils/syncFailure';
 import type { SyncFailure } from '../../utils/syncFailure';
 import { removeStorage } from '../../utils/storage';
 import { STORAGE_SYNC_CONFLICTS_KEY, STORAGE_SYNC_STATE_KEY } from '../../utils/storageKeys';
@@ -183,9 +183,10 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
     setLeaving(true);
     setLeaveFailure(null);
     try {
-      // The last changes of this device go to the vault before it leaves
+      // The last changes of this device go to the vault before it leaves. A device that is
+      // already out of the vault has nothing to send.
       const outcome = await control.syncNow();
-      if (!outcome.sent) {
+      if (!outcome.sent && !isOutOfVault(outcome.error)) {
         setLeaveFailure(outcome.error ? failureOf(outcome.error) : 'failed');
         setLeaving(false);
         return;

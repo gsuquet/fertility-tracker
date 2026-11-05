@@ -927,6 +927,18 @@ describe('SettingsDialog on a synced device', () => {
     expect(props.onClose).not.toHaveBeenCalled();
   });
 
+  it('deletes on this device only when the device is already out of the vault', async () => {
+    const { control, keyStore } = await synced();
+    const { VaultError } = await import('../../../sync/deviceVault');
+    control.syncNow.mockResolvedValueOnce({ sent: false, error: new VaultError('removed') });
+    const props = renderSettings(threeCycles, { sync: control });
+    const dialog = await openDelete();
+    fireEvent.click(within(dialog).getByRole('button', { name: c.clearThisDevice }));
+    await waitFor(() => expect(props.onClose).toHaveBeenCalledOnce());
+    expect(count()).toBe('0');
+    expect(await keyStore.load()).toBeNull();
+  });
+
   it('asks the usual question on a reader device', async () => {
     const { control } = await synced('reader');
     renderSettings(threeCycles, { sync: control });

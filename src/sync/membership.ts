@@ -26,6 +26,7 @@ import {
 import type { RecordSaver } from './deviceVault';
 import type { DeviceRecord, KeyStore } from './keyStore';
 import type { RelayClient } from './relayClient';
+import { isOutOfVault } from '../utils/syncFailure';
 
 const ECDH = { name: 'ECDH', namedCurve: 'P-256' } as const;
 const newId = (bytes: number) => toBase64Url(randomBytes(bytes));
@@ -64,12 +65,6 @@ export async function removeMember(
   return written.record;
 }
 
-/** True when the error tells that the device is no longer in the vault. */
-const isOut = (error: unknown) =>
-  error instanceof VaultError &&
-  (error.reason === 'removed' ||
-    (error.reason === 'relay' && (error.detail?.status === 401 || error.detail?.status === 404)));
-
 /** Removes this device from the vault with a rekey, then deletes its record. The days stay. */
 export async function leaveVault(
   relay: RelayClient,
@@ -80,7 +75,7 @@ export async function leaveVault(
   try {
     session = await openSession(relay, keyStore, record);
   } catch (error) {
-    if (!isOut(error)) throw error;
+    if (!isOutOfVault(error)) throw error;
     await keyStore.clear();
     return;
   }
