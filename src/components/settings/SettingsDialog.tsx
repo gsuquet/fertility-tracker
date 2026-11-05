@@ -175,7 +175,7 @@ export const SettingsDialog: React.FC<SettingsDialogProps> = ({
   // ADR 0012: Delete all data and Replace delete days on each device of the vault
   const runOnAllDevices = (action: PendingAction) => {
     runAction(action);
-    void sync?.syncNow({ deletionsConfirmed: true });
+    void sync?.syncNow();
   };
 
   // The device leaves the vault first. When this fails, no data changes.

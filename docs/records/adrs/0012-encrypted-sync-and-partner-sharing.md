@@ -233,6 +233,8 @@ An owner device removes a partner or a lost device in one conditional write:
 
 When the removed member is an owner, a device or the recovery code, the owner device also makes a new signing key pair. It adds the new public key to the signing key chain, signed with the old key. After the removal of an owner device, the owner device also makes a new recovery code, as [New recovery code](#new-recovery-code) gives. The removed device can have the old signing key, and the old recovery blob names that key.
 
+A device can also leave the vault itself, for **Delete all data** or **Replace** "on this device only". It does the same rekey with a new signing key, then deletes its own keys. It does not make a new recovery code: the device knows each key that it writes, so a new code from it adds no protection. When the user thinks that someone copied the keys of that device, another owner device must make a new recovery code.
+
 The server refuses the access token of the removed member at once. A removed partner keeps the data that the partner device already shows. No design can take back data that a person already saw.
 
 A removed owner device and a malicious server together can try to write a different vault with the old signing key. Each member accepts only the first new signing key that it sees. This is the remaining risk.

@@ -153,6 +153,7 @@ It gives a `member` error when the member is not in the keyring or is the device
 
 - It does the same rekey as `removeMember()`, with a new signing key in the chain. It does not save the record of the rekey.
 - The days of the vault do not change. The other devices and the recovery code still open the vault.
+- It does not make a new recovery code ([Removing a member](../records/adrs/0012-encrypted-sync-and-partner-sharing.md#removing-a-member)). The recovery blob still names the old signing key.
 - When the device is already out of the vault, it only deletes the record. The device is out after a `removed` error, or a `relay` error with the status `401` or `404`.
 - A device that is not an owner gives a `reader` error.
 
@@ -223,7 +224,7 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 - When `checkStoredMark()` deletes the sync state during a sync, the tab deletes the state of that sync after `finishSync()`.
 - `observationsMissing` is always `false`. The provider deletes the sync state at a load without the observations key, so that sync is a first sync.
 - A change that a sync applies does not start a sync.
-- When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write. After `syncNow({ deletionsConfirmed: true })`, the next sync that reads the vault does not ask. A sync that stops before, for example because of the stored observations of another tab, keeps the confirmation for the next sync.
+- When a merge deletes more than 7 days, the application asks the user with `sync.confirmDeletions`. **Cancel** stops the write.
 - When the key store or the sync code fails, the next event tries again.
 - While `SYNC_ENABLED` is `false`, `useSync()` does nothing and the application does not load the sync code.
 
@@ -231,13 +232,13 @@ At load, the provider deletes `fertility_care_sync_state` at once when the store
 
 `useSync()` gives a `SyncControl` to Settings. The [Sync group](screens/settings.md#sync-group) uses it.
 
-| Field       | Use                                                                                                                                                                                                                       |
-| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `enabled`   | The value of `SYNC_ENABLED`                                                                                                                                                                                               |
-| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                                                                                                             |
-| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends. A sync that did not start yet covers a new call. `{ deletionsConfirmed: true }` tells that the user already confirmed the deletions. |
-| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.                                                                                       |
-| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                                                                                                                |
+| Field       | Use                                                                                                                                   |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------- |
+| `enabled`   | The value of `SYNC_ENABLED`                                                                                                           |
+| `services`  | Loads the relay client, the key store and the sync code one time. A failed load loads again at the next call.                         |
+| `syncNow`   | Starts a sync at once, or after the sync that runs. It resolves when that sync ends. A sync that did not start yet covers a new call. |
+| `withSync`  | Runs an action of Settings after the sync that runs, with the lock `fertility-tracker-sync`. No sync starts before the action ends.   |
+| `lastError` | The `VaultError` of the last sync, or `null` after a sync without an error                                                            |
 
 ## Related documents
 

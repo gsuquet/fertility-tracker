@@ -770,7 +770,7 @@ describe('SettingsDialog on a synced device', () => {
     const control = {
       enabled: true,
       services: async () => services,
-      syncNow: vi.fn(async (_options?: { deletionsConfirmed?: boolean }) => {}),
+      syncNow: vi.fn(async () => {}),
       withSync: <T,>(action: (loaded: SyncServices) => Promise<T>) => action(services),
       lastError: null,
     } satisfies SyncControl;
@@ -794,7 +794,7 @@ describe('SettingsDialog on a synced device', () => {
     localStorage.setItem(STORAGE_SYNC_CONFLICTS_KEY, '[]');
   });
 
-  it('deletes on all devices: the data goes, then the device syncs without a second question', async () => {
+  it('deletes on all devices: the data goes, then the device syncs', async () => {
     const { control, keyStore } = await synced();
     const props = renderSettings(threeCycles, { sync: control });
     const dialog = await openDelete();
@@ -802,7 +802,7 @@ describe('SettingsDialog on a synced device', () => {
     expect(within(dialog).queryByRole('button', { name: c.clearConfirm })).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: c.clearAllDevices }));
     expect(count()).toBe('0');
-    expect(control.syncNow).toHaveBeenCalledWith({ deletionsConfirmed: true });
+    expect(control.syncNow).toHaveBeenCalledOnce();
     expect(props.onClose).toHaveBeenCalledOnce();
     expect(await keyStore.load()).not.toBeNull();
   });
@@ -846,7 +846,7 @@ describe('SettingsDialog on a synced device', () => {
     expect(within(dialog).queryByRole('button', { name: c.importReplace })).toBeNull();
     fireEvent.click(within(dialog).getByRole('button', { name: c.replaceAllDevices }));
     expect(count()).toBe('2');
-    expect(first.control.syncNow).toHaveBeenCalledWith({ deletionsConfirmed: true });
+    expect(first.control.syncNow).toHaveBeenCalledOnce();
     cleanup();
 
     const second = await synced();

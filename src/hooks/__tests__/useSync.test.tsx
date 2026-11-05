@@ -473,26 +473,4 @@ describe('useSync', () => {
     await waitFor(() => expect(answer).toBe(false));
     expect(confirm).toHaveBeenCalledWith(expect.stringContaining('2'));
   });
-
-  it('does not ask in the next sync after syncNow with confirmed deletions, but asks again later', async () => {
-    const { load, services } = await setup();
-    const { result } = renderHook(() => useSync(true, load), { wrapper });
-    await settle();
-    const confirm = vi.spyOn(window, 'confirm').mockReturnValue(false);
-    const runSync = services.runner.runSync;
-    const answers: boolean[] = [];
-    services.runner = {
-      ...services.runner,
-      runSync: async input => {
-        answers.push(await input.confirmDeletions(['a', 'b']));
-        return runSync(input);
-      },
-    };
-    await act(() => result.current.syncNow({ deletionsConfirmed: true }));
-    expect(answers).toEqual([true]);
-    expect(confirm).not.toHaveBeenCalled();
-    await act(() => result.current.syncNow());
-    expect(answers).toEqual([true, false]);
-    expect(confirm).toHaveBeenCalledTimes(1);
-  });
 });
